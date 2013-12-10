@@ -8,5 +8,11 @@
     <string name="title_section3">Section 3</string>
     <string name="title_activity_web_view">WebViewActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="na"></string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="title_transaction_insert_fragment">거래 입력</string>
+    <string name="title_transaction_list_fragment">거래 목록</string>
+    <string name="title_settings_fragment">설정</string>
 
 </resources>

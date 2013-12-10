@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="drawer_menu_size">2</string>
+
+    <string-array name="drawer_menus_title">
+        <item>거래입력, 거래내역</item>
+        <item>설정</item>
+    </string-array>
+    <string-array name="drawer_menus_class">
+        <item>me.blog.imhallower.wimple.TransactionInsertFragment,me.blog.imhallower.wimple.TransactionListFragment</item>
+        <item>me.blog.imhallower.wimple.SettingsFragment</item>
+    </string-array>
+
+    <integer-array name="side_menu_layout_id">
+        <item>@id/sidemenu_item_transaction</item>
+        <item>@id/sidemenu_item_setting</item>
+    </integer-array>
+
+</resources>

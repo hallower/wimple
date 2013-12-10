@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="menu_titles">
+        <item>거래</item>
+        <item>설정</item>
+    </string-array>
+</resources>
