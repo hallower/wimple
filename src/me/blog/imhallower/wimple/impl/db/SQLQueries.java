@@ -4,7 +4,7 @@ public final class SQLQueries {
 
 	public static final int DB_VERSION = 1;
 	
-	public static final String dbName = "promise";
+	public static final String dbName = "wimple";
 	
 	public static final String dropTable = "DROP TABLE IF EXISTS ";
 	

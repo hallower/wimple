@@ -28,6 +28,18 @@
             android:name="me.blog.imhallower.wimple.WebViewActivity"
             android:label="@string/title_activity_web_view" >
         </activity>
+        <activity
+            android:name="me.blog.imhallower.wimple.TransactionInsertFragment"
+            android:label="@string/title_transaction_insert_fragment" >
+        </activity>
+        <activity
+            android:name="me.blog.imhallower.wimple.TransactionListFragment"
+            android:label="@string/title_transaction_list_fragment" >
+        </activity>
+        <activity
+            android:name="me.blog.imhallower.wimple.SettingsFragment"
+            android:label="@string/title_settings_fragment" >
+        </activity>
     </application>
 
 </manifest>

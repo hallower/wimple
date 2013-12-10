@@ -1,20 +1,41 @@
 package me.blog.imhallower.wimple.model;
 
+import me.blog.imhallower.wimple.impl.db.IDatabaseRecord;
+
 import org.json.simple.JSONObject;
 
-public class Section {
+import android.provider.SyncStateContract.Columns;
+import android.util.SparseArray;
 
-	private final String id;
-	private final String title;
-	private final String description;
-	private final String currency;
+public class Section implements IDatabaseRecord {
+
+	private String id;
+	private String title;
+	private String description;
+	private String currency;
 	private Boolean isolation = false;
-	private final Long asset;
-	private final Long debt;
-	private final Integer skinID;
-	private final Integer decimalPosition;
-	private final String dateFormat;
+	private Long asset;
+	private Long debt;
+	private Integer skinID;
+	private Integer decimalPosition;
+	private String dateFormat;
 
+	private static final SparseArray<String> columns = new SparseArray<String>();
+    private SparseArray<String> values;
+    
+	static {
+		columns.append(0, "id");
+		columns.append(1, "title");
+		columns.append(2, "description");
+		columns.append(3, "currency");
+		columns.append(4, "isolation");
+		columns.append(5, "asset");
+		columns.append(6, "debt");
+		columns.append(7, "skinid");
+		columns.append(8, "decimalposition");
+		columns.append(9, "dateformat");
+	}
+	
 	public Section(String id, String title, String description,
 			String currency, Long asset, Long debt,
 			Integer skinID, Integer decimalPosition, String dateFormat) {
@@ -81,6 +102,49 @@ public class Section {
 		return dateFormat;
 	}
 
+	
+	
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+	public void setIsolation(Boolean isolation) {
+		this.isolation = isolation;
+	}
+
+	public void setAsset(Long asset) {
+		this.asset = asset;
+	}
+
+	public void setDebt(Long debt) {
+		this.debt = debt;
+	}
+
+	public void setSkinID(Integer skinID) {
+		this.skinID = skinID;
+	}
+
+	public void setDecimalPosition(Integer decimalPosition) {
+		this.decimalPosition = decimalPosition;
+	}
+
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -98,5 +162,33 @@ public class Section {
 		sb.append("---------------------------------------------------------------------");
 
 		return sb.toString();
+	}
+
+	@Override
+	public String getKeyValue() {
+		return this.id;
+	}
+
+	@Override
+	public SparseArray<String> getColumns() {
+		return columns;
+	}
+
+	@Override
+	public boolean setValues(SparseArray<String> values) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String getValue(int columnID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SparseArray<String> getValues() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

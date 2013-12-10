@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sidemenu_layout"
+    android:layout_width="231dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="#FFFFFF"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:clickable="true"
+                android:id="@+id/my_profile_information_window"
+                android:layout_width="match_parent"
+                android:layout_height="82dp"
+                android:background="#f3f3f3" >
+
+                <ImageView
+                    android:id="@+id/my_profile_icon"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:scaleType="fitCenter"
+                    />
+
+                <ImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/profile_line" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="80dp"
+                    android:layout_toRightOf="@id/my_profile_icon"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/my_profile_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="17dp"                        
+                        android:textColor="#454545"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/my_profile_level"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"                        
+                        android:textColor="#6f6f6f"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="131dp"
+                    android:layout_height="11dp"
+                    android:layout_marginLeft="79dp"
+                    android:layout_marginTop="52dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/list_progress_n" />
+
+                <ImageView
+                    android:id="@+id/my_profile_progress"
+                    android:layout_width="110dp"
+                    android:layout_height="11dp"
+                    android:layout_marginLeft="79dp"
+                    android:layout_marginTop="52dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/list_progress_p" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/sidemenu_item_transaction"
+                android:layout_width="match_parent"
+                android:layout_height="47dp"
+                android:background="@android:drawable/list_selector_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="14dp"
+                    android:contentDescription="@string/na"
+                    android:src="@drawable/slide_icon_home" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="홈"
+                    android:textColor="#6f6f6f"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="#c2c2c2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1" >
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0px" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="#c2c2c2" />
+
+            <LinearLayout
+                android:id="@+id/sidemenu_item_setting"
+                android:layout_width="match_parent"
+                android:layout_height="47dp"
+                android:background="@android:drawable/list_selector_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="14dp"
+                    android:contentDescription="@string/na"
+                    android:src="@drawable/slide_icon_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="설정"
+                    android:textColor="#6f6f6f"
+                    android:textSize="17sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
