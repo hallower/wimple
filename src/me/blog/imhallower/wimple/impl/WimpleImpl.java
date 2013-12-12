@@ -10,12 +10,14 @@ import java.util.concurrent.Semaphore;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Section;
+import me.blog.imhallower.wimple.model.UserInfo;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -33,6 +35,24 @@ public class WimpleImpl implements IWimpleImpl {
 
 	private final RestAPIInvoker rai;
 
+	private UserInfo userInfo = null;
+
+	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
+
+		@Override
+		public void onLoggedIn(boolean status) { }
+
+		@Override
+		public void onLoggedOut() { }
+
+		@Override
+		public void onNetworkConnectionEstablished() {}
+
+		@Override
+		public void onNetworkConnectionLost() {}
+
+	};
+
 	private static IWimpleResponseListener responseListener = new IWimpleResponseListener(){
 
 		@Override
@@ -43,6 +63,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 		@Override
 		public void onGetAuthAccessToken(boolean status, Map<String, String> result) {}
+
+		@Override
+		public void onGetUserInfoReceived(boolean status, UserInfo info) { }
 
 		@Override
 		public void onGetAllAccountReceived(boolean status, Collection<Account> list) {}
@@ -81,6 +104,23 @@ public class WimpleImpl implements IWimpleImpl {
 		}*/
 	}
 
+	public void setStatusListener(IWimpleStatusListener listener){
+		WimpleImpl.statusListener = listener;
+	}
+
+	public void setResponseListener(IWimpleResponseListener listener){
+		WimpleImpl.responseListener = listener;
+	}
+
+	public static IWimpleStatusListener getStatusListener() {
+		return statusListener;
+	}
+
+	public static IWimpleResponseListener getResponseListener() {
+		return responseListener;
+	}
+
+
 	private static final String LOG_TAG = "Wimple";
 
 	private static final String serviceHost = "https://whooing.com/";
@@ -102,6 +142,8 @@ public class WimpleImpl implements IWimpleImpl {
 		private static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
 		private static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
 		private static final String AUTH_ACCESS_TOKEN 	= "app_auth/access_token";
+
+		private static final String USER_INFO				= "api/user.json";
 
 		private static final String SECTIONS_ALL			= "api/sections.json";
 		private static final String SECTIONS_DEFAULT		= "api/sections/default.json";
@@ -165,26 +207,31 @@ public class WimpleImpl implements IWimpleImpl {
 
 
 
+
+
+
 	/*
 	 * Handler
 	 */
 
-	public static final class CommandID {
+	private static final class CommandID {
 
 		private CommandID() {}
 
 		public static final int CMD_BASE = 1000;
 
 		public static final int CMD_AUTHENTICATION_SUCCEED = CMD_BASE + 1;
-		public static final int CMD_AUTHENTICATION_FAILED = CMD_BASE + 2;
-		public static final int CMD_GET_TEMP_TOKEN = CMD_BASE + 3;
-		public static final int CMD_GET_ACCESS_TOKEN = CMD_BASE + 4;
+		public static final int CMD_AUTHENTICATION_FAILED = CMD_BASE + 3;
+		public static final int CMD_GET_TEMP_TOKEN = CMD_BASE + 5;
+		public static final int CMD_GET_ACCESS_TOKEN = CMD_BASE + 7;
 
-		public static final int CMD_GET_SECTIONS = CMD_BASE + 5;
-		public static final int CMD_GET_SECTIONS_DEFAULT = CMD_BASE + 7;
-		public static final int CMD_GET_ACCOUNT_ALL = CMD_BASE + 9;
-		public static final int CMD_GET_ENTRIES = CMD_BASE + 11;
-		public static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 13;
+		public static final int CMD_GET_USER_INFO = CMD_BASE + 9;
+
+		public static final int CMD_GET_SECTIONS = CMD_BASE + 11;
+		public static final int CMD_GET_SECTIONS_DEFAULT = CMD_BASE + 13;
+		public static final int CMD_GET_ACCOUNT_ALL = CMD_BASE + 15;
+		public static final int CMD_GET_ENTRIES = CMD_BASE + 17;
+		public static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 19;
 
 
 	}
@@ -238,14 +285,28 @@ public class WimpleImpl implements IWimpleImpl {
 				tokenSecret = list.get("token_secret");
 				userID = list.get("user_id");
 
+				// TODO : Have to store userID
+				if(null == context){
+					Log.e(LOG_TAG, "Application Context is not set!!!");
+					//throw new Exception("Application Context is not set!!!");
+				}
+
+				SharedPreferences settings = context.getSharedPreferences("wimple.settings", 0);
+				settings.edit().putString("userid", userID).commit(); 
+
 				if(booleanStatus){
 					Log.d(LOG_TAG, "CMD_GET_ACCESS_TOKEN is succeed!!!");
 				}else{
 					Log.d(LOG_TAG, "CMD_GET_ACCESS_TOKEN is failed!!!");
 				}
 				responseListener.onGetAuthAccessToken(booleanStatus, list);
+				statusListener.onLoggedIn(booleanStatus);
 			}
 			break;
+
+			case CommandID.CMD_GET_USER_INFO :
+				responseListener.onGetUserInfoReceived(booleanStatus, (UserInfo) obj);
+				break;
 
 			case CommandID.CMD_GET_SECTIONS :
 				responseListener.onGetAllSectionReceived(booleanStatus, (Collection<Section>) obj);
@@ -272,9 +333,12 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-	public void setResponseListener(IWimpleResponseListener listener){
-		WimpleImpl.responseListener = listener;
-	}
+
+
+	/*
+	 * Server APIs
+	 */
+
 
 	/*
 	 * Auth APIs
@@ -408,6 +472,40 @@ public class WimpleImpl implements IWimpleImpl {
 		return true;
 	}
 
+
+	public boolean getUserInfo(){
+
+		if(false == isAuthed){
+			return false;
+		}
+
+		new Thread(){
+
+			@Override
+			public void run() {
+
+				UserInfo info = new UserInfo();
+
+				JSONObject json = rai.invokeGET(Path.USER_INFO);
+
+				if(null == json){
+					sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
+					return;
+				}
+
+				JSONObject result = (JSONObject) json.get("results");				
+
+				info = new UserInfo(result);
+				userInfo = info;
+				sm(CommandID.CMD_GET_USER_INFO, 1, 0, info);
+
+
+			}			
+
+		}.start();		
+		return true;
+	}
+
 	public boolean getDefaultSections(){
 
 		if(false == isAuthed){
@@ -419,14 +517,31 @@ public class WimpleImpl implements IWimpleImpl {
 			@Override
 			public void run() {
 
+				Collection<Section> list = new ArrayList<Section>();
+
 				JSONObject json = rai.invokeGET(Path.SECTIONS_DEFAULT);
 
 				if(null == json){
-					sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, new JSONObject());
+					sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
 					return;
 				}
 
-				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, json);
+				JSONObject results = (JSONObject) json.get("results");				
+				String sid = "";
+
+				for(Object key : results.keySet()){
+					JSONObject section = (JSONObject) results.get(key);
+
+					Object isolation = section.get("isolation");
+					if(null != isolation &&
+							0 == isolation.toString().compareToIgnoreCase("y")){
+						continue;
+					}
+
+					list.add(new Section(section));
+				}
+
+				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 			}			
 
 		}.start();		
@@ -632,7 +747,7 @@ public class WimpleImpl implements IWimpleImpl {
 						false == balance.isEmpty()){
 					item.setBalance(balance);
 				}
-				
+
 				list.add(new Entry(row));
 			}
 			sm(CommandID.CMD_GET_LATEST_ENTRIES, 1, 0, list);

@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import me.blog.imhallower.wimple.impl.IWimpleResponseListener;
+import me.blog.imhallower.wimple.impl.IWimpleStatusListener;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Section;
+import me.blog.imhallower.wimple.model.UserInfo;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.TabListener;
@@ -33,7 +35,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class WimpleActivity extends FragmentActivity implements
@@ -73,6 +79,7 @@ ActionBar.TabListener {
 		public static final int TOAST_LONG = CMD_BASE + 3;
 		public static final int TOAST_SHORT = CMD_BASE + 5;
 		public static final int GET_PIN = CMD_BASE + 7;
+		public static final int UPDATE_USER_INFO = CMD_BASE + 9;
 
 	}
 
@@ -94,62 +101,7 @@ ActionBar.TabListener {
 		setupWimpleImpl();
 		setupHandler();
 
-		menuTitles = getResources().getStringArray(R.array.menu_titles);
-		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		mSideMenu = (LinearLayout) findViewById(R.id.sidemenu_layout);
-
-		{
-			listSubmenuTitles = new ArrayList<List<String>>();
-			listSubmenuClasses = new ArrayList<List<Fragment>>();
-			mListSideMemuID = new ArrayList<Integer>();
-
-			String[] allTitles = getResources().getStringArray(R.array.drawer_menus_title);        	
-
-			for(String title : allTitles)
-			{
-				List<String> titles = new ArrayList<String>();
-				//Log.d(LOG_TAG, "title =");
-				for(String t : title.split(",")){
-					//Log.d(LOG_TAG, t + ", ");
-					titles.add(t);
-				}
-				listSubmenuTitles.add(titles);
-			}            
-
-			String[] allClasses = getResources().getStringArray(R.array.drawer_menus_class);
-			for(String clas : allClasses)
-			{
-				List<Fragment> clases = new ArrayList<Fragment>();
-				//Log.d(LOG_TAG, "class =");
-				for(String cla : clas.split(",")){
-
-					//Log.d(LOG_TAG, cla + ", ");
-
-					try{
-						Class<?> c = Class.forName(cla);
-						Fragment frag = (Fragment)c.newInstance();
-
-						if(frag instanceof IWimpleFragment){
-							((IWimpleFragment) frag).setActivityInstance(this);
-						}
-
-						clases.add(frag);
-					}catch(Exception e){
-						e.printStackTrace();
-						continue;
-					}
-
-				}
-				listSubmenuClasses.add(clases); 
-			}
-
-			TypedArray ar = getResources().obtainTypedArray(R.array.side_menu_layout_id);
-			int len = ar.length();
-			for (int i = 0; i < len; i++)
-				mListSideMemuID.add( ar.getResourceId(i, 0));
-			ar.recycle();
-
-		}
+		setupMenus();
 
 
 		// set a custom shadow that overlays the main content when the drawer opens
@@ -222,9 +174,64 @@ ActionBar.TabListener {
 			setPagerAdapter(0);
 		}
 
-		/*
 		wimple.getTempToken();
-		 */
+	}
+
+	private void setupMenus() {
+		menuTitles = getResources().getStringArray(R.array.menu_titles);
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mSideMenu = (LinearLayout) findViewById(R.id.sidemenu_layout);
+
+		{
+			listSubmenuTitles = new ArrayList<List<String>>();
+			listSubmenuClasses = new ArrayList<List<Fragment>>();
+			mListSideMemuID = new ArrayList<Integer>();
+
+			String[] allTitles = getResources().getStringArray(R.array.drawer_menus_title);        	
+
+			for(String title : allTitles)
+			{
+				List<String> titles = new ArrayList<String>();
+				//Log.d(LOG_TAG, "title =");
+				for(String t : title.split(",")){
+					//Log.d(LOG_TAG, t + ", ");
+					titles.add(t);
+				}
+				listSubmenuTitles.add(titles);
+			}            
+
+			String[] allClasses = getResources().getStringArray(R.array.drawer_menus_class);
+			for(String clas : allClasses)
+			{
+				List<Fragment> clases = new ArrayList<Fragment>();
+				//Log.d(LOG_TAG, "class =");
+				for(String cla : clas.split(",")){
+					//Log.d(LOG_TAG, cla + ", ");
+					try{
+						Class<?> c = Class.forName(cla);
+						Fragment frag = (Fragment)c.newInstance();
+
+						if(frag instanceof IWimpleFragment){
+							((IWimpleFragment) frag).setActivityInstance(this);
+						}
+
+						clases.add(frag);
+					}catch(Exception e){
+						e.printStackTrace();
+						continue;
+					}
+
+				}
+				listSubmenuClasses.add(clases); 
+			}
+
+			TypedArray ar = getResources().obtainTypedArray(R.array.side_menu_layout_id);
+			int len = ar.length();
+			for (int i = 0; i < len; i++)
+				mListSideMemuID.add( ar.getResourceId(i, 0));
+			ar.recycle();
+
+		}
 	}
 
 
@@ -248,6 +255,49 @@ ActionBar.TabListener {
 		}
 	}
 
+	 private void setMyInfoOnMenu(UserInfo info)
+	    {
+	  
+			// Set Icon
+	    	ImageView icon = (ImageView)findViewById(R.id.my_profile_icon);
+	    	//WidgetItem.replaceBitmapOfImageView(icon, info.getUserImgURL(), false);
+
+			// Set  Name
+			TextView name = (TextView)findViewById(R.id.my_profile_name);
+			name.setText(info.getName());
+
+			/*
+			// temporary
+			int nLevel = 8;
+			if(nLevel > 10)
+					nLevel = 10;
+					
+			TextView textLevel = (TextView)findViewById(R.id.my_profile_level);
+			ImageView progressLevel = (ImageView)findViewById(R.id.my_profile_progress);
+		
+			textLevel.setText(getResources().getString(R.string.profile_level_prefix) + nLevel);
+		    Resources resources = context.getResources();
+		    DisplayMetrics metrics = resources.getDisplayMetrics();
+		    float px = nLevel * 18 * (metrics.densityDpi / 160f);	    
+			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams ) progressLevel.getLayoutParams();
+			params.width = (int)px;
+			progressLevel.setLayoutParams(params);
+			*/
+			// Set OnClick listener => Detail Profile information
+			RelativeLayout rlProfileWindow = (RelativeLayout)findViewById(R.id.my_profile_information_window);
+			rlProfileWindow.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO : later
+					//Intent intent = new Intent(context, DetailProfileActivity.class);
+					//startActivity(intent);
+				}
+				
+			});
+	    	
+	    }
+	 
 	private void setPagerAdapter(int n)
 	{
 		List<String> titles = listSubmenuTitles.get(n);
@@ -318,6 +368,33 @@ ActionBar.TabListener {
 
 	private void setupWimpleImpl() {
 		wimple.setApplicationContext(context);
+		wimple.setStatusListener(new IWimpleStatusListener(){
+
+			@Override
+			public void onLoggedIn(boolean status) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onLoggedOut() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onNetworkConnectionEstablished() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onNetworkConnectionLost() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		wimple.setResponseListener(new IWimpleResponseListener(){
 
 			@Override
@@ -356,7 +433,15 @@ ActionBar.TabListener {
 					return;
 				}
 
-				wimple.getAllSections();				
+				wimple.getUserInfo();
+				//wimple.getAllSections();				
+			}
+
+			@Override
+			public void onGetUserInfoReceived(boolean status, UserInfo info) { 
+				// TODO : we have to save to DB and use it at initial time
+				Log.e(LOG_TAG, info.toString());
+				sm(CommandID.UPDATE_USER_INFO, info);
 			}
 
 			@Override
@@ -424,6 +509,12 @@ ActionBar.TabListener {
 					intent.putExtra("temp_token", obj.toString());
 					startActivityForResult(intent, PIN_NUMBER_REQUEST);
 					break;	
+				}
+				
+				case CommandID.UPDATE_USER_INFO :
+				{
+					setMyInfoOnMenu((UserInfo)obj);
+					break;
 				}
 
 				// to all
