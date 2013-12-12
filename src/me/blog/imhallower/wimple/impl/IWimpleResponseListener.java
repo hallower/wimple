@@ -6,12 +6,15 @@ import java.util.Map;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Section;
+import me.blog.imhallower.wimple.model.UserInfo;
 
 public interface IWimpleResponseListener {
 	
 	public void onGetAuthTempToken(boolean status, String tempToken);
 	
 	public void onGetAuthAccessToken(boolean status, Map<String, String> result);
+	
+	public void onGetUserInfoReceived(boolean status, UserInfo info);
 	
 	public void onGetAllSectionReceived(boolean status, Collection<Section> list);
 	

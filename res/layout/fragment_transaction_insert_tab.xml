@@ -3,11 +3,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    
+
     <TextView
-        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:text="fragment_transaction_insert"
-        />
+        android:layout_height="match_parent"
+        android:text="fragment_transaction_insert" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextEdit
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/list_check_on" />
+    </LinearLayout>
 
 </RelativeLayout>
