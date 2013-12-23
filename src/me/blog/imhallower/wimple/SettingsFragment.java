@@ -7,7 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 public class SettingsFragment extends Fragment implements IWimpleFragment{
 
@@ -36,7 +36,7 @@ public class SettingsFragment extends Fragment implements IWimpleFragment{
 			Bundle savedInstanceState) {
 
 		context = WimpleActivity.context;
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_settings_tab, container, false);
+		view = (LinearLayout)inflater.inflate(R.layout.fragment_settings_tab, container, false);
 
 		return view;
 	}

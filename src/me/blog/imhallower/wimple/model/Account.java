@@ -104,7 +104,7 @@ public class Account {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[Section : " + what + " - " + id + " ]------------------------------");
+		sb.append("-[Account : " + what + " - " + id + " ]------------------------------");
 		sb.append("   type = " + type);
 		sb.append("   title = " + title);
 		sb.append("   description = " + description);

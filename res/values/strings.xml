@@ -14,5 +14,26 @@
     <string name="title_transaction_insert_fragment">거래 입력</string>
     <string name="title_transaction_list_fragment">거래 목록</string>
     <string name="title_settings_fragment">설정</string>
-
+    
+    <string name="pad_1">1</string>
+    <string name="pad_2">2</string>
+    <string name="pad_3">3</string>
+    <string name="pad_4">4</string>
+    <string name="pad_5">5</string>
+    <string name="pad_6">6</string>
+    <string name="pad_7">7</string>
+    <string name="pad_8">8</string>
+    <string name="pad_9">9</string>
+    <string name="pad_10">0</string>
+    <string name="pad_100">00</string>
+    <string name="pad_point">.</string>    
+    <string name="pad_clear">C</string>
+    <string name="pad_multiply">*</string>
+    <string name="pad_divide">%</string>
+    <string name="pad_minus">-</string>
+    <string name="pad_plus">+</string>
+    <string name="pad_eq">=</string>
+    
+    <string name="transaction_monthly">월별 거래들</string>
+    
 </resources>

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Section;
@@ -35,7 +36,15 @@ public class WimpleImpl implements IWimpleImpl {
 
 	private final RestAPIInvoker rai;
 
-	private UserInfo userInfo = null;
+	private UserInfoDBHandler uidbh = null;
+
+
+	// Temporary!!!
+	public String firstSectionID;
+	public UserInfo userInfo = null;
+	public Collection<Section> sectionList = null;
+	public String accountSectionID;
+	public Collection<Account> accountList = null; 
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
 
@@ -98,10 +107,10 @@ public class WimpleImpl implements IWimpleImpl {
 	public void setApplicationContext(Context context){
 		WimpleImpl.context = context;
 
-		/*
-		if(null == sdbh){
-			sdbh = new SessionDBHandler(PromiseImpl.context);    
-		}*/
+
+		if(null == uidbh){
+			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
+		}
 	}
 
 	public void setStatusListener(IWimpleStatusListener listener){
@@ -274,7 +283,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_TEMP_TOKEN :
-				responseListener.onGetAuthTempToken(booleanStatus, obj.toString());
+				responseListener.onGetAuthTempToken(booleanStatus, (String) obj);
 				break;
 
 			case CommandID.CMD_GET_ACCESS_TOKEN :
@@ -439,6 +448,11 @@ public class WimpleImpl implements IWimpleImpl {
 			@Override
 			public void run() {
 
+				if(null != sectionList){
+					sm(CommandID.CMD_GET_SECTIONS, 1, 0, sectionList);
+					return;
+				}
+
 				Collection<Section> list = new ArrayList<Section>();
 
 				JSONObject json = rai.invokeGET(Path.SECTIONS_ALL);
@@ -464,7 +478,9 @@ public class WimpleImpl implements IWimpleImpl {
 					list.add(new Section(section));
 				}
 
-
+				// TODO : insert into DB
+				sectionList = list;
+				firstSectionID = ((Section)list.toArray()[0]).getId();
 				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
 			}			
 
@@ -497,6 +513,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 				info = new UserInfo(result);
 				userInfo = info;
+				// TODO : insert UserInfo to DB
 				sm(CommandID.CMD_GET_USER_INFO, 1, 0, info);
 
 
@@ -550,7 +567,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllAccounts(String sectionID){
 
-		if(false == isAuthed){
+		if(false == isAuthed ||
+				null == sectionID){
 			return false;
 		}
 
@@ -560,7 +578,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllAccounts(String sectionID, String dateFilter){
 
-		if(false == isAuthed){
+		if(false == isAuthed ||
+				null == sectionID){
 			return false;
 		}
 
@@ -581,6 +600,12 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
+			// TODO : accountList update!!!
+			if(null != accountList){
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, accountList);
+				return;
+			}
+
 			String path = "?section_id=" + sectionID;
 
 			if(false == dateFilter.isEmpty()){				
@@ -597,6 +622,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 			Collection<Account> list = new ArrayList<Account>();
 
+			try{
 			JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
 			if(null == json){
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
@@ -610,9 +636,17 @@ public class WimpleImpl implements IWimpleImpl {
 				for(Object name : accountType.keySet()){
 					JSONObject account = (JSONObject) accountType.get(name);
 
-					list.add(new Account(name.toString(), account));
+						list.add(new Account(type.toString(), account));
+					}
 				}
+			} catch(Exception e){
+				e.printStackTrace();
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 			}
+
+			// TODO : insert list to DB!!!
+			accountList = list;	
+			accountSectionID = sectionID;
 
 			sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
 		}			
