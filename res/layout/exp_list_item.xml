@@ -4,10 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
     
-    <TextView
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:text="fragment_transaction_list"
-        />
-
+   <TextView
+        android:id="@+id/expListGroupItem"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="17sp" />
 </LinearLayout>

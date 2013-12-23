@@ -80,6 +80,11 @@ ActionBar.TabListener {
 		public static final int TOAST_SHORT = CMD_BASE + 5;
 		public static final int GET_PIN = CMD_BASE + 7;
 		public static final int UPDATE_USER_INFO = CMD_BASE + 9;
+		public static final int GET_ALL_ACCOUNT_RECEIVED = CMD_BASE + 11;
+		public static final int WIMPLE_LOGGIN_SUCCESS = CMD_BASE + 13;
+		public static final int WIMPLE_LOGGIN_FAILED = CMD_BASE + 15;
+		public static final int WIMPLE_LOGGOUT = CMD_BASE + 17;
+		public static final int GET_ALL_SECTION_RECEIVED = CMD_BASE + 19;
 
 	}
 
@@ -120,7 +125,7 @@ ActionBar.TabListener {
 
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		actionBar.setDisplayHomeAsUpEnabled(true);        
-		actionBar.setHomeButtonEnabled(true);
+		//actionBar.setHomeButtonEnabled(true);
 
 
 		// ActionBarDrawerToggle ties together the the proper interactions
@@ -372,14 +377,16 @@ ActionBar.TabListener {
 
 			@Override
 			public void onLoggedIn(boolean status) {
-				// TODO Auto-generated method stub
-				
+				if(status){
+					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");	
+				}else{
+					sm(CommandID.WIMPLE_LOGGIN_FAILED, "");
+				}
 			}
 
 			@Override
 			public void onLoggedOut() {
-				// TODO Auto-generated method stub
-				
+				sm(CommandID.WIMPLE_LOGGOUT, "");
 			}
 
 			@Override
@@ -400,6 +407,11 @@ ActionBar.TabListener {
 			@Override
 			public void onGetAuthTempToken(boolean status, String tempToken) {
 
+				if(false == status){
+					// TODO : login!!! 
+					return;
+				}
+				
 				if(null == tempToken || tempToken.isEmpty()){
 					// TODO : do something
 					return;
@@ -434,7 +446,7 @@ ActionBar.TabListener {
 				}
 
 				wimple.getUserInfo();
-				//wimple.getAllSections();				
+				wimple.getAllSections();				
 			}
 
 			@Override
@@ -451,9 +463,10 @@ ActionBar.TabListener {
 
 					Log.d(LOG_TAG, section.toString());
 
-					wimple.getAllEntries(section.getId(), "20131208", "20131201");
-					wimple.getLatestEntries(section.getId(), 0);
+					//wimple.getAllEntries(section.getId(), "20131208", "20131201");
+					//wimple.getLatestEntries(section.getId(), 0);
 				}
+				sm(CommandID.GET_ALL_SECTION_RECEIVED, list);
 			}
 
 			@Override
@@ -462,6 +475,7 @@ ActionBar.TabListener {
 				for(Account account : list){
 					Log.d(LOG_TAG, account.toString());
 				}
+				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list);
 			}
 
 			@Override
@@ -517,6 +531,22 @@ ActionBar.TabListener {
 					break;
 				}
 
+				case CommandID.WIMPLE_LOGGIN_SUCCESS :
+				case CommandID.WIMPLE_LOGGIN_FAILED :
+				case CommandID.WIMPLE_LOGGOUT :
+				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
+				case CommandID.GET_ALL_SECTION_RECEIVED :
+				{
+				
+					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);
+					
+					if(fg instanceof IWimpleFragment){
+						IWimpleFragment wfg = (IWimpleFragment) fg;
+						wfg.handleMessage(msg);
+					}
+					break;
+				}
+					
 				// to all
 				default : {	
 					Log.d(LOG_TAG, "Invalid Command ID=" + command);
