@@ -85,7 +85,7 @@ ActionBar.TabListener {
 		public static final int WIMPLE_LOGGIN_FAILED = CMD_BASE + 15;
 		public static final int WIMPLE_LOGGOUT = CMD_BASE + 17;
 		public static final int GET_ALL_SECTION_RECEIVED = CMD_BASE + 19;
-
+		public static final int GET_MAKE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 21;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -450,14 +450,14 @@ ActionBar.TabListener {
 			}
 
 			@Override
-			public void onGetUserInfoReceived(boolean status, UserInfo info) { 
+			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
 				// TODO : we have to save to DB and use it at initial time
 				Log.e(LOG_TAG, info.toString());
 				sm(CommandID.UPDATE_USER_INFO, info);
 			}
 
 			@Override
-			public void onGetAllSectionReceived(boolean status, Collection<Section> list) {
+			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {
 
 				for(Section section : list){
 
@@ -470,7 +470,7 @@ ActionBar.TabListener {
 			}
 
 			@Override
-			public void onGetAllAccountReceived(boolean status, Collection<Account> list) {
+			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
 
 				for(Account account : list){
 					Log.d(LOG_TAG, account.toString());
@@ -479,17 +479,22 @@ ActionBar.TabListener {
 			}
 
 			@Override
-			public void onGetEntriesReceived(boolean status, Collection<Entry> list) {
+			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
 				for(Entry entry : list){
 					Log.d(LOG_TAG, entry.toString());
 				}
 			}
 
 			@Override
-			public void onGetLatestEntriesReceived(boolean status, Collection<Entry> list) {
+			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {
 				for(Entry entry : list){
 					Log.d(LOG_TAG, entry.toString());
 				}
+			}
+
+			@Override
+			public void onMakeEntryResponseReceived(boolean status) {
+				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status);				
 			}				
 
 		});
@@ -536,6 +541,7 @@ ActionBar.TabListener {
 				case CommandID.WIMPLE_LOGGOUT :
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
 				case CommandID.GET_ALL_SECTION_RECEIVED :
+				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED : 
 				{
 				
 					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);

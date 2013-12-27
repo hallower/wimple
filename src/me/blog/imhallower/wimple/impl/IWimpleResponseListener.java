@@ -14,14 +14,16 @@ public interface IWimpleResponseListener {
 	
 	public void onGetAuthAccessToken(boolean status, Map<String, String> result);
 	
-	public void onGetUserInfoReceived(boolean status, UserInfo info);
+	public void onGetUserInfoResponseReceived(boolean status, UserInfo info);
 	
-	public void onGetAllSectionReceived(boolean status, Collection<Section> list);
+	public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list);
 	
-	public void onGetAllAccountReceived(boolean status, Collection<Account> list);
+	public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list);
 	
-	public void onGetEntriesReceived(boolean status, Collection<Entry> list);
+	public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list);
 	
-	public void onGetLatestEntriesReceived(boolean status, Collection<Entry> list);
+	public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list);
+	
+	public void onMakeEntryResponseReceived(boolean status);
 	
 }
