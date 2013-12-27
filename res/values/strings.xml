@@ -33,6 +33,7 @@
     <string name="pad_minus">-</string>
     <string name="pad_plus">+</string>
     <string name="pad_eq">=</string>
+    <string name="pad_back">B</string>
     
     <string name="transaction_monthly">월별 거래들</string>
     
