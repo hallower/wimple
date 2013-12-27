@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Section;
 import me.blog.imhallower.wimple.model.UserInfo;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import android.annotation.SuppressLint;
@@ -34,8 +34,10 @@ public class WimpleImpl implements IWimpleImpl {
 	private final HandlerThread dispatchHandlerThread;
 	private final MainHandler mainHandler;   
 
+	private final EntryManager em = new EntryManager(this);
+	
 	private final RestAPIInvoker rai;
-
+	
 	private UserInfoDBHandler uidbh = null;
 
 
@@ -146,21 +148,21 @@ public class WimpleImpl implements IWimpleImpl {
 	private static Integer sequence = 10000;
 	private boolean isAuthed = false;
 
-	private static final class Path {
+	public static final class Path {
 
-		private static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
-		private static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
-		private static final String AUTH_ACCESS_TOKEN 	= "app_auth/access_token";
+		public static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
+		public static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
+		public static final String AUTH_ACCESS_TOKEN 	= "app_auth/access_token";
 
-		private static final String USER_INFO				= "api/user.json";
+		public static final String USER_INFO				= "api/user.json";
 
-		private static final String SECTIONS_ALL			= "api/sections.json";
-		private static final String SECTIONS_DEFAULT		= "api/sections/default.json";
+		public static final String SECTIONS_ALL			= "api/sections.json";
+		public static final String SECTIONS_DEFAULT		= "api/sections/default.json";
 
-		private static final String ACCOUNT_ALL			= "api/accounts.json";
+		public static final String ACCOUNT_ALL			= "api/accounts.json";
 
-		private static final String ENTRIES_ALL			= "api/entries.json_array";
-		private static final String ENTRIES_LATEST		= "api/entries/latest.json_array";
+		public static final String ENTRIES_ALL			= "api/entries.json_array";
+		public static final String ENTRIES_LATEST		= "api/entries/latest.json_array";
 
 	};
 
@@ -215,15 +217,19 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-
-
+	/*
+	 * Utils
+	 */
+	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){
+		return rai.invokeRESTAPI(method, path, params);
+	}
 
 
 	/*
 	 * Handler
 	 */
 
-	private static final class CommandID {
+	public static final class CommandID {
 
 		private CommandID() {}
 
@@ -241,7 +247,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_GET_ACCOUNT_ALL = CMD_BASE + 15;
 		public static final int CMD_GET_ENTRIES = CMD_BASE + 17;
 		public static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 19;
-
+		public static final int CMD_POST_ENTRY = CMD_BASE + 21;		
 
 	}
 
@@ -653,14 +659,14 @@ public class WimpleImpl implements IWimpleImpl {
 
 	}
 
+
 	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate){
 
 		if(false == isAuthed){
 			return false;
 		}
 
-		new GetAllEntriesTaskThread(sectionID, latestDate, oldestDate, 0).start();		
-		return true;
+		return em.getAllEntries(sectionID, latestDate, oldestDate);
 	}
 
 	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate, int count){
@@ -669,64 +675,9 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		new GetAllEntriesTaskThread(sectionID, latestDate, oldestDate, count).start();		
-		return true;
+		return em.getAllEntries(sectionID, latestDate, oldestDate, count);
 	}
 
-	private class GetAllEntriesTaskThread extends Thread{
-
-		final String sectionID;
-		final String latestDate;
-		final String oldestDate;
-		final int count;
-
-		GetAllEntriesTaskThread(String sectionID, String latestDate, String oldestDate, int count){
-			this.sectionID = sectionID;
-			this.latestDate = latestDate;
-			this.oldestDate = oldestDate;
-			this.count = count;
-		}
-
-		@Override
-		public void run() {
-
-			Collection<Entry> list = new ArrayList<Entry>();
-			String path = "?section_id=" + sectionID + "&start_date=" + oldestDate + "&end_date=" + latestDate;
-
-			if(0 > count){
-				path += "&limit=" + count;
-			}
-
-			JSONObject json = rai.invokeGET(Path.ENTRIES_ALL + path);
-			if(null == json){
-				sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
-				return;
-			}
-
-			JSONObject results = (JSONObject) json.get("results");
-			for(Object type : results.keySet()){
-
-				if(0 != type.toString().compareTo("rows")){
-					continue;
-				}
-
-				JSONArray rows  = (JSONArray) results.get(type);
-				for(int i = 0; i < rows.size(); i++){
-					JSONObject row = (JSONObject) rows.get(i);
-
-					if(0 == row.get("l_account_id").toString().compareToIgnoreCase("x0") ||
-							0 == row.get("r_account_id").toString().compareToIgnoreCase("x0") ){
-						// TODO : handle this as removed item.
-						continue;
-					}
-
-					list.add(new Entry(row));
-				}
-			}
-			sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
-		}			
-
-	}
 
 	public boolean getLatestEntries(String sectionID, int count){
 
@@ -734,61 +685,17 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		new GetLatestEntriesTaskThread(sectionID, count).start();		
-		return true;
+		return em.getLatestEntries(sectionID, count);
 	}
 
-	private class GetLatestEntriesTaskThread extends Thread{
-
-		final String sectionID;
-		final int count;
-
-		GetLatestEntriesTaskThread(String sectionID, int count){
-			this.sectionID = sectionID;
-			this.count = count;
+	public boolean makeEntry(Long date, Account left, Account right, 
+			String title, Double amount, String memo){
+		if(false == isAuthed){
+			return false;
 		}
 
-		@Override
-		public void run() {
-
-			Collection<Entry> list = new ArrayList<Entry>();
-			String path = "?section_id=" + sectionID;
-
-			if(0 > count){
-				path += "&limit=" + count;
-			}
-
-			JSONObject json = rai.invokeGET(Path.ENTRIES_LATEST + path);
-
-			if(null == json){
-				sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
-				return;
-			}
-
-			JSONArray results = (JSONArray) json.get("results");
-			for(int i = 0; i < results.size(); i++){
-				JSONObject row = (JSONObject) results.get(i);
-
-				if(0 == row.get("l_account_id").toString().compareToIgnoreCase("x0") ||
-						0 == row.get("r_account_id").toString().compareToIgnoreCase("x0") ){
-					// TODO : handle this as removed item.
-					continue;
-				}
-
-				Entry item = new Entry(row);
-				String balance = row.get("total").toString();
-				if(null != balance && 
-						false == balance.isEmpty()){
-					item.setBalance(balance);
-				}
-
-				list.add(new Entry(row));
-			}
-			sm(CommandID.CMD_GET_LATEST_ENTRIES, 1, 0, list);
-		}			
-
+		return em.makeEntry(firstSectionID, date, left, right, title, amount, memo);
 	}
-
 	/*
 	private class InvokeRESTAPITaskThread extends Thread {
 
