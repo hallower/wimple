@@ -25,9 +25,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 	private int selectedGroupPosition;
 	private int selectedChildPosition;
 
+	public ExpandableListAdapter(Context context) {
+		this._context = context;
+	}
+	
 	public ExpandableListAdapter(Context context, List<String> listDataHeader,
 			Map<String, List<Account>> listChildData) {
-		this._context = context;
+		this(context);
 		this._listDataHeader = listDataHeader;
 		this._listDataChild = listChildData;
 	}
@@ -91,7 +95,11 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 
 	@Override
 	public int getGroupCount() {
-		return this._listDataHeader.size();
+		try{
+			return this._listDataHeader.size();
+		}catch(Exception e){
+			return 0;
+		}
 	}
 
 	@Override

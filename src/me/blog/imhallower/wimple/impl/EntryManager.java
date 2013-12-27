@@ -223,7 +223,7 @@ public class EntryManager {
 			}
 
 			wimpl.sm(CommandID.CMD_POST_ENTRY, 1, 0, "");
-		}			
+		}
 
 	}
 }

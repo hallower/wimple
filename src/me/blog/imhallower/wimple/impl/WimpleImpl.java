@@ -67,7 +67,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private static IWimpleResponseListener responseListener = new IWimpleResponseListener(){
 
 		@Override
-		public void onGetAllSectionReceived(boolean status, Collection<Section> list) {}
+		public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {}
 
 		@Override
 		public void onGetAuthTempToken(boolean status, String tempToken) {}
@@ -76,16 +76,19 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onGetAuthAccessToken(boolean status, Map<String, String> result) {}
 
 		@Override
-		public void onGetUserInfoReceived(boolean status, UserInfo info) { }
+		public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { }
 
 		@Override
-		public void onGetAllAccountReceived(boolean status, Collection<Account> list) {}
+		public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {}
 
 		@Override
-		public void onGetEntriesReceived(boolean status, Collection<Entry> list) {}
+		public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {}
 
 		@Override
-		public void onGetLatestEntriesReceived(boolean status, Collection<Entry> list) { }
+		public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) { }
+
+		@Override
+		public void onMakeEntryResponseReceived(boolean status) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -320,25 +323,29 @@ public class WimpleImpl implements IWimpleImpl {
 			break;
 
 			case CommandID.CMD_GET_USER_INFO :
-				responseListener.onGetUserInfoReceived(booleanStatus, (UserInfo) obj);
+				responseListener.onGetUserInfoResponseReceived(booleanStatus, (UserInfo) obj);
 				break;
 
 			case CommandID.CMD_GET_SECTIONS :
-				responseListener.onGetAllSectionReceived(booleanStatus, (Collection<Section>) obj);
+				responseListener.onGetAllSectionResponseReceived(booleanStatus, (Collection<Section>) obj);
 				break;
 
 			case CommandID.CMD_GET_ACCOUNT_ALL :
-				responseListener.onGetAllAccountReceived(booleanStatus, (Collection<Account>) obj);
+				responseListener.onGetAllAccountResponseReceived(booleanStatus, (Collection<Account>) obj);
 				break;
 
 			case CommandID.CMD_GET_ENTRIES :
-				responseListener.onGetEntriesReceived(booleanStatus, (Collection<Entry>) obj);
+				responseListener.onGetEntriesResponseReceived(booleanStatus, (Collection<Entry>) obj);
 				break;
 
 			case CommandID.CMD_GET_LATEST_ENTRIES :
-				responseListener.onGetLatestEntriesReceived(booleanStatus, (Collection<Entry>) obj);
+				responseListener.onGetLatestEntriesResponseReceived(booleanStatus, (Collection<Entry>) obj);
 				break;
 
+			case CommandID.CMD_POST_ENTRY :
+				responseListener.onMakeEntryResponseReceived(booleanStatus);
+				break;
+				
 			default : 
 				break;
 

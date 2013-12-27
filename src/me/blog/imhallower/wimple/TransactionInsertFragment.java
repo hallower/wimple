@@ -22,21 +22,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TransactionInsertFragment extends Fragment implements IWimpleFragment{
 
 	private final static String LOG_TAG = "TransactionFragment";
-	
+
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
-	
+
 	private DecimalFormat format = new DecimalFormat("#######.##########");
 	private static int[] padRIDs = null;
 
@@ -48,10 +50,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private ExpandableListView rightAccountListView;
 
 	private TextView[] buttons;
-	private TextView amount;
+	private TextView txtAmount;
+	private EditText txtTitle;
 
 	private List<String> listDataHeader = new ArrayList<String>();
-	private Map<String, List<Account>> listDataChild = new HashMap<String, List<Account>>();
 
 	// 
 	Calculator cal = new Calculator();
@@ -83,34 +85,34 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		// Data 
 		view = (LinearLayout)inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
 		//synchronized(TransactionInsertFragment.class){
-			if(null == padRIDs)
-			{
-				TypedArray ar = context.getResources().obtainTypedArray(R.array.number_buttons);
+		if(null == padRIDs)
+		{
+			TypedArray ar = context.getResources().obtainTypedArray(R.array.number_buttons);
 
-				int len = ar.length();
-				padRIDs = new int[len];
-				for(int cnt = 0; cnt < len ; cnt++){
-					padRIDs[cnt] = ar.getResourceId(cnt, 0);
-				}
-				ar.recycle();        
+			int len = ar.length();
+			padRIDs = new int[len];
+			for(int cnt = 0; cnt < len ; cnt++){
+				padRIDs[cnt] = ar.getResourceId(cnt, 0);
 			}
+			ar.recycle();        
+		}
 		//}
-		
-		
-		// View, Widget
-		
+
+
 		listDataHeader.add("자산");
 		listDataHeader.add("부채");
 		listDataHeader.add("자본");
 		listDataHeader.add("수입");
-		listDataHeader.add("지출");
+		listDataHeader.add("지출");		
 
-		leftAccountListAdapter = new ExpandableListAdapter(context, listDataHeader, listDataChild);
+		// View, Widget
+
+		leftAccountListAdapter = new ExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
-		
+
 		leftAccountListView.setOnChildClickListener(new OnChildClickListener() {
-			
+
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
@@ -118,13 +120,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				return false;
 			}
 		});
-		
-		rightAccountListAdapter = new ExpandableListAdapter(context, listDataHeader, listDataChild);
+
+		rightAccountListAdapter = new ExpandableListAdapter(context);
 		rightAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_right);
 		rightAccountListView.setAdapter(rightAccountListAdapter);
 
 		rightAccountListView.setOnChildClickListener(new OnChildClickListener() {
-			
+
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
@@ -133,21 +135,35 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 
-		amount = (TextView) view.findViewById(R.id.insert_amount);
+		txtAmount = (TextView) view.findViewById(R.id.insert_amount);
+		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
 
 		ImageView submit = (ImageView) view.findViewById(R.id.insert_submit);
 		submit.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
+
+				if(false == validateForms()){
+					return;
+				}
+
+				Double amount = 0.0; 
+				try{
+					amount = Double.parseDouble(txtAmount.getText().toString());
+				}catch(Exception e){
+					Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
+					return;
+				}
+
 				wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
 						leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
-						"test", 11111.0, "memo");
+						txtTitle.getText().toString(), amount, "memo");
 			}
 		});
-		
+
 		// post.. 
-		
+
 		buttons = new TextView[padRIDs.length];
 		for(int i = 0; i < padRIDs.length ; i++){
 			buttons[i] = (TextView) view.findViewById(padRIDs[i]);
@@ -184,7 +200,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					case R.id.insert_pad_back : result = cal.shiftBack(); break;
 
 					}					
-					amount.setText(format.format(result));
+					txtAmount.setText(format.format(result));
 				}
 
 			});
@@ -195,6 +211,31 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		return view;
 	}
 
+	private boolean validateForms() {
+		if(null == txtTitle.getText().toString() ||
+				txtTitle.getText().toString().isEmpty()){
+			Log.e(LOG_TAG, "Invalid entry title.");
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_title), 
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}
+
+		if(null == txtAmount.getText().toString() ||
+				txtAmount.getText().toString().isEmpty()){
+			Log.e(LOG_TAG, "Invalid entry amount.");
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}
+
+		return true;
+	}
+
+	private void cleanForms(){
+		txtTitle.setText("");
+		txtAmount.setText("");
+		// TODO : clear account selection
+	}
 
 	@SuppressWarnings("unchecked")
 	public void handleMessage(Message msg) {
@@ -245,21 +286,54 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}
 			}
 
-			listDataChild.clear();
-			listDataChild.put(listDataHeader.get(0), assets);
-			listDataChild.put(listDataHeader.get(1), liabilities);
-			listDataChild.put(listDataHeader.get(2), capital);
-			listDataChild.put(listDataHeader.get(3), income);
-			listDataChild.put(listDataHeader.get(4), expenses);
-		
-			leftAccountListAdapter.setData(listDataHeader, listDataChild);
-			leftAccountListAdapter.notifyDataSetChanged();
-			rightAccountListAdapter.setData(listDataHeader, listDataChild);
-			rightAccountListAdapter.notifyDataSetChanged();
+			{
+				List<String> lHeader = new ArrayList<String>();
+				lHeader.add(listDataHeader.get(0));
+				lHeader.add(listDataHeader.get(1));
+				lHeader.add(listDataHeader.get(2));
+				lHeader.add(listDataHeader.get(4));
+
+				Map<String, List<Account>> lChild = new HashMap<String, List<Account>>();
+				lChild.put(lHeader.get(0), assets);
+				lChild.put(lHeader.get(1), liabilities);
+				lChild.put(lHeader.get(2), capital);
+				lChild.put(lHeader.get(3), expenses);
+
+				leftAccountListAdapter.setData(lHeader, lChild);
+				leftAccountListAdapter.notifyDataSetChanged();	
+			}
+
+			{
+				List<String> rHeader = new ArrayList<String>();
+				rHeader.add(listDataHeader.get(0));
+				rHeader.add(listDataHeader.get(1));
+				rHeader.add(listDataHeader.get(2));
+				rHeader.add(listDataHeader.get(3));
+
+				Map<String, List<Account>> rChild = new HashMap<String, List<Account>>();
+				rChild.put(rHeader.get(0), assets);
+				rChild.put(rHeader.get(1), liabilities);
+				rChild.put(rHeader.get(2), capital);
+				rChild.put(rHeader.get(3), income);
+
+				rightAccountListAdapter.setData(rHeader, rChild);
+				rightAccountListAdapter.notifyDataSetChanged();	
+			}			
 
 			break;			
 		}
 
+		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
+		{
+			Boolean result = Boolean.parseBoolean(obj.toString());
+			if(result){
+				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
+				cleanForms();
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+			}
+		}	
+		break;
 
 		}
 	}
