@@ -2,6 +2,7 @@ package me.blog.imhallower.wimple;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -105,13 +108,43 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		leftAccountListAdapter = new ExpandableListAdapter(context, listDataHeader, listDataChild);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
-
+		
+		leftAccountListView.setOnChildClickListener(new OnChildClickListener() {
+			
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v,
+					int groupPosition, int childPosition, long id) {
+				leftAccountListAdapter.setSelected(groupPosition, childPosition, id);
+				return false;
+			}
+		});
+		
 		rightAccountListAdapter = new ExpandableListAdapter(context, listDataHeader, listDataChild);
 		rightAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_right);
 		rightAccountListView.setAdapter(rightAccountListAdapter);
 
+		rightAccountListView.setOnChildClickListener(new OnChildClickListener() {
+			
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v,
+					int groupPosition, int childPosition, long id) {
+				rightAccountListAdapter.setSelected(groupPosition, childPosition, id);
+				return false;
+			}
+		});
+
 		amount = (TextView) view.findViewById(R.id.insert_amount);
 
+		ImageView submit = (ImageView) view.findViewById(R.id.insert_submit);
+		submit.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
+						leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
+						"test", 11111.0, "memo");
+			}
+		});
 		
 		// post.. 
 		
@@ -218,7 +251,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			listDataChild.put(listDataHeader.get(2), capital);
 			listDataChild.put(listDataHeader.get(3), income);
 			listDataChild.put(listDataHeader.get(4), expenses);
-
+		
 			leftAccountListAdapter.setData(listDataHeader, listDataChild);
 			leftAccountListAdapter.notifyDataSetChanged();
 			rightAccountListAdapter.setData(listDataHeader, listDataChild);

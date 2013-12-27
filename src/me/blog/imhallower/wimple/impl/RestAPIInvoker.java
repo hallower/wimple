@@ -23,7 +23,7 @@ public class RestAPIInvoker {
 	private static final String LOG_TAG = "RestAPIInvoker";
 	private final IWimpleImpl wimple;
 	
-	private enum HTTP_METHOD { GET, POST, PUT, DELETE }
+	public enum HTTP_METHOD { GET, POST, PUT, DELETE }
 
 	public RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;
@@ -42,7 +42,7 @@ public class RestAPIInvoker {
 	}
 
 	
-	private JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){		
+	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){		
 
 		Client client = null;
 		WebResource webResource = null;

@@ -1,5 +1,10 @@
 package me.blog.imhallower.wimple.impl;
 
+import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+
+import org.json.simple.JSONObject;
+
+
 public interface IWimpleImpl {
 
 	public abstract String getServicehost();
@@ -18,4 +23,13 @@ public interface IWimpleImpl {
 
 	public abstract Boolean isAuthed();
 	
+	
+	
+	public void sm(int cmd, Object msg);
+
+	public void sm(int cmd, int a1, int a2, Object msg);
+	
+	
+	
+	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params);
 }
