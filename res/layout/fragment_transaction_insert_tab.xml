@@ -147,14 +147,14 @@
                         android:textSize="20sp" />
 
                     <TextView
-                        android:id="@+id/insert_pad_divide"
+                        android:id="@+id/insert_pad_back"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:padding="3dp"
-                        android:text="@string/pad_divide"
+                        android:text="@string/pad_back"
                         android:textSize="20sp" />
 
                     <TextView
@@ -383,7 +383,7 @@
                 android:id="@+id/insert_category_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"                
+                android:layout_marginTop="10dp"
                 android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
