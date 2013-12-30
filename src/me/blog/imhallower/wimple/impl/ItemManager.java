@@ -12,11 +12,18 @@ import me.blog.imhallower.wimple.model.Item;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import android.util.Log;
+
 public class ItemManager {
 
 	private static final String LOG_TAG = "ItemManager";
 	
-	private final IWimpleImpl wimpl;	
+	private final IWimpleImpl wimpl;
+	
+	
+	// TODO : DBMS
+	private Collection<Item> listLatestItem; 
+	
 
 	public ItemManager(IWimpleImpl wimpl) {
 		super();
@@ -67,23 +74,31 @@ public class ItemManager {
 	}
 
 	
-	public boolean getLatestItems(String sectionID){
+	public boolean getLatestItems(String sectionID, boolean forceUpdate){
 
-		new GetLatestItemsTaskThread(sectionID).start();		
+		new GetLatestItemsTaskThread(sectionID, forceUpdate).start();		
 		return true;
 	}
 	
 	private class GetLatestItemsTaskThread extends Thread{
 
 		final String sectionID;
+		final boolean forceUpdate;
 
-		GetLatestItemsTaskThread(String sectionID){
+		GetLatestItemsTaskThread(String sectionID, boolean forceUpdate){
 			this.sectionID = sectionID;
+			this.forceUpdate = forceUpdate;
 		}
 
 		@Override
 		public void run() {
 
+			if(null != listLatestItem &&
+					false == forceUpdate){
+				Log.d(LOG_TAG, "Providing GetLatestItems from Cache!!!");
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, listLatestItem);
+			}
+			
 			Collection<Item> list = new ArrayList<Item>();
 			String path = "?section_id=" + sectionID;
 
@@ -91,6 +106,7 @@ public class ItemManager {
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_LATEST + path, "");
 
 			if(null == json){
+				Log.d(LOG_TAG, "Failed - GetLatestItems from Server!!!");
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 				return;
 			}
@@ -101,7 +117,9 @@ public class ItemManager {
 
 				list.add(new Item(row));
 			}
-			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, list);
+			listLatestItem = list;
+			Log.d(LOG_TAG, "Providing GetLatestItems from Server!!!");
+			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, listLatestItem);
 		}			
 
 	}

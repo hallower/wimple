@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-public class ExpandableListAdapter extends BaseExpandableListAdapter{
+public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	private Context context;
 	private static final String LOG_TAG = "ExpandableListAdapter";
 
@@ -26,11 +26,11 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 	private int selectedGroupPosition = -1;
 	private int selectedChildPosition = -1;
 
-	public ExpandableListAdapter(Context context) {
+	public AccountExpandableListAdapter(Context context) {
 		this.context = context;
 	}
 	
-	public ExpandableListAdapter(Context context, List<String> listDataHeader,
+	public AccountExpandableListAdapter(Context context, List<String> listDataHeader,
 			Map<String, List<Account>> listChildData) {
 		this(context);
 		this.listDataHeader = listDataHeader;
@@ -41,6 +41,15 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 			Map<String, List<Account>> listChildData) {
 		this.listDataHeader = listDataHeader;
 		this.listDataChild = listChildData;
+	}
+	
+	public void clear(){
+		try{
+			this.listDataHeader.clear();
+			this.listDataChild.clear();
+		}catch(Exception e){
+			// ignore
+		}		
 	}
 
 	@Override
@@ -77,7 +86,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 		
 		if(groupPosition == selectedGroupPosition &&
 				childPosition == selectedChildPosition){
-			txtListChild.setTextColor(Color.RED);
+			txtListChild.setTextColor(context.getResources().getColor(R.color.text_blue));
 		}else{
 			txtListChild.setTextColor(context.getResources().getColor(R.color.text_basic));
 		}
@@ -188,5 +197,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 		}
 
 		return (Account) getChild(selectedGroupPosition, selectedChildPosition);
+	}
+	
+	public boolean isSelected(){
+		return (this.selectedGroupPosition != -1) && (this.selectedChildPosition != -1);
 	}
 }
