@@ -37,6 +37,9 @@
     
     <string name="transaction_monthly">월별 거래들</string>
     
+    <string name="insert_item_title">아이템</string>
+    <string name="insert_left_accounts">왼쪽</string>
+    <string name="insert_right_accounts">오른쪽</string>
     <string name="insert_invalid_title">거래 제목을 확인해 주세요.</string>
     <string name="insert_invalid_amount">거래 금액을 확인해 주세요.</string>
     <string name="insert_success">거래가 성공적으로 입력 되었습니다.</string>

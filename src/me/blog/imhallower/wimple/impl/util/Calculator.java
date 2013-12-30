@@ -29,15 +29,15 @@ public class Calculator {
 		right = 0.0;
 
 		resetStackedValue();
-
-		pointPosition = -1;
-		insertingPosition = 0;
 	}
 
 	private void resetStackedValue(){
 		for(int i = 0; i< numbers.length; i++){
 			numbers[i] = 0;
 		}
+		
+		pointPosition = -1;
+		insertingPosition = 0;
 	}
 
 	public Double shift(int value){
@@ -78,7 +78,7 @@ public class Calculator {
 
 		}else{
 
-			for(int idx=0, mul=insertingPosition - 1 ; idx < insertingPosition ; idx++, mul--){
+			for(int idx=0, mul=insertingPosition - 1 ; idx < insertingPosition && idx < NUMBER_SIZE ; idx++, mul--){
 				if(mul == 0){
 					res += numbers[idx];	
 				}else{
@@ -104,6 +104,7 @@ public class Calculator {
 
 	private void resetPointInserting(){
 		isPointInserting = false;
+		pointPosition = -1;
 	}
 
 	private void calculate(){
@@ -138,36 +139,36 @@ public class Calculator {
 	}
 
 	public Double plus(){
-		resetPointInserting();
 		calculate();
+		resetPointInserting();
 		this.op = OPERATOR.PLUS;
 		return left;
 	}
 
 	public Double minus(){
-		resetPointInserting();
 		calculate();
+		resetPointInserting();
 		this.op = OPERATOR.MIN;
 		return left;
 	}
 
 	public Double multiply(){
-		resetPointInserting();
 		calculate();
+		resetPointInserting();
 		this.op = OPERATOR.MUL;
 		return left;
 	}
 
 	public Double divide(){
-		resetPointInserting();
 		calculate();
+		resetPointInserting();
 		this.op = OPERATOR.DIV;
 		return left;
 	}
 
 	public Double eq(){
-		resetPointInserting();
 		calculate();
+		resetPointInserting();
 		this.op = OPERATOR.NONE;
 		return left;
 	}
@@ -210,6 +211,13 @@ public class Calculator {
 			resetPointInserting();
 		}
 		Log.d(LOG_TAG, "AFTER inserting=" + insertingPosition + ", pointPos=" + pointPosition);
+		return getStackedValue();
+	}
+	
+	public Double setValue(Double value){
+		resetPointInserting();
+		init();
+		left = value;
 		return getStackedValue();
 	}
 }

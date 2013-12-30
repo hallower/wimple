@@ -1,17 +1,20 @@
 package me.blog.imhallower.wimple;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import me.blog.imhallower.wimple.WimpleActivity.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.impl.util.Calculator;
 import me.blog.imhallower.wimple.model.Account;
+import me.blog.imhallower.wimple.model.Item;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -22,11 +25,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +46,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private static View view = null;
 	private static Context context = null;
 
-	private DecimalFormat format = new DecimalFormat("#######.##########");
+	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("ko", "KR"));
+	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
+	private static final String formatPattern = "###,###.####";	
 	private static int[] padRIDs = null;
 
 	// Widget
@@ -53,16 +62,24 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private TextView txtAmount;
 	private EditText txtTitle;
 
+	// Data
 	private List<String> listDataHeader = new ArrayList<String>();
-
+	
+	private ListView listViewLatestItems;
+	private ArrayAdapter<Item> adapterLatestItems; 
+	
 	// 
-	Calculator cal = new Calculator();
+	private Calculator cal = new Calculator();
 
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
 	 */
 
+	
+	static {
+		formatCalcNum.applyPattern("###,###.####");
+	}
 
 	@Override
 	public void onResume() {
@@ -73,7 +90,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
-		wimple.getAllAccounts(wimple.firstSectionID);
+		wimple.getAllAccounts();
+		wimple.getLatestItems();
+		wimple.getFrequentItems();
 	}
 
 	@Override
@@ -107,6 +126,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		// View, Widget
 
+		
+		// Account
 		leftAccountListAdapter = new ExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
@@ -162,6 +183,21 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 
+		// latest items
+		List<Item> latestItems = new ArrayList<Item>();
+		listViewLatestItems = (ListView) view.findViewById(R.id.insert_frequent_items);
+		adapterLatestItems = new ArrayAdapter<Item>(context, R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems);
+		listViewLatestItems.setAdapter(adapterLatestItems);
+		listViewLatestItems.setOnItemClickListener(new OnItemClickListener(){
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				selectLatestItem(position);
+			}
+			
+		});
+		
 		// post.. 
 
 		buttons = new TextView[padRIDs.length];
@@ -199,8 +235,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					case R.id.insert_pad_clear : result = cal.clear(); break;
 					case R.id.insert_pad_back : result = cal.shiftBack(); break;
 
-					}					
-					txtAmount.setText(format.format(result));
+					}
+					setAmountText(result);
 				}
 
 			});
@@ -209,6 +245,39 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 
 		return view;
+	}
+	
+	private void setAmountText(Double amount){
+		//cal.setValue(selected.getAmount());
+		txtAmount.setText(formatCalcNum.format(amount));
+	}
+	
+	private void selectLatestItem(int position) {
+		Item selected = null;
+		
+		try{
+			selected = adapterLatestItems.getItem(position);
+		}catch(Exception e){
+			e.printStackTrace();
+			Log.e(LOG_TAG, "Failed to select latest Item!!!, position=" + position);
+			return;
+		}
+				
+		txtTitle.setText(selected.getItem());
+		cal.setValue(selected.getAmount());
+		setAmountText(selected.getAmount());
+						
+		int selectedLeftGroup = leftAccountListAdapter.setSelected(selected.getLeftAccountID());
+		if(selectedLeftGroup > -1){
+			leftAccountListView.expandGroup(selectedLeftGroup);
+			leftAccountListView.setSelection(selectedLeftGroup);
+		}
+		
+		int selectedRightGroup = rightAccountListAdapter.setSelected(selected.getRightAccountID());
+		if(selectedRightGroup > -1){
+			rightAccountListView.expandGroup(selectedRightGroup);
+			rightAccountListView.setSelection(selectedRightGroup);
+		}
 	}
 
 	private boolean validateForms() {
@@ -232,8 +301,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void cleanForms(){
-		txtTitle.setText("");
-		txtAmount.setText("");
+		txtTitle.setText("");		
+		setAmountText(0.0);
 		// TODO : clear account selection
 	}
 
@@ -324,17 +393,38 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 
 		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
-		{
-			Boolean result = Boolean.parseBoolean(obj.toString());
-			if(result){
+		{			
+			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
 				cleanForms();
+				wimple.getLatestItems();
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 			}
 		}	
 		break;
 
+		case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
+		{
+			// TODO : test for frequent items
+		}
+		break;
+		
+		case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
+		{			
+		}
+		break;
+
+		case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
+		{
+			if(booleanStatus){
+				adapterLatestItems.clear();
+				adapterLatestItems.addAll((List<Item>) obj);
+				adapterLatestItems.notifyDataSetChanged();
+			}	
+		}
+		break;
+		
 		}
 	}
 

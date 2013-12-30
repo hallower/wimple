@@ -39,7 +39,7 @@
                     android:layout_marginLeft="12dp"
                     android:layout_marginTop="12dp"
                     android:scaleType="fitXY"
-                    android:src="@drawable/profile_line" />
+                    android:src="@drawable/white_box" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -71,7 +71,7 @@
                     android:layout_marginLeft="79dp"
                     android:layout_marginTop="52dp"
                     android:scaleType="fitXY"
-                    android:src="@drawable/list_progress_n" />
+                    android:src="@drawable/progress_n" />
 
                 <ImageView
                     android:id="@+id/my_profile_progress"
@@ -80,7 +80,7 @@
                     android:layout_marginLeft="79dp"
                     android:layout_marginTop="52dp"
                     android:scaleType="fitXY"
-                    android:src="@drawable/list_progress_p" />
+                    android:src="@drawable/progress_p" />
             </RelativeLayout>
 
             <LinearLayout
