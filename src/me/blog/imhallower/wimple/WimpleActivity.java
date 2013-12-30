@@ -382,7 +382,9 @@ ActionBar.TabListener {
 			@Override
 			public void onLoggedIn(boolean status) {
 				if(status){
-					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");	
+					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");
+					wimple.getAllAccounts();
+					wimple.getLatestItems();
 				}else{
 					sm(CommandID.WIMPLE_LOGGIN_FAILED, "");
 				}

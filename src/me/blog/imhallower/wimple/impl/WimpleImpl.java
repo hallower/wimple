@@ -3,7 +3,9 @@ package me.blog.imhallower.wimple.impl;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
@@ -35,6 +37,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private final HandlerThread dispatchHandlerThread;
 	private final MainHandler mainHandler;   
 
+	// subsystems
 	private final EntryManager em = new EntryManager(this);
 	private final ItemManager im = new ItemManager(this);
 	
@@ -42,6 +45,9 @@ public class WimpleImpl implements IWimpleImpl {
 	
 	private UserInfoDBHandler uidbh = null;
 
+	// static references
+	private static final Locale locale = new Locale("ko", "KR");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 
 	// Temporary!!!
 	public String firstSectionID;
@@ -589,7 +595,7 @@ public class WimpleImpl implements IWimpleImpl {
 		}.start();		
 		return true;
 	}
-
+	
 	public boolean getAllAccounts(){
 
 		if(false == isAuthed ||
@@ -628,16 +634,43 @@ public class WimpleImpl implements IWimpleImpl {
 		public void run() {
 
 			// TODO : accountList update!!!
+			// TODO : DBMS
 			if(null != accountList){
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, accountList);
+				
+				Collection<Account> list = new ArrayList<Account>();
+				for(Account item : accountList){
+					String open = item.getOpenedDate();
+					String closed = item.getClosedDate();
+				
+					try{
+						sdf.setLenient(false);
+						Date itemDate = sdf.parse(dateFilter);
+						
+						Date openDate = sdf.parse(open);
+						Date closedDate = sdf.parse(closed);
+
+						if(itemDate.getTime() >= openDate.getTime() &&
+								itemDate.getTime() <= closedDate.getTime()){
+							list.add(item);
+						}
+
+					}
+					catch(Exception e){
+						Log.d(LOG_TAG, "Providing GetAllAccountsTaskThread from Cache!!!");
+						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, accountList);
+						return;
+					}					
+					
+				}
+				Log.d(LOG_TAG, "Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 				return;
 			}
 
 			String path = "?section_id=" + sectionID;
 
 			if(false == dateFilter.isEmpty()){				
-				try{		
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+				try{
 					sdf.setLenient(false);
 					sdf.parse(dateFilter);
 
@@ -667,7 +700,8 @@ public class WimpleImpl implements IWimpleImpl {
 					}
 				}
 			} catch(Exception e){
-				e.printStackTrace();
+				Log.e(LOG_TAG, "Failed - GetAllAccountsTaskThread!!!");
+				e.printStackTrace();				
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 			}
 
@@ -675,6 +709,7 @@ public class WimpleImpl implements IWimpleImpl {
 			accountList = list;	
 			accountSectionID = sectionID;
 
+			Log.d(LOG_TAG, "Providing GetAllAccountsTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
 		}			
 
@@ -731,7 +766,15 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		
-		return im.getLatestItems(firstSectionID);
+		return im.getLatestItems(firstSectionID, false);
+	}
+	
+	public boolean getLatestItems(boolean forceUpdate){
+		if(false == isAuthed){
+			return false;
+		}
+		
+		return im.getLatestItems(firstSectionID, forceUpdate);
 	}
 	/*
 	private class InvokeRESTAPITaskThread extends Thread {

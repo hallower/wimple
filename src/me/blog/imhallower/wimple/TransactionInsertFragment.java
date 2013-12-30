@@ -2,6 +2,7 @@ package me.blog.imhallower.wimple;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -46,14 +47,17 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private static View view = null;
 	private static Context context = null;
 
-	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("ko", "KR"));
+	private static final Locale locale = new Locale("ko", "KR");
+	private static final SimpleDateFormat sdfForGUI = new SimpleDateFormat("MM-dd", locale);
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
+	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
 	private static final String formatPattern = "###,###.####";	
 	private static int[] padRIDs = null;
-
+	
 	// Widget
-	private ExpandableListAdapter leftAccountListAdapter;
-	private ExpandableListAdapter rightAccountListAdapter;
+	private AccountExpandableListAdapter leftAccountListAdapter;
+	private AccountExpandableListAdapter rightAccountListAdapter;
 
 	private ExpandableListView leftAccountListView;
 	private ExpandableListView rightAccountListView;
@@ -61,12 +65,15 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private TextView[] buttons;
 	private TextView txtAmount;
 	private EditText txtTitle;
+	private TextView txtItemDate; 
 
 	// Data
 	private List<String> listDataHeader = new ArrayList<String>();
 	
 	private ListView listViewLatestItems;
-	private ArrayAdapter<Item> adapterLatestItems; 
+	private ArrayAdapter<Item> adapterLatestItems;
+	
+	private Long itemDate = Calendar.getInstance().getTimeInMillis();
 	
 	// 
 	private Calculator cal = new Calculator();
@@ -90,9 +97,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
-		wimple.getAllAccounts();
+		wimple.getAllAccounts(sdf.format(this.itemDate));
 		wimple.getLatestItems();
-		wimple.getFrequentItems();
 	}
 
 	@Override
@@ -126,9 +132,32 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		// View, Widget
 
+		txtItemDate = (TextView) view.findViewById(R.id.insert_date);
+		setupItemDate(Calendar.getInstance().getTimeInMillis());
+		
+		ImageView ivYesterday = (ImageView) view.findViewById(R.id.insert_yesterday);
+		ivYesterday.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				Long newDate = itemDate - 24 * 60 * 60 * 1000;
+				setupItemDate(newDate);
+			}
+			
+		});
+		ImageView ivTomorrow = (ImageView) view.findViewById(R.id.insert_tomorrow);
+		ivTomorrow.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				Long newDate = itemDate + 24 * 60 * 60 * 1000;
+				setupItemDate(newDate);
+			}
+			
+		});
 		
 		// Account
-		leftAccountListAdapter = new ExpandableListAdapter(context);
+		leftAccountListAdapter = new AccountExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
 
@@ -142,7 +171,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 
-		rightAccountListAdapter = new ExpandableListAdapter(context);
+		rightAccountListAdapter = new AccountExpandableListAdapter(context);
 		rightAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_right);
 		rightAccountListView.setAdapter(rightAccountListAdapter);
 
@@ -169,17 +198,15 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					return;
 				}
 
-				Double amount = 0.0; 
-				try{
-					amount = Double.parseDouble(txtAmount.getText().toString());
-				}catch(Exception e){
+				Double amount = getAmountValue();
+				if(amount < 0){
 					Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 					return;
 				}
 
 				wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
 						leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
-						txtTitle.getText().toString(), amount, "memo");
+						txtTitle.getText().toString(), amount, "");
 			}
 		});
 
@@ -246,10 +273,27 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		return view;
 	}
+
+	private void setupItemDate(Long date) {
+		this.itemDate = date;
+		txtItemDate.setText(sdfForGUI.format(this.itemDate));
+		wimple.getAllAccounts(sdf.format(this.itemDate));
+	}
 	
 	private void setAmountText(Double amount){
 		//cal.setValue(selected.getAmount());
 		txtAmount.setText(formatCalcNum.format(amount));
+	}
+	
+	private Double getAmountValue(){
+		Double amount = 0.0; 
+		try{
+			amount = nf.parse(txtAmount.getText().toString()).doubleValue();
+		}catch(Exception e){
+			Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
+			return -1.0;
+		}
+		return amount;
 	}
 	
 	private void selectLatestItem(int position) {
@@ -297,6 +341,19 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			return false;
 		}
 
+		if(false == this.leftAccountListAdapter.isSelected()){
+			Log.e(LOG_TAG, "left side account is not selected!!!");
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_left_accounts), 
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		if(false == this.rightAccountListAdapter.isSelected()){
+			Log.e(LOG_TAG, "right side account is not selected!!!");
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_right_accounts), 
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}
 		return true;
 	}
 
@@ -368,6 +425,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				lChild.put(lHeader.get(2), capital);
 				lChild.put(lHeader.get(3), expenses);
 
+				leftAccountListAdapter.clear();
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();	
 			}
@@ -385,6 +443,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rChild.put(rHeader.get(2), capital);
 				rChild.put(rHeader.get(3), income);
 
+				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
 			}			
