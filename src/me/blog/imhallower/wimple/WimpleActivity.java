@@ -10,6 +10,7 @@ import me.blog.imhallower.wimple.impl.IWimpleStatusListener;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
+import me.blog.imhallower.wimple.model.Item;
 import me.blog.imhallower.wimple.model.Section;
 import me.blog.imhallower.wimple.model.UserInfo;
 import android.annotation.SuppressLint;
@@ -86,6 +87,9 @@ ActionBar.TabListener {
 		public static final int WIMPLE_LOGGOUT = CMD_BASE + 17;
 		public static final int GET_ALL_SECTION_RECEIVED = CMD_BASE + 19;
 		public static final int GET_MAKE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 21;
+		public static final int GET_FREQUENT_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 23;
+		public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
+		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;		
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -452,8 +456,12 @@ ActionBar.TabListener {
 			@Override
 			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
 				// TODO : we have to save to DB and use it at initial time
-				Log.e(LOG_TAG, info.toString());
-				sm(CommandID.UPDATE_USER_INFO, info);
+				if(status){
+					Log.e(LOG_TAG, info.toString());
+					sm(CommandID.UPDATE_USER_INFO, info);	
+				}else{
+					Toast.makeText(context, "Login FaileD!!!!", Toast.LENGTH_LONG).show();
+				}
 			}
 
 			@Override
@@ -487,14 +495,24 @@ ActionBar.TabListener {
 
 			@Override
 			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {
-				for(Entry entry : list){
-					Log.d(LOG_TAG, entry.toString());
-				}
+				sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, status);
 			}
 
 			@Override
 			public void onMakeEntryResponseReceived(boolean status) {
 				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status);				
+			}
+
+			@Override
+			public void onGetFrequentItemsResponseReceived(boolean status,
+					Collection<Item> list) {
+				sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, list);
+			}
+
+			@Override
+			public void onGetLatestItemsResponseReceived(boolean status,
+					Collection<Item> list) {
+				sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, list);
 			}				
 
 		});
@@ -541,7 +559,10 @@ ActionBar.TabListener {
 				case CommandID.WIMPLE_LOGGOUT :
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
 				case CommandID.GET_ALL_SECTION_RECEIVED :
-				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED : 
+				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
+				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
+				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
+				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
 				{
 				
 					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);

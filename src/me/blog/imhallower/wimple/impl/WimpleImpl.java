@@ -11,6 +11,7 @@ import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
+import me.blog.imhallower.wimple.model.Item;
 import me.blog.imhallower.wimple.model.Section;
 import me.blog.imhallower.wimple.model.UserInfo;
 
@@ -35,6 +36,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private final MainHandler mainHandler;   
 
 	private final EntryManager em = new EntryManager(this);
+	private final ItemManager im = new ItemManager(this);
 	
 	private final RestAPIInvoker rai;
 	
@@ -68,27 +70,24 @@ public class WimpleImpl implements IWimpleImpl {
 
 		@Override
 		public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {}
-
 		@Override
 		public void onGetAuthTempToken(boolean status, String tempToken) {}
-
 		@Override
 		public void onGetAuthAccessToken(boolean status, Map<String, String> result) {}
-
 		@Override
 		public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { }
-
 		@Override
 		public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {}
-
 		@Override
 		public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {}
-
 		@Override
 		public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) { }
-
 		@Override
 		public void onMakeEntryResponseReceived(boolean status) { }
+		@Override
+		public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list) { }
+		@Override
+		public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -155,7 +154,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		public static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
 		public static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
-		public static final String AUTH_ACCESS_TOKEN 	= "app_auth/access_token";
+		public static final String AUTH_ACCESS_TOKEN 		= "app_auth/access_token";
 
 		public static final String USER_INFO				= "api/user.json";
 
@@ -165,7 +164,10 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String ACCOUNT_ALL			= "api/accounts.json";
 
 		public static final String ENTRIES_ALL			= "api/entries.json_array";
-		public static final String ENTRIES_LATEST		= "api/entries/latest.json_array";
+		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
+		
+		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
+		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 
 	};
 
@@ -251,6 +253,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_GET_ENTRIES = CMD_BASE + 17;
 		public static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 19;
 		public static final int CMD_POST_ENTRY = CMD_BASE + 21;		
+		public static final int CMD_GET_FRQUENT_ITEMS = CMD_BASE + 23;		
+		public static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
 
 	}
 
@@ -344,6 +348,14 @@ public class WimpleImpl implements IWimpleImpl {
 
 			case CommandID.CMD_POST_ENTRY :
 				responseListener.onMakeEntryResponseReceived(booleanStatus);
+				break;
+				
+			case CommandID.CMD_GET_FRQUENT_ITEMS :
+				responseListener.onGetFrequentItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
+				break;
+				
+			case CommandID.CMD_GET_LATEST_ITEMS :
+				responseListener.onGetLatestItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
 				break;
 				
 			default : 
@@ -578,25 +590,27 @@ public class WimpleImpl implements IWimpleImpl {
 		return true;
 	}
 
-	public boolean getAllAccounts(String sectionID){
+	public boolean getAllAccounts(){
 
 		if(false == isAuthed ||
-				null == sectionID){
+				null == firstSectionID ||
+				firstSectionID.isEmpty()){
 			return false;
 		}
 
-		new GetAllAccountsTaskThread(sectionID, "").start();		
+		new GetAllAccountsTaskThread(firstSectionID, "").start();		
 		return true;
 	}
 
-	public boolean getAllAccounts(String sectionID, String dateFilter){
+	public boolean getAllAccounts(String dateFilter){
 
 		if(false == isAuthed ||
-				null == sectionID){
+				null == firstSectionID ||
+						firstSectionID.isEmpty()){
 			return false;
 		}
 
-		new GetAllAccountsTaskThread(sectionID, dateFilter).start();		
+		new GetAllAccountsTaskThread(firstSectionID, dateFilter).start();		
 		return true;
 	}
 
@@ -667,32 +681,32 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate){
+	public boolean getAllEntries(String latestDate, String oldestDate){
 
 		if(false == isAuthed){
 			return false;
 		}
 
-		return em.getAllEntries(sectionID, latestDate, oldestDate);
+		return em.getAllEntries(firstSectionID, latestDate, oldestDate);
 	}
 
-	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate, int count){
+	public boolean getAllEntries(String latestDate, String oldestDate, int count){
 
 		if(false == isAuthed){
 			return false;
 		}
 
-		return em.getAllEntries(sectionID, latestDate, oldestDate, count);
+		return em.getAllEntries(firstSectionID, latestDate, oldestDate, count);
 	}
 
 
-	public boolean getLatestEntries(String sectionID, int count){
+	public boolean getLatestEntries(int count, boolean noDuplicate){
 
 		if(false == isAuthed){
 			return false;
 		}
 
-		return em.getLatestEntries(sectionID, count);
+		return em.getLatestEntries(firstSectionID, count, noDuplicate);
 	}
 
 	public boolean makeEntry(Long date, Account left, Account right, 
@@ -702,6 +716,22 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		return em.makeEntry(firstSectionID, date, left, right, title, amount, memo);
+	}
+	
+	public boolean getFrequentItems(){
+		if(false == isAuthed){
+			return false;
+		}
+		
+		return im.getFrequentItems(firstSectionID);
+	}
+	
+	public boolean getLatestItems(){
+		if(false == isAuthed){
+			return false;
+		}
+		
+		return im.getLatestItems(firstSectionID);
 	}
 	/*
 	private class InvokeRESTAPITaskThread extends Thread {

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
+import me.blog.imhallower.wimple.model.Item;
 import me.blog.imhallower.wimple.model.Section;
 import me.blog.imhallower.wimple.model.UserInfo;
 
@@ -26,4 +27,7 @@ public interface IWimpleResponseListener {
 	
 	public void onMakeEntryResponseReceived(boolean status);
 	
+	public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list);
+	
+	public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list);
 }

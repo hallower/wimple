@@ -53,7 +53,7 @@ public class EntryManager {
 	}
 
 
-	public boolean getLatestEntries(String sectionID, int count){
+	public boolean getLatestEntries(String sectionID, int count, boolean noDuplicate){
 
 		new GetLatestEntriesTaskThread(sectionID, count).start();		
 		return true;
@@ -141,8 +141,9 @@ public class EntryManager {
 			if(0 > count){
 				path += "&limit=" + count;
 			}
-
-			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
+			
+			JSONObject json = null; 
+			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
 
 			if(null == json){
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
@@ -172,8 +173,7 @@ public class EntryManager {
 		}			
 
 	}
-
-
+	
 	private class PostEntryTaskThread extends Thread{
 
 		final String sectionID;

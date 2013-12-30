@@ -5,6 +5,7 @@ import java.util.Map;
 
 import me.blog.imhallower.wimple.model.Account;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,38 +15,38 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter{
-	private Context _context;
+	private Context context;
 	private static final String LOG_TAG = "ExpandableListAdapter";
 
-	private List<String> _listDataHeader; // header titles
+	private List<String> listDataHeader; // header titles
 	// child data in format of header title, child title
-	private Map<String, List<Account>> _listDataChild;
+	private Map<String, List<Account>> listDataChild;
 
 	private boolean isSelected = false;
-	private int selectedGroupPosition;
-	private int selectedChildPosition;
+	private int selectedGroupPosition = -1;
+	private int selectedChildPosition = -1;
 
 	public ExpandableListAdapter(Context context) {
-		this._context = context;
+		this.context = context;
 	}
 	
 	public ExpandableListAdapter(Context context, List<String> listDataHeader,
 			Map<String, List<Account>> listChildData) {
 		this(context);
-		this._listDataHeader = listDataHeader;
-		this._listDataChild = listChildData;
+		this.listDataHeader = listDataHeader;
+		this.listDataChild = listChildData;
 	}
 
 	public void setData(List<String> listDataHeader,
 			Map<String, List<Account>> listChildData) {
-		this._listDataHeader = listDataHeader;
-		this._listDataChild = listChildData;
+		this.listDataHeader = listDataHeader;
+		this.listDataChild = listChildData;
 	}
 
 	@Override
 	public Object getChild(int groupPosition, int childPosititon) {
 		try{
-			return this._listDataChild.get(this._listDataHeader.get(groupPosition))
+			return this.listDataChild.get(this.listDataHeader.get(groupPosition))
 					.get(childPosititon);
 		}catch(Exception e){
 			return null;
@@ -64,7 +65,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 		final String childText = ((Account) getChild(groupPosition, childPosition)).getTitle();
 
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this._context
+			LayoutInflater infalInflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = infalInflater.inflate(R.layout.exp_list_item, null);
 		}
@@ -73,6 +74,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 				.findViewById(R.id.expListGroupItem);
 
 		txtListChild.setText(childText);
+		
+		if(groupPosition == selectedGroupPosition &&
+				childPosition == selectedChildPosition){
+			txtListChild.setTextColor(Color.RED);
+		}else{
+			txtListChild.setTextColor(context.getResources().getColor(R.color.text_basic));
+		}
 		return convertView;
 	}
 
@@ -80,7 +88,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 	public int getChildrenCount(int groupPosition) {
 
 		try{
-			return this._listDataChild.get(this._listDataHeader.get(groupPosition))
+			return this.listDataChild.get(this.listDataHeader.get(groupPosition))
 					.size();	
 		}catch(Exception e){
 			return 0;
@@ -90,13 +98,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 
 	@Override
 	public Object getGroup(int groupPosition) {
-		return this._listDataHeader.get(groupPosition);
+		return this.listDataHeader.get(groupPosition);
 	}
 
 	@Override
 	public int getGroupCount() {
 		try{
-			return this._listDataHeader.size();
+			return this.listDataHeader.size();
 		}catch(Exception e){
 			return 0;
 		}
@@ -112,7 +120,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 			View convertView, ViewGroup parent) {
 		String headerTitle = (String) getGroup(groupPosition);
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this._context
+			LayoutInflater infalInflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = infalInflater.inflate(R.layout.exp_list_group, null);
 		}
@@ -148,8 +156,30 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 		this.isSelected = true;
 		this.selectedGroupPosition = groupPosition;
 		this.selectedChildPosition = childPosition;
-
+		this.notifyDataSetChanged();
 		Log.d(LOG_TAG, "Selected => " + getSelected().getTitle());
+	}
+
+	public int setSelected(String id){
+		
+		for(String key : listDataChild.keySet()){
+			List<Account> list = listDataChild.get(key);			
+			
+			for(Account account : list){
+				if(0 == account.getId().compareTo(id)){
+					this.isSelected = true;
+					this.selectedGroupPosition = listDataHeader.indexOf(key);
+					this.selectedChildPosition = list.indexOf(account);
+					this.notifyDataSetChanged();
+					Log.d(LOG_TAG, "Selected, group=" + selectedGroupPosition + ", child=" + selectedChildPosition + ", account=" + account.getTitle());
+					//Log.d(LOG_TAG, "Selected => " + getSelected().getTitle());					
+
+					return this.selectedGroupPosition;
+				}
+			}
+		}
+		Log.e(LOG_TAG, "Cant find selected item => " + id);
+		return -1;
 	}
 
 	public Account getSelected(){

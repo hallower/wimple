@@ -2,53 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:paddingLeft="3dp"
+    android:paddingRight="3dp" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:visibility="gone"
-        android:orientation="horizontal"
-        android:weightSum="1" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/transaction_monthly" />
-
-        <TextView
-            android:id="@+id/insert_monthly_records"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="..." />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
         android:orientation="horizontal"
         android:weightSum="1" >
 
         <TextView
             android:id="@+id/insert_amount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_height="60dp"
+            android:layout_gravity="right|center_vertical"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:layout_weight="0.7"
-            android:gravity="center"
-            android:textSize="25sp" />
+            android:background="@drawable/input_box_dark"
+            android:gravity="right|center_vertical"
+            android:lines="1"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textColor="@color/text_white"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/insert_submit"
             android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_height="55dp"
             android:layout_gravity="center"
             android:layout_weight="0.3"
             android:contentDescription="@string/na"
             android:gravity="center"
-            android:src="@drawable/list_check_on" />
+            android:src="@drawable/check_on" />
     </LinearLayout>
 
     <LinearLayout
@@ -61,7 +52,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
+            android:layout_weight="0.1"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -74,21 +65,22 @@
                 <ImageView
                     android:id="@+id/insert_yesterday"
                     android:layout_width="wrap_content"
-                    android:contentDescription="@string/na"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/na"
                     android:src="@drawable/ic_action_previous_item" />
 
                 <TextView
                     android:id="@+id/insert_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="11.23" />
+                    android:text="11.23"
+                    android:textSize="15sp" />
 
                 <ImageView
                     android:id="@+id/insert_tommorrow"
                     android:layout_width="wrap_content"
-                    android:contentDescription="@string/na"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/na"
                     android:src="@drawable/ic_action_next_item" />
             </LinearLayout>
 
@@ -97,20 +89,33 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:inputType="text"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/process_n"
                 android:gravity="center"
-                android:textSize="20sp" />
+                android:hint="@string/insert_item_title"
+                android:inputType="text"
+                android:padding="2dp"
+                android:textColor="@color/text_light_blue"
+                android:textColorHint="@color/text_white"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
             <ListView
-                android:id="@+id/insert_frequent_entries"
+                android:id="@+id/insert_frequent_items"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="130dp"
+                android:background="@drawable/input_box_rect"
+                android:padding="2dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
+            android:layout_marginLeft="3dp"
+            android:layout_weight="0.9"
             android:orientation="vertical" >
 
             <TableLayout
@@ -125,56 +130,66 @@
                     <TextView
                         android:id="@+id/insert_pad_7"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_7"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_8"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_8"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_9"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_9"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_back"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_back"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_clear"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_clear"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
                 </TableRow>
 
@@ -183,56 +198,66 @@
                     <TextView
                         android:id="@+id/insert_pad_4"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_4"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_5"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_5"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_6"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_6"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_multiply"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_multiply"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_divide"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_divide"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
                 </TableRow>
 
@@ -241,56 +266,66 @@
                     <TextView
                         android:id="@+id/insert_pad_1"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_1"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_2"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_2"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_3"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_3"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_minus"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_minus"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_plus"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_plus"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
                 </TableRow>
 
@@ -299,46 +334,54 @@
                     <TextView
                         android:id="@+id/insert_pad_10"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_10"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_point"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/gray_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_point"
+                        android:textColor="@color/calc_number_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_100"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_weight="1"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_100"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/insert_pad_eq"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/calc_btn_height"
                         android:layout_gravity="center"
                         android:layout_span="1"
                         android:layout_weight="2"
+                        android:background="@drawable/white_box"
                         android:gravity="center"
                         android:padding="3dp"
                         android:text="@string/pad_eq"
+                        android:textColor="@color/calc_func_btn"
                         android:textSize="20sp" />
                 </TableRow>
             </TableLayout>
@@ -348,51 +391,66 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:weightSum="1" >
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_gravity="top|center_horizontal"
             android:layout_weight="0.5"
-            android:gravity="center"
+            android:gravity="top|center_horizontal"
             android:orientation="vertical" >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/pad_plus"
-                android:textSize="20sp" />
+                android:background="@drawable/input_color_box_9"
+                android:paddingBottom="2dp"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp"
+                android:paddingTop="2dp"
+                android:text="@string/insert_left_accounts"
+                android:textColor="@color/text_white"
+                android:textSize="17sp" />
 
             <ExpandableListView
                 android:id="@+id/insert_category_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:background="@drawable/input_box_rect"
                 android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_gravity="top|center_horizontal"
             android:layout_weight="0.5"
-            android:gravity="center"
+            android:gravity="top|center_horizontal"
             android:orientation="vertical" >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/pad_minus"
-                android:textSize="20sp" />
+                android:background="@drawable/input_color_box_3"
+                android:paddingBottom="2dp"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp"
+                android:paddingTop="2dp"
+                android:text="@string/insert_right_accounts"
+                android:textColor="@color/text_white"
+                android:textSize="17sp" />
 
             <ExpandableListView
                 android:id="@+id/insert_category_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:background="@drawable/input_box_rect"
                 android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
