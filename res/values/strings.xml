@@ -11,9 +11,12 @@
     <string name="na"></string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="drawer_menu_transaction">거래</string>
+    <string name="drawer_menu_preference">설정</string>
     <string name="title_transaction_insert_fragment">거래 입력</string>
     <string name="title_transaction_list_fragment">거래 목록</string>
     <string name="title_settings_fragment">설정</string>
+    
     
     <string name="pad_1">1</string>
     <string name="pad_2">2</string>

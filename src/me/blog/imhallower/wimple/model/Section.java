@@ -14,8 +14,8 @@ public class Section implements IDatabaseRecord {
 	private String description;
 	private String currency;
 	private Boolean isolation = false;
-	private Long asset;
-	private Long debt;
+	private Double asset;
+	private Double debt;
 	private Integer skinID;
 	private Integer decimalPosition;
 	private String dateFormat;
@@ -37,7 +37,7 @@ public class Section implements IDatabaseRecord {
 	}
 	
 	public Section(String id, String title, String description,
-			String currency, Long asset, Long debt,
+			String currency, Double asset, Double debt,
 			Integer skinID, Integer decimalPosition, String dateFormat) {
 		super();
 		this.id = id;
@@ -55,8 +55,8 @@ public class Section implements IDatabaseRecord {
 
 		this(section.get("section_id").toString(), section.get("title").toString(), section.get("memo").toString(), 
 				section.get("currency").toString(), 
-				Long.valueOf(section.get("total_assets").toString()), 
-				Long.valueOf(section.get("total_liabilities").toString()), 
+				Double.valueOf(section.get("total_assets").toString()), 
+				Double.valueOf(section.get("total_liabilities").toString()), 
 				Integer.valueOf(section.get("skin_id").toString()), 
 				Integer.valueOf(section.get("decimal_places").toString()), 
 				section.get("date_format").toString());
@@ -82,11 +82,11 @@ public class Section implements IDatabaseRecord {
 		return isolation;
 	}
 
-	public Long getAsset() {
+	public Double getAsset() {
 		return asset;
 	}
 
-	public Long getDebt() {
+	public Double getDebt() {
 		return debt;
 	}
 
@@ -125,11 +125,11 @@ public class Section implements IDatabaseRecord {
 		this.isolation = isolation;
 	}
 
-	public void setAsset(Long asset) {
+	public void setAsset(Double asset) {
 		this.asset = asset;
 	}
 
-	public void setDebt(Long debt) {
+	public void setDebt(Double debt) {
 		this.debt = debt;
 	}
 
