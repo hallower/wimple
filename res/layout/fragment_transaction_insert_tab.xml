@@ -413,7 +413,7 @@
                 android:paddingRight="14dp"
                 android:paddingTop="2dp"
                 android:text="@string/insert_left_accounts"
-                android:textColor="@color/text_basic"
+                android:textColor="@color/text_white"
                 android:textStyle="bold"
                 android:textSize="17sp" />
 
@@ -443,7 +443,7 @@
                 android:paddingRight="14dp"
                 android:paddingTop="2dp"
                 android:text="@string/insert_right_accounts"
-                android:textColor="@color/text_basic"
+                android:textColor="@color/text_white"
                 android:textStyle="bold"
                 android:textSize="17sp" />
 

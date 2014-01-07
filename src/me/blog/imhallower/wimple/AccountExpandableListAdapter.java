@@ -86,7 +86,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		
 		if(groupPosition == selectedGroupPosition &&
 				childPosition == selectedChildPosition){
-			txtListChild.setTextColor(context.getResources().getColor(R.color.text_blue));
+			txtListChild.setTextColor(context.getResources().getColor(R.color.text_red));
 		}else{
 			txtListChild.setTextColor(context.getResources().getColor(R.color.text_basic));
 		}
