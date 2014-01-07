@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import me.blog.imhallower.wimple.DatePickerFragment.OnDateSetListener;
 import me.blog.imhallower.wimple.WimpleActivity.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.impl.util.Calculator;
@@ -48,11 +49,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private static Context context = null;
 
 	private static final Locale locale = new Locale("ko", "KR");
-	private static final SimpleDateFormat sdfForGUI = new SimpleDateFormat("MM-dd", locale);
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
-	private static final String formatPattern = "###,###.####";	
 	private static int[] padRIDs = null;
 	
 	// Widget
@@ -67,6 +66,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private EditText txtTitle;
 	private TextView txtItemDate; 
 
+	private DatePickerFragment datePicker;
 	// Data
 	private List<String> listDataHeader = new ArrayList<String>();
 	
@@ -133,6 +133,23 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		// View, Widget
 
 		txtItemDate = (TextView) view.findViewById(R.id.insert_date);
+		datePicker = new DatePickerFragment();
+		datePicker.setTextViewWidget(txtItemDate);
+		datePicker.setOnDateSetListener(new OnDateSetListener(){
+
+			@Override
+			public void onDateSet(Long date) {				
+				setupItemDate(date);
+			}
+			
+		});
+		txtItemDate.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				datePicker.show(mainActivity.getFragmentManager(), "itemDate");
+			}
+		});
 		setupItemDate(Calendar.getInstance().getTimeInMillis());
 		
 		ImageView ivYesterday = (ImageView) view.findViewById(R.id.insert_yesterday);
@@ -269,14 +286,14 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			});
 		}
 
-
+		setAmountText(0.0);
 
 		return view;
 	}
 
 	private void setupItemDate(Long date) {
 		this.itemDate = date;
-		txtItemDate.setText(sdfForGUI.format(this.itemDate));
+		datePicker.setDate(this.itemDate);
 		wimple.getAllAccounts(sdf.format(this.itemDate));
 	}
 	
