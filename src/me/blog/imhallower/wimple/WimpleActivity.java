@@ -91,7 +91,7 @@ ActionBar.TabListener {
 		public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
 		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
 		public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
-		
+
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -133,6 +133,29 @@ ActionBar.TabListener {
 		actionBar.setDisplayHomeAsUpEnabled(true);        
 		//actionBar.setHomeButtonEnabled(true);
 
+		/*
+		{
+			actionBar.setCustomView(R.layout.actionbar);
+
+			TextView txtTitle = (TextView)actionBar.getCustomView().findViewById(R.id.actionbar_title);
+			txtTitle.setText(context.getResources().getString(R.string.drawer_menu_transaction));
+			txtTitle.setOnClickListener(new OnClickListener(){
+				@Override
+				public void onClick(View v) {
+					finish();
+				}
+			});
+
+			ImageView back = (ImageView)actionBar.getCustomView().findViewById(R.id.actionbar_back);
+			back.setOnClickListener(new OnClickListener(){
+				@Override
+				public void onClick(View v) {
+					finish();
+				}
+			});
+			actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+		}
+		 */
 
 		// ActionBarDrawerToggle ties together the the proper interactions
 		// between the sliding drawer and the action bar app icon
@@ -266,26 +289,26 @@ ActionBar.TabListener {
 		}
 	}
 
-	 private void setMyInfoOnMenu(UserInfo info)
-	    {
-	  
-			// Set Icon
-	    	ImageView icon = (ImageView)findViewById(R.id.my_profile_icon);
-	    	//WidgetItem.replaceBitmapOfImageView(icon, info.getUserImgURL(), false);
+	private void setMyInfoOnMenu(UserInfo info)
+	{
 
-			// Set  Name
-			TextView name = (TextView)findViewById(R.id.my_profile_name);
-			name.setText(info.getName());
+		// Set Icon
+		ImageView icon = (ImageView)findViewById(R.id.my_profile_icon);
+		//WidgetItem.replaceBitmapOfImageView(icon, info.getUserImgURL(), false);
 
-			/*
+		// Set  Name
+		TextView name = (TextView)findViewById(R.id.my_profile_name);
+		name.setText(info.getName());
+
+		/*
 			// temporary
 			int nLevel = 8;
 			if(nLevel > 10)
 					nLevel = 10;
-					
+
 			TextView textLevel = (TextView)findViewById(R.id.my_profile_level);
 			ImageView progressLevel = (ImageView)findViewById(R.id.my_profile_progress);
-		
+
 			textLevel.setText(getResources().getString(R.string.profile_level_prefix) + nLevel);
 		    Resources resources = context.getResources();
 		    DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -293,22 +316,22 @@ ActionBar.TabListener {
 			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams ) progressLevel.getLayoutParams();
 			params.width = (int)px;
 			progressLevel.setLayoutParams(params);
-			*/
-			// Set OnClick listener => Detail Profile information
-			RelativeLayout rlProfileWindow = (RelativeLayout)findViewById(R.id.my_profile_information_window);
-			rlProfileWindow.setOnClickListener(new OnClickListener(){
+		 */
+		// Set OnClick listener => Detail Profile information
+		RelativeLayout rlProfileWindow = (RelativeLayout)findViewById(R.id.my_profile_information_window);
+		rlProfileWindow.setOnClickListener(new OnClickListener(){
 
-				@Override
-				public void onClick(View v) {
-					// TODO : later
-					//Intent intent = new Intent(context, DetailProfileActivity.class);
-					//startActivity(intent);
-				}
-				
-			});
-	    	
-	    }
-	 
+			@Override
+			public void onClick(View v) {
+				// TODO : later
+				//Intent intent = new Intent(context, DetailProfileActivity.class);
+				//startActivity(intent);
+			}
+
+		});
+
+	}
+
 	private void setPagerAdapter(int n)
 	{
 		List<String> titles = listSubmenuTitles.get(n);
@@ -400,15 +423,15 @@ ActionBar.TabListener {
 			@Override
 			public void onNetworkConnectionEstablished() {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void onNetworkConnectionLost() {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 		});
 		wimple.setResponseListener(new IWimpleResponseListener(){
 
@@ -419,7 +442,7 @@ ActionBar.TabListener {
 					// TODO : login!!! 
 					return;
 				}
-				
+
 				if(null == tempToken || tempToken.isEmpty()){
 					// TODO : do something
 					return;
@@ -488,7 +511,7 @@ ActionBar.TabListener {
 				for(Account account : list){
 					Log.d(LOG_TAG, account.toString());
 				}
-				*/
+				 */
 				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list);
 			}
 
@@ -498,7 +521,7 @@ ActionBar.TabListener {
 				for(Entry entry : list){
 					Log.d(LOG_TAG, entry.toString());
 				}
-				*/
+				 */
 				sm(CommandID.GET_ENTRIES_RECEIVED, list);
 			}
 
@@ -556,7 +579,7 @@ ActionBar.TabListener {
 					startActivityForResult(intent, PIN_NUMBER_REQUEST);
 					break;	
 				}
-				
+
 				case CommandID.UPDATE_USER_INFO :
 				{
 					setMyInfoOnMenu((UserInfo)obj);
@@ -568,16 +591,16 @@ ActionBar.TabListener {
 				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
 				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :				
 				{
-				
+
 					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);
-					
+
 					if(fg instanceof IWimpleFragment){
 						IWimpleFragment wfg = (IWimpleFragment) fg;
 						wfg.handleMessage(msg);
 					}
 					break;
 				}
-					
+
 				// to all
 				case CommandID.WIMPLE_LOGGIN_SUCCESS :
 				case CommandID.WIMPLE_LOGGIN_FAILED :
@@ -586,11 +609,11 @@ ActionBar.TabListener {
 				case CommandID.GET_ALL_SECTION_RECEIVED :
 				case CommandID.GET_ENTRIES_RECEIVED :
 				{
-				
+
 					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){
-						
+
 						Fragment fg = mSectionsPagerAdapter.getItem(i);
-						
+
 						if(fg instanceof IWimpleFragment){
 							IWimpleFragment wfg = (IWimpleFragment) fg;
 							wfg.handleMessage(msg);
@@ -598,7 +621,7 @@ ActionBar.TabListener {
 					}
 					break;
 				}	
-					
+
 				default : {	
 					Log.d(LOG_TAG, "Invalid Command ID=" + command);
 					break;
