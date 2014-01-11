@@ -4,6 +4,7 @@
     <color name="text_group">#2DABD9</color>
     <color name="text_dimmed">#484848</color>
     <color name="text_white">#FFFFFF</color>
+    <color name="text_black">#000000</color>
     <color name="text_blue">#33B5E5</color>
     <color name="text_red">#F64D4C</color>
     <color name="text_light_blue">#43BEEB</color>

@@ -89,7 +89,9 @@ ActionBar.TabListener {
 		public static final int GET_MAKE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 21;
 		public static final int GET_FREQUENT_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 23;
 		public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
-		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;		
+		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
+		public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
+		
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -482,17 +484,22 @@ ActionBar.TabListener {
 			@Override
 			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
 
+				/*
 				for(Account account : list){
 					Log.d(LOG_TAG, account.toString());
 				}
+				*/
 				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list);
 			}
 
 			@Override
 			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
+				/*
 				for(Entry entry : list){
 					Log.d(LOG_TAG, entry.toString());
 				}
+				*/
+				sm(CommandID.GET_ENTRIES_RECEIVED, list);
 			}
 
 			@Override
@@ -556,15 +563,10 @@ ActionBar.TabListener {
 					break;
 				}
 
-				case CommandID.WIMPLE_LOGGIN_SUCCESS :
-				case CommandID.WIMPLE_LOGGIN_FAILED :
-				case CommandID.WIMPLE_LOGGOUT :
-				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
-				case CommandID.GET_ALL_SECTION_RECEIVED :
 				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
-				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
+				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :				
 				{
 				
 					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);
@@ -577,6 +579,26 @@ ActionBar.TabListener {
 				}
 					
 				// to all
+				case CommandID.WIMPLE_LOGGIN_SUCCESS :
+				case CommandID.WIMPLE_LOGGIN_FAILED :
+				case CommandID.WIMPLE_LOGGOUT :
+				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
+				case CommandID.GET_ALL_SECTION_RECEIVED :
+				case CommandID.GET_ENTRIES_RECEIVED :
+				{
+				
+					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){
+						
+						Fragment fg = mSectionsPagerAdapter.getItem(i);
+						
+						if(fg instanceof IWimpleFragment){
+							IWimpleFragment wfg = (IWimpleFragment) fg;
+							wfg.handleMessage(msg);
+						}	
+					}
+					break;
+				}	
+					
 				default : {	
 					Log.d(LOG_TAG, "Invalid Command ID=" + command);
 					break;

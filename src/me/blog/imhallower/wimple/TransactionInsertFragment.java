@@ -15,6 +15,7 @@ import me.blog.imhallower.wimple.DatePickerFragment.OnDateSetListener;
 import me.blog.imhallower.wimple.WimpleActivity.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.impl.util.Calculator;
+import me.blog.imhallower.wimple.impl.util.Utils;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Item;
 import android.content.Context;
@@ -48,10 +49,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private static View view = null;
 	private static Context context = null;
 
-	private static final Locale locale = new Locale("ko", "KR");
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
-	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
-	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
 	private static int[] padRIDs = null;
 	
 	// Widget
@@ -83,11 +80,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
 	 */
 
-	
-	static {
-		formatCalcNum.applyPattern("###,###.####");
-	}
-
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
@@ -97,7 +89,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
-		wimple.getAllAccounts(sdf.format(this.itemDate));
+		wimple.getAllAccounts(Utils.getServerDateFormat().format(this.itemDate));
 		wimple.getLatestItems();
 	}
 
@@ -294,18 +286,18 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private void setupItemDate(Long date) {
 		this.itemDate = date;
 		datePicker.setDate(this.itemDate);
-		wimple.getAllAccounts(sdf.format(this.itemDate));
+		wimple.getAllAccounts(Utils.getServerDateFormat().format(this.itemDate));
 	}
 	
 	private void setAmountText(Double amount){
 		//cal.setValue(selected.getAmount());
-		txtAmount.setText(formatCalcNum.format(amount));
+		txtAmount.setText(Utils.getDecimalFormat().format(amount));
 	}
 	
 	private Double getAmountValue(){
 		Double amount = 0.0; 
 		try{
-			amount = nf.parse(txtAmount.getText().toString()).doubleValue();
+			amount = Utils.getNumberFormat().parse(txtAmount.getText().toString()).doubleValue();
 		}catch(Exception e){
 			Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 			return -1.0;

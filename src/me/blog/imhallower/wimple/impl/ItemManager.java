@@ -6,7 +6,6 @@ import java.util.Collection;
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.WimpleImpl.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl.Path;
-import me.blog.imhallower.wimple.model.Entry;
 import me.blog.imhallower.wimple.model.Item;
 
 import org.json.simple.JSONArray;

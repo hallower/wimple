@@ -1,8 +1,11 @@
 package me.blog.imhallower.wimple.impl.util;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class Utils {
 
@@ -29,5 +32,31 @@ public class Utils {
 			//  Log.e("ARTags", "SHA1 is not a supported algorithm");
 		}
 		return null;
+	}
+	
+	private static final Locale locale = new Locale("ko", "KR");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
+	private static final SimpleDateFormat sdfGUI = new SimpleDateFormat("yy-MM-dd E", locale);
+	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
+	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
+	
+	static {
+		formatCalcNum.applyPattern("###,###.####");
+	}
+
+	public static final SimpleDateFormat getServerDateFormat(){
+		return sdf;
+	}
+	
+	public static final SimpleDateFormat getGUIDateFormat(){
+		return sdfGUI;
+	}
+
+	public static final NumberFormat getNumberFormat(){
+		return nf;
+	}
+
+	public static final DecimalFormat getDecimalFormat(){
+		return formatCalcNum;
 	}
 }
