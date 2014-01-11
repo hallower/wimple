@@ -1,14 +1,10 @@
 package me.blog.imhallower.wimple;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import me.blog.imhallower.wimple.DatePickerFragment.OnDateSetListener;
@@ -23,6 +19,8 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,7 +48,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private static Context context = null;
 
 	private static int[] padRIDs = null;
-	
+
 	// Widget
 	private AccountExpandableListAdapter leftAccountListAdapter;
 	private AccountExpandableListAdapter rightAccountListAdapter;
@@ -66,12 +64,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private DatePickerFragment datePicker;
 	// Data
 	private List<String> listDataHeader = new ArrayList<String>();
-	
+
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
-	
+
 	private Long itemDate = Calendar.getInstance().getTimeInMillis();
-	
+
 	// 
 	private Calculator cal = new Calculator();
 
@@ -133,7 +131,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			public void onDateSet(Long date) {				
 				setupItemDate(date);
 			}
-			
+
 		});
 		txtItemDate.setOnClickListener(new OnClickListener() {
 
@@ -143,7 +141,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 		setupItemDate(Calendar.getInstance().getTimeInMillis());
-		
+
 		ImageView ivYesterday = (ImageView) view.findViewById(R.id.insert_yesterday);
 		ivYesterday.setOnClickListener(new OnClickListener(){
 
@@ -152,7 +150,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				Long newDate = itemDate - 24 * 60 * 60 * 1000;
 				setupItemDate(newDate);
 			}
-			
+
 		});
 		ImageView ivTomorrow = (ImageView) view.findViewById(R.id.insert_tomorrow);
 		ivTomorrow.setOnClickListener(new OnClickListener(){
@@ -162,9 +160,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				Long newDate = itemDate + 24 * 60 * 60 * 1000;
 				setupItemDate(newDate);
 			}
-			
+
 		});
-		
+
 		// Account
 		leftAccountListAdapter = new AccountExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
@@ -196,6 +194,22 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		txtAmount = (TextView) view.findViewById(R.id.insert_amount);
 		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
+		txtTitle.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				adapterLatestItems.getFilter().filter(s.toString());
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
 
 		ImageView submit = (ImageView) view.findViewById(R.id.insert_submit);
 		submit.setOnClickListener(new OnClickListener() {
@@ -231,9 +245,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					int position, long id) {
 				selectLatestItem(position);
 			}
-			
+
 		});
-		
+
 		// post.. 
 
 		buttons = new TextView[padRIDs.length];
@@ -288,12 +302,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		datePicker.setDate(this.itemDate);
 		wimple.getAllAccounts(Utils.getServerDateFormat().format(this.itemDate));
 	}
-	
+
 	private void setAmountText(Double amount){
 		//cal.setValue(selected.getAmount());
 		txtAmount.setText(Utils.getDecimalFormat().format(amount));
 	}
-	
+
 	private Double getAmountValue(){
 		Double amount = 0.0; 
 		try{
@@ -304,10 +318,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 		return amount;
 	}
-	
+
 	private void selectLatestItem(int position) {
 		Item selected = null;
-		
+
 		try{
 			selected = adapterLatestItems.getItem(position);
 		}catch(Exception e){
@@ -315,17 +329,17 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			Log.e(LOG_TAG, "Failed to select latest Item!!!, position=" + position);
 			return;
 		}
-				
+
 		txtTitle.setText(selected.getItem());
 		cal.setValue(selected.getAmount());
 		setAmountText(selected.getAmount());
-						
+
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(selected.getLeftAccountID());
 		if(selectedLeftGroup > -1){
 			leftAccountListView.expandGroup(selectedLeftGroup);
 			leftAccountListView.setSelection(selectedLeftGroup);
 		}
-		
+
 		int selectedRightGroup = rightAccountListAdapter.setSelected(selected.getRightAccountID());
 		if(selectedRightGroup > -1){
 			rightAccountListView.expandGroup(selectedRightGroup);
@@ -356,7 +370,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					Toast.LENGTH_SHORT).show();
 			return false;
 		}
-		
+
 		if(false == this.rightAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "right side account is not selected!!!");
 			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_right_accounts), 
@@ -477,7 +491,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			// TODO : test for frequent items
 		}
 		break;
-		
+
 		case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 		{			
 		}
@@ -492,7 +506,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}	
 		}
 		break;
-		
+
 		}
 	}
 
