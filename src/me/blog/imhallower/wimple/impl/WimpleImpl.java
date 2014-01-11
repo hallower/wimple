@@ -40,9 +40,9 @@ public class WimpleImpl implements IWimpleImpl {
 	// subsystems
 	private final EntryManager em = new EntryManager(this);
 	private final ItemManager im = new ItemManager(this);
-	
+
 	private final RestAPIInvoker rai;
-	
+
 	private UserInfoDBHandler uidbh = null;
 
 	// static references
@@ -171,7 +171,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		public static final String ENTRIES_ALL			= "api/entries.json_array";
 		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
-		
+
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 
@@ -355,15 +355,15 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_POST_ENTRY :
 				responseListener.onMakeEntryResponseReceived(booleanStatus);
 				break;
-				
+
 			case CommandID.CMD_GET_FRQUENT_ITEMS :
 				responseListener.onGetFrequentItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
 				break;
-				
+
 			case CommandID.CMD_GET_LATEST_ITEMS :
 				responseListener.onGetLatestItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
 				break;
-				
+
 			default : 
 				break;
 
@@ -595,7 +595,7 @@ public class WimpleImpl implements IWimpleImpl {
 		}.start();		
 		return true;
 	}
-	
+
 	public boolean getAllAccounts(){
 
 		if(false == isAuthed ||
@@ -612,7 +612,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(false == isAuthed ||
 				null == firstSectionID ||
-						firstSectionID.isEmpty()){
+				firstSectionID.isEmpty()){
 			return false;
 		}
 
@@ -636,16 +636,16 @@ public class WimpleImpl implements IWimpleImpl {
 			// TODO : accountList update!!!
 			// TODO : DBMS
 			if(null != accountList){
-				
+
 				Collection<Account> list = new ArrayList<Account>();
 				for(Account item : accountList){
 					String open = item.getOpenedDate();
 					String closed = item.getClosedDate();
-				
+
 					try{
 						sdf.setLenient(false);
 						Date itemDate = sdf.parse(dateFilter);
-						
+
 						Date openDate = sdf.parse(open);
 						Date closedDate = sdf.parse(closed);
 
@@ -660,7 +660,7 @@ public class WimpleImpl implements IWimpleImpl {
 						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, accountList);
 						return;
 					}					
-					
+
 				}
 				Log.d(LOG_TAG, "Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
@@ -683,18 +683,18 @@ public class WimpleImpl implements IWimpleImpl {
 			Collection<Account> list = new ArrayList<Account>();
 
 			try{
-			JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
-			if(null == json){
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-				return;
-			}
+				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
+				if(null == json){
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+					return;
+				}
 
-			JSONObject results = (JSONObject) json.get("results");
-			for(Object type : results.keySet()){
+				JSONObject results = (JSONObject) json.get("results");
+				for(Object type : results.keySet()){
 
-				JSONObject accountType  = (JSONObject) results.get(type);
-				for(Object name : accountType.keySet()){
-					JSONObject account = (JSONObject) accountType.get(name);
+					JSONObject accountType  = (JSONObject) results.get(type);
+					for(Object name : accountType.keySet()){
+						JSONObject account = (JSONObject) accountType.get(name);
 
 						list.add(new Account(type.toString(), account));
 					}
@@ -752,28 +752,28 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return em.makeEntry(firstSectionID, date, left, right, title, amount, memo);
 	}
-	
+
 	public boolean getFrequentItems(){
 		if(false == isAuthed){
 			return false;
 		}
-		
+
 		return im.getFrequentItems(firstSectionID);
 	}
-	
+
 	public boolean getLatestItems(){
 		if(false == isAuthed){
 			return false;
 		}
-		
+
 		return im.getLatestItems(firstSectionID, false);
 	}
-	
+
 	public boolean getLatestItems(boolean forceUpdate){
 		if(false == isAuthed){
 			return false;
 		}
-		
+
 		return im.getLatestItems(firstSectionID, forceUpdate);
 	}
 	/*
@@ -798,15 +798,20 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 	}
 	 */
-	
+
 	public String getAccountName(String accountCode){
 		String name = "?";
-		
-		for(Account account : this.accountList){
-			if(0 == accountCode.compareTo(account.getId())){
-				return account.getTitle();
+
+		try{
+			for(Account account : this.accountList){
+				if(0 == accountCode.compareTo(account.getId())){
+					return account.getTitle();
+				}
 			}
+		}catch(Exception e){
+			return name;
 		}
+
 		return name;
 	}
 }

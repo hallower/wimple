@@ -9,6 +9,8 @@
     <color name="text_red">#F64D4C</color>
     <color name="text_light_blue">#43BEEB</color>
     
+    <color name="separater">#e5e5e5</color>
+    
     <color name="calc_number">#FFFFFF</color>
     <color name="calc_func">#6F6F6F</color>
     

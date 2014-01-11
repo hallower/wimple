@@ -4,9 +4,9 @@ import java.util.Date;
 
 import me.blog.imhallower.wimple.impl.WimpleImpl;
 import me.blog.imhallower.wimple.impl.util.Utils;
-import me.blog.imhallower.wimple.impl.util.WidgetItem;
 import me.blog.imhallower.wimple.model.Entry;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -93,7 +93,7 @@ public class EntryItemView extends LinearLayout {
 		case 'a' :
 			tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
-			
+
 		case 'l' :
 			tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
@@ -102,6 +102,8 @@ public class EntryItemView extends LinearLayout {
 			tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 		}
+		Drawable background = tv.getBackground();
+		background.setAlpha(90);
 	}
 
 	public void clear(){

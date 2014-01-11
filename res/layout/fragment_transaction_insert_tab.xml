@@ -415,7 +415,7 @@
                 android:text="@string/insert_left_accounts"
                 android:textColor="@color/text_white"
                 android:textStyle="bold"
-                android:textSize="17sp" />
+                android:textSize="12sp" />
 
             <ExpandableListView
                 android:id="@+id/insert_category_left"
@@ -445,7 +445,7 @@
                 android:text="@string/insert_right_accounts"
                 android:textColor="@color/text_white"
                 android:textStyle="bold"
-                android:textSize="17sp" />
+                android:textSize="12sp" />
 
             <ExpandableListView
                 android:id="@+id/insert_category_right"
