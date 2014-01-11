@@ -4,7 +4,6 @@ import me.blog.imhallower.wimple.impl.db.IDatabaseRecord;
 
 import org.json.simple.JSONObject;
 
-import android.provider.SyncStateContract.Columns;
 import android.util.SparseArray;
 
 public class Section implements IDatabaseRecord {
@@ -20,8 +19,7 @@ public class Section implements IDatabaseRecord {
 	private Integer decimalPosition;
 	private String dateFormat;
 
-	private static final SparseArray<String> columns = new SparseArray<String>();
-    private SparseArray<String> values;
+	private static final SparseArray<String> columns = new SparseArray<String>();    
     
 	static {
 		columns.append(0, "id");

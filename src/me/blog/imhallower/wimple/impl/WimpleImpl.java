@@ -798,4 +798,15 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 	}
 	 */
+	
+	public String getAccountName(String accountCode){
+		String name = "?";
+		
+		for(Account account : this.accountList){
+			if(0 == accountCode.compareTo(account.getId())){
+				return account.getTitle();
+			}
+		}
+		return name;
+	}
 }

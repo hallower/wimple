@@ -92,7 +92,8 @@ public class EntryManager {
 			}
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
-			if(null == json){
+			if(null == json ||
+					Integer.parseInt(json.get("code").toString()) != 200){
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 				return;
 			}
@@ -114,7 +115,14 @@ public class EntryManager {
 						continue;
 					}
 
-					list.add(new Entry(row));
+					Entry item = new Entry(row);
+					String balance = row.get("total").toString();
+					if(null != balance && 
+							false == balance.isEmpty()){
+						item.setBalance(balance);
+					}
+
+					list.add(item);
 				}
 			}
 			wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
@@ -167,7 +175,7 @@ public class EntryManager {
 					item.setBalance(balance);
 				}
 
-				list.add(new Entry(row));
+				list.add(item);
 			}
 			wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 1, 0, list);
 		}			

@@ -1,11 +1,15 @@
 package me.blog.imhallower.wimple.model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.simple.JSONObject;
 
 public class Entry {	
 
 	private final String id;	
-	private final String date;
+	private Long date;
 	private final String leftAccount;
 	private final String leftAccountID;
 	private final String rightAccount;
@@ -18,12 +22,11 @@ public class Entry {
 
 
 
-	public Entry(String id, String date, String leftAccount,
+	public Entry(String id, String leftAccount,
 			String leftAccountID, String rightAccount, String rightAccountID,
 			String item, Float amount, String memo, String appID) {
 		super();
 		this.id = id;
-		this.date = date;
 		this.leftAccount = leftAccount;
 		this.leftAccountID = leftAccountID;
 		this.rightAccount = rightAccount;
@@ -37,9 +40,26 @@ public class Entry {
 
 	public Entry(JSONObject entry) {
 
-		this(entry.get("entry_id").toString(), entry.get("entry_date").toString(), entry.get("l_account").toString(), 
+		this(entry.get("entry_id").toString(), entry.get("l_account").toString(), 
 				entry.get("l_account_id").toString(), entry.get("r_account").toString(), entry.get("r_account_id").toString(), 
 				entry.get("item").toString(), Float.valueOf(entry.get("money").toString()), entry.get("memo").toString(), entry.get("app_id").toString());
+		
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+		Long dateLong = 0L;
+		
+		String dateString = entry.get("entry_date").toString();
+		int pos = dateString.indexOf(".");
+		if(pos > 0){
+			dateString = dateString.substring(0, pos - 1);
+		}
+		
+		try {
+			Date date = df.parse(dateString);
+			dateLong = date.getTime();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		setDate(dateLong);
 	}
 
 
@@ -48,7 +68,7 @@ public class Entry {
 	}
 
 
-	public String getDate() {
+	public Long getDate() {
 		return date;
 	}
 
@@ -97,6 +117,10 @@ public class Entry {
 		return appID;
 	}
 
+	public void setDate(Long date){
+		this.date = date;
+	}
+	
 	public void setBalance(String balance) {
 		this.balance = Float.valueOf(balance);
 	}
