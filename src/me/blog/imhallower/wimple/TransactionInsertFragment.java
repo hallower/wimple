@@ -198,7 +198,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				adapterLatestItems.getFilter().filter(s.toString());
+				String changed = s.toString();
+				if(changed.contains("(")){
+					changed = changed.substring(0, changed.indexOf("(") - 1);
+				}
+				adapterLatestItems.getFilter().filter(changed);
 			}
 
 			@Override
@@ -336,14 +340,24 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(selected.getLeftAccountID());
 		if(selectedLeftGroup > -1){
+			
+			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
+				leftAccountListView.collapseGroup(i);
+			}
 			leftAccountListView.expandGroup(selectedLeftGroup);
 			leftAccountListView.setSelection(selectedLeftGroup);
+			leftAccountListView.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition(), true);
 		}
 
 		int selectedRightGroup = rightAccountListAdapter.setSelected(selected.getRightAccountID());
 		if(selectedRightGroup > -1){
+			
+			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
+				rightAccountListView.collapseGroup(i);
+			}
 			rightAccountListView.expandGroup(selectedRightGroup);
 			rightAccountListView.setSelection(selectedRightGroup);
+			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);			
 		}
 	}
 
@@ -381,7 +395,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void cleanForms(){
-		txtTitle.setText("");		
+		txtTitle.setText("");
 		setAmountText(0.0);
 		// TODO : clear account selection
 	}
@@ -414,6 +428,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			 */
 			for(Account item : accountList){
 
+				if(0 == item.getType().compareTo("group")){
+					continue;
+				}
+				
 				switch(item.getWhat().charAt(0)){
 				case 'a' :	// assets
 					assets.add(item);
@@ -479,7 +497,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
 				cleanForms();
-				wimple.getLatestItems();
+				wimple.getLatestItems(true);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 			}

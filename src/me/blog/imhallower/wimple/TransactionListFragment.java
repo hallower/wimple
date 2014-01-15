@@ -121,6 +121,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				return;
 			}
 			
+			if(null == entryAdapter.get()){
+				return;
+			}
+			
 			entryAdapter.get().clean();
 			Collection<Entry> list = (Collection<Entry>) obj;
 			for(Entry item : list){
