@@ -40,15 +40,16 @@ public class WimpleImpl implements IWimpleImpl {
 	// subsystems
 	private final EntryManager em = new EntryManager(this);
 	private final ItemManager im = new ItemManager(this);
-
 	private final RestAPIInvoker rai;
-
 	private UserInfoDBHandler uidbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 
+	// Data
+	private int CountOfRemainedAPICall = -1;
+	
 	// Temporary!!!
 	public String firstSectionID;
 	public UserInfo userInfo = null;
@@ -789,5 +790,21 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		return name;
+	}
+
+	@Override
+	public Integer getRemainedAPICall() {		
+		return CountOfRemainedAPICall;
+	}
+
+	@Override
+	public void setRemainedAPICall(String count) {
+		
+		try{
+			CountOfRemainedAPICall = Integer.parseInt(count);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Log.d(LOG_TAG, "Remained API call count = " + CountOfRemainedAPICall);
 	}
 }
