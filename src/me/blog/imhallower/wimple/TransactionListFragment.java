@@ -2,9 +2,11 @@ package me.blog.imhallower.wimple;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.concurrent.Semaphore;
 
 import me.blog.imhallower.wimple.WimpleActivity.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl;
+import me.blog.imhallower.wimple.impl.util.Utils;
 import me.blog.imhallower.wimple.model.Entry;
 import android.content.Context;
 import android.os.Bundle;
@@ -28,9 +30,11 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static View view = null;
 	private static Context context = null;
 
-	WeakReference<EntryItemListView> entryList;
-	WeakReference<EntryItemListAdapter> entryAdapter;
+	private WeakReference<EntryItemListView> entryList;
+	private WeakReference<EntryItemListAdapter> entryAdapter;
 
+	private boolean isAllOldActivityFechted = false;
+	private final Semaphore available = new Semaphore(0);
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
@@ -41,9 +45,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	public void onResume() {
 		context = WimpleActivity.context;
 
-		// TODO : set proper date
-		wimple.getAllEntries("20140201", "20131201", 0);
-		
+		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
+		wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);		
 		super.onResume();
 	}
 
@@ -71,12 +74,27 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem,
 					int visibleItemCount, int totalItemCount) {
-				/*
-				Log.e(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
-						", totalItemcount=" + totalItemCount);
-				 */
-			}
+				
+				//Log.e(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
+				//		", totalItemcount=" + totalItemCount);
+				
+				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 
+				//Log.e(LOG_TAG, "Percentage=" + percentage + ", available permit=" + available.availablePermits());
+
+				if(percentage >= 70 &&
+						false == isAllOldActivityFechted &&
+						true == available.tryAcquire()){
+					Log.d(LOG_TAG, "Get More!!!, percentage=" + percentage);
+					if(entryAdapter.get().getCount() == 0){						
+						wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);	
+					}else{
+						Entry entry = (Entry) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
+						Long lastDate = entry.getDate();
+						wimple.getAllEntries(Utils.getServerDateString(lastDate), Utils.getLastMonthDateString(lastDate), 0);
+					}					
+				}
+			}
 		});
 
 		entryList.get().setOnDataSelectionListener(new OnItemSelectionListener() {
@@ -111,27 +129,34 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
 		case CommandID.GET_ALL_SECTION_RECEIVED :{
-			// TODO : remove hardcoding
-			wimple.getAllEntries("20140201", "20131201", 0);
+			wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
 			break;
 		}
 
 		case CommandID.GET_ENTRIES_RECEIVED :{
 			if(false == booleanStatus){
+				available.release();
 				return;
 			}
 			
 			if(null == entryAdapter.get()){
+				available.release();
+				return;
+			}
+				
+			Collection<Entry> list = (Collection<Entry>) obj;
+			
+			if(list.isEmpty()){
+				this.isAllOldActivityFechted = true;
+				available.release();
 				return;
 			}
 			
-			entryAdapter.get().clean();
-			Collection<Entry> list = (Collection<Entry>) obj;
 			for(Entry item : list){
-				Log.d(LOG_TAG, "Item " + item.getItem() + ", " + item.getDate());
 				entryAdapter.get().addItem(item);				
 			}
 			entryAdapter.get().notifyDataSetChanged();
+			available.release();
 			break;
 		}
 		}

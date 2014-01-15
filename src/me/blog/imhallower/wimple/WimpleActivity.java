@@ -461,10 +461,6 @@ ActionBar.TabListener {
 					return;
 				}
 
-				for(String key : result.keySet()){
-					Log.d(LOG_TAG, "[" + key + "]" + result.get(key));
-				}
-
 				String token = result.get("token");
 				String tokenSecret = result.get("token_secret");
 				String userID = result.get("user_id");
@@ -493,35 +489,16 @@ ActionBar.TabListener {
 
 			@Override
 			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {
-
-				for(Section section : list){
-
-					Log.d(LOG_TAG, section.toString());
-
-					//wimple.getAllEntries(section.getId(), "20131208", "20131201");
-					//wimple.getLatestEntries(section.getId(), 0);
-				}
 				sm(CommandID.GET_ALL_SECTION_RECEIVED, list);
 			}
 
 			@Override
 			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
-
-				/*
-				for(Account account : list){
-					Log.d(LOG_TAG, account.toString());
-				}
-				 */
 				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list);
 			}
 
 			@Override
 			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
-				/*
-				for(Entry entry : list){
-					Log.d(LOG_TAG, entry.toString());
-				}
-				 */
 				sm(CommandID.GET_ENTRIES_RECEIVED, list);
 			}
 

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import me.blog.imhallower.wimple.model.Account;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;

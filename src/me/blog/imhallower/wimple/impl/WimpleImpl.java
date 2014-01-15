@@ -495,7 +495,6 @@ public class WimpleImpl implements IWimpleImpl {
 
 
 				JSONObject results = (JSONObject) json.get("results");				
-				String sid = "";
 
 				for(Object key : results.keySet()){
 					JSONObject section = (JSONObject) results.get(key);
@@ -575,7 +574,6 @@ public class WimpleImpl implements IWimpleImpl {
 				}
 
 				JSONObject results = (JSONObject) json.get("results");				
-				String sid = "";
 
 				for(Object key : results.keySet()){
 					JSONObject section = (JSONObject) results.get(key);
@@ -776,28 +774,6 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getLatestItems(firstSectionID, forceUpdate);
 	}
-	/*
-	private class InvokeRESTAPITaskThread extends Thread {
-
-		private final String path;
-		private final String params;
-
-		public InvokeRESTAPITaskThread(String path, String params){
-
-			if(path.startsWith("/")){
-				this.path = path.substring(1);
-			}else{	
-				this.path = path;
-			}
-
-			this.params = params;
-		}
-
-		public void run() {
-
-		}
-	}
-	 */
 
 	public String getAccountName(String accountCode){
 		String name = "?";

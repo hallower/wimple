@@ -104,14 +104,14 @@ public class Account {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[Account : " + what + " - " + id + " ]------------------------------");
-		sb.append("   type = " + type);
-		sb.append("   title = " + title);
-		sb.append("   description = " + description);
-		sb.append("   openedDate = " + openedDate);
-		sb.append("   closedDate = " + closedDate);
-		sb.append("   category = " + category);
-		sb.append("---------------------------------------------------------------------");
+		sb.append("\n-[Account : " + what + " - " + id + " ]------------------------------");
+		sb.append("\n   type = " + type);
+		sb.append("\n   title = " + title);
+		sb.append("\n   description = " + description);
+		sb.append("\n   openedDate = " + openedDate);
+		sb.append("\n   closedDate = " + closedDate);
+		sb.append("\n   category = " + category);
+		sb.append("\n---------------------------------------------------------------------");
 		
 		return sb.toString();
 	}

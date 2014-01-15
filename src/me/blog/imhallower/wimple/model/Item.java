@@ -93,14 +93,14 @@ public class Item {
 		/*
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[Item : " + id + " ]------------------------------");
-		sb.append("   date = " + date);
-		sb.append("   leftAccount = " + leftAccount);
-		sb.append("   leftAccountID = " + leftAccountID);
-		sb.append("   rightAccount = " + rightAccount);
-		sb.append("   rightAccountID = " + rightAccountID);
-		sb.append("   amount = " + amount);
-		sb.append("---------------------------------------------------------------------");
+		sb.append("\n-[Item : " + id + " ]------------------------------");
+		sb.append("\n   date = " + date);
+		sb.append("\n   leftAccount = " + leftAccount);
+		sb.append("\n   leftAccountID = " + leftAccountID);
+		sb.append("\n   rightAccount = " + rightAccount);
+		sb.append("\n   rightAccountID = " + rightAccountID);
+		sb.append("\n   amount = " + amount);
+		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();
 		*/
