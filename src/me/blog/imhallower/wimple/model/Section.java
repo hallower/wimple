@@ -147,17 +147,17 @@ public class Section implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[Section : " + id + " ]------------------------------");
-		sb.append("   title = " + title);
-		sb.append("   description = " + description);
-		sb.append("   openedDate = " + currency);
-		sb.append("   closedDate = " + isolation);
-		sb.append("   category = " + asset);
-		sb.append("   category = " + debt);
-		sb.append("   category = " + skinID);
-		sb.append("   category = " + decimalPosition);
-		sb.append("   category = " + dateFormat);
-		sb.append("---------------------------------------------------------------------");
+		sb.append("\n-[Section : " + id + " ]------------------------------");
+		sb.append("\n   title = " + title);
+		sb.append("\n   description = " + description);
+		sb.append("\n   openedDate = " + currency);
+		sb.append("\n   closedDate = " + isolation);
+		sb.append("\n   category = " + asset);
+		sb.append("\n   category = " + debt);
+		sb.append("\n   category = " + skinID);
+		sb.append("\n   category = " + decimalPosition);
+		sb.append("\n   category = " + dateFormat);
+		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();
 	}

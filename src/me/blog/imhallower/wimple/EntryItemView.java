@@ -30,7 +30,7 @@ public class EntryItemView extends LinearLayout {
 		this.context = context;	
 
 		// Layout Inflation
-		LayoutInflater inflater = (LayoutInflater)context
+		LayoutInflater inflater = (LayoutInflater)this.context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_entries, this, true);
 

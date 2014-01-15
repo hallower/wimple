@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class Utils {
@@ -58,5 +60,26 @@ public class Utils {
 
 	public static final DecimalFormat getDecimalFormat(){
 		return formatCalcNum;
+	}
+
+	public static final String getCurrentDateString(){
+		Long today = Calendar.getInstance().getTimeInMillis();
+		return getServerDateFormat().format(today);
+	}
+
+	public static final String getServerDateString(Long date){		
+		return getServerDateFormat().format(date);
+	}
+
+	public static final String getLastMonthDateString(Long today){
+		Calendar cal = Calendar.getInstance();
+		
+		if(today != 0L){
+			cal.setTime(new Date(today));	
+		}
+	
+		cal.add(Calendar.MONTH, -1);
+
+		return getServerDateString(cal.getTimeInMillis());
 	}
 }

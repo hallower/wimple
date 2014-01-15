@@ -2,22 +2,19 @@
 package me.blog.imhallower.wimple;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import me.blog.imhallower.wimple.model.Entry;
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 public class EntryItemListAdapter extends BaseAdapter {
 
-	private static final String LOG_TAG = "EntryItemListAdapter";
+	//private static final String LOG_TAG = "EntryItemListAdapter";
 	private Context mContext;
 
 	private List<Entry> items = new ArrayList<Entry>();

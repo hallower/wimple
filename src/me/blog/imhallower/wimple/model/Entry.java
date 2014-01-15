@@ -1,8 +1,9 @@
 package me.blog.imhallower.wimple.model;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import me.blog.imhallower.wimple.impl.util.Utils;
 
 import org.json.simple.JSONObject;
 
@@ -44,7 +45,6 @@ public class Entry {
 				entry.get("l_account_id").toString(), entry.get("r_account").toString(), entry.get("r_account_id").toString(), 
 				entry.get("item").toString(), Float.valueOf(entry.get("money").toString()), entry.get("memo").toString(), entry.get("app_id").toString());
 		
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		Long dateLong = 0L;
 		
 		String dateString = entry.get("entry_date").toString();
@@ -54,7 +54,7 @@ public class Entry {
 		}
 		
 		try {
-			Date date = df.parse(dateString);
+			Date date = Utils.getServerDateFormat().parse(dateString);
 			dateLong = date.getTime();
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -134,20 +134,32 @@ public class Entry {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[Section : " + id + " ]------------------------------");
-		sb.append("   date = " + date);
-		sb.append("   leftAccount = " + leftAccount);
-		sb.append("   leftAccountID = " + leftAccountID);
-		sb.append("   rightAccount = " + rightAccount);
-		sb.append("   rightAccountID = " + rightAccountID);
-		sb.append("   amount = " + amount);
-		sb.append("   balance = " + balance);
-		sb.append("   memo = " + memo);
-		sb.append("   appID = " + appID);
-		sb.append("---------------------------------------------------------------------");
+		sb.append("\n-[Section : " + id + " ]------------------------------");
+		sb.append("\n   date = " + date);
+		sb.append("\n   leftAccount = " + leftAccount);
+		sb.append("\n   leftAccountID = " + leftAccountID);
+		sb.append("\n   rightAccount = " + rightAccount);
+		sb.append("\n   rightAccountID = " + rightAccountID);
+		sb.append("\n   amount = " + amount);
+		sb.append("\n   balance = " + balance);
+		sb.append("\n   memo = " + memo);
+		sb.append("\n   appID = " + appID);
+		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();
 	}
 
+
+	@Override
+	public boolean equals(Object o) {
+		
+		if(false == (o instanceof Entry)){
+			return false;
+		}
+		
+		return this.id.equals(((Entry)o).id);
+	}
+
+	
 
 }

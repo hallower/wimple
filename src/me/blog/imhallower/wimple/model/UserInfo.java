@@ -110,12 +110,12 @@ public class UserInfo implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("-[UserInfo : " + id + " ]------------------------------");
-		sb.append("   name = " + name);
-		sb.append("   join since = " + joinDate);
-		sb.append("   userImgUrl = " + userImgURL);
-		sb.append("   mileage = " + mileage);
-		sb.append("---------------------------------------------------------------------");
+		sb.append("\n-[UserInfo : " + id + " ]------------------------------");
+		sb.append("\n   name = " + name);
+		sb.append("\n   join since = " + joinDate);
+		sb.append("\n   userImgUrl = " + userImgURL);
+		sb.append("\n   mileage = " + mileage);
+		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();
 	}

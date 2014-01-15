@@ -22,9 +22,10 @@ public class RestAPIInvoker {
 
 	private static final String LOG_TAG = "RestAPIInvoker";
 	private final IWimpleImpl wimple;
-	
 	public enum HTTP_METHOD { GET, POST, PUT, DELETE }
 
+	private static final boolean isNeedToPrintResult = false;
+	
 	public RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;
 	}	
@@ -80,9 +81,12 @@ public class RestAPIInvoker {
 			}
 
 			String output = response.getEntity(String.class);
-			Log.d(LOG_TAG, "result -------------------------------------------------");
-			Log.d(LOG_TAG, output.toString());
-			Log.d(LOG_TAG, "result -------------------------------------------------");
+			
+			if(RestAPIInvoker.isNeedToPrintResult){
+				Log.d(LOG_TAG, "result -------------------------------------------------");
+				Log.d(LOG_TAG, output.toString());
+				Log.d(LOG_TAG, "result -------------------------------------------------");	
+			}
 
 			if (response.getStatus() != 200 &&
 					response.getStatus() != 201) {
@@ -128,7 +132,9 @@ public class RestAPIInvoker {
 			String value = (String) object.get(key);
 
 			list.put((String) key, value);
-			Log.e(LOG_TAG, "key=" + key.toString() + ", value=" + value);
+			if(RestAPIInvoker.isNeedToPrintResult){
+				Log.e(LOG_TAG, "key=" + key.toString() + ", value=" + value);
+			}
 		}
 
 		return list;

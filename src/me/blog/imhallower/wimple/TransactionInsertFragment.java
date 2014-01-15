@@ -40,7 +40,7 @@ import android.widget.Toast;
 
 public class TransactionInsertFragment extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "TransactionFragment";
+	private final static String LOG_TAG = "TransactionInsertFragment";
 
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	private WimpleActivity mainActivity = null;
@@ -214,6 +214,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			@Override
 			public void onClick(View v) {
 
+				setAmountText(cal.eq());
+				
 				if(false == validateForms()){
 					return;
 				}
