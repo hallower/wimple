@@ -585,11 +585,8 @@ ActionBar.TabListener {
 					setMyInfoOnMenu((UserInfo)obj);
 					break;
 				}
-
-				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
-				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
-				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
-				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :				
+				
+				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :								
 				{
 
 					Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);
@@ -608,6 +605,9 @@ ActionBar.TabListener {
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
 				case CommandID.GET_ALL_SECTION_RECEIVED :
 				case CommandID.GET_ENTRIES_RECEIVED :
+				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
+				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
+				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :					
 				{
 
 					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){

@@ -4,7 +4,7 @@ import org.json.simple.JSONObject;
 
 public class Item {	
 
-	private final String id;	
+	private String id;	
 	private String date;
 	private final String leftAccount;
 	private final String leftAccountID;
@@ -34,8 +34,19 @@ public class Item {
 		this(entry.get("l_account").toString(), entry.get("l_account_id").toString(), 
 				entry.get("r_account").toString(), entry.get("r_account_id").toString(), 
 				entry.get("item").toString(), Double.valueOf(entry.get("money").toString()));
+		
+		try{
+			this.id = entry.get("entry_id").toString();
+		}catch(Exception e){
+			this.id = "";
+		}
+		
+		try{
+			this.date = entry.get("entry_date").toString();
+		}catch(Exception e){
+			this.date = "";
+		}
 	}
-
 
 	public String getId() {
 		return id;
@@ -96,5 +107,24 @@ public class Item {
 		return getItem();
 	}
 
+/*
+	@Override
+	public boolean equals(Object o) {
+		if(false == (o instanceof Item)){
+			return false;
+		}
+		
+		Item item = (Item)o;
+		return id.equals(item.id);
+	}
 
+	int compareTo(Object o){
+		if(false == (o instanceof Item)){
+			return -1;
+		}
+		
+		Item item = (Item)o;
+		return date.compareTo(item.date);
+	}
+*/
 }

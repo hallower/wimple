@@ -191,6 +191,15 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		return -1;
 	}
 
+	
+	public int getSelectedGroupPosition() {
+		return selectedGroupPosition;
+	}
+
+	public int getSelectedChildPosition() {
+		return selectedChildPosition;
+	}
+
 	public Account getSelected(){
 		if(false == this.isSelected){
 			return null;
