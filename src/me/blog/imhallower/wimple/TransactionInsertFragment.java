@@ -62,9 +62,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private TextView txtItemDate; 
 
 	private DatePickerFragment datePicker;
+	
 	// Data
-	private List<String> listDataHeader = new ArrayList<String>();
-
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
 
@@ -113,12 +112,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 		//}
 
-
-		listDataHeader.add("자산");
-		listDataHeader.add("부채");
-		listDataHeader.add("자본");
-		listDataHeader.add("수입");
-		listDataHeader.add("지출");		
 
 		// View, Widget
 
@@ -237,6 +230,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 
+	
 		// latest items
 		List<Item> latestItems = new ArrayList<Item>();
 		listViewLatestItems = (ListView) view.findViewById(R.id.insert_frequent_items);
@@ -251,7 +245,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 
 		});
+		
+		ImageView titleClear = (ImageView) view.findViewById(R.id.insert_title_clear);
+		titleClear.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				txtTitle.setText("");
+			}
+		});
+		
 		// post.. 
 
 		buttons = new TextView[padRIDs.length];
@@ -394,7 +397,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		return true;
 	}
 
-	private void cleanForms(){
+	private void clearForms(){
 		txtTitle.setText("");
 		setAmountText(0.0);
 		// TODO : clear account selection
@@ -455,10 +458,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			{
 				List<String> lHeader = new ArrayList<String>();
-				lHeader.add(listDataHeader.get(0));
-				lHeader.add(listDataHeader.get(1));
-				lHeader.add(listDataHeader.get(2));
-				lHeader.add(listDataHeader.get(4));
+				lHeader.add(getResources().getString(R.string.entry_header_asset_p));
+				lHeader.add(getResources().getString(R.string.entry_header_debt_m));
+				lHeader.add(getResources().getString(R.string.entry_header_capital_m));
+				lHeader.add(getResources().getString(R.string.entry_header_expenses));
 
 				Map<String, List<Account>> lChild = new HashMap<String, List<Account>>();
 				lChild.put(lHeader.get(0), assets);
@@ -473,10 +476,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			{
 				List<String> rHeader = new ArrayList<String>();
-				rHeader.add(listDataHeader.get(0));
-				rHeader.add(listDataHeader.get(1));
-				rHeader.add(listDataHeader.get(2));
-				rHeader.add(listDataHeader.get(3));
+				rHeader.add(getResources().getString(R.string.entry_header_asset_m));
+				rHeader.add(getResources().getString(R.string.entry_header_debt_p));
+				rHeader.add(getResources().getString(R.string.entry_header_capital_p));
+				rHeader.add(getResources().getString(R.string.entry_header_income));
 
 				Map<String, List<Account>> rChild = new HashMap<String, List<Account>>();
 				rChild.put(rHeader.get(0), assets);
@@ -496,7 +499,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		{			
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
-				cleanForms();
+				clearForms();
 				wimple.getLatestItems(true);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
