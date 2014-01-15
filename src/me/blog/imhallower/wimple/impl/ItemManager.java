@@ -57,6 +57,7 @@ public class ItemManager {
 				return;
 			}
 
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONObject results = (JSONObject) json.get("results");
 			for(Object type : results.keySet()){
 
@@ -110,6 +111,7 @@ public class ItemManager {
 				return;
 			}
 
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONArray results = (JSONArray) json.get("results");
 			for(int i = 0; i < results.size(); i++){
 				JSONObject row = (JSONObject) results.get(i);

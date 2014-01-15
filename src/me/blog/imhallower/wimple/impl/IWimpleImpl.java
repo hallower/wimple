@@ -23,6 +23,9 @@ public interface IWimpleImpl {
 
 	public abstract Boolean isAuthed();
 	
+	public abstract Integer getRemainedAPICall();
+	
+	public abstract void setRemainedAPICall(String count);
 	
 	
 	public void sm(int cmd, Object msg);

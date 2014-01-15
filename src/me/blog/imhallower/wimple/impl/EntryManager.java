@@ -98,6 +98,7 @@ public class EntryManager {
 				return;
 			}
 
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONObject results = (JSONObject) json.get("results");
 			for(Object type : results.keySet()){
 
@@ -157,7 +158,8 @@ public class EntryManager {
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 				return;
 			}
-
+			
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONArray results = (JSONArray) json.get("results");
 			for(int i = 0; i < results.size(); i++){
 				JSONObject row = (JSONObject) results.get(i);
