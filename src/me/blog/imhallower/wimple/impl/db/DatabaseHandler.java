@@ -20,7 +20,7 @@ public class DatabaseHandler{
 
 	private static final String LOG_TAG = "DatabaseHandler";	
 
-	private static final boolean NEEDTOREMOVEALLTABLES = true;
+	private static final boolean NEEDTOREMOVEALLTABLES = false;
 	private static final boolean DEBUGALLDATAS = false;
 
 	private static PromiseDatabase dbms = null;	
