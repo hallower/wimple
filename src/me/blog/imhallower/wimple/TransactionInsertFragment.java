@@ -94,7 +94,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context;		
 
 		// Data 
 		view = (LinearLayout)inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
@@ -111,7 +111,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			ar.recycle();        
 		}
 		//}
-
 
 		// View, Widget
 
@@ -303,6 +302,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		setAmountText(0.0);
 
+		initWimple();
+		
 		return view;
 	}
 
