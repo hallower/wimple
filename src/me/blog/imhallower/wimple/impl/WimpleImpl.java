@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import me.blog.imhallower.wimple.impl.db.AccountDBHandler;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
@@ -41,7 +42,9 @@ public class WimpleImpl implements IWimpleImpl {
 	private final EntryManager em = new EntryManager(this);
 	private final ItemManager im = new ItemManager(this);
 	private final RestAPIInvoker rai;
+
 	private UserInfoDBHandler uidbh = null;
+	private AccountDBHandler adbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -55,7 +58,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public UserInfo userInfo = null;
 	public Collection<Section> sectionList = null;
 	public String accountSectionID;
-	public Collection<Account> accountList = null; 
+	//public Collection<Account> accountList = null; 
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
 
@@ -121,6 +124,10 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(null == uidbh){
 			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
+		}
+		
+		if(null == adbh){
+			adbh = new AccountDBHandler(WimpleImpl.context);    
 		}
 	}
 
@@ -595,15 +602,17 @@ public class WimpleImpl implements IWimpleImpl {
 		return true;
 	}
 
-	public boolean getAllAccounts(){
+	public boolean getAllAccounts(boolean forceUpdate){
 
+		/*
 		if(false == isAuthed ||
 				null == firstSectionID ||
 				firstSectionID.isEmpty()){
 			return false;
 		}
+		*/
 
-		new GetAllAccountsTaskThread(firstSectionID, "").start();		
+		new GetAllAccountsTaskThread(firstSectionID, "", forceUpdate).start();		
 		return true;
 	}
 
@@ -615,7 +624,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		new GetAllAccountsTaskThread(firstSectionID, dateFilter).start();		
+		new GetAllAccountsTaskThread(firstSectionID, dateFilter, false).start();		
 		return true;
 	}
 
@@ -623,19 +632,21 @@ public class WimpleImpl implements IWimpleImpl {
 
 		final String sectionID;
 		final String dateFilter;
+		final Boolean forceUpdate;
 
-		GetAllAccountsTaskThread(String sectionID, String dateFilter){
+		GetAllAccountsTaskThread(String sectionID, String dateFilter, Boolean forceUpdate){
 			this.sectionID = sectionID;
 			this.dateFilter = dateFilter;
+			this.forceUpdate = forceUpdate;
 		}
 
 		@Override
 		public void run() {
 
-			// TODO : accountList update!!!
-			// TODO : DBMS
-			if(null != accountList){
+			if((false == forceUpdate) &&
+					adbh.hasData()){
 
+				Collection<Account> accountList = adbh.getAllAccounts();
 				Collection<Account> list = new ArrayList<Account>();
 				for(Account item : accountList){
 					String open = item.getOpenedDate();
@@ -655,17 +666,24 @@ public class WimpleImpl implements IWimpleImpl {
 
 					}
 					catch(Exception e){
-						Log.d(LOG_TAG, "Providing GetAllAccountsTaskThread from Cache!!!");
-						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, accountList);
+						Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Cache!!!");
+						sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, accountList);
 						return;
 					}					
 
 				}
-				Log.d(LOG_TAG, "Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
 				return;
 			}
 
+			Collection<Account> list = new ArrayList<Account>();
+			
+			if(null == firstSectionID ||
+					firstSectionID.isEmpty()){
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+			}
+					
 			String path = "?section_id=" + sectionID;
 
 			if(false == dateFilter.isEmpty()){				
@@ -678,8 +696,7 @@ public class WimpleImpl implements IWimpleImpl {
 				catch(Exception e){
 					//ignore
 				}
-			}
-			Collection<Account> list = new ArrayList<Account>();
+			}			
 
 			try{
 				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
@@ -699,16 +716,16 @@ public class WimpleImpl implements IWimpleImpl {
 					}
 				}
 			} catch(Exception e){
-				Log.e(LOG_TAG, "Failed - GetAllAccountsTaskThread!!!");
+				Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
 				e.printStackTrace();				
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 			}
 
 			// TODO : insert list to DB!!!
-			accountList = list;	
+			adbh.insert(list);
 			accountSectionID = sectionID;
 
-			Log.d(LOG_TAG, "Providing GetAllAccountsTaskThread from Server!!!");
+			Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
 		}			
 
@@ -780,7 +797,9 @@ public class WimpleImpl implements IWimpleImpl {
 		String name = "?";
 
 		try{
-			for(Account account : this.accountList){
+			Collection<Account> accountList = adbh.getAllAccounts();
+			
+			for(Account account : accountList){
 				if(0 == accountCode.compareTo(account.getId())){
 					return account.getTitle();
 				}
