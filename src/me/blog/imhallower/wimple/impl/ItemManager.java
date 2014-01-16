@@ -19,10 +19,6 @@ public class ItemManager {
 	
 	private final IWimpleImpl wimpl;
 	
-	
-	// TODO : DBMS
-	private Collection<Item> listLatestItem; 
-	
 
 	public ItemManager(IWimpleImpl wimpl) {
 		super();
@@ -52,7 +48,8 @@ public class ItemManager {
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
-			if(null == json){
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
 				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 				return;
 			}
@@ -93,20 +90,29 @@ public class ItemManager {
 		@Override
 		public void run() {
 
-			if(null != listLatestItem &&
-					false == forceUpdate){
-				Log.d(LOG_TAG, "Providing GetLatestItems from Cache!!!");
-				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, listLatestItem);
+			if(false == forceUpdate &&
+					wimpl.getIDBHandler().hasData() ){
+				Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Cache!!!");
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, wimpl.getIDBHandler().getAllItems());
+				return;
 			}
 			
 			Collection<Item> list = new ArrayList<Item>();
+			if(null == sectionID ||
+					sectionID.isEmpty()){
+				Log.d(LOG_TAG, "[Latest Item] Failed - invalid sectionID !!!");
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
+				return;
+			}
+			
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = null; 
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_LATEST + path, "");
 
-			if(null == json){
-				Log.d(LOG_TAG, "Failed - GetLatestItems from Server!!!");
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
+				Log.d(LOG_TAG, "[Latest Item] Failed - GetLatestItems from Server!!!");
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 				return;
 			}
@@ -118,9 +124,9 @@ public class ItemManager {
 
 				list.add(new Item(row));
 			}
-			listLatestItem = list;
-			Log.d(LOG_TAG, "Providing GetLatestItems from Server!!!");
-			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, listLatestItem);
+			wimpl.getIDBHandler().insert(list);
+			Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Server!!!");
+			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, list);
 		}			
 
 	}

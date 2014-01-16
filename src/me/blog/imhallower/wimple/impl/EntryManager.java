@@ -154,7 +154,8 @@ public class EntryManager {
 			JSONObject json = null; 
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
 
-			if(null == json){
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 				return;
 			}
@@ -227,7 +228,8 @@ public class EntryManager {
 			
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.POST, Path.ENTRIES_LATEST, path);
 
-			if(null == json){
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
 			}

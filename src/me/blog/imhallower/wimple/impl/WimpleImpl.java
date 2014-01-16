@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.db.AccountDBHandler;
+import me.blog.imhallower.wimple.impl.db.ItemDBHandler;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
@@ -45,6 +46,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	private UserInfoDBHandler uidbh = null;
 	private AccountDBHandler adbh = null;
+	private ItemDBHandler idbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -52,7 +54,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	// Data
 	private int CountOfRemainedAPICall = -1;
-	
+
 	// Temporary!!!
 	public String firstSectionID;
 	public UserInfo userInfo = null;
@@ -125,9 +127,13 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == uidbh){
 			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
 		}
-		
+
 		if(null == adbh){
 			adbh = new AccountDBHandler(WimpleImpl.context);    
+		}
+
+		if(null == idbh){
+			idbh = new ItemDBHandler(WimpleImpl.context);    
 		}
 	}
 
@@ -163,6 +169,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private final Semaphore authInProgress = new Semaphore(0);
 	private static Integer sequence = 10000;
 	private boolean isAuthed = false;
+	private boolean isInitializedFinished = false;
 
 	public static final class Path {
 
@@ -335,8 +342,7 @@ public class WimpleImpl implements IWimpleImpl {
 				}else{
 					Log.d(LOG_TAG, "CMD_GET_ACCESS_TOKEN is failed!!!");
 				}
-				responseListener.onGetAuthAccessToken(booleanStatus, list);
-				statusListener.onLoggedIn(booleanStatus);
+				responseListener.onGetAuthAccessToken(booleanStatus, list);				
 			}
 			break;
 
@@ -345,6 +351,8 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_SECTIONS :
+				isInitializedFinished = true;
+				statusListener.onLoggedIn(booleanStatus);
 				responseListener.onGetAllSectionResponseReceived(booleanStatus, (Collection<Section>) obj);
 				break;
 
@@ -393,12 +401,16 @@ public class WimpleImpl implements IWimpleImpl {
 	 */
 
 	public Boolean isAuthed(){
-		return isAuthed;
+		return this.isAuthed;
+	}
+	
+	public Boolean isInitializedFinished(){
+		return this.isInitializedFinished;
 	}
 
 	public Boolean getTempToken(){
 
-		if(isAuthed){
+		if(isAuthed()){
 			// TODO : how to handle this?
 			return false;
 		}
@@ -434,8 +446,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public Boolean getAccessToken(String token, String pin){
 
-		if(isAuthed){
-			// TODO : how to handle this?
+		if(isAuthed()){
+			Log.e(LOG_TAG, "[getAccessToken] Already authenticated.");
 			return false;
 		}
 
@@ -479,7 +491,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllSections(){
 
-		if(false == isAuthed){
+		if(false == isAuthed()){
+			Log.e(LOG_TAG, "[getAllSections] Already authenticated.");
 			return false;
 		}
 
@@ -529,7 +542,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getUserInfo(){
 
-		if(false == isAuthed){
+		if(false == isAuthed()){
+			Log.e(LOG_TAG, "[getUserInfo] Already authenticated.");
 			return false;
 		}
 
@@ -563,7 +577,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getDefaultSections(){
 
-		if(false == isAuthed){
+		if(false == isAuthed()){
+			Log.e(LOG_TAG, "[getDefaultSections] Already authenticated.");
 			return false;
 		}
 
@@ -604,26 +619,22 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllAccounts(boolean forceUpdate){
 
-		/*
-		if(false == isAuthed ||
-				null == firstSectionID ||
-				firstSectionID.isEmpty()){
+		if((true == forceUpdate) &&
+				(false == isInitializedFinished())){
+			Log.e(LOG_TAG, "[getAllAccounts] Initialization is on progressing.");
 			return false;
 		}
-		*/
 
 		new GetAllAccountsTaskThread(firstSectionID, "", forceUpdate).start();		
 		return true;
 	}
 
 	public boolean getAllAccounts(String dateFilter){
-
-		if(false == isAuthed ||
-				null == firstSectionID ||
-				firstSectionID.isEmpty()){
+		/*
+		if(false == isInitializedFinished()){
 			return false;
 		}
-
+ 		*/
 		new GetAllAccountsTaskThread(firstSectionID, dateFilter, false).start();		
 		return true;
 	}
@@ -678,12 +689,13 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 
 			Collection<Account> list = new ArrayList<Account>();
-			
+
 			if(null == firstSectionID ||
 					firstSectionID.isEmpty()){
+				Log.d(LOG_TAG, "[Account] Failed - invalid sectionID !!!");
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 			}
-					
+
 			String path = "?section_id=" + sectionID;
 
 			if(false == dateFilter.isEmpty()){				
@@ -700,7 +712,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
-				if(null == json){
+				if(null == json ||
+						false == json.get("code").toString().startsWith("2")){
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
@@ -717,7 +730,7 @@ public class WimpleImpl implements IWimpleImpl {
 				}
 			} catch(Exception e){
 				Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
-				e.printStackTrace();				
+				e.printStackTrace();
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 			}
 
@@ -734,7 +747,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllEntries(String latestDate, String oldestDate){
 
-		if(false == isAuthed){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getAllEntries] Initialization is on progressing.");
 			return false;
 		}
 
@@ -743,7 +757,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllEntries(String latestDate, String oldestDate, int count){
 
-		if(false == isAuthed){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getAllEntries] Initialization is on progressing.");
 			return false;
 		}
 
@@ -753,7 +768,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getLatestEntries(int count, boolean noDuplicate){
 
-		if(false == isAuthed){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getLatestEntries] Initialization is on progressing.");
 			return false;
 		}
 
@@ -762,7 +778,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean makeEntry(Long date, Account left, Account right, 
 			String title, Double amount, String memo){
-		if(false == isAuthed){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[makeEntry] Initialization is on progressing.");
 			return false;
 		}
 
@@ -770,7 +787,8 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean getFrequentItems(){
-		if(false == isAuthed){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getFrequentItems] Initialization is on progressing.");
 			return false;
 		}
 
@@ -778,15 +796,21 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean getLatestItems(){
-		if(false == isAuthed){
+		/*
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getLatestItems] Initialization is on progressing.");
 			return false;
 		}
+		 */
 
 		return im.getLatestItems(firstSectionID, false);
 	}
 
 	public boolean getLatestItems(boolean forceUpdate){
-		if(false == isAuthed){
+
+		if((true == forceUpdate) &&
+				(false == isInitializedFinished())){
+			Log.e(LOG_TAG, "[getLatestItems] Initialization is on progressing.");
 			return false;
 		}
 
@@ -798,7 +822,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		try{
 			Collection<Account> accountList = adbh.getAllAccounts();
-			
+
 			for(Account account : accountList){
 				if(0 == accountCode.compareTo(account.getId())){
 					return account.getTitle();
@@ -818,12 +842,17 @@ public class WimpleImpl implements IWimpleImpl {
 
 	@Override
 	public void setRemainedAPICall(String count) {
-		
+
 		try{
 			CountOfRemainedAPICall = Integer.parseInt(count);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		Log.d(LOG_TAG, "Remained API call count = " + CountOfRemainedAPICall);
+	}
+
+	@Override
+	public ItemDBHandler getIDBHandler() {		
+		return idbh;
 	}
 }

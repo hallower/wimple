@@ -1,12 +1,18 @@
 package me.blog.imhallower.wimple.impl;
 
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import me.blog.imhallower.wimple.impl.db.ItemDBHandler;
 
 import org.json.simple.JSONObject;
 
 
 public interface IWimpleImpl {
 
+	// subsystem
+	public ItemDBHandler getIDBHandler();
+	
+	// getter
+	
 	public abstract String getServicehost();
 	
 	public abstract String getAppid();

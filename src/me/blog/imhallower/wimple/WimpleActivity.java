@@ -409,7 +409,7 @@ ActionBar.TabListener {
 				if(status){
 					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");
 					wimple.getAllAccounts(true);
-					wimple.getLatestItems();
+					wimple.getLatestItems(true);
 				}else{
 					sm(CommandID.WIMPLE_LOGGIN_FAILED, "");
 				}
