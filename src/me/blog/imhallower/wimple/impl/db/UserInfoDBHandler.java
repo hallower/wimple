@@ -17,7 +17,7 @@ public class UserInfoDBHandler {
 	 * 	columns.append(4,  "mileage");
 	 */
 
-	private static String LOG_TAG = "UserInfoDBHandler";
+	//private static String LOG_TAG = "UserInfoDBHandler";
 	private static String tableName = "userinfo";
 	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 			"id TEXT PRIMARY KEY, " +
@@ -39,16 +39,11 @@ public class UserInfoDBHandler {
 
 
 
-	public boolean cleanAndInsert(Collection<UserInfo> sessions) {
+	public boolean cleanAndInsert(UserInfo userinfo) {
 		boolean res = false;
 
 		dbHandler.deleteAll();
-
-		if(sessions.isEmpty()){
-			return true;
-		}
-
-		dbHandler.addItems(sessions);
+		dbHandler.addItem(userinfo);
 		dbHandler.showAll();
 		return res;
 	}
@@ -68,5 +63,11 @@ public class UserInfoDBHandler {
 		dbHandler.showAll();
 		return info;
 	}
+	
+
+	public boolean hasData() {
+		return dbHandler.getCount("id", WimpleImpl.getInstance().getUserID()) > 0;
+	}
+
 
 }
