@@ -1,6 +1,7 @@
 package me.blog.imhallower.wimple.impl;
 
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import me.blog.imhallower.wimple.impl.db.EntryDBHandler;
 import me.blog.imhallower.wimple.impl.db.ItemDBHandler;
 
 import org.json.simple.JSONObject;
@@ -9,7 +10,8 @@ import org.json.simple.JSONObject;
 public interface IWimpleImpl {
 
 	// subsystem
-	public ItemDBHandler getIDBHandler();
+	public ItemDBHandler getItemDBHandler();
+	public EntryDBHandler getEntryDBHandler();
 	
 	// getter
 	

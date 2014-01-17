@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.db.AccountDBHandler;
+import me.blog.imhallower.wimple.impl.db.EntryDBHandler;
 import me.blog.imhallower.wimple.impl.db.ItemDBHandler;
 import me.blog.imhallower.wimple.impl.db.SectionDBHandler;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
@@ -49,6 +50,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private AccountDBHandler adbh = null;
 	private ItemDBHandler idbh = null;
 	private SectionDBHandler sdbh = null;
+	private EntryDBHandler edbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -134,6 +136,10 @@ public class WimpleImpl implements IWimpleImpl {
 		
 		if(null == sdbh){
 			sdbh = new SectionDBHandler(WimpleImpl.context);
+		}
+
+		if(null == edbh){
+			edbh = new EntryDBHandler(WimpleImpl.context);
 		}
 	}
 
@@ -549,7 +555,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if((false == forceUpdate) && 
 				(false == isAuthed())){
-			Log.e(LOG_TAG, "[getUserInfo] Already authenticated.");
+			Log.e(LOG_TAG, "[User Info] Already authenticated.");
 			return false;
 		}
 
@@ -573,7 +579,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if((true == forceUpdate) &&
 					(true == uidbh.hasData())){
-				Log.d(LOG_TAG, "[GetUserInfoTaskThread] Providing User Information from Cache");
+				Log.d(LOG_TAG, "[User Info] Providing User Information from Cache");
 				sm(CommandID.CMD_GET_USER_INFO, 1, 0, uidbh.get());
 				return;
 			}
@@ -582,7 +588,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[GetUserInfoTaskThread] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[User Info] Error response" + json.get("message").toString());
 				sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
 				return;
 			}
@@ -601,7 +607,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public boolean getDefaultSections(Boolean forceUpdate){
 
 		if(false == isAuthed()){
-			Log.e(LOG_TAG, "[getDefaultSections] Already authenticated.");
+			Log.e(LOG_TAG, "[Default Sections] Already authenticated.");
 			return false;
 		}
 
@@ -624,7 +630,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if((true == forceUpdate) &&
 					(true == sdbh.hasData())){
-				Log.d(LOG_TAG, "[getDefaultSections] Providing Section from Cache");
+				Log.d(LOG_TAG, "[Default Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
@@ -635,7 +641,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[getDefaultSections] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[Default Sections] Error response" + json.get("message").toString());
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
 				return;
 			}
@@ -645,7 +651,7 @@ public class WimpleImpl implements IWimpleImpl {
 			Object isolation = results.get("isolation");
 			if(null != isolation &&
 					0 == isolation.toString().compareToIgnoreCase("n")){
-				Log.e(LOG_TAG, "[getDefaultSections] No Default Sections");
+				Log.e(LOG_TAG, "[Default Sections] No Default Sections");
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);					
 				return;
 			}
@@ -653,7 +659,7 @@ public class WimpleImpl implements IWimpleImpl {
 			sdbh.insert(section);
 			list = sdbh.getAllSections();
 			defaultSectionID = ((Section)list.toArray()[0]).getId();			
-			Log.d(LOG_TAG, "[getDefaultSections] Providing Section from Server");
+			Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
 			sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 		}			
 
@@ -663,7 +669,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if((true == forceUpdate) &&
 				(false == isInitializedFinished())){
-			Log.e(LOG_TAG, "[getAllAccounts] Initialization is on progressing.");
+			Log.e(LOG_TAG, "[Account] Initialization is on progressing.");
 			return false;
 		}
 
@@ -757,7 +763,7 @@ public class WimpleImpl implements IWimpleImpl {
 				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
 				if(null == json ||
 						false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[GetAllAccountsTaskThread] Error response" + json.get("message").toString());
+					Log.e(LOG_TAG, "[Account] Error response" + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
@@ -787,6 +793,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 	}
 
+	public boolean getStoredEntries(){
+		return em.getStoredEntries();
+	}
 
 	public boolean getAllEntries(String latestDate, String oldestDate){
 
@@ -895,7 +904,12 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	@Override
-	public ItemDBHandler getIDBHandler() {		
+	public ItemDBHandler getItemDBHandler() {		
 		return idbh;
+	}
+
+	@Override
+	public EntryDBHandler getEntryDBHandler() {
+		return edbh;
 	}
 }

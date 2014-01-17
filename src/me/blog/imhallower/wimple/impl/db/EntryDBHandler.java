@@ -3,43 +3,44 @@ package me.blog.imhallower.wimple.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import me.blog.imhallower.wimple.model.Account;
+import me.blog.imhallower.wimple.impl.util.Utils;
+import me.blog.imhallower.wimple.model.Entry;
 import android.content.Context;
 
-public class AccountDBHandler {
+public class EntryDBHandler {
 
-	private static String tableName = "accountinfo";
+	private static String tableName = "entryinfo";
 	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"what TEXT, " +
 			"id TEXT, " +
-			"type TEXT, " +
-			"title TEXT, " +
-			"description TEXT, " +
-			"openedDate TEXT, " +
-			"closedDate TEXT, " +
-			"category TEXT, " +
-			"useDate TEXT, " +
-			"payDate TEXT, " +
-			"payAccount TEXT, " +
+			"date TEXT, " +
+			"leftAccount TEXT, " +
+			"leftAccountID TEXT, " +
+			"rightAccount TEXT, " +
+			"rightAccountID TEXT, " +
+			"item TEXT, " +
+			"amount TEXT, " +
+			"balance TEXT, " +
+			"memo TEXT, " +
+			"appID TEXT, " +
 
 			"PRIMARY KEY (id)" +
 			") ";
 
 	private static DatabaseHandler dbHandler = null;
 
-	public AccountDBHandler(Context context) {
+	public EntryDBHandler(Context context) {
 		super();
 
 		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
-		dbHandler.setColumns(Account.columns);
+		dbHandler.setColumns(Entry.columns);
 	}
 
-	public boolean insert(Account data) {
+	public boolean insert(Entry data) {
 		if(data instanceof IDatabaseRecord){
 			return dbHandler.addItem(data);
 		}
-		//dbHandler.showAll();
+		dbHandler.showAll();
 		return false;
 	}
 
@@ -48,11 +49,15 @@ public class AccountDBHandler {
 	}
 
 	public void clean(){
-		//dbHandler.delete("user_id", ee.getInstance().getProfileID());
 		dbHandler.deleteAll();
 	}
+	
+	public void cleanOldEntries(Long date){
+		String dateString = Utils.getServerDateString(date);
+		dbHandler.delete("date < " + dateString);
+	}
 
-	public boolean insert(Collection<Account> data) {
+	public boolean insert(Collection<Entry> data) {
 		boolean res = false;
 
 		if(data==null || data.isEmpty()){
@@ -60,7 +65,7 @@ public class AccountDBHandler {
 		}
 
 		// TODO : use TCL
-		for(Account act : (Collection<Account>)data) {
+		for(Entry act : (Collection<Entry>)data) {
 
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
@@ -71,14 +76,14 @@ public class AccountDBHandler {
 	}
 
 	/*
-    private Collection<Account> get(String where){
-    	Collection<Account> acts = new ArrayList<Account>();
+    private Collection<Entry> get(String where){
+    	Collection<Entry> acts = new ArrayList<Entry>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
 
     	Log.d(tableName, where);
 
     	for(IDatabaseRecord record : records){
-    		Account data = new Account();
+    		Entry data = new Entry();
 
     		if(false == data.setValues(record.getValues())){
     			continue;
@@ -91,12 +96,12 @@ public class AccountDBHandler {
     }
 	 */
 
-	public Collection<Account> getAllAccounts(){
-		Collection<Account> acts = new ArrayList<Account>();
+	public Collection<Entry> getAllEntrys(){
+		Collection<Entry> acts = new ArrayList<Entry>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){
-			Account data = new Account();
+			Entry data = new Entry();
 
 			if(false == data.setValues(record.getValues())){
 				continue;
@@ -104,7 +109,7 @@ public class AccountDBHandler {
 			acts.add(data);
 		}
 
-		//dbHandler.showAll();
+		dbHandler.showAll();
 		return acts;
 	}
 

@@ -50,7 +50,7 @@ public class ItemManager {
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[GetFrequentItemsTaskThread] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[Frequent Item] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 				return;
 			}
@@ -66,6 +66,7 @@ public class ItemManager {
 					list.add(new Item(row));
 				}
 			}
+			Log.d(LOG_TAG, "[Frequent Item] Providing Frequent Items");
 			wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 1, 0, list);
 		}			
 
@@ -92,9 +93,10 @@ public class ItemManager {
 		public void run() {
 
 			if(false == forceUpdate &&
-					wimpl.getIDBHandler().hasData() ){
+					null != wimpl.getItemDBHandler() &&
+					wimpl.getItemDBHandler().hasData() ){
 				Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Cache!!!");
-				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, wimpl.getIDBHandler().getAllItems());
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, wimpl.getItemDBHandler().getAllItems());
 				return;
 			}
 			
@@ -125,7 +127,7 @@ public class ItemManager {
 
 				list.add(new Item(row));
 			}
-			wimpl.getIDBHandler().insert(list);
+			wimpl.getItemDBHandler().insert(list);
 			Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Server!!!");
 			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, list);
 		}			

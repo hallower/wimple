@@ -19,7 +19,7 @@ import android.util.Log;
 public class EntryManager {
 
 	private static final String LOG_TAG = "EntryManager";
-	
+
 	private final IWimpleImpl wimpl;	
 
 	private final String formatEntryPost = "[{" +
@@ -38,8 +38,23 @@ public class EntryManager {
 		this.wimpl = wimpl;
 	}
 
-	
-	
+	public boolean getStoredEntries(){
+
+		if(null == wimpl.getEntryDBHandler()){
+			return false;
+		}
+
+		new Thread(){
+			@Override
+			public void run() {
+				Log.d(LOG_TAG, "[StoredEntries] Providing Stored Entries from Cache.");
+				wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, wimpl.getEntryDBHandler().getAllEntrys());
+			}			
+		}.start();
+
+		return true;
+	}
+
 	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate){
 
 		new GetAllEntriesTaskThread(sectionID, latestDate, oldestDate, 0).start();		
@@ -61,12 +76,12 @@ public class EntryManager {
 
 	public boolean makeEntry(String sectionID, Long date, Account left, Account right, 
 			String title, Double amount, String memo){
-		
+
 		new PostEntryTaskThread(sectionID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
-	
-	
+
+
 	private class GetAllEntriesTaskThread extends Thread{
 
 		final String sectionID;
@@ -94,7 +109,7 @@ public class EntryManager {
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[GetAllEntriesTaskThread] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[AllEntries] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 				return;
 			}
@@ -127,9 +142,10 @@ public class EntryManager {
 					list.add(item);
 				}
 			}
+			Log.d(LOG_TAG, "[AllEntries] Providing All Entries from Server");
+			wimpl.getEntryDBHandler().insert(list);
 			wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
-		}			
-
+		}
 	}
 
 	private class GetLatestEntriesTaskThread extends Thread{
@@ -151,17 +167,17 @@ public class EntryManager {
 			if(0 > count){
 				path += "&limit=" + count;
 			}
-			
+
 			JSONObject json = null; 
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[GetLatestEntriesTaskThread] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[LatestEntries] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 				return;
 			}
-			
+
 			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONArray results = (JSONArray) json.get("results");
 			for(int i = 0; i < results.size(); i++){
@@ -182,11 +198,12 @@ public class EntryManager {
 
 				list.add(item);
 			}
+			Log.d(LOG_TAG, "[LatestEntries] Providing Latest Entries from Server");
 			wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 1, 0, list);
 		}			
 
 	}
-	
+
 	private class PostEntryTaskThread extends Thread{
 
 		final String sectionID;
@@ -225,16 +242,17 @@ public class EntryManager {
 			String path = "section_id=" + sectionID + "&data_type=json" + "&entries=" + pushingContent;
 
 			Log.d(LOG_TAG, path);
-			
+
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.POST, Path.ENTRIES_LATEST, path);
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[PostEntryTaskThread] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[PostEntry] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
 			}
 
+			Log.d(LOG_TAG, "[PostEntry] Providing response");
 			wimpl.sm(CommandID.CMD_POST_ENTRY, 1, 0, "");
 		}
 

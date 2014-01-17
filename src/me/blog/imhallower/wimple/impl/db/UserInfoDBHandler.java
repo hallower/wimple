@@ -60,10 +60,10 @@ public class UserInfoDBHandler {
 			info.setValues(record.getValues());
 		}
 
-		dbHandler.showAll();
+		//dbHandler.showAll();
 		return info;
 	}
-	
+
 
 	public boolean hasData() {
 		return dbHandler.getCount("id", WimpleImpl.getInstance().getUserID()) > 0;

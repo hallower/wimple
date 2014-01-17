@@ -225,9 +225,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					return;
 				}
 
-				wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
+				boolean res = wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
 						leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 						txtTitle.getText().toString(), amount, "");
+				
+				if(false == res){
+					Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+				}
 			}
 		});
 

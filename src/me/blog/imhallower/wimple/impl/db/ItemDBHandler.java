@@ -36,7 +36,7 @@ public class ItemDBHandler {
         if(data instanceof IDatabaseRecord){
             return dbHandler.addItem(data);
         }
-        dbHandler.showAll();
+        //dbHandler.showAll();
         return false;
     }
     
@@ -101,7 +101,7 @@ public class ItemDBHandler {
     		acts.add(data);
     	}
 
-    	dbHandler.showAll();
+    	//dbHandler.showAll();
     	return acts;
     }
        
