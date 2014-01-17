@@ -50,6 +50,7 @@ public class ItemManager {
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[GetFrequentItemsTaskThread] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 				return;
 			}
@@ -100,7 +101,7 @@ public class ItemManager {
 			Collection<Item> list = new ArrayList<Item>();
 			if(null == sectionID ||
 					sectionID.isEmpty()){
-				Log.d(LOG_TAG, "[Latest Item] Failed - invalid sectionID !!!");
+				Log.e(LOG_TAG, "[Latest Item] Failed - invalid sectionID !!!");
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 				return;
 			}
@@ -112,7 +113,7 @@ public class ItemManager {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.d(LOG_TAG, "[Latest Item] Failed - GetLatestItems from Server!!!");
+				Log.d(LOG_TAG, "[Latest Item] Failed - GetLatestItems from Server!!!" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 				return;
 			}

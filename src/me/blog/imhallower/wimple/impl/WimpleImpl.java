@@ -12,6 +12,7 @@ import java.util.concurrent.Semaphore;
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.db.AccountDBHandler;
 import me.blog.imhallower.wimple.impl.db.ItemDBHandler;
+import me.blog.imhallower.wimple.impl.db.SectionDBHandler;
 import me.blog.imhallower.wimple.impl.db.UserInfoDBHandler;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
@@ -47,6 +48,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private UserInfoDBHandler uidbh = null;
 	private AccountDBHandler adbh = null;
 	private ItemDBHandler idbh = null;
+	private SectionDBHandler sdbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -54,13 +56,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	// Data
 	private int CountOfRemainedAPICall = -1;
-
-	// Temporary!!!
-	public String firstSectionID;
-	public UserInfo userInfo = null;
-	public Collection<Section> sectionList = null;
-	public String accountSectionID;
-	//public Collection<Account> accountList = null; 
+	private String defaultSectionID;
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
 
@@ -134,6 +130,10 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(null == idbh){
 			idbh = new ItemDBHandler(WimpleImpl.context);    
+		}
+		
+		if(null == sdbh){
+			sdbh = new SectionDBHandler(WimpleImpl.context);
 		}
 	}
 
@@ -351,6 +351,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_SECTIONS :
+			case CommandID.CMD_GET_SECTIONS_DEFAULT :
 				isInitializedFinished = true;
 				statusListener.onLoggedIn(booleanStatus);
 				responseListener.onGetAllSectionResponseReceived(booleanStatus, (Collection<Section>) obj);
@@ -403,7 +404,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public Boolean isAuthed(){
 		return this.isAuthed;
 	}
-	
+
 	public Boolean isInitializedFinished(){
 		return this.isInitializedFinished;
 	}
@@ -411,7 +412,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public Boolean getTempToken(){
 
 		if(isAuthed()){
-			// TODO : how to handle this?
+			Log.e(LOG_TAG, "[getTempToken] Already authenticated.");
 			return false;
 		}
 
@@ -423,6 +424,7 @@ public class WimpleImpl implements IWimpleImpl {
 				Map<String, String> list = rai.invokeRESTAPIForMap(Path.AUTH_REQUEST_TOKEN, params);				
 
 				if(null == list){
+					Log.e(LOG_TAG, "[getTempToken] failed.");
 					sm(CommandID.CMD_GET_TEMP_TOKEN, 0, 0, new HashMap<String, String>());
 					return;
 				}
@@ -475,6 +477,7 @@ public class WimpleImpl implements IWimpleImpl {
 			Map<String, String> list = rai.invokeRESTAPIForMap(Path.AUTH_ACCESS_TOKEN, params);
 
 			if(null == list){
+				Log.e(LOG_TAG, "[GetAccessTokenTaskThread] failed.");
 				sm(CommandID.CMD_GET_ACCESS_TOKEN, 0, 0, new HashMap<String, String>());
 				return;
 			}
@@ -488,7 +491,7 @@ public class WimpleImpl implements IWimpleImpl {
 			sm(CommandID.CMD_GET_ACCESS_TOKEN, 1, 0, list);
 		}
 	}
-
+/*
 	public boolean getAllSections(){
 
 		if(false == isAuthed()){
@@ -509,7 +512,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 				JSONObject json = rai.invokeGET(Path.SECTIONS_ALL);
 
-				if(null == json){
+				if(null == json ||
+						false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[getAllSections] Error response" + json.get("message").toString());
 					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
 				}
@@ -531,90 +536,127 @@ public class WimpleImpl implements IWimpleImpl {
 
 				// TODO : insert into DB
 				sectionList = list;
-				firstSectionID = ((Section)list.toArray()[0]).getId();
+				defaultSectionID = ((Section)list.toArray()[0]).getId();
 				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
 			}			
 
 		}.start();		
 		return true;
 	}
+*/
 
+	public boolean getUserInfo(boolean forceUpdate){
 
-	public boolean getUserInfo(){
-
-		if(false == isAuthed()){
+		if((false == forceUpdate) && 
+				(false == isAuthed())){
 			Log.e(LOG_TAG, "[getUserInfo] Already authenticated.");
 			return false;
 		}
 
-		new Thread(){
+		new GetUserInfoTaskThread(forceUpdate).start();
 
-			@Override
-			public void run() {
-
-				UserInfo info = new UserInfo();
-
-				JSONObject json = rai.invokeGET(Path.USER_INFO);
-
-				if(null == json){
-					sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
-					return;
-				}
-
-				JSONObject result = (JSONObject) json.get("results");				
-
-				info = new UserInfo(result);
-				userInfo = info;
-				// TODO : insert UserInfo to DB
-				sm(CommandID.CMD_GET_USER_INFO, 1, 0, info);
-
-
-			}			
-
-		}.start();		
 		return true;
 	}
 
-	public boolean getDefaultSections(){
+	private class GetUserInfoTaskThread extends Thread{
+
+		final Boolean forceUpdate;
+
+		GetUserInfoTaskThread(Boolean forceUpdate){
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			UserInfo info = new UserInfo();
+
+			if((true == forceUpdate) &&
+					(true == uidbh.hasData())){
+				Log.d(LOG_TAG, "[GetUserInfoTaskThread] Providing User Information from Cache");
+				sm(CommandID.CMD_GET_USER_INFO, 1, 0, uidbh.get());
+				return;
+			}
+
+			JSONObject json = rai.invokeGET(Path.USER_INFO);
+
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[GetUserInfoTaskThread] Error response" + json.get("message").toString());
+				sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
+				return;
+			}
+
+			JSONObject result = (JSONObject) json.get("results");				
+
+			info = new UserInfo(result);
+			uidbh.cleanAndInsert(info);
+			sm(CommandID.CMD_GET_USER_INFO, 1, 0, info);
+
+
+		}			
+
+	}	
+
+	public boolean getDefaultSections(Boolean forceUpdate){
 
 		if(false == isAuthed()){
 			Log.e(LOG_TAG, "[getDefaultSections] Already authenticated.");
 			return false;
 		}
 
-		new Thread(){
-
-			@Override
-			public void run() {
-
-				Collection<Section> list = new ArrayList<Section>();
-
-				JSONObject json = rai.invokeGET(Path.SECTIONS_DEFAULT);
-
-				if(null == json){
-					sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
-					return;
-				}
-
-				JSONObject results = (JSONObject) json.get("results");				
-
-				for(Object key : results.keySet()){
-					JSONObject section = (JSONObject) results.get(key);
-
-					Object isolation = section.get("isolation");
-					if(null != isolation &&
-							0 == isolation.toString().compareToIgnoreCase("y")){
-						continue;
-					}
-
-					list.add(new Section(section));
-				}
-
-				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
-			}			
-
-		}.start();		
+		new GetDefaultSectionTaskThread(forceUpdate).start();		
 		return true;
+	}
+
+	private class GetDefaultSectionTaskThread extends Thread{
+
+		final Boolean forceUpdate;
+
+		GetDefaultSectionTaskThread(Boolean forceUpdate){
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			Collection<Section> list = new ArrayList<Section>();
+
+			if((true == forceUpdate) &&
+					(true == sdbh.hasData())){
+				Log.d(LOG_TAG, "[getDefaultSections] Providing Section from Cache");
+				list = sdbh.getAllSections();
+				defaultSectionID = ((Section)list.toArray()[0]).getId();
+				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
+				return;
+			}
+
+			JSONObject json = rai.invokeGET(Path.SECTIONS_DEFAULT);
+
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[getDefaultSections] Error response" + json.get("message").toString());
+				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
+				return;
+			}
+
+			JSONObject results = (JSONObject) json.get("results");				
+
+			Object isolation = results.get("isolation");
+			if(null != isolation &&
+					0 == isolation.toString().compareToIgnoreCase("n")){
+				Log.e(LOG_TAG, "[getDefaultSections] No Default Sections");
+				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);					
+				return;
+			}
+			Section section = new Section(results);
+			sdbh.insert(section);
+			list = sdbh.getAllSections();
+			defaultSectionID = ((Section)list.toArray()[0]).getId();			
+			Log.d(LOG_TAG, "[getDefaultSections] Providing Section from Server");
+			sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
+		}			
+
 	}
 
 	public boolean getAllAccounts(boolean forceUpdate){
@@ -625,7 +667,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		new GetAllAccountsTaskThread(firstSectionID, "", forceUpdate).start();		
+		new GetAllAccountsTaskThread(defaultSectionID, "", forceUpdate).start();		
 		return true;
 	}
 
@@ -634,8 +676,8 @@ public class WimpleImpl implements IWimpleImpl {
 		if(false == isInitializedFinished()){
 			return false;
 		}
- 		*/
-		new GetAllAccountsTaskThread(firstSectionID, dateFilter, false).start();		
+		 */
+		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, false).start();		
 		return true;
 	}
 
@@ -690,10 +732,11 @@ public class WimpleImpl implements IWimpleImpl {
 
 			Collection<Account> list = new ArrayList<Account>();
 
-			if(null == firstSectionID ||
-					firstSectionID.isEmpty()){
-				Log.d(LOG_TAG, "[Account] Failed - invalid sectionID !!!");
+			if(null == sectionID ||
+					sectionID.isEmpty()){
+				Log.e(LOG_TAG, "[Account] Initialization is on progressing !!!");
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				return;
 			}
 
 			String path = "?section_id=" + sectionID;
@@ -714,6 +757,7 @@ public class WimpleImpl implements IWimpleImpl {
 				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
 				if(null == json ||
 						false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[GetAllAccountsTaskThread] Error response" + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
@@ -732,11 +776,10 @@ public class WimpleImpl implements IWimpleImpl {
 				Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
 				e.printStackTrace();
 				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				return;
 			}
 
-			// TODO : insert list to DB!!!
 			adbh.insert(list);
-			accountSectionID = sectionID;
 
 			Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
@@ -752,7 +795,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return em.getAllEntries(firstSectionID, latestDate, oldestDate);
+		return em.getAllEntries(defaultSectionID, latestDate, oldestDate);
 	}
 
 	public boolean getAllEntries(String latestDate, String oldestDate, int count){
@@ -762,7 +805,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return em.getAllEntries(firstSectionID, latestDate, oldestDate, count);
+		return em.getAllEntries(defaultSectionID, latestDate, oldestDate, count);
 	}
 
 
@@ -773,7 +816,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return em.getLatestEntries(firstSectionID, count, noDuplicate);
+		return em.getLatestEntries(defaultSectionID, count, noDuplicate);
 	}
 
 	public boolean makeEntry(Long date, Account left, Account right, 
@@ -783,7 +826,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return em.makeEntry(firstSectionID, date, left, right, title, amount, memo);
+		return em.makeEntry(defaultSectionID, date, left, right, title, amount, memo);
 	}
 
 	public boolean getFrequentItems(){
@@ -792,7 +835,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return im.getFrequentItems(firstSectionID);
+		return im.getFrequentItems(defaultSectionID);
 	}
 
 	public boolean getLatestItems(){
@@ -803,7 +846,7 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 		 */
 
-		return im.getLatestItems(firstSectionID, false);
+		return im.getLatestItems(defaultSectionID, false);
 	}
 
 	public boolean getLatestItems(boolean forceUpdate){
@@ -814,7 +857,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		return im.getLatestItems(firstSectionID, forceUpdate);
+		return im.getLatestItems(defaultSectionID, forceUpdate);
 	}
 
 	public String getAccountName(String accountCode){

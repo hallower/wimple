@@ -58,11 +58,8 @@ public class RestAPIInvoker {
 			ClientResponse response;
 
 			WebResource.Builder wb = webResource.type("application/x-www-form-urlencoded");
-
-			if(wimple.isAuthed()){
-				wb = wb.header("X-API-KEY", getXAPIKey());
-			}
-
+			wb = wb.header("X-API-KEY", getXAPIKey());
+			
 			switch(method){
 
 			case GET :

@@ -472,8 +472,8 @@ ActionBar.TabListener {
 					return;
 				}
 
-				wimple.getUserInfo();
-				wimple.getAllSections();				
+				wimple.getUserInfo(true);
+				wimple.getDefaultSections(false);				
 			}
 
 			@Override

@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import me.blog.imhallower.wimple.model.Item;
 import android.content.Context;
-import android.util.Log;
 
 public class ItemDBHandler {
 	
@@ -68,6 +67,7 @@ public class ItemDBHandler {
         return res;
     }
 
+    /*
     private Collection<Item> get(String where){
     	Collection<Item> acts = new ArrayList<Item>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
@@ -86,6 +86,7 @@ public class ItemDBHandler {
     	dbHandler.showAll();
     	return acts;
     }
+    */
 
     public Collection<Item> getAllItems(){
     	Collection<Item> acts = new ArrayList<Item>();

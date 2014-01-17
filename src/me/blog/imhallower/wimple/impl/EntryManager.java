@@ -1,6 +1,5 @@
 package me.blog.imhallower.wimple.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -8,6 +7,7 @@ import java.util.Date;
 import me.blog.imhallower.wimple.impl.RestAPIInvoker.HTTP_METHOD;
 import me.blog.imhallower.wimple.impl.WimpleImpl.CommandID;
 import me.blog.imhallower.wimple.impl.WimpleImpl.Path;
+import me.blog.imhallower.wimple.impl.util.Utils;
 import me.blog.imhallower.wimple.model.Account;
 import me.blog.imhallower.wimple.model.Entry;
 
@@ -93,7 +93,8 @@ public class EntryManager {
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
 			if(null == json ||
-					Integer.parseInt(json.get("code").toString()) != 200){
+					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[GetAllEntriesTaskThread] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 				return;
 			}
@@ -156,6 +157,7 @@ public class EntryManager {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[GetLatestEntriesTaskThread] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 				return;
 			}
@@ -209,10 +211,8 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-
 			String pushingContent = String.format(formatEntryPost, 
-					sdf.format(new Date(date)), 
+					Utils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
 					left.getId(),
 					right.getWhat(),
@@ -230,6 +230,7 @@ public class EntryManager {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[PostEntryTaskThread] Error response" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
 			}

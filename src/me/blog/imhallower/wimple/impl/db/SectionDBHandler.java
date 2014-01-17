@@ -3,39 +3,38 @@ package me.blog.imhallower.wimple.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import me.blog.imhallower.wimple.model.Account;
+import me.blog.imhallower.wimple.model.Section;
 import android.content.Context;
 
-public class AccountDBHandler {
+public class SectionDBHandler {
 
-	private static String tableName = "accountinfo";
+	private static String tableName = "sectioninfo";
 	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"what TEXT, " +
 			"id TEXT, " +
-			"type TEXT, " +
-			"title TEXT, " +
+			"title TEXT," +
 			"description TEXT, " +
-			"openedDate TEXT, " +
-			"closedDate TEXT, " +
-			"category TEXT, " +
-			"useDate TEXT, " +
-			"payDate TEXT, " +
-			"payAccount TEXT, " +
+			"currency TEXT, " +
+			"isolation TEXT, " +
+			"asset TEXT, " +
+			"debt TEXT, " +
+			"skinid TEXT, " +
+			"decimalposition TEXT, " +
+			"dateformat TEXT, " +
 
 			"PRIMARY KEY (id)" +
 			") ";
 
 	private static DatabaseHandler dbHandler = null;
 
-	public AccountDBHandler(Context context) {
+	public SectionDBHandler(Context context) {
 		super();
 
 		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
-		dbHandler.setColumns(Account.columns);
+		dbHandler.setColumns(Section.columns);
 	}
 
-	public boolean insert(Account data) {
+	public boolean insert(Section data) {
 		if(data instanceof IDatabaseRecord){
 			return dbHandler.addItem(data);
 		}
@@ -52,7 +51,7 @@ public class AccountDBHandler {
 		dbHandler.deleteAll();
 	}
 
-	public boolean insert(Collection<Account> data) {
+	public boolean insert(Collection<Section> data) {
 		boolean res = false;
 
 		if(data==null || data.isEmpty()){
@@ -60,7 +59,7 @@ public class AccountDBHandler {
 		}
 
 		// TODO : use TCL
-		for(Account act : (Collection<Account>)data) {
+		for(Section act : (Collection<Section>)data) {
 
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
@@ -71,14 +70,14 @@ public class AccountDBHandler {
 	}
 
 	/*
-    private Collection<Account> get(String where){
-    	Collection<Account> acts = new ArrayList<Account>();
+    private Collection<Section> get(String where){
+    	Collection<Section> acts = new ArrayList<Section>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
 
     	Log.d(tableName, where);
 
     	for(IDatabaseRecord record : records){
-    		Account data = new Account();
+    		Section data = new Section();
 
     		if(false == data.setValues(record.getValues())){
     			continue;
@@ -91,12 +90,12 @@ public class AccountDBHandler {
     }
 	 */
 
-	public Collection<Account> getAllAccounts(){
-		Collection<Account> acts = new ArrayList<Account>();
+	public Collection<Section> getAllSections(){
+		Collection<Section> acts = new ArrayList<Section>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){
-			Account data = new Account();
+			Section data = new Section();
 
 			if(false == data.setValues(record.getValues())){
 				continue;
