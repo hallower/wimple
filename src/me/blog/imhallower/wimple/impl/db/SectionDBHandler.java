@@ -38,7 +38,7 @@ public class SectionDBHandler {
 		if(data instanceof IDatabaseRecord){
 			return dbHandler.addItem(data);
 		}
-		dbHandler.showAll();
+		//dbHandler.showAll();
 		return false;
 	}
 
@@ -103,7 +103,7 @@ public class SectionDBHandler {
 			acts.add(data);
 		}
 
-		dbHandler.showAll();
+		//dbHandler.showAll();
 		return acts;
 	}
 

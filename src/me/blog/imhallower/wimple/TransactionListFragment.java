@@ -44,7 +44,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
-
+		
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
 		wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);		
 		super.onResume();
@@ -74,10 +74,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem,
 					int visibleItemCount, int totalItemCount) {
-				
+
 				//Log.e(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
 				//		", totalItemcount=" + totalItemCount);
-				
+
 				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 
 				//Log.e(LOG_TAG, "Percentage=" + percentage + ", available permit=" + available.availablePermits());
@@ -103,7 +103,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
 			}
 		});
-		
+
+		// TODO : remove old data
+		wimple.getStoredEntries();
+				
 		return view;
 	}
 
@@ -127,8 +130,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		 */
 
-		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
-		case CommandID.GET_ALL_SECTION_RECEIVED :{
+		case CommandID.WIMPLE_LOGGIN_SUCCESS :
+		case CommandID.GET_ALL_SECTION_RECEIVED :{			
 			wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
 			break;
 		}
@@ -138,20 +141,20 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				available.release();
 				return;
 			}
-			
+
 			if(null == entryAdapter.get()){
 				available.release();
 				return;
 			}
-				
+
 			Collection<Entry> list = (Collection<Entry>) obj;
-			
+
 			if(list.isEmpty()){
 				this.isAllOldActivityFechted = true;
 				available.release();
 				return;
 			}
-			
+
 			for(Entry item : list){
 				entryAdapter.get().addItem(item);				
 			}

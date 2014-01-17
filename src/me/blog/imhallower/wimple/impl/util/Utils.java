@@ -39,7 +39,7 @@ public class Utils {
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 	private static final SimpleDateFormat sdfGUI = new SimpleDateFormat("yy-MM-dd E", locale);
-	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
+	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);	
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
 	
 	static {
