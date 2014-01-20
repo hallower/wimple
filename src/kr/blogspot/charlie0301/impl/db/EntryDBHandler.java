@@ -1,0 +1,122 @@
+package kr.blogspot.charlie0301.impl.db;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.model.Entry;
+
+import android.content.Context;
+
+public class EntryDBHandler {
+
+	private static String tableName = "entryinfo";
+	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+
+			"id TEXT, " +
+			"date TEXT, " +
+			"leftAccount TEXT, " +
+			"leftAccountID TEXT, " +
+			"rightAccount TEXT, " +
+			"rightAccountID TEXT, " +
+			"item TEXT, " +
+			"amount TEXT, " +
+			"balance TEXT, " +
+			"memo TEXT, " +
+			"appID TEXT, " +
+
+			"PRIMARY KEY (id)" +
+			") ";
+
+	private static DatabaseHandler dbHandler = null;
+
+	public EntryDBHandler(Context context) {
+		super();
+
+		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
+		dbHandler.setColumns(Entry.columns);
+	}
+
+	public boolean insert(Entry data) {
+		if(data instanceof IDatabaseRecord){
+			return dbHandler.addItem(data);
+		}
+		dbHandler.showAll();
+		return false;
+	}
+
+	public boolean hasData() {
+		return dbHandler.getCountAll() > 0;
+	}
+
+	public void clean(){
+		dbHandler.deleteAll();
+	}
+	
+	public void cleanOldEntries(Long date){
+		String dateString = Utils.getDBDateFormat().format(date);
+		dbHandler.delete("date < " + dateString);
+	}
+
+	public boolean insert(Collection<Entry> data) {
+		boolean res = false;
+
+		if(data==null || data.isEmpty()){
+			return false;
+		}
+
+		// TODO : use TCL
+		for(Entry act : (Collection<Entry>)data) {
+
+			if(act instanceof IDatabaseRecord){
+				dbHandler.addItem(act);
+			}
+		}
+		//dbHandler.showAll();
+		return res;
+	}
+
+	/*
+    private Collection<Entry> get(String where){
+    	Collection<Entry> acts = new ArrayList<Entry>();
+    	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
+
+    	Log.d(tableName, where);
+
+    	for(IDatabaseRecord record : records){
+    		Entry data = new Entry();
+
+    		if(false == data.setValues(record.getValues())){
+    			continue;
+    		}
+    		acts.add(data);
+    	}
+
+    	dbHandler.showAll();
+    	return acts;
+    }
+	 */
+
+	public Collection<Entry> getAllEntrys(){
+		Collection<Entry> acts = new ArrayList<Entry>();
+		Collection<IDatabaseRecord> records = dbHandler.getItems();
+
+		for(IDatabaseRecord record : records){
+			Entry data = new Entry();
+
+			if(false == data.setValues(record.getValues())){
+				continue;
+			}
+			acts.add(data);
+		}
+
+		dbHandler.showAll();
+		return acts;
+	}
+
+
+	public void print(){
+		dbHandler.showAll();
+	}
+
+}

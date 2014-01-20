@@ -8,8 +8,8 @@
         <item>설정</item>
     </string-array>
     <string-array name="drawer_menus_class">
-        <item>me.blog.imhallower.wimple.TransactionInsertFragment,me.blog.imhallower.wimple.TransactionListFragment</item>
-        <item>me.blog.imhallower.wimple.SettingsFragment</item>
+        <item>kr.blogspot.charlie0301.TransactionInsertFragment,kr.blogspot.charlie0301.TransactionListFragment</item>
+        <item>kr.blogspot.charlie0301.SettingsFragment</item>
     </string-array>
 
     <integer-array name="side_menu_layout_id">
