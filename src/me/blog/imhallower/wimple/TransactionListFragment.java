@@ -34,7 +34,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private WeakReference<EntryItemListAdapter> entryAdapter;
 
 	private boolean isAllOldActivityFechted = false;
-	private final Semaphore available = new Semaphore(0);
+	private static final Semaphore available = new Semaphore(1);
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
@@ -44,7 +44,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
-		
+
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
 		wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);		
 		super.onResume();
@@ -75,12 +75,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			public void onScroll(AbsListView view, int firstVisibleItem,
 					int visibleItemCount, int totalItemCount) {
 
-				//Log.e(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
+				//Log.d(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
 				//		", totalItemcount=" + totalItemCount);
 
 				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 
-				//Log.e(LOG_TAG, "Percentage=" + percentage + ", available permit=" + available.availablePermits());
+				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", \navailable permit=" + available.availablePermits());
 
 				if(percentage >= 70 &&
 						false == isAllOldActivityFechted &&
@@ -106,7 +106,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		// TODO : remove old data
 		wimple.getStoredEntries();
-				
+
 		return view;
 	}
 
@@ -137,30 +137,35 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		}
 
 		case CommandID.GET_ENTRIES_RECEIVED :{
-			if(false == booleanStatus){
-				available.release();
-				return;
-			}
+			try{				
+				if(false == booleanStatus){				
+					return;
+				}
 
-			if(null == entryAdapter.get()){
-				available.release();
-				return;
-			}
+				if(null == entryAdapter.get()){
+					return;
+				}
 
-			Collection<Entry> list = (Collection<Entry>) obj;
+				Collection<Entry> list = (Collection<Entry>) obj;
 
-			if(list.isEmpty()){
-				this.isAllOldActivityFechted = true;
-				available.release();
-				return;
-			}
+				if(list.isEmpty()){
+					this.isAllOldActivityFechted = true;
+					return;
+				}
+				this.isAllOldActivityFechted = false;
 
-			for(Entry item : list){
-				entryAdapter.get().addItem(item);				
+				for(Entry item : list){
+					entryAdapter.get().addItem(item);				
+				}
+				entryAdapter.get().notifyDataSetChanged();
+				break;				
+			}finally{
+				// TODO : I cant' find how to solve this issue.
+				if(available.availablePermits() < 1){
+					available.release();					
+				}
+				//Log.d(LOG_TAG, "available permit=" + available.availablePermits());
 			}
-			entryAdapter.get().notifyDataSetChanged();
-			available.release();
-			break;
 		}
 		}
 	}

@@ -1,6 +1,7 @@
 package me.blog.imhallower.wimple.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 
@@ -47,6 +48,11 @@ public class EntryManager {
 		new Thread(){
 			@Override
 			public void run() {
+				Calendar cl = Calendar.getInstance();
+				cl.add(Calendar.MONTH, -1);
+				Log.d(LOG_TAG, "[StoredEntries] Flushing entries before " + cl.getTime().toString());
+				wimpl.getEntryDBHandler().cleanOldEntries(cl.getTimeInMillis());
+				
 				Log.d(LOG_TAG, "[StoredEntries] Providing Stored Entries from Cache.");
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, wimpl.getEntryDBHandler().getAllEntrys());
 			}			

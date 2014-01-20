@@ -53,7 +53,7 @@ public class EntryDBHandler {
 	}
 	
 	public void cleanOldEntries(Long date){
-		String dateString = Utils.getServerDateString(date);
+		String dateString = Utils.getDBDateFormat().format(date);
 		dbHandler.delete("date < " + dateString);
 	}
 
