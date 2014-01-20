@@ -13,13 +13,11 @@ import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
 import kr.blogspot.charlie0301.model.UserInfo;
-
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
@@ -108,7 +106,7 @@ ActionBar.TabListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_wimple);
 
 		context = getApplicationContext();
 		actionBar = getActionBar();
@@ -205,7 +203,6 @@ ActionBar.TabListener {
 
 			}
 		});
-
 
 		if (savedInstanceState == null) {
 			setPagerAdapter(0);
@@ -365,8 +362,9 @@ ActionBar.TabListener {
 				actionBar.addTab(tab.setText(titles.get(i)).setTabListener((TabListener) this));
 			}    	
 		}
-		else
+		else{
 			actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		}
 
 		currentTabPosition = 0;
 		setTitle(menuTitles[n]);

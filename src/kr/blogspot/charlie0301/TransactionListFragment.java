@@ -8,7 +8,6 @@ import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Entry;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
@@ -118,6 +117,11 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		int command = msg.what;
 		boolean booleanStatus = msg.arg1 == 1;
 		Object obj = msg.obj;
+
+		// if fragment is added or not to the activity
+		if(false == isAdded()){
+			return;
+		}
 
 		switch(command){
 		/*

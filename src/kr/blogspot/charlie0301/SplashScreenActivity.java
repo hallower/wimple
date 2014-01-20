@@ -60,7 +60,8 @@ public class SplashScreenActivity extends Activity {
 		sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_auth));
 
 		if(true == wimple.getTempToken()){
-			// Already Loggined
+			// Already Logged-in
+			wimple.getDefaultSections(true);
 			refreshCache();
 		}		
 	}
@@ -140,7 +141,7 @@ public class SplashScreenActivity extends Activity {
 					return;
 				}
 
-				sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_user_info));
+				//sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_user_info));
 				wimple.getUserInfo(true);
 				wimple.getDefaultSections(false);				
 			}
@@ -148,8 +149,7 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
 				if(status){
-					Log.e(LOG_TAG, info.toString());
-					sm(CommandID.UPDATE_USER_INFO, info);	
+					Log.e(LOG_TAG, info.toString());	
 				}
 			}
 
@@ -254,15 +254,17 @@ public class SplashScreenActivity extends Activity {
 				}
 
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
-					startCounter -= 1;
-					checkStartCounter();
+					Log.d(LOG_TAG, "All Account Information received!");
 					break;
 
 				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
-					startCounter -= 1;
-					checkStartCounter();
+					Log.d(LOG_TAG, "Latest Items received");
 					break;
 
+				case CommandID.GET_ALL_SECTION_RECEIVED :
+					finishedAuthentication();
+					break;
+					
 				default : {	
 					Log.d(LOG_TAG, "Invalid Command ID=" + command);
 					break;
@@ -276,13 +278,11 @@ public class SplashScreenActivity extends Activity {
 		};
 	}
 
-	private void checkStartCounter() {
-		if(startCounter == 0){
-			sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_end));
-			Intent intent = new Intent(context, WimpleActivity.class);
-			startActivity(intent);
-			finish();
-		}
+	private void finishedAuthentication() {
+		sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_end));
+		Intent intent = new Intent(context, WimpleActivity.class);
+		startActivity(intent);
+		finish();
 	}
 
 	private void exitApplication(String toastMessage) {

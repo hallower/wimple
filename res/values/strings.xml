@@ -7,10 +7,10 @@
     <string name="program_exit">사용을 위해서는 로그인이 필요합니다. :)</string>
     <string name="na"></string>
     <string name="loggin_auth">로그인 확인</string>
-    <string name="loggin_success">로그인 성공</string>
+    <string name="loggin_success">로그인 완료</string>
     <string name="loggin_failed">로그인 실패</string>
-    <string name="loggin_user_info">사용자 정보 획득</string>
-    <string name="loggin_end">끝!</string>
+    <string name="loggin_user_info">사용자 정보획득</string>
+    <string name="loggin_end">정보획득 완료</string>
     <string name="drawer_open">사이드메뉴 열기</string>
     <string name="drawer_close">사이드메뉴 닫기</string>
     <string name="drawer_menu_transaction">거래</string>

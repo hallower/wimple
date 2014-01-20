@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.AccountDBHandler;
@@ -20,7 +19,6 @@ import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
 import kr.blogspot.charlie0301.model.UserInfo;
-
 
 import org.json.simple.JSONObject;
 
@@ -173,7 +171,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private String tokenSecret = "";
 	private String userID = "";
 
-	private final Semaphore authInProgress = new Semaphore(0);
+	//private final Semaphore authInProgress = new Semaphore(0);
 	private static Integer sequence = 10000;
 	private boolean isAuthed = false;
 	private boolean isInitializedFinished = false;

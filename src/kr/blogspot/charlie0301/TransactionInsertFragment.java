@@ -418,6 +418,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		boolean booleanStatus = msg.arg1 == 1;
 		Object obj = msg.obj;
 
+		// if fragment is added or not to the activity
+		if(false == isAdded()){
+			return;
+		}
+		
 		switch(command){
 
 		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
