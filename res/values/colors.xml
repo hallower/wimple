@@ -13,5 +13,5 @@
     
     <color name="calc_number">#FFFFFF</color>
     <color name="calc_func">#6F6F6F</color>
-    
+    <color name="transparent">#00000000</color>
 </resources>

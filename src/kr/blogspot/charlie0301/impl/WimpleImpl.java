@@ -314,12 +314,10 @@ public class WimpleImpl implements IWimpleImpl {
 			switch(command){
 
 			case CommandID.CMD_AUTHENTICATION_SUCCEED :
-
 				Log.d(LOG_TAG, "Wimple authentication is succeed!!!");
 				break;
 
 			case CommandID.CMD_AUTHENTICATION_FAILED :
-
 				Log.d(LOG_TAG, "Wimple authentication is failed!!!");
 				break;
 
@@ -420,7 +418,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(isAuthed()){
 			Log.e(LOG_TAG, "[getTempToken] Already authenticated.");
-			return false;
+			return true;
 		}
 
 		new Thread(){
@@ -455,10 +453,12 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public Boolean getAccessToken(String token, String pin){
 
+		/*
 		if(isAuthed()){
 			Log.e(LOG_TAG, "[getAccessToken] Already authenticated.");
 			return false;
 		}
+		*/
 
 		new GetAccessTokenTaskThread(token, pin).start();
 
@@ -480,7 +480,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public void run() {
 
 			String params = "app_id=" + appID + "&app_secret=" + vo42iw5me4vxz + "&token=" + token + "&pin=" + pin;
-			Log.d(LOG_TAG, "[GetAccessTokenTaskThread] PARAMS : " + params);
+			//Log.d(LOG_TAG, "[GetAccessTokenTaskThread] PARAMS : " + params);
 			Map<String, String> list = rai.invokeRESTAPIForMap(Path.AUTH_ACCESS_TOKEN, params);
 
 			if(null == list){
@@ -608,7 +608,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public boolean getDefaultSections(Boolean forceUpdate){
 
 		if(false == isAuthed()){
-			Log.e(LOG_TAG, "[Default Sections] Already authenticated.");
+			Log.e(LOG_TAG, "[Default Sections] No authentication.");
 			return false;
 		}
 

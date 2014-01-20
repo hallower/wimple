@@ -48,7 +48,7 @@ public class WimpleActivity extends FragmentActivity implements
 ActionBar.TabListener {
 
 	private static final String LOG_TAG = "WimpleActivity";
-	private static final int PIN_NUMBER_REQUEST = 1379;
+	
 
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
@@ -80,7 +80,9 @@ ActionBar.TabListener {
 		public static final int EXIT = CMD_BASE + 1;
 		public static final int TOAST_LONG = CMD_BASE + 3;
 		public static final int TOAST_SHORT = CMD_BASE + 5;
+		public static final int FATAL_ERROR = CMD_BASE + 6;
 		public static final int GET_PIN = CMD_BASE + 7;
+		public static final int SHOW_STATUS = CMD_BASE + 8;		
 		public static final int UPDATE_USER_INFO = CMD_BASE + 9;
 		public static final int GET_ALL_ACCOUNT_RECEIVED = CMD_BASE + 11;
 		public static final int WIMPLE_LOGGIN_SUCCESS = CMD_BASE + 13;
@@ -110,9 +112,9 @@ ActionBar.TabListener {
 
 		context = getApplicationContext();
 		actionBar = getActionBar();
-		setupWimpleImpl();
+		
 		setupHandler();
-
+		setupWimpleImpl();
 		setupMenus();
 
 
@@ -208,8 +210,6 @@ ActionBar.TabListener {
 		if (savedInstanceState == null) {
 			setPagerAdapter(0);
 		}
-
-		wimple.getTempToken();
 	}
 
 	private void setupMenus() {
@@ -407,13 +407,6 @@ ActionBar.TabListener {
 
 			@Override
 			public void onLoggedIn(boolean status) {
-				if(status){
-					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");
-					wimple.getAllAccounts(true);
-					wimple.getLatestItems(true);
-				}else{
-					sm(CommandID.WIMPLE_LOGGIN_FAILED, "");
-				}
 			}
 
 			@Override
@@ -423,14 +416,10 @@ ActionBar.TabListener {
 
 			@Override
 			public void onNetworkConnectionEstablished() {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void onNetworkConnectionLost() {
-				// TODO Auto-generated method stub
-
 			}
 
 		});
@@ -438,43 +427,11 @@ ActionBar.TabListener {
 
 			@Override
 			public void onGetAuthTempToken(boolean status, String tempToken) {
-
-				if(false == status){
-					// TODO : login!!! 
-					return;
-				}
-
-				if(null == tempToken || tempToken.isEmpty()){
-					// TODO : do something
-					return;
-				}
-
-				sm(CommandID.GET_PIN, tempToken);				
 			}
 
 			@Override
 			public void onGetAuthAccessToken(boolean status,
 					Map<String, String> result) {
-
-				if(result.isEmpty()){
-					Log.e(LOG_TAG, "Auth is failed.");
-					// TODO : do something
-					return;
-				}
-
-				String token = result.get("token");
-				String tokenSecret = result.get("token_secret");
-				String userID = result.get("user_id");
-
-				if(null == tokenSecret ||
-						true == tokenSecret.isEmpty()){
-					Log.e(LOG_TAG, "Auth is failed.");
-					// TODO : do something
-					return;
-				}
-
-				wimple.getUserInfo(true);
-				wimple.getDefaultSections(false);				
 			}
 
 			@Override
@@ -526,6 +483,9 @@ ActionBar.TabListener {
 			}				
 
 		});
+		
+		wimple.getUserInfo(true);
+		wimple.getDefaultSections(false);		
 	}
 
 
@@ -539,7 +499,6 @@ ActionBar.TabListener {
 				int command = msg.what;
 				Object obj = msg.obj;
 
-
 				switch(command){
 
 				case CommandID.TOAST_LONG :
@@ -549,14 +508,6 @@ ActionBar.TabListener {
 				case CommandID.TOAST_SHORT :
 					Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
 					break;
-
-				case CommandID.GET_PIN :
-				{
-					Intent intent = new Intent(context, WebViewActivity.class);
-					intent.putExtra("temp_token", obj.toString());
-					startActivityForResult(intent, PIN_NUMBER_REQUEST);
-					break;	
-				}
 
 				case CommandID.UPDATE_USER_INFO :
 				{
@@ -611,30 +562,6 @@ ActionBar.TabListener {
 		};
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-
-		if(requestCode == PIN_NUMBER_REQUEST){
-			if(resultCode != RESULT_OK){
-				return;
-			}else{
-				String tempToken = data.getExtras().getString("temp_token");
-				String pin = data.getExtras().getString("pin");
-
-				if(null != tempToken &&
-						null != pin){
-					wimple.getAccessToken(tempToken, pin);					
-				}else{
-					//throw new Exception("Intent Arguemtn is invlaid, at WimpleActivity");
-					Log.e(LOG_TAG, "Intent Arguemtn is invlaid, at WimpleActivity");
-				}
-
-			}
-		}else{
-			super.onActivityResult(requestCode, resultCode, data);	
-		}		
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

@@ -3,20 +3,23 @@
 
     <string name="app_name">wimple</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_web_view">WebViewActivity</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_web_view">후잉 서비스 로그인</string>
+    <string name="program_exit">사용을 위해서는 로그인이 필요합니다. :)</string>
     <string name="na"></string>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
+    <string name="loggin_auth">로그인 확인</string>
+    <string name="loggin_success">로그인 성공</string>
+    <string name="loggin_failed">로그인 실패</string>
+    <string name="loggin_user_info">사용자 정보 획득</string>
+    <string name="loggin_end">끝!</string>
+    <string name="drawer_open">사이드메뉴 열기</string>
+    <string name="drawer_close">사이드메뉴 닫기</string>
     <string name="drawer_menu_transaction">거래</string>
     <string name="drawer_menu_preference">설정</string>
     <string name="title_transaction_insert_fragment">거래 입력</string>
     <string name="title_transaction_list_fragment">거래 목록</string>
     <string name="title_settings_fragment">설정</string>
-    
     <string name="settings_loggout">로그아웃</string>
-    
-    
+    <string name="fatal_error">죄송합니다. 문제가 발생되어 실행할 수 없습니다. \n업데이트 혹은 삭제 후 재설치 해주시고, \n그래도 안된다면 ㅜㅜ..</string>
     <string name="pad_1">1</string>
     <string name="pad_2">2</string>
     <string name="pad_3">3</string>
@@ -28,7 +31,7 @@
     <string name="pad_9">9</string>
     <string name="pad_10">0</string>
     <string name="pad_100">00</string>
-    <string name="pad_point">.</string>    
+    <string name="pad_point">.</string>
     <string name="pad_clear">C</string>
     <string name="pad_multiply">*</string>
     <string name="pad_divide">%</string>
@@ -36,9 +39,7 @@
     <string name="pad_plus">+</string>
     <string name="pad_eq">=</string>
     <string name="pad_back">B</string>
-    
     <string name="transaction_monthly">월별 거래들</string>
-    
     <string name="insert_item_title">아이템</string>
     <string name="insert_left_accounts">왼쪽</string>
     <string name="insert_right_accounts">오른쪽</string>
@@ -48,7 +49,6 @@
     <string name="insert_invalid_right_accounts">오른쪽 계정을 확인해 주세요.</string>
     <string name="insert_success">거래가 성공적으로 입력 되었습니다.</string>
     <string name="insert_failed">거래가 입력이 되지 않았습니다. 입력 내용과 네트워크 상태를 확인해 주세요.</string>
-    
     <string name="entry_header_asset_p">자산+</string>
     <string name="entry_header_asset_m">자산-</string>
     <string name="entry_header_debt_p">부채+</string>
@@ -57,4 +57,7 @@
     <string name="entry_header_capital_m">순자산-</string>
     <string name="entry_header_income">수익</string>
     <string name="entry_header_expenses">비용</string>
+    <string name="title_activity_splash_screen">wimple</string>
+    <string name="title_activity_wimple">wimple</string>
+
 </resources>
