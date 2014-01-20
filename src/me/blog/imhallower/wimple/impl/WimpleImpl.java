@@ -168,9 +168,9 @@ public class WimpleImpl implements IWimpleImpl {
 	private static final String appID = "140";
 	private static final String vo42iw5me4vxz = "923e20fb19eba88a47878bb51016b590ea33b24c";
 
-	private String token;
-	private String tokenSecret;
-	private String userID;
+	private String token = "";
+	private String tokenSecret = "";
+	private String userID = "";
 
 	private final Semaphore authInProgress = new Semaphore(0);
 	private static Integer sequence = 10000;

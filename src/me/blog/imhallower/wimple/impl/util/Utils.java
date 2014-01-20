@@ -32,6 +32,8 @@ public class Utils {
 		{
 
 			//  Log.e("ARTags", "SHA1 is not a supported algorithm");
+		} catch (Exception e){
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -39,6 +41,7 @@ public class Utils {
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 	private static final SimpleDateFormat sdfGUI = new SimpleDateFormat("yy-MM-dd E", locale);
+	private static final SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd", locale);
 	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);	
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
 	
@@ -53,7 +56,11 @@ public class Utils {
 	public static final SimpleDateFormat getGUIDateFormat(){
 		return sdfGUI;
 	}
-
+	
+	public static final SimpleDateFormat getDBDateFormat(){
+		return sdfDB;
+	}
+	
 	public static final NumberFormat getNumberFormat(){
 		return nf;
 	}

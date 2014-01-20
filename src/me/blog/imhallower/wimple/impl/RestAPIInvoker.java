@@ -102,7 +102,8 @@ public class RestAPIInvoker {
 		} catch (Exception e) {
 
 			e.printStackTrace();
-
+			object = null;
+			
 		} finally {
 
 			webResource = null;
