@@ -20,7 +20,7 @@
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".MainActivity" />
+            tools:context=".WimpleActivity" />
     </FrameLayout>
     <!--
      android:layout_gravity="start" tells DrawerLayout to treat
