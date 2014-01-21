@@ -514,6 +514,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
 				clearForms();
 				wimple.getLatestItems(true);
+				wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 			}

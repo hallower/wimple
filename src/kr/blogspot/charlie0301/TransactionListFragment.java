@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.entry.EntryItemListAdapter;
+import kr.blogspot.charlie0301.entry.EntryItemListView;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Entry;

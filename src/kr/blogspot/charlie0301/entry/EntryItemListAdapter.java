@@ -1,13 +1,14 @@
 
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.entry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import kr.blogspot.charlie0301.model.Entry;
-
+import kr.blogspot.charlie0301.model.Entry.DateDescCompare;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,15 +31,17 @@ public class EntryItemListAdapter extends BaseAdapter {
 		}
 
 		//Log.e(LOG_TAG, "time=" + (new Date(it.getTime()).toString()) );
-		/*
+
 		int res = items.indexOf(it);
 		if(res > -1){			
 			items.remove(res);
 			items.add(res, it);
 			return;
+		}else{
+			items.add(it);	
 		}
-		 */
-		items.add(it);
+		
+		sortByDate();
 	}
 
 	public void setListItems(List<Entry> lit) {
@@ -78,14 +81,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 
 	public void sortByDate(){
-		Collections.sort(items, new Comparator<Entry>(){
-
-			@Override
-			public int compare(Entry lhs, Entry rhs) {
-				return -1 * lhs.getDate().compareTo(rhs.getDate());
-			}
-
-		});
+		Collections.sort(items, new DateDescCompare());
 	}
 
 }

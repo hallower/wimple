@@ -1,11 +1,11 @@
 package kr.blogspot.charlie0301.model;
 
 import java.text.ParseException;
+import java.util.Comparator;
 import java.util.Date;
 
 import kr.blogspot.charlie0301.impl.db.IDatabaseRecord;
 import kr.blogspot.charlie0301.impl.util.Utils;
-
 
 import org.json.simple.JSONObject;
 
@@ -17,7 +17,7 @@ public class Entry implements IDatabaseRecord {
 	private final static String LOG_TAG = "Section";
 
 	private String id;	
-	private Long date;		// optional
+	private Long date;		// optional	
 	private String leftAccount;
 	private String leftAccountID;
 	private String rightAccount;
@@ -27,6 +27,7 @@ public class Entry implements IDatabaseRecord {
 	private Double  balance = 0.0;		// optional
 	private String memo;
 	private String appID;
+	private Double dateValue;
 
 	public static final SparseArray<String> columns = new SparseArray<String>();    
 
@@ -42,6 +43,7 @@ public class Entry implements IDatabaseRecord {
 		columns.append(8, "balance");
 		columns.append(9, "memo");
 		columns.append(10, "appID");
+		columns.append(11, "dateValue");
 	}
 
 	// Only for the database item inserting.
@@ -59,6 +61,7 @@ public class Entry implements IDatabaseRecord {
 		balance = 0.0;		// optional
 		memo = "";
 		appID = "";
+		dateValue = 0.0;
 	}
 
 	public Entry(String id, String leftAccount,
@@ -87,6 +90,7 @@ public class Entry implements IDatabaseRecord {
 		Long dateLong = 0L;
 
 		String dateString = entry.get("entry_date").toString();
+		this.dateValue = Double.parseDouble(dateString);
 		int pos = dateString.indexOf(".");
 		if(pos > 0){
 			dateString = dateString.substring(0, pos - 1);
@@ -168,6 +172,9 @@ public class Entry implements IDatabaseRecord {
 		this.balance = balance;
 	}
 
+	public Double getDateValue(){
+		return this.dateValue;
+	}
 
 	@Override
 	public String toString() {
@@ -175,6 +182,7 @@ public class Entry implements IDatabaseRecord {
 
 		sb.append("\n-[Section : " + id + " ]------------------------------");
 		sb.append("\n   date = " + date);
+		sb.append("\n   dateValue = " + dateValue);
 		sb.append("\n   leftAccount = " + leftAccount);
 		sb.append("\n   leftAccountID = " + leftAccountID);
 		sb.append("\n   rightAccount = " + rightAccount);
@@ -198,7 +206,7 @@ public class Entry implements IDatabaseRecord {
 
 		return this.id.equals(((Entry)o).id);
 	}
-
+	
 	@Override
 	public String getKeyValue() {
 		return this.id;
@@ -252,6 +260,9 @@ public class Entry implements IDatabaseRecord {
 			case 10 :
 				this.appID = value;
 				break;
+			case 11 :
+				this.dateValue = Double.parseDouble(value);
+				break;
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
 				break;
@@ -286,6 +297,8 @@ public class Entry implements IDatabaseRecord {
 			return memo;
 		case 10 :
 			return appID;
+		case 11 :
+			return dateValue.toString();
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
 			break;
@@ -308,10 +321,20 @@ public class Entry implements IDatabaseRecord {
 		values.append(8, balance.toString());
 		values.append(9, memo);
 		values.append(10, appID);
+		values.append(11, dateValue.toString());
 
 		return values;
 	}
 
 
 
+	public static class DateDescCompare implements Comparator<Entry>{
+
+		@Override
+		public int compare(Entry lhs, Entry rhs) {
+			return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
+		}
+		
+	}
+	
 }
