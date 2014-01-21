@@ -9,8 +9,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class Utils {
+import kr.blogspot.charlie0301.WimpleActivity;
+import android.util.TypedValue;
 
+public class Utils {
 
 	public static String sha1(String data) {
 		try
@@ -88,5 +90,9 @@ public class Utils {
 		cal.add(Calendar.MONTH, -1);
 
 		return getServerDateString(cal.getTimeInMillis());
+	}
+
+	public static int getDPSize(int dp){
+		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, WimpleActivity.context.getResources().getDisplayMetrics());
 	}
 }

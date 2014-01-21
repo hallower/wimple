@@ -8,6 +8,7 @@ import java.util.Map;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
@@ -36,9 +37,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +47,7 @@ public class WimpleActivity extends FragmentActivity implements
 ActionBar.TabListener {
 
 	private static final String LOG_TAG = "WimpleActivity";
-	
+
 
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
@@ -68,6 +69,9 @@ ActionBar.TabListener {
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
 
+	// GUI
+	TextView textLevel;
+	ImageView progressLevel; 
 
 	public static final class CommandID {
 
@@ -110,7 +114,7 @@ ActionBar.TabListener {
 
 		context = getApplicationContext();
 		actionBar = getActionBar();
-		
+
 		setupHandler();
 		setupWimpleImpl();
 		setupMenus();
@@ -282,7 +286,7 @@ ActionBar.TabListener {
 
 			if(n >= len)
 				return;
-
+			
 			setPagerAdapter(n);	        
 		}
 	}
@@ -298,25 +302,14 @@ ActionBar.TabListener {
 		TextView name = (TextView)findViewById(R.id.my_profile_name);
 		name.setText(info.getName());
 
-		/*
-			// temporary
-			int nLevel = 8;
-			if(nLevel > 10)
-					nLevel = 10;
+		// temporary
+		textLevel = (TextView)findViewById(R.id.my_profile_level);
+		progressLevel = (ImageView)findViewById(R.id.my_profile_progress);
 
-			TextView textLevel = (TextView)findViewById(R.id.my_profile_level);
-			ImageView progressLevel = (ImageView)findViewById(R.id.my_profile_progress);
+		updateAPIRemainning();
 
-			textLevel.setText(getResources().getString(R.string.profile_level_prefix) + nLevel);
-		    Resources resources = context.getResources();
-		    DisplayMetrics metrics = resources.getDisplayMetrics();
-		    float px = nLevel * 18 * (metrics.densityDpi / 160f);	    
-			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams ) progressLevel.getLayoutParams();
-			params.width = (int)px;
-			progressLevel.setLayoutParams(params);
-		 */
 		// Set OnClick listener => Detail Profile information
-		RelativeLayout rlProfileWindow = (RelativeLayout)findViewById(R.id.my_profile_information_window);
+		LinearLayout rlProfileWindow = (LinearLayout)findViewById(R.id.my_profile_information_window);
 		rlProfileWindow.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -328,6 +321,36 @@ ActionBar.TabListener {
 
 		});
 
+	}
+
+	private void updateAPIRemainning() {
+		
+		if(null == textLevel){
+			return;
+		}
+		
+		double totalLevel = 30f;
+		int nLevel = wimple.getRemainedAPICall();
+		
+		//Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
+		
+		if(nLevel < 0){
+			nLevel = 1;
+		}
+
+		if(nLevel > 200){
+			totalLevel = 1000f;
+		}else if(nLevel > 30){
+			totalLevel = 200f;
+		}
+
+		//Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
+		
+		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
+		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		
+		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams ) progressLevel.getLayoutParams();
+		params.width = (int)px;
+		progressLevel.setLayoutParams(params);
 	}
 
 	private void setPagerAdapter(int n)
@@ -369,11 +392,6 @@ ActionBar.TabListener {
 		currentTabPosition = 0;
 		setTitle(menuTitles[n]);
 		mDrawerLayout.closeDrawer(mSideMenu);
-
-		// For invitation display    	
-		if(currentMenuId == 0 && currentTabPosition == 0){			
-
-		}
 	}
 
 	private void moveTabOfPager(int pageID){
@@ -481,7 +499,7 @@ ActionBar.TabListener {
 			}				
 
 		});
-		
+
 		wimple.getUserInfo(true);
 		wimple.getDefaultSections(false);		
 	}
@@ -497,6 +515,8 @@ ActionBar.TabListener {
 				int command = msg.what;
 				Object obj = msg.obj;
 
+				updateAPIRemainning();
+				
 				switch(command){
 
 				case CommandID.TOAST_LONG :
@@ -512,7 +532,7 @@ ActionBar.TabListener {
 					setMyInfoOnMenu((UserInfo)obj);
 					break;
 				}
-				
+
 				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :								
 				{
 
