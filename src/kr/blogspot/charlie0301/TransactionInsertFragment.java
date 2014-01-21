@@ -257,7 +257,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			@Override
 			public void onClick(View v) {
-				txtTitle.setText("");
+				clearForms();
 			}
 		});
 		
@@ -408,7 +408,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private void clearForms(){
 		txtTitle.setText("");
 		setAmountText(0.0);
-		// TODO : clear account selection
+		leftAccountListAdapter.clearSelection();
+		rightAccountListAdapter.clearSelection();
 	}
 
 	@SuppressWarnings("unchecked")
