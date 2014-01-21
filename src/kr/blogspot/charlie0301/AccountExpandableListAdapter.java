@@ -161,6 +161,14 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		super.notifyDataSetChanged();
 	}
 
+	public void clearSelection(){
+		this.isSelected = false;
+		this.selectedGroupPosition = -1;
+		this.selectedChildPosition = -1;
+		this.notifyDataSetChanged();
+		Log.d(LOG_TAG, "Clear Selection");
+	}
+	
 	public void setSelected(int groupPosition, int childPosition, long id){
 		this.isSelected = true;
 		this.selectedGroupPosition = groupPosition;
