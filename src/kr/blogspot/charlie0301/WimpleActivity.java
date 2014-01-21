@@ -172,10 +172,12 @@ ActionBar.TabListener {
 				R.string.drawer_close  /* "close drawer" description for accessibility */
 				) {
 			public void onDrawerClosed(View view) {
+				actionBar.setDisplayHomeAsUpEnabled(true);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 			}
 
 			public void onDrawerOpened(View drawerView) {
+				actionBar.setDisplayHomeAsUpEnabled(false);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 			}
 		};
