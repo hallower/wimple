@@ -1,6 +1,7 @@
 
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.entry;
 
+import kr.blogspot.charlie0301.OnItemSelectionListener;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;

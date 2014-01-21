@@ -4,10 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <kr.blogspot.charlie0301.EntryItemListView
+    <kr.blogspot.charlie0301.entry.EntryItemListView
         android:id="@+id/entry_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-    </kr.blogspot.charlie0301.EntryItemListView>
+    </kr.blogspot.charlie0301.entry.EntryItemListView>
 
 </LinearLayout>

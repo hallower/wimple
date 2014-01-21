@@ -1,11 +1,11 @@
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.entry;
 
 import java.util.Date;
 
+import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Entry;
-
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
