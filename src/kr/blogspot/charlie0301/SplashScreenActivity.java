@@ -26,8 +26,7 @@ import android.widget.Toast;
 public class SplashScreenActivity extends Activity {
 
 	private static final String LOG_TAG = "SplashScreenActivity";
-	private static final int PIN_NUMBER_REQUEST = 1379;
-
+	
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
 	public static Context context;
@@ -36,8 +35,8 @@ public class SplashScreenActivity extends Activity {
 	private TextView txtStatus;
 
 	// Data
-	private int startCounter = 2;
-
+	private static final int PIN_NUMBER_REQUEST = 1379;
+	
 	public static void sm(int cmd, Object msg){
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, 1, 0, msg));    
 	}    
