@@ -31,4 +31,6 @@ public interface IWimpleResponseListener {
 	public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list);
 	
 	public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list);
+	
+	public void onModifyEntryResponseReceived(boolean status);
 }

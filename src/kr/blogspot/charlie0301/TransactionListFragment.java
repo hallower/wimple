@@ -4,6 +4,8 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
+import org.apache.http.cookie.SM;
+
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.entry.EntryItemListAdapter;
 import kr.blogspot.charlie0301.entry.EntryItemListView;
@@ -21,7 +23,9 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
 
@@ -103,8 +107,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			@Override
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
+				Entry item = (Entry) entryAdapter.get().getItem(position);
+				//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.MODIFY_ENTRY, item.getId());
 			}
 		});
+
 
 		// TODO : remove old data
 		wimple.getStoredEntries();

@@ -98,6 +98,19 @@ public class EntryDBHandler {
     }
 	 */
 
+	public Entry getEntry(String id){
+		IDatabaseRecord record = dbHandler.getItem("id", id);
+		
+		if(null == record){
+			return null;
+		}
+		
+		Entry entry = new Entry();
+		entry.setValues(record.getValues());
+		
+		return entry;
+	}
+	
 	public Collection<Entry> getAllEntrys(){
 		Collection<Entry> acts = new ArrayList<Entry>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
