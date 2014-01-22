@@ -72,8 +72,14 @@ public class RestAPIInvoker {
 				response = wb.post(ClientResponse.class, params);				
 				break;
 
-			case DELETE :
 			case PUT:
+				response = wb.put(ClientResponse.class, params);
+				break;
+				
+			case DELETE :
+				response = wb.delete(ClientResponse.class, params);
+				break;
+				
 			default :
 				throw new Exception("Not supported HTTP Method");
 			}

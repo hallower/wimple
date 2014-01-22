@@ -96,7 +96,9 @@ ActionBar.TabListener {
 		public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
 		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
 		public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
-
+		public static final int MODIFY_ENTRY = CMD_BASE + 31;
+		public static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
+		
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -204,7 +206,8 @@ ActionBar.TabListener {
 
 				if(actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_TABS &&
 						actionBar.getNavigationItemCount() > 0){
-					actionBar.setSelectedNavigationItem(position);		
+					actionBar.setSelectedNavigationItem(position);
+					currentTabPosition = position;
 				}
 
 			}
@@ -396,7 +399,7 @@ ActionBar.TabListener {
 		mDrawerLayout.closeDrawer(mSideMenu);
 	}
 
-	private void moveTabOfPager(int pageID){
+	public void moveTabOfPager(int pageID){
 
 		if(currentTabPosition == pageID){
 			return;
@@ -457,7 +460,7 @@ ActionBar.TabListener {
 				// TODO : we have to save to DB and use it at initial time
 				if(status){
 					Log.e(LOG_TAG, info.toString());
-					sm(CommandID.UPDATE_USER_INFO, info);	
+					sm(CommandID.UPDATE_USER_INFO, 1, 0, info);	
 				}else{
 					Toast.makeText(context, "Login FaileD!!!!", Toast.LENGTH_LONG).show();
 				}
@@ -465,39 +468,44 @@ ActionBar.TabListener {
 
 			@Override
 			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {
-				sm(CommandID.GET_ALL_SECTION_RECEIVED, list);
+				sm(CommandID.GET_ALL_SECTION_RECEIVED, status?1:0, 0, list);
 			}
 
 			@Override
 			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
-				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list);
+				sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, status?1:0, 0, list);
 			}
 
 			@Override
 			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
-				sm(CommandID.GET_ENTRIES_RECEIVED, list);
+				sm(CommandID.GET_ENTRIES_RECEIVED, status?1:0, 0, list);
 			}
 
 			@Override
 			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {
-				sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, status);
+				sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, list);
 			}
 
 			@Override
 			public void onMakeEntryResponseReceived(boolean status) {
-				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status);				
+				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, status);				
 			}
 
 			@Override
 			public void onGetFrequentItemsResponseReceived(boolean status,
 					Collection<Item> list) {
-				sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, list);
+				sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, list);
 			}
 
 			@Override
 			public void onGetLatestItemsResponseReceived(boolean status,
 					Collection<Item> list) {
-				sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, list);
+				sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, list);
+			}
+
+			@Override
+			public void onModifyEntryResponseReceived(boolean status) {
+				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, status);
 			}				
 
 		});
@@ -547,6 +555,19 @@ ActionBar.TabListener {
 					break;
 				}
 
+				// TransactionInsertFragment
+				case CommandID.MODIFY_ENTRY : {
+
+					moveTabOfPager(0);
+					Fragment fg = mSectionsPagerAdapter.getItem(0);
+
+					if(fg instanceof IWimpleFragment){
+						IWimpleFragment wfg = (IWimpleFragment) fg;
+						wfg.handleMessage(msg);
+					}
+					break;
+				}
+				
 				// to all
 				case CommandID.WIMPLE_LOGGIN_SUCCESS :
 				case CommandID.WIMPLE_LOGGIN_FAILED :
@@ -556,7 +577,8 @@ ActionBar.TabListener {
 				case CommandID.GET_ENTRIES_RECEIVED :
 				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
-				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :					
+				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
+				case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : 
 				{
 
 					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){

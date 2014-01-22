@@ -187,6 +187,10 @@ public class SplashScreenActivity extends Activity {
 			public void onGetLatestItemsResponseReceived(boolean status,
 					Collection<Item> list) {
 				sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, list);
+			}
+
+			@Override
+			public void onModifyEntryResponseReceived(boolean status) {
 			}				
 
 		});

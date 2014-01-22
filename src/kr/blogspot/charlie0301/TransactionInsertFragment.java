@@ -13,8 +13,8 @@ import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Calculator;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -47,7 +47,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
-
+	
+	private final static Calculator cal = new Calculator();
 	private static int[] padRIDs = null;
 
 	// Widget
@@ -67,12 +68,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	// Data
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
-
 	private Long itemDate = Calendar.getInstance().getTimeInMillis();
-
-	// 
-	private Calculator cal = new Calculator();
-
+	private boolean isEditing = false;
+	private String editingEntryID = "";
+	
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
@@ -226,12 +225,28 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					return;
 				}
 
-				boolean res = wimple.makeEntry(Calendar.getInstance().getTimeInMillis(), 
-						leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
-						txtTitle.getText().toString(), amount, "");
 				
-				if(false == res){
-					Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+				if(isEditing){
+					isEditing = false;
+					
+					boolean res = wimple.modifyEntry(editingEntryID, datePicker.getSelectedDate(), 
+							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
+							txtTitle.getText().toString(), amount, "");
+					
+					if(false == res){
+						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+					}
+					
+					editingEntryID = "";
+					
+				}else{
+					boolean res = wimple.makeEntry(datePicker.getSelectedDate(), 
+							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
+							txtTitle.getText().toString(), amount, "");
+					
+					if(false == res){
+						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+					}
 				}
 			}
 		});
@@ -371,6 +386,35 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);			
 		}
 	}
+	
+	private void setEntry(Entry entry) {
+		txtTitle.setText(entry.getItem());
+		cal.setValue(entry.getAmount());
+		setAmountText(entry.getAmount());
+		datePicker.setDate(entry.getDate());
+		
+		int selectedLeftGroup = leftAccountListAdapter.setSelected(entry.getLeftAccountID());
+		if(selectedLeftGroup > -1){
+			
+			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
+				leftAccountListView.collapseGroup(i);
+			}
+			leftAccountListView.expandGroup(selectedLeftGroup);
+			leftAccountListView.setSelection(selectedLeftGroup);
+			leftAccountListView.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition(), true);
+		}
+
+		int selectedRightGroup = rightAccountListAdapter.setSelected(entry.getRightAccountID());
+		if(selectedRightGroup > -1){
+			
+			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
+				rightAccountListView.collapseGroup(i);
+			}
+			rightAccountListView.expandGroup(selectedRightGroup);
+			rightAccountListView.setSelection(selectedRightGroup);
+			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);			
+		}
+	}
 
 	private boolean validateForms() {
 		if(null == txtTitle.getText().toString() ||
@@ -410,6 +454,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		setAmountText(0.0);
 		leftAccountListAdapter.clearSelection();
 		rightAccountListAdapter.clearSelection();
+		
+		if(this.isEditing){
+			this.isEditing = false;
+			editingEntryID = "";
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -543,6 +592,35 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 		break;
 
+		case CommandID.MODIFY_ENTRY : {
+
+			String entryID = obj.toString();
+			
+			Entry entry = wimple.getEntry(entryID);
+			if(null == entry){
+				return;
+			}
+			
+			isEditing = true;
+			editingEntryID = entryID;
+			Toast.makeText(context, entry.toString(), Toast.LENGTH_LONG).show();
+			
+			setEntry(entry);
+			break;
+		}
+		
+		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
+			if(booleanStatus){
+				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
+				clearForms();
+				wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
+				mainActivity.moveTabOfPager(1);
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+			}
+			break;
+		}
+			
 		}
 	}
 

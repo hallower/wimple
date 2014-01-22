@@ -93,7 +93,7 @@ public class Entry implements IDatabaseRecord {
 		this.dateValue = Double.parseDouble(dateString);
 		int pos = dateString.indexOf(".");
 		if(pos > 0){
-			dateString = dateString.substring(0, pos - 1);
+			dateString = dateString.substring(0, pos);
 		}
 
 		try {

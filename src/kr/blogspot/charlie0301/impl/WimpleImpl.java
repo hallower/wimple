@@ -97,6 +97,9 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list) { }
 		@Override
 		public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list) { }
+		@Override
+		public void onModifyEntryResponseReceived(boolean status) {
+		}
 	};
 
 	protected WimpleImpl(){ 
@@ -191,6 +194,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		public static final String ENTRIES_ALL			= "api/entries.json_array";
 		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
+		public static final String ENTRIES_MODIFY			= "api/entries/";
 
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
@@ -281,7 +285,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_POST_ENTRY = CMD_BASE + 21;		
 		public static final int CMD_GET_FRQUENT_ITEMS = CMD_BASE + 23;		
 		public static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
-
+		public static final int CMD_PUT_ENTRY = CMD_BASE + 26;		
 	}
 
 
@@ -384,6 +388,10 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onGetLatestItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
 				break;
 
+			case CommandID.CMD_PUT_ENTRY :
+				responseListener.onModifyEntryResponseReceived(booleanStatus);
+				break;
+				
 			default : 
 				break;
 
@@ -519,7 +527,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 				if(null == json ||
 						false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[getAllSections] Error response" + json.get("message").toString());
+					Log.e(LOG_TAG, "[getAllSections] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
 				}
@@ -587,7 +595,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[User Info] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[User Info] Error response - " + json.get("message").toString());
 				sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
 				return;
 			}
@@ -640,7 +648,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[Default Sections] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[Default Sections] Error response - " + json.get("message").toString());
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
 				return;
 			}
@@ -762,7 +770,7 @@ public class WimpleImpl implements IWimpleImpl {
 				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
 				if(null == json ||
 						false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[Account] Error response" + json.get("message").toString());
+					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
@@ -796,6 +804,11 @@ public class WimpleImpl implements IWimpleImpl {
 		return em.getStoredEntries();
 	}
 
+	public Entry getEntry(String entryID){
+		
+		return edbh.getEntry(entryID);
+	}
+	
 	public boolean getAllEntries(String latestDate, String oldestDate){
 
 		if(false == isInitializedFinished()){
@@ -835,6 +848,16 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		return em.makeEntry(defaultSectionID, date, left, right, title, amount, memo);
+	}
+	
+	public boolean modifyEntry(String entryID, Long date, Account left, Account right, 
+			String title, Double amount, String memo){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[makeEntry] Initialization is on progressing.");
+			return false;
+		}
+
+		return em.modifyEntry(defaultSectionID, entryID, date, left, right, title, amount, memo);
 	}
 
 	public boolean getFrequentItems(){

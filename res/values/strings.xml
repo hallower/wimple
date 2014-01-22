@@ -50,6 +50,8 @@
     <string name="insert_invalid_right_accounts">오른쪽 계정을 확인해 주세요.</string>
     <string name="insert_success">거래가 성공적으로 입력 되었습니다.</string>
     <string name="insert_failed">거래가 입력이 되지 않았습니다. 입력 내용과 네트워크 상태를 확인해 주세요.</string>
+    <string name="modify_success">거래가 성공적으로 수정 되었습니다.</string>
+    <string name="modify_failed">거래 수정이 되지 않았습니다. 수정 내용과 네트워크 상태를 확인해 주세요.</string>
     <string name="entry_header_asset_p">자산+</string>
     <string name="entry_header_asset_m">자산-</string>
     <string name="entry_header_debt_p">부채+</string>

@@ -51,7 +51,7 @@ public class ItemManager {
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[Frequent Item] Error response" + json.get("message").toString());
+				Log.e(LOG_TAG, "[Frequent Item] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 				return;
 			}
