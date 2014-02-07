@@ -16,6 +16,7 @@ public class UserInfoDBHandler {
 	 * 	columns.append(2,  "join_date");
 	 * 	columns.append(3,  "profile_image_url");
 	 * 	columns.append(4,  "mileage");
+	 *  columns.append(5,  "api_count_level");
 	 */
 
 	//private static String LOG_TAG = "UserInfoDBHandler";
@@ -26,6 +27,7 @@ public class UserInfoDBHandler {
 			"join_date TEXT, " +
 			"profile_image_url TEXT, " +
 			"mileage TEXT " + 
+			"api_count_level TEXT " +
 			") ";
 
 	private static DatabaseHandler dbHandler = null;

@@ -33,6 +33,8 @@ public interface IWimpleImpl {
 	
 	public abstract Integer getRemainedAPICall();
 	
+	public abstract Integer getTotalAPICall();
+	
 	public abstract void setRemainedAPICall(String count);
 	
 	

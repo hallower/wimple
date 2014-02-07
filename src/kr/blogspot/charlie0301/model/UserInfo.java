@@ -11,19 +11,31 @@ public class UserInfo implements IDatabaseRecord {
 
 	private static String LOG_TAG = "UserInfo";
 	/*
-	 * "user_id" : 27,
-		"username" : "Helloman",
-		"last_ip" : "192.168.0.1",
-		"last_login_timestamp" : 1322448931,
-		"created_timestamp" : 1321448931,
-		"modified_timestamp" : 1321448931,
-		"language" : "ko",
-		"expire" : 1321448931,
-		"timezone" : "Asia/Seoul",
-		"currency" : "KRW",
-		"country" : "KR",
-		"image_url" : "https://s3-ap-northeast-1.amazonaws.com/whooingprofile/p27.jpg",
-		"mileage" : 230
+	 *  [results] => Array
+        (
+            [user_id] => 20169
+            [username] => Hallo
+            [email] => hallower@gmail.com
+            [new_email] => 
+            [level] => 1
+            [last_ip] => 110.70.49.19
+            [last_login_timestamp] => 1391738068
+            [created_timestamp] => 1386322731
+            [modified_timestamp] => 1388400755
+            [language] => ko
+            [expire] => 0
+            [timezone] => Asia/Seoul
+            [currency] => KRW
+            [country] => KR
+            [image] => 0
+            [twitter_id] => 
+            [mileage] => 1085
+            [money] => 0
+            [adv] => n
+            [rmail] => y
+            [sound] => y
+            [image_url] => https://s3-ap-northeast-1.amazonaws.com/whooingprofile/p0.jpg
+        )
 	 */
 
 	private String id;
@@ -31,6 +43,7 @@ public class UserInfo implements IDatabaseRecord {
 	private Long joinDate;
 	private String userImgURL;
 	private Integer mileage;
+	private Integer apiCountLevel;
 
 
 	public static final SparseArray<String> columns = new SparseArray<String>();
@@ -41,6 +54,7 @@ public class UserInfo implements IDatabaseRecord {
 		columns.append(2,  "join_date");
 		columns.append(3,  "profile_image_url");
 		columns.append(4,  "mileage");
+		columns.append(5,  "api_count_level");
 	}
 
 
@@ -49,13 +63,14 @@ public class UserInfo implements IDatabaseRecord {
 	}
 
 	public UserInfo(String id, String name, Long joinDate,
-			String userImgURL, Integer mileage) {
+			String userImgURL, Integer mileage, Integer level) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.joinDate = joinDate;
 		this.userImgURL = userImgURL;
 		this.mileage = mileage;
+		this.apiCountLevel = level;
 	}
 
 	public UserInfo(JSONObject json) {
@@ -63,7 +78,8 @@ public class UserInfo implements IDatabaseRecord {
 		this(json.get("user_id").toString(), json.get("username").toString(), 
 				Long.valueOf(json.get("created_timestamp").toString()), 
 				json.get("image_url").toString(),
-				Integer.valueOf(json.get("mileage").toString()));
+				Integer.valueOf(json.get("mileage").toString()),
+				Integer.valueOf(json.get("level").toString()));
 	}
 
 	public String getID() {
@@ -104,6 +120,10 @@ public class UserInfo implements IDatabaseRecord {
 
 	public void setMileage(Integer mileage) {
 		this.mileage = mileage;
+	}
+	
+	public Integer getAPICountLevel(){
+		return apiCountLevel;
 	}
 
 	@Override
@@ -159,6 +179,10 @@ public class UserInfo implements IDatabaseRecord {
 				mileage = Integer.valueOf(values.get(key));
 				break;
 
+			case 5 :
+				apiCountLevel = Integer.valueOf(values.get(key));
+				break;
+				
 			default :
 				Log.e(LOG_TAG, "UserInfo setValue got invalid index = " + key);
 				return false;
@@ -185,6 +209,9 @@ public class UserInfo implements IDatabaseRecord {
 
 		case 4 :
 			return mileage.toString();
+
+		case 5 :
+			return apiCountLevel.toString();
 
 		default :
 			Log.e(LOG_TAG, "UserInfo getValue got invalid index = " + columnID);
