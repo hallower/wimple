@@ -334,7 +334,7 @@ ActionBar.TabListener {
 			return;
 		}
 		
-		double totalLevel = 30f;
+		double totalLevel = wimple.getTotalAPICall();
 		int nLevel = wimple.getRemainedAPICall();
 		
 		//Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
@@ -343,13 +343,7 @@ ActionBar.TabListener {
 			nLevel = 1;
 		}
 
-		if(nLevel > 200){
-			totalLevel = 1000f;
-		}else if(nLevel > 30){
-			totalLevel = 200f;
-		}
-
-		//Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
+		Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
 		
 		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
 		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		

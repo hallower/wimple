@@ -56,7 +56,8 @@ public class WimpleImpl implements IWimpleImpl {
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 
 	// Data
-	private int CountOfRemainedAPICall = -1;
+	private int countOfRemainedAPICall = -1;
+	private int countOfTotalAPICall = 1;
 	private String defaultSectionID;
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
@@ -354,9 +355,24 @@ public class WimpleImpl implements IWimpleImpl {
 			break;
 
 			case CommandID.CMD_GET_USER_INFO :
-				responseListener.onGetUserInfoResponseReceived(booleanStatus, (UserInfo) obj);
+			{
+				UserInfo ui = (UserInfo) obj;
+				if(booleanStatus){
+					switch(ui.getAPICountLevel()){
+					case 2:
+						countOfTotalAPICall = 200;
+						break;
+					case 3:
+						countOfTotalAPICall = 1000;
+						break;
+					default :
+						countOfTotalAPICall = 30;
+						break;
+					}					
+				}
+				responseListener.onGetUserInfoResponseReceived(booleanStatus, ui);
 				break;
-
+			}
 			case CommandID.CMD_GET_SECTIONS :
 			case CommandID.CMD_GET_SECTIONS_DEFAULT :
 				isInitializedFinished = true;
@@ -911,18 +927,23 @@ public class WimpleImpl implements IWimpleImpl {
 
 	@Override
 	public Integer getRemainedAPICall() {		
-		return CountOfRemainedAPICall;
+		return countOfRemainedAPICall;
+	}
+	
+	@Override
+	public Integer getTotalAPICall() {
+		return countOfTotalAPICall;
 	}
 
 	@Override
 	public void setRemainedAPICall(String count) {
 
 		try{
-			CountOfRemainedAPICall = Integer.parseInt(count);
+			countOfRemainedAPICall = Integer.parseInt(count);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		Log.d(LOG_TAG, "Remained API call count = " + CountOfRemainedAPICall);
+		Log.d(LOG_TAG, "Remained API call count = " + countOfRemainedAPICall);
 	}
 
 	@Override
