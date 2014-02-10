@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Entry.DateDescCompare;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;

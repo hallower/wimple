@@ -51,6 +51,10 @@ public class Utils {
 		formatCalcNum.applyPattern("###,###.####");
 	}
 
+	public static final Locale getDefaultLocale(){
+		return locale;
+	}
+	
 	public static final SimpleDateFormat getServerDateFormat(){
 		return sdf;
 	}
