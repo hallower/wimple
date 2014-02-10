@@ -3,9 +3,7 @@ package kr.blogspot.charlie0301.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
-
 import android.content.Context;
 
 public class ItemDBHandler {

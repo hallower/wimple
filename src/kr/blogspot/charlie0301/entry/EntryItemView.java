@@ -18,7 +18,6 @@ public class EntryItemView extends LinearLayout {
 
 	private final Context context;
 
-	private LinearLayout background = null;
 	private TextView date = null;
 	private TextView title = null;
 	private TextView memo = null;
@@ -37,7 +36,6 @@ public class EntryItemView extends LinearLayout {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_entries, this, true);
 
-		background = (LinearLayout)findViewById(R.id.entry_backgroud);
 		date = (TextView)findViewById(R.id.entry_item_date);
 		title = (TextView)findViewById(R.id.entry_item_title);
 		memo = (TextView)findViewById(R.id.entry_item_memo);
