@@ -26,7 +26,7 @@ public class UserInfoDBHandler {
 			"name TEXT, " +
 			"join_date TEXT, " +
 			"profile_image_url TEXT, " +
-			"mileage TEXT " + 
+			"mileage TEXT, " + 
 			"api_count_level TEXT " +
 			") ";
 

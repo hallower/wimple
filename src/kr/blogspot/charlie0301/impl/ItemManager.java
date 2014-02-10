@@ -94,10 +94,10 @@ public class ItemManager {
 		public void run() {
 
 			if(false == forceUpdate &&
-					null != wimpl.getItemDBHandler() &&
-					wimpl.getItemDBHandler().hasData() ){
+					null != wimpl.getLatestItemDBHandler() &&
+					wimpl.getLatestItemDBHandler().hasData() ){
 				Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Cache!!!");
-				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, wimpl.getItemDBHandler().getAllItems());
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, wimpl.getLatestItemDBHandler().getAllItems());
 				return;
 			}
 			
@@ -128,9 +128,79 @@ public class ItemManager {
 
 				list.add(new Item(row));
 			}
-			wimpl.getItemDBHandler().insert(list);
+			wimpl.getLatestItemDBHandler().insert(list);
 			Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Server!!!");
 			wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 1, 0, list);
+		}			
+
+	}
+
+	
+	public boolean getMonthlyItems(String sectionID, boolean forceUpdate){
+
+		new GetMonthlyItemsTaskThread(sectionID, forceUpdate).start();		
+		return true;
+	}
+
+	private class GetMonthlyItemsTaskThread extends Thread{
+
+		final String sectionID;
+		final boolean forceUpdate;
+
+		GetMonthlyItemsTaskThread(String sectionID, boolean forceUpdate){
+			this.sectionID = sectionID;
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			if(false == forceUpdate &&
+					null != wimpl.getMonthlyItemDBHandler() &&
+					wimpl.getMonthlyItemDBHandler().hasData() ){
+				Log.d(LOG_TAG, "[Monthly Item] Providing GetMonthlyItem from Cache!!!");
+				wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 1, 0, wimpl.getMonthlyItemDBHandler().getAllItems());
+				return;
+			}
+			
+			Collection<Item> list = new ArrayList<Item>();
+			String path = "?section_id=" + sectionID;
+
+			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_MONTHLY + path, "");
+			if(null == json ||
+					false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[Monthly Item] Error response - " + json.get("message").toString());
+				wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 0, 0, list);
+				return;
+			}
+
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
+			
+			JSONObject results = null;
+			try{
+				results = (JSONObject) json.get("results");	
+			}catch(Exception e){
+				Log.d(LOG_TAG, "[Monthly Item] Nothing...");
+				wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 1, 0, list);
+				return;
+			}
+			
+			for(Object type : results.keySet()){
+
+				if(false == type.toString().startsWith("slot")){
+					continue;
+				}
+				
+				JSONArray rows  = (JSONArray) results.get(type);
+				for(int i = 0; i < rows.size(); i++){
+					JSONObject row = (JSONObject) rows.get(i);
+
+					list.add(new Item(row));
+				}
+			}
+			wimpl.getMonthlyItemDBHandler().insert(list);
+			Log.d(LOG_TAG, "[Monthly Item] Providing Frequent Items");
+			wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 1, 0, list);
 		}			
 
 	}

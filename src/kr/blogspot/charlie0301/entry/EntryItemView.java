@@ -6,6 +6,7 @@ import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Entry;
+import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ public class EntryItemView extends LinearLayout {
 
 	private final Context context;
 
+	private LinearLayout background = null;
 	private TextView date = null;
 	private TextView title = null;
 	private TextView memo = null;
@@ -35,6 +37,7 @@ public class EntryItemView extends LinearLayout {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_entries, this, true);
 
+		background = (LinearLayout)findViewById(R.id.entry_backgroud);
 		date = (TextView)findViewById(R.id.entry_item_date);
 		title = (TextView)findViewById(R.id.entry_item_title);
 		memo = (TextView)findViewById(R.id.entry_item_memo);
@@ -45,27 +48,49 @@ public class EntryItemView extends LinearLayout {
 
 	}
 
-	public EntryItemView(Context context, Entry item) {
+	public EntryItemView(Context context, Item item) {
 		this(context);
 		setData(item);
 	}
 
 
-	public void setData(Entry item) {
+	public void setData(Item item) {
 
 		//date.setText(formatter.format(new Date(item.getDate())));				
 		date.setText(Utils.getGUIDateFormat().format(new Date(item.getDate())));
 		title.setText(item.getItem());
-
-		if(item.getMemo().isEmpty()){
-			memo.setVisibility(View.GONE);
-		}else{
-			memo.setText(item.getMemo());
-			memo.setVisibility(View.VISIBLE);
-		}		
 		amount.setText(Utils.getDecimalFormat().format(item.getAmount()));
-		total.setText(Utils.getDecimalFormat().format(item.getBalance()));
-
+		
+		memo.setVisibility(View.GONE);
+		total.setText("-");
+		
+		if(item instanceof Entry){
+			
+			Entry entry = (Entry)item;
+			
+			if(entry.getMemo().isEmpty()){
+				memo.setVisibility(View.GONE);
+			}else{
+				memo.setText(entry.getMemo());
+				memo.setVisibility(View.VISIBLE);
+			}		
+			total.setText(Utils.getDecimalFormat().format(entry.getBalance()));	
+			
+			date.setTextColor(context.getResources().getColor(R.color.text_basic));
+			title.setTextColor(context.getResources().getColor(R.color.text_black));
+			amount.setTextColor(context.getResources().getColor(R.color.text_black));
+		}else{
+			/*
+			background.setBackgroundResource(R.drawable.gray_box);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+			params.setMargins(Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3));
+			background.setLayoutParams(params);
+			*/
+			date.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+			title.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+			amount.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+		}
+		
 		/*
 		 * // assets
 		 * // liabilities

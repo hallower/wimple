@@ -3,14 +3,15 @@ package kr.blogspot.charlie0301.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 
 import android.content.Context;
 
 public class ItemDBHandler {
 	
-    private static String tableName = "iteminfo";
-    private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+    private String tableName = "iteminfo";
+    private static String createSchema = "CREATE TABLE IF NOT EXISTS " + "%s" + "(" +
             			
             "id TEXT, " +
             "date TEXT, " +
@@ -20,16 +21,18 @@ public class ItemDBHandler {
 			"rightAccountID TEXT, " +
 			"item TEXT, " +
 			"amount TEXT, " +
+			"dateValue TEXT, " +
 
 			"PRIMARY KEY (id, date, item)" +
             ") ";
     
-    private static DatabaseHandler dbHandler = null;
+    private DatabaseHandler dbHandler = null;
 
-    public ItemDBHandler(Context context) {
+    public ItemDBHandler(Context context, String tableName) {
         super();
 
-        dbHandler = new DatabaseHandler(context, createSchema, tableName);        
+        this.tableName = tableName;
+        dbHandler = new DatabaseHandler(context, String.format(createSchema, this.tableName), this.tableName);        
         dbHandler.setColumns(Item.columns);
     }
 
@@ -68,27 +71,20 @@ public class ItemDBHandler {
         return res;
     }
 
-    /*
-    private Collection<Item> get(String where){
-    	Collection<Item> acts = new ArrayList<Item>();
-    	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
-
-    	Log.d(tableName, where);
-
-    	for(IDatabaseRecord record : records){
-    		Item data = new Item();
-
-    		if(false == data.setValues(record.getValues())){
-    			continue;
-    		}
-    		acts.add(data);
-    	}
-
-    	dbHandler.showAll();
-    	return acts;
-    }
-    */
-
+    public Item getItem(String id){
+		IDatabaseRecord record = dbHandler.getItem("id", id);
+		
+		if(null == record){
+			return null;
+		}
+		
+		Item item = new Item();
+		item.setValues(record.getValues());
+		
+		return item;
+	}
+    
+    
     public Collection<Item> getAllItems(){
     	Collection<Item> acts = new ArrayList<Item>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems();

@@ -47,9 +47,10 @@ public class WimpleImpl implements IWimpleImpl {
 
 	private UserInfoDBHandler uidbh = null;
 	private AccountDBHandler adbh = null;
-	private ItemDBHandler idbh = null;
+	private ItemDBHandler lidbh = null;
 	private SectionDBHandler sdbh = null;
 	private EntryDBHandler edbh = null;
+	private ItemDBHandler midbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -99,8 +100,9 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list) { }
 		@Override
-		public void onModifyEntryResponseReceived(boolean status) {
-		}
+		public void onModifyEntryResponseReceived(boolean status) { }
+		@Override
+		public void onGetMonthlyItemsResponseReceived(boolean status, Collection<Item> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -133,8 +135,8 @@ public class WimpleImpl implements IWimpleImpl {
 			adbh = new AccountDBHandler(WimpleImpl.context);    
 		}
 
-		if(null == idbh){
-			idbh = new ItemDBHandler(WimpleImpl.context);    
+		if(null == lidbh){
+			lidbh = new ItemDBHandler(WimpleImpl.context, "frequentitems");    
 		}
 		
 		if(null == sdbh){
@@ -144,6 +146,10 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == edbh){
 			edbh = new EntryDBHandler(WimpleImpl.context);
 		}
+		
+		if(null == midbh){
+			midbh = new ItemDBHandler(WimpleImpl.context, "monthlyitems");
+		}	
 	}
 
 	public void setStatusListener(IWimpleStatusListener listener){
@@ -199,6 +205,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
+		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
 
 	};
 
@@ -286,7 +293,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_POST_ENTRY = CMD_BASE + 21;		
 		public static final int CMD_GET_FRQUENT_ITEMS = CMD_BASE + 23;		
 		public static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
-		public static final int CMD_PUT_ENTRY = CMD_BASE + 26;		
+		public static final int CMD_PUT_ENTRY = CMD_BASE + 27;		
+		public static final int CMD_GET_MONTHLY_ITEMS = CMD_BASE + 29;		
 	}
 
 
@@ -408,6 +416,10 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onModifyEntryResponseReceived(booleanStatus);
 				break;
 				
+			case CommandID.CMD_GET_MONTHLY_ITEMS :
+				responseListener.onGetMonthlyItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
+				break;
+
 			default : 
 				break;
 
@@ -906,7 +918,33 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getLatestItems(defaultSectionID, forceUpdate);
 	}
+	
+	public Item getMonthlyItem(String itemID){
+		
+		midbh.print();
+		return midbh.getItem(itemID);
+	}
 
+	public boolean getMonthlyItems(){
+		/*
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getMonthlyItems] Initialization is on progressing.");
+			return false;
+		}
+		*/
+
+		return im.getMonthlyItems(defaultSectionID, false);
+	}
+
+	public boolean getMonthlyItems(boolean forceUpdate){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[getMonthlyItems] Initialization is on progressing.");
+			return false;
+		}
+
+		return im.getMonthlyItems(defaultSectionID, forceUpdate);
+	}
+	
 	public String getAccountName(String accountCode){
 		String name = "?";
 
@@ -947,12 +985,17 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	@Override
-	public ItemDBHandler getItemDBHandler() {		
-		return idbh;
+	public ItemDBHandler getLatestItemDBHandler() {		
+		return lidbh;
 	}
 
 	@Override
 	public EntryDBHandler getEntryDBHandler() {
 		return edbh;
+	}
+	
+	@Override
+	public ItemDBHandler getMonthlyItemDBHandler() {		
+		return midbh;
 	}
 }

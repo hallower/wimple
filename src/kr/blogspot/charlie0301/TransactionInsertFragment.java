@@ -387,7 +387,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 	}
 	
-	private void setEntry(Entry entry) {
+	private void setEntry(Item entry) {
 		txtTitle.setText(entry.getItem());
 		cal.setValue(entry.getAmount());
 		setAmountText(entry.getAmount());
@@ -594,18 +594,32 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.MODIFY_ENTRY : {
 
-			String entryID = obj.toString();
+			String itemID = obj.toString();
 			
-			Entry entry = wimple.getEntry(entryID);
-			if(null == entry){
+			// Modifying 
+			Item item = wimple.getEntry(itemID);
+			isEditing = true;
+			editingEntryID = itemID;
+			
+			if(null == item){
+				// Add Monthly Item
+				isEditing = false;
+				item = wimple.getMonthlyItem(itemID);
+			}			
+			
+			if(null == item){
+				Toast.makeText(context, "oops", Toast.LENGTH_SHORT).show();
 				return;
 			}
+
+			if(isEditing){
+				Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();	
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
+			}			
+			//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
 			
-			isEditing = true;
-			editingEntryID = entryID;
-			Toast.makeText(context, entry.toString(), Toast.LENGTH_LONG).show();
-			
-			setEntry(entry);
+			setEntry(item);
 			break;
 		}
 		

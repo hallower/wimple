@@ -10,8 +10,9 @@ import org.json.simple.JSONObject;
 public interface IWimpleImpl {
 
 	// subsystem
-	public ItemDBHandler getItemDBHandler();
+	public ItemDBHandler getLatestItemDBHandler();
 	public EntryDBHandler getEntryDBHandler();
+	public ItemDBHandler getMonthlyItemDBHandler();
 	
 	// getter
 	

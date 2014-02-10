@@ -2,6 +2,7 @@
 <resources>
     <color name="text_basic">#6F6F6F</color>
     <color name="text_group">#2DABD9</color>
+    <color name="text_light_dimmed">#7F6F6F6F</color>
     <color name="text_dimmed">#484848</color>
     <color name="text_white">#FFFFFF</color>
     <color name="text_black">#000000</color>

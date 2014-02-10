@@ -7,6 +7,7 @@ import java.util.List;
 
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Entry.DateDescCompare;
+import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +18,12 @@ public class EntryItemListAdapter extends BaseAdapter {
 	//private static final String LOG_TAG = "EntryItemListAdapter";
 	private Context mContext;
 
-	private List<Entry> items = new ArrayList<Entry>();
+	private List<Item> items = new ArrayList<Item>();
 	public EntryItemListAdapter(Context context) {
 		mContext = context;
 	}
 
-	public void addItem(Entry it) {
+	public void addItem(Item it) {
 
 		if(items == null){
 			return;
@@ -42,7 +43,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 		sortByDate();
 	}
 
-	public void setListItems(List<Entry> lit) {
+	public void setListItems(List<Item> lit) {
 		items = lit;
 	}
 
@@ -60,7 +61,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		Entry item = items.get(position);
+		Item item = items.get(position);
 
 		if (convertView == null) {
 		
