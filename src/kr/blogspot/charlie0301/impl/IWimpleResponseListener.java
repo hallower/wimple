@@ -12,25 +12,44 @@ import kr.blogspot.charlie0301.model.UserInfo;
 
 public interface IWimpleResponseListener {
 	
+	/*
+	 * Service Control
+	 */
 	public void onGetAuthTempToken(boolean status, String tempToken);
 	
 	public void onGetAuthAccessToken(boolean status, Map<String, String> result);
 	
+	/*
+	 * R, User
+	 */
 	public void onGetUserInfoResponseReceived(boolean status, UserInfo info);
 	
 	public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list);
 	
 	public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list);
 	
+	/*
+	 * R, Entry
+	 */
 	public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list);
 	
 	public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list);
 	
+	
+	/*
+	 * C, U, Entry
+	 */
 	public void onMakeEntryResponseReceived(boolean status);
 	
+	public void onModifyEntryResponseReceived(boolean status);
+	
+	/*
+	 * R, Items
+	 */
 	public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list);
 	
 	public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list);
 	
-	public void onModifyEntryResponseReceived(boolean status);
+	public void onGetMonthlyItemsResponseReceived(boolean status, Collection<Item> list);
+	
 }

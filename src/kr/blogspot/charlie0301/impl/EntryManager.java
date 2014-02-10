@@ -129,6 +129,8 @@ public class EntryManager {
 
 			if(0 > count){
 				path += "&limit=" + count;
+			}else{
+				path += "&limit=40";
 			}
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
@@ -167,6 +169,12 @@ public class EntryManager {
 					list.add(item);
 				}
 			}
+			
+			if(list.isEmpty()){
+				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+				return;
+			}
+			
 			Log.d(LOG_TAG, "[AllEntries] Providing All Entries from Server");
 			wimpl.getEntryDBHandler().insert(list);
 			wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);

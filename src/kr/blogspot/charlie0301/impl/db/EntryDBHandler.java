@@ -24,7 +24,6 @@ public class EntryDBHandler {
 			"balance TEXT, " +
 			"memo TEXT, " +
 			"appID TEXT, " +
-			"dateValue TEXT, " +
 
 			"PRIMARY KEY (id)" +
 			") ";

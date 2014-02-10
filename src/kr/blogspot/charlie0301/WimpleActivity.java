@@ -98,7 +98,7 @@ ActionBar.TabListener {
 		public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
 		public static final int MODIFY_ENTRY = CMD_BASE + 31;
 		public static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
-		
+		public static final int GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -337,13 +337,13 @@ ActionBar.TabListener {
 		double totalLevel = wimple.getTotalAPICall();
 		int nLevel = wimple.getRemainedAPICall();
 		
-		//Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
+		//Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
 		
 		if(nLevel < 0){
 			nLevel = 1;
 		}
 
-		Log.e(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
+		Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
 		
 		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
 		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		
@@ -422,6 +422,11 @@ ActionBar.TabListener {
 
 			@Override
 			public void onLoggedIn(boolean status) {
+				if(status){
+					sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "");	
+				}else{
+					sm(CommandID.WIMPLE_LOGGIN_FAILED, "");
+				}
 			}
 
 			@Override
@@ -500,6 +505,12 @@ ActionBar.TabListener {
 			@Override
 			public void onModifyEntryResponseReceived(boolean status) {
 				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, status);
+			}
+
+			@Override
+			public void onGetMonthlyItemsResponseReceived(boolean status,
+					Collection<Item> list) {
+				sm(CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, list);				
 			}				
 
 		});
@@ -564,6 +575,9 @@ ActionBar.TabListener {
 				
 				// to all
 				case CommandID.WIMPLE_LOGGIN_SUCCESS :
+					wimple.getMonthlyItems();
+					// No break;
+					
 				case CommandID.WIMPLE_LOGGIN_FAILED :
 				case CommandID.WIMPLE_LOGGOUT :
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
@@ -571,8 +585,12 @@ ActionBar.TabListener {
 				case CommandID.GET_ENTRIES_RECEIVED :
 				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
+				case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED :
+					
 				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : 
+					
+				default :
 				{
 
 					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){
@@ -586,11 +604,6 @@ ActionBar.TabListener {
 					}
 					break;
 				}	
-
-				default : {	
-					Log.d(LOG_TAG, "Invalid Command ID=" + command);
-					break;
-				}
 
 				}
 				super.handleMessage(msg);

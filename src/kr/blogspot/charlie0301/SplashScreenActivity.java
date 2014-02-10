@@ -66,8 +66,9 @@ public class SplashScreenActivity extends Activity {
 	}
 
 	private void refreshCache(){
-		wimple.getAllAccounts(true);
+		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
+		wimple.getMonthlyItems(true);
 	}
 
 	private void setupWimpleImpl() {
@@ -191,6 +192,11 @@ public class SplashScreenActivity extends Activity {
 
 			@Override
 			public void onModifyEntryResponseReceived(boolean status) {
+			}
+
+			@Override
+			public void onGetMonthlyItemsResponseReceived(boolean status,
+					Collection<Item> list) {
 			}				
 
 		});

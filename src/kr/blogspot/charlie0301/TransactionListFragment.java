@@ -2,9 +2,8 @@ package kr.blogspot.charlie0301;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.Semaphore;
-
-import org.apache.http.cookie.SM;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.entry.EntryItemListAdapter;
@@ -12,6 +11,7 @@ import kr.blogspot.charlie0301.entry.EntryItemListView;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Entry;
+import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
@@ -23,9 +23,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
 
@@ -41,6 +39,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 	private boolean isAllOldActivityFechted = false;
 	private static final Semaphore available = new Semaphore(1);
+
+
+	String prevLastDate = "";
+	int countLastDateRequest = 0;
+
+
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
@@ -86,19 +90,37 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 
-				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", \navailable permit=" + available.availablePermits());
+				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", available permit=" + available.availablePermits());
 
 				if(percentage >= 70 &&
 						false == isAllOldActivityFechted &&
 						true == available.tryAcquire()){
+
 					Log.d(LOG_TAG, "Get More!!!, percentage=" + percentage);
+
 					if(entryAdapter.get().getCount() == 0){						
 						wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);	
 					}else{
-						Entry entry = (Entry) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
-						Long lastDate = entry.getDate();
+						Item entry = (Item) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
+						String lastDate = entry.getDateValue();
+
+						//Log.d(LOG_TAG, "1 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
+						if(false == prevLastDate.isEmpty() &&
+								0 == lastDate.compareTo(prevLastDate)){
+							countLastDateRequest += 1;
+						}
+						prevLastDate = lastDate;
+						
+						if(countLastDateRequest > 3){
+							Log.d(LOG_TAG, "No More!!!");
+							isAllOldActivityFechted = true;
+							countLastDateRequest = 4;
+							return;
+						}
+						//Log.d(LOG_TAG, "2 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
+
 						wimple.getAllEntries(Utils.getServerDateString(lastDate), Utils.getLastMonthDateString(lastDate), 0);
-					}					
+					}
 				}
 			}
 		});
@@ -107,7 +129,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			@Override
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
-				Entry item = (Entry) entryAdapter.get().getItem(position);
+				Item item = (Item) entryAdapter.get().getItem(position);
 				//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.MODIFY_ENTRY, item.getId());
 			}
@@ -163,25 +185,41 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 				Collection<Entry> list = (Collection<Entry>) obj;
 
-				if(list.isEmpty()){
-					this.isAllOldActivityFechted = true;
-					return;
-				}
-				this.isAllOldActivityFechted = false;
-
 				for(Entry item : list){
-					entryAdapter.get().addItem(item);				
+					entryAdapter.get().addItem(item);
+					Log.e(LOG_TAG, "Entry adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 				}
 				entryAdapter.get().notifyDataSetChanged();
-				break;				
+				break;
 			}finally{
 				// TODO : I cant' find how to solve this issue.
 				if(available.availablePermits() < 1){
 					available.release();					
 				}
-				//Log.d(LOG_TAG, "available permit=" + available.availablePermits());
 			}
 		}
+
+		
+		case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED : {
+			if(false == booleanStatus){				
+				return;
+			}
+
+			if(null == entryAdapter.get()){
+				return;
+			}
+
+			Collection<Item> list = (Collection<Item>) obj;
+
+			for(Item item : list){
+				entryAdapter.get().addItem(item);
+				Log.e(LOG_TAG, "Monthly item adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+			}
+			entryAdapter.get().notifyDataSetChanged();
+
+		}
+		
+
 		}
 	}
 
