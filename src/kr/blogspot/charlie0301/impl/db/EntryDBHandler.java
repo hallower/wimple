@@ -3,9 +3,8 @@ package kr.blogspot.charlie0301.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
-
 import android.content.Context;
 
 public class EntryDBHandler {
@@ -54,7 +53,7 @@ public class EntryDBHandler {
 	}
 	
 	public void cleanOldEntries(Long date){
-		String dateString = Utils.getDBDateFormat().format(date);
+		String dateString = DateFormatUtils.getDBDateFormat().format(date);
 		dbHandler.delete("date < " + dateString);
 	}
 

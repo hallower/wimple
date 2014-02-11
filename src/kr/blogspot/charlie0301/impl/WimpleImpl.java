@@ -100,13 +100,13 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) { }
 		@Override
-		public void onMakeEntryResponseReceived(boolean status) { }
+		public void onMakeEntryResponseReceived(boolean status, String entryDate) { }
 		@Override
 		public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list) { }
 		@Override
 		public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list) { }
 		@Override
-		public void onModifyEntryResponseReceived(boolean status) { }
+		public void onModifyEntryResponseReceived(boolean status, String entryDate) { }
 		@Override
 		public void onGetMonthlyItemsResponseReceived(boolean status, Collection<Item> list) { }
 	};
@@ -454,7 +454,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_POST_ENTRY :
-				responseListener.onMakeEntryResponseReceived(booleanStatus);
+				responseListener.onMakeEntryResponseReceived(booleanStatus, (String)obj);
 				break;
 
 			case CommandID.CMD_GET_FRQUENT_ITEMS :
@@ -466,7 +466,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_PUT_ENTRY :
-				responseListener.onModifyEntryResponseReceived(booleanStatus);
+				responseListener.onModifyEntryResponseReceived(booleanStatus, (String)obj);
 				break;
 
 			case CommandID.CMD_GET_MONTHLY_ITEMS :

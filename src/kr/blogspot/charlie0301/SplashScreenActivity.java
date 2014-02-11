@@ -223,7 +223,7 @@ public class SplashScreenActivity extends Activity {
 			}
 
 			@Override
-			public void onMakeEntryResponseReceived(boolean status) {
+			public void onMakeEntryResponseReceived(boolean status, String entryDate) {
 				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status);				
 			}
 
@@ -240,7 +240,7 @@ public class SplashScreenActivity extends Activity {
 			}
 
 			@Override
-			public void onModifyEntryResponseReceived(boolean status) {
+			public void onModifyEntryResponseReceived(boolean status, String entryDate) {
 			}
 
 			@Override

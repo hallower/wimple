@@ -8,7 +8,7 @@ import java.util.Date;
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.WimpleImpl.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl.Path;
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 
@@ -266,8 +266,8 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(Utils.getDefaultLocale(), formatEntryPost, 
-					Utils.getServerDateFormat().format(new Date(date)), 
+			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(), formatEntryPost, 
+					DateFormatUtils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
 					left.getId(),
 					right.getWhat(),
@@ -289,9 +289,12 @@ public class EntryManager {
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
 			}
-
+			
+			JSONArray results = (JSONArray) json.get("results");
+			JSONObject row = (JSONObject) results.get(0);			
+			
 			Log.d(LOG_TAG, "[PostEntry] Providing response");
-			wimpl.sm(CommandID.CMD_POST_ENTRY, 1, 0, "");
+			wimpl.sm(CommandID.CMD_POST_ENTRY, 1, 0, row.get("entry_date").toString());
 		}
 
 	}
@@ -322,9 +325,9 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(Utils.getDefaultLocale(),formatEntryPut,
+			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(),formatEntryPut,
 					entryID,
-					Utils.getServerDateFormat().format(new Date(date)), 
+					DateFormatUtils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
 					left.getId(),
 					right.getWhat(),
@@ -347,8 +350,11 @@ public class EntryManager {
 				return;
 			}
 
+			JSONArray results = (JSONArray) json.get("results");
+			JSONObject row = (JSONObject) results.get(0);			
+		
 			Log.d(LOG_TAG, "[PutEntry] Providing response");
-			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, "");
+			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, row.get("entry_date").toString());
 		}
 
 	}

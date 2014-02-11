@@ -39,9 +39,9 @@ public interface IWimpleResponseListener {
 	/*
 	 * C, U, Entry
 	 */
-	public void onMakeEntryResponseReceived(boolean status);
+	public void onMakeEntryResponseReceived(boolean status, String entryDate);
 	
-	public void onModifyEntryResponseReceived(boolean status);
+	public void onModifyEntryResponseReceived(boolean status, String entryDate);
 	
 	/*
 	 * R, Items
