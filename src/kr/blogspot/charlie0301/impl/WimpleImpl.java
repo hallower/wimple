@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.impl;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,12 +9,15 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.AccountDBHandler;
 import kr.blogspot.charlie0301.impl.db.EntryDBHandler;
 import kr.blogspot.charlie0301.impl.db.ItemDBHandler;
 import kr.blogspot.charlie0301.impl.db.SectionDBHandler;
 import kr.blogspot.charlie0301.impl.db.UserInfoDBHandler;
+import kr.blogspot.charlie0301.impl.util.DrawableBitmapCache;
+import kr.blogspot.charlie0301.impl.util.RemoteContent;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
@@ -25,6 +29,8 @@ import org.json.simple.JSONObject;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -67,16 +73,14 @@ public class WimpleImpl implements IWimpleImpl {
 
 		@Override
 		public void onLoggedIn(boolean status) { }
-
 		@Override
 		public void onLoggedOut() { }
-
+		@Override
+		public void onProfilePictureUpdated() {}
 		@Override
 		public void onNetworkConnectionEstablished() {}
-
 		@Override
 		public void onNetworkConnectionLost() {}
-
 	};
 
 	private static IWimpleResponseListener responseListener = new IWimpleResponseListener(){
@@ -331,6 +335,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
 		public static final int CMD_PUT_ENTRY = CMD_BASE + 27;		
 		public static final int CMD_GET_MONTHLY_ITEMS = CMD_BASE + 29;		
+		public static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
+		
 	}
 
 
@@ -416,9 +422,18 @@ public class WimpleImpl implements IWimpleImpl {
 						break;
 					}					
 				}
+				
+				new ProfileDownloadTaskThread(ui.getUserImgURL()).start();
 				responseListener.onGetUserInfoResponseReceived(booleanStatus, ui);
 				break;
 			}
+			
+			case CommandID.CMD_PROFILE_PICTURE_UPDATED :
+			{
+				statusListener.onProfilePictureUpdated();
+				break;
+			}
+			
 			case CommandID.CMD_GET_SECTIONS :
 			case CommandID.CMD_GET_SECTIONS_DEFAULT :
 				isInitializedFinished = true;
@@ -1052,6 +1067,44 @@ public class WimpleImpl implements IWimpleImpl {
 		return midbh;
 	}
 
+	public String getProfilePath(){
+
+		String filename = this.userID;
+		if(filename.contains("@")){
+			filename = filename.replace("@", "_");
+		}
+		
+		/*
+		String packageName = context.getPackageName();
+		File externalPath = Environment.getExternalStorageDirectory();		
+		
+		String storagePath = externalPath.getAbsolutePath() +
+                "/Android/data/" + packageName + "/files";
+*/
+		File filePath = context.getFilesDir();
+		String storagePath = filePath.getAbsolutePath();
+		
+		if(false == storagePath.endsWith("/")){
+			storagePath += "/";
+		}
+		
+		return new String( storagePath + filename + ".bin");
+	}
+
+	public Bitmap getProfilePicture(){
+		try{
+			Bitmap b = DrawableBitmapCache.getBitmap(getProfilePath(), 80, 80);
+			if(b == null)
+				return DrawableBitmapCache.getBitmap(R.drawable.user);
+			else
+				return b;
+		} catch(Exception e){
+			return DrawableBitmapCache.getBitmap(R.drawable.user);
+		} catch(Error e){
+			return DrawableBitmapCache.getBitmap(R.drawable.user);
+		}
+	}
+	
 	private class ProfileDownloadTaskThread extends Thread {
 
 		private final String url;
@@ -1061,18 +1114,20 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		public void run() {
-			/*
-			String sPath = getFriendProfilePath(sID);
-			if(url.isEmpty() || url.equals(""))
-				continue;
 
-			if(remoteContent.download(url, sPath, true)){
+			String sPath = getProfilePath();
+			if(url.isEmpty() || url.equals("")){
+				Log.e(LOG_TAG, "Invalid Profile Image");
+				return;
+			}			
+
+			if(RemoteContent.getInstance().download(url, sPath, true)){
 				Log.d(LOG_TAG, "Profile Image download is succeed!!!");
 			}else{
 				Log.e(LOG_TAG, "Profile Image download is failed!!!");
 			}
-			 */
-			//mainHandler.sendMessage(Message.obtain(mainHandler, CommandID.UPDATED_FRIENDS_PROFILE, 1, 0, ""));
+			
+			sm(CommandID.CMD_PROFILE_PICTURE_UPDATED, 1, 0, "");
 		}
 	}
 

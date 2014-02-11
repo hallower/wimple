@@ -7,6 +7,8 @@ public interface IWimpleStatusListener {
 	
 	public void onLoggedOut();
 	
+	public void onProfilePictureUpdated();
+	
 	public void onNetworkConnectionEstablished();
 	
 	public void onNetworkConnectionLost();

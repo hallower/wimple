@@ -144,6 +144,10 @@ public class SplashScreenActivity extends Activity {
 			public void onNetworkConnectionLost() {
 			}
 
+			@Override
+			public void onProfilePictureUpdated() {
+			}
+
 		});
 
 		wimple.setResponseListener(new IWimpleResponseListener(){
@@ -161,8 +165,7 @@ public class SplashScreenActivity extends Activity {
 					return;
 				}
 
-				storedTempToken = tempToken;
-				mWebview.setVisibility(View.VISIBLE);				
+				storedTempToken = tempToken;				
 				sm(CommandID.GET_PIN, tempToken);				
 			}
 
@@ -308,6 +311,7 @@ public class SplashScreenActivity extends Activity {
 					startActivityForResult(intent, PIN_NUMBER_REQUEST);
 					 */
 					mWebview.loadUrl(target_url + "?token=" + storedTempToken);
+					mWebview.setVisibility(View.VISIBLE);
 					break;	
 				}
 

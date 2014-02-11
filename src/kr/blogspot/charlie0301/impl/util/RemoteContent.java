@@ -110,7 +110,8 @@ public class RemoteContent {
 	// Synchronous API
 	public boolean download(String url, String path, boolean overwrite){
 
-		if(false == url.startsWith("http://")){
+		if(false == url.startsWith("http://") &&
+				false == url.startsWith("https://")){
 			return false;
 		}
 

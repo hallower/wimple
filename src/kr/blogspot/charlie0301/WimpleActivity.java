@@ -9,6 +9,7 @@ import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
@@ -71,7 +72,8 @@ ActionBar.TabListener {
 
 	// GUI
 	TextView textLevel;
-	ImageView progressLevel; 
+	ImageView progressLevel;
+	ImageView profileIcon;
 
 	public static final class CommandID {
 
@@ -99,6 +101,7 @@ ActionBar.TabListener {
 		public static final int MODIFY_ENTRY = CMD_BASE + 31;
 		public static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
 		public static final int GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35;
+		public static final int WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -300,8 +303,8 @@ ActionBar.TabListener {
 	{
 
 		// Set Icon
-		ImageView icon = (ImageView)findViewById(R.id.my_profile_icon);
-		//WidgetItem.replaceBitmapOfImageView(icon, info.getUserImgURL(), false);
+		profileIcon = (ImageView)findViewById(R.id.my_profile_icon);
+		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
 
 		// Set  Name
 		TextView name = (TextView)findViewById(R.id.my_profile_name);
@@ -442,6 +445,11 @@ ActionBar.TabListener {
 			public void onNetworkConnectionLost() {
 			}
 
+			@Override
+			public void onProfilePictureUpdated() {
+				sm(CommandID.WIMPLE_PROFILE_PICTURE_UPDATED, "");
+			}
+
 		});
 		wimple.setResponseListener(new IWimpleResponseListener(){
 
@@ -546,6 +554,12 @@ ActionBar.TabListener {
 				{
 					setMyInfoOnMenu((UserInfo)obj);
 					break;
+				}
+				
+				case CommandID.WIMPLE_PROFILE_PICTURE_UPDATED :
+				{
+					WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
+					break;	
 				}
 
 				case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :								
