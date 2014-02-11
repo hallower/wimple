@@ -1,10 +1,11 @@
 package kr.blogspot.charlie0301.entry;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
@@ -55,9 +56,9 @@ public class EntryItemView extends LinearLayout {
 	public void setData(Item item) {
 
 		//date.setText(formatter.format(new Date(item.getDate())));				
-		date.setText(Utils.getGUIDateFormat().format(new Date(item.getDate())));
+		date.setText(DateFormatUtils.getGUIDateFormat().format(new Date(item.getDate())));
 		title.setText(item.getItem());
-		amount.setText(Utils.getDecimalFormat().format(item.getAmount()));
+		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
 		
 		memo.setVisibility(View.GONE);
 		total.setText("-");
@@ -72,7 +73,7 @@ public class EntryItemView extends LinearLayout {
 				memo.setText(entry.getMemo());
 				memo.setVisibility(View.VISIBLE);
 			}		
-			total.setText(Utils.getDecimalFormat().format(entry.getBalance()));	
+			total.setText(DateFormatUtils.getDecimalFormat().format(entry.getBalance()));	
 			
 			date.setTextColor(context.getResources().getColor(R.color.text_basic));
 			title.setTextColor(context.getResources().getColor(R.color.text_black));
@@ -84,9 +85,14 @@ public class EntryItemView extends LinearLayout {
 			params.setMargins(Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3));
 			background.setLayoutParams(params);
 			*/
-			date.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+			if(item.getDate() < Calendar.getInstance().getTimeInMillis()){
+				date.setTextColor(context.getResources().getColor(R.color.text_red));
+			}else{
+				date.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+			}
 			title.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
-			amount.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+			amount.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));	
+
 		}
 		
 		/*

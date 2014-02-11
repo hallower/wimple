@@ -11,7 +11,7 @@ import kr.blogspot.charlie0301.DatePickerFragment.OnDateSetListener;
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Calculator;
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
@@ -85,7 +85,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
-		wimple.getAllAccounts(Utils.getServerDateFormat().format(this.itemDate));
+		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(this.itemDate));
 		wimple.getLatestItems();
 	}
 
@@ -329,18 +329,18 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private void setupItemDate(Long date) {
 		this.itemDate = date;
 		datePicker.setDate(this.itemDate);
-		wimple.getAllAccounts(Utils.getServerDateFormat().format(this.itemDate));
+		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(this.itemDate));
 	}
 
 	private void setAmountText(Double amount){
 		//cal.setValue(selected.getAmount());
-		txtAmount.setText(Utils.getDecimalFormat().format(amount));
+		txtAmount.setText(DateFormatUtils.getDecimalFormat().format(amount));
 	}
 
 	private Double getAmountValue(){
 		Double amount = 0.0; 
 		try{
-			amount = Utils.getNumberFormat().parse(txtAmount.getText().toString()).doubleValue();
+			amount = DateFormatUtils.getNumberFormat().parse(txtAmount.getText().toString()).doubleValue();
 		}catch(Exception e){
 			Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 			return -1.0;
@@ -557,19 +557,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			break;			
 		}
 
-		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
-		{			
-			if(booleanStatus){
-				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
-				clearForms();
-				wimple.getLatestItems(true);
-				wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
-			}else{
-				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
-			}
-		}	
-		break;
-
 		case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
 		{
 			// TODO : test for frequent items
@@ -589,6 +576,22 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				adapterLatestItems.notifyDataSetChanged();
 			}	
 		}
+		break;
+
+		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
+		{	
+			String entryDate = (String)obj;
+			
+			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
+			if(booleanStatus){
+				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
+				clearForms();
+				wimple.getLatestItems(true);
+				mainActivity.moveTabOfPager(1);
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+			}
+		}	
 		break;
 
 		case CommandID.MODIFY_ENTRY : {
@@ -623,10 +626,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 		
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
+			
+			//String entryDate = (String)obj;
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
 				clearForms();
-				wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
 				mainActivity.moveTabOfPager(1);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();

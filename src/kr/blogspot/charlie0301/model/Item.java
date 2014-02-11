@@ -1,9 +1,10 @@
 package kr.blogspot.charlie0301.model;
 
+import java.util.Comparator;
 import java.util.Date;
 
 import kr.blogspot.charlie0301.impl.db.IDatabaseRecord;
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 
 import org.json.simple.JSONObject;
 
@@ -22,6 +23,11 @@ public class Item implements IDatabaseRecord {
 	private String rightAccountID;
 	private String item;
 	private Double amount;
+	/*
+	 * dateValue => [prefix]yyyy/MM/dd.[sequence]
+	 *               120140101.002
+	 *               prefix, item=1, entry=3
+	 */
 	private String dateValue;
 
 	public static final SparseArray<String> columns = new SparseArray<String>();    
@@ -91,13 +97,13 @@ public class Item implements IDatabaseRecord {
 			Long dateLong = 0L;
 
 			String dateString = item.get("due_date").toString();
-			this.dateValue = dateString;
+			this.dateValue = "9" + dateString;
 			int pos = dateString.indexOf(".");
 			if(pos > 0){
 				dateString = dateString.substring(0, pos);
 			}
 			
-			Date date = Utils.getServerDateFormat().parse(dateString);
+			Date date = DateFormatUtils.getServerDateFormat().parse(dateString);
 			dateLong = date.getTime();
 			setDate(dateLong);
 		} catch (Exception e) {
@@ -318,6 +324,15 @@ public class Item implements IDatabaseRecord {
 
 		Item item = (Item)o;
 		return id.equals(item.id);
+	}
+
+	public static class DateDescCompare implements Comparator<Item>{
+
+		@Override
+		public int compare(Item lhs, Item rhs) {
+			return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
+		}
+
 	}
 
 	/*

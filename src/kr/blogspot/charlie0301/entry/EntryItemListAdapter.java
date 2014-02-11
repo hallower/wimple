@@ -5,16 +5,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import kr.blogspot.charlie0301.model.Entry.DateDescCompare;
 import kr.blogspot.charlie0301.model.Item;
+import kr.blogspot.charlie0301.model.Item.DateDescCompare;
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 public class EntryItemListAdapter extends BaseAdapter {
 
-	//private static final String LOG_TAG = "EntryItemListAdapter";
+	private static final String LOG_TAG = "EntryItemListAdapter";
 	private Context mContext;
 
 	private List<Item> items = new ArrayList<Item>();
@@ -38,8 +39,41 @@ public class EntryItemListAdapter extends BaseAdapter {
 		}else{
 			items.add(it);	
 		}
-		
+
 		sortByDate();
+	}
+
+	/*
+	 * because of no consistence between monthly item and newly added entry item,
+	 * just remove all same dated monthly items before all monthly item updating
+	 */
+	public void removeSameDatedMonthlyItem(String entryDate){
+		
+		String parsedEntryDate = entryDate;
+		int pos = parsedEntryDate.indexOf(".");
+		if(pos > 0){
+			parsedEntryDate = parsedEntryDate.substring(0, pos);
+		}
+		
+		for(int i=0; i < items.size(); i++){
+			
+			String itemDate = items.get(i).getDateValue();
+			/*
+			if(itemDate.startsWith("9")){
+				Log.e(LOG_TAG, "MonthlyItem- date=" + items.get(i).getDateValue() + 
+						", name=" + items.get(i).getItem() + " <> " + itemDate + " <>" + parsedEntryDate);
+			}
+			*/
+			
+			if(itemDate.startsWith("9") &&
+					0 == itemDate.substring(1).compareTo(parsedEntryDate) ){
+				Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
+						", name=" + items.get(i).getItem());
+				items.remove(i);
+				i-=1;
+				//return;
+			}
+		}
 	}
 
 	public void setListItems(List<Item> lit) {
@@ -63,7 +97,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 		Item item = items.get(position);
 
 		if (convertView == null) {
-		
+
 			return new EntryItemView(mContext, item);
 		} else {
 

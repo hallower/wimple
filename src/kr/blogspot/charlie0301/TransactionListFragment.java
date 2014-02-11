@@ -9,7 +9,7 @@ import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.entry.EntryItemListAdapter;
 import kr.blogspot.charlie0301.entry.EntryItemListView;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
@@ -34,6 +34,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static View view = null;
 	private static Context context = null;
 
+	// Static reference
+	private final static Long monthlyDisplayAllowanceDays = 10L;	// 10 days
+
+	// GUI
 	private WeakReference<EntryItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
 
@@ -41,8 +45,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static final Semaphore available = new Semaphore(1);
 
 
-	String prevLastDate = "";
-	int countLastDateRequest = 0;
+	private String prevLastDate = "";
+	private int countLastDateRequest = 0;
 
 
 	/**
@@ -56,7 +60,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		context = WimpleActivity.context;
 
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
-		wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);		
+		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);		
 		super.onResume();
 	}
 
@@ -99,10 +103,14 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 					Log.d(LOG_TAG, "Get More!!!, percentage=" + percentage);
 
 					if(entryAdapter.get().getCount() == 0){						
-						wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);	
+						wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);	
 					}else{
 						Item entry = (Item) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
 						String lastDate = entry.getDateValue();
+
+						if(false == lastDate.isEmpty()){
+							lastDate = lastDate.substring(1);	
+						}
 
 						//Log.d(LOG_TAG, "1 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
 						if(false == prevLastDate.isEmpty() &&
@@ -110,7 +118,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 							countLastDateRequest += 1;
 						}
 						prevLastDate = lastDate;
-						
+
 						if(countLastDateRequest > 3){
 							Log.d(LOG_TAG, "No More!!!");
 							isAllOldActivityFechted = true;
@@ -119,7 +127,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 						}
 						//Log.d(LOG_TAG, "2 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
 
-						wimple.getAllEntries(Utils.getServerDateString(lastDate), Utils.getLastMonthDateString(lastDate), 0);
+						wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getLastMonthDateString(lastDate), 0);
 					}
 				}
 			}
@@ -169,7 +177,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.WIMPLE_LOGGIN_SUCCESS :
 		case CommandID.GET_ALL_SECTION_RECEIVED :{			
-			wimple.getAllEntries(Utils.getCurrentDateString(), Utils.getLastMonthDateString(0L), 0);
+			wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
 			break;
 		}
 
@@ -199,7 +207,33 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			}
 		}
 
-		
+
+		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED : {	
+			String entryDate = (String)obj;
+
+			if(null == entryAdapter.get()){
+				return;
+			}
+
+			wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowanceDays)), 0);
+
+			if(booleanStatus){
+				entryAdapter.get().removeSameDatedMonthlyItem(entryDate);
+			}
+			wimple.getMonthlyItems(true);
+		}	
+		break;
+
+		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
+
+			String entryDate = (String)obj;
+
+			if(booleanStatus){
+				wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowanceDays)), 0);				
+			}
+		}
+		break;
+
 		case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED : {
 			if(false == booleanStatus){				
 				return;
@@ -212,13 +246,19 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			Collection<Item> list = (Collection<Item>) obj;
 
 			for(Item item : list){
+
+				if(monthlyDisplayAllowanceDays < DateFormatUtils.getDifferenceDays(item.getDate())){
+					Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+					continue;
+				}
+
 				entryAdapter.get().addItem(item);
-				//Log.d(LOG_TAG, "Monthly item adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+				Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
 			entryAdapter.get().notifyDataSetChanged();
 
 		}
-		
+
 
 		}
 	}

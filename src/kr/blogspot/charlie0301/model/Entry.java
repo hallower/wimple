@@ -1,9 +1,8 @@
 package kr.blogspot.charlie0301.model;
 
-import java.util.Comparator;
 import java.util.Date;
 
-import kr.blogspot.charlie0301.impl.util.Utils;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 
 import org.json.simple.JSONObject;
 
@@ -65,13 +64,13 @@ public class Entry extends Item {
 			Long dateLong = 0L;
 
 			String dateString = entry.get("entry_date").toString();
-			setDateValue(dateString);
+			setDateValue("7"+dateString);
 			int pos = dateString.indexOf(".");
 			if(pos > 0){
 				dateString = dateString.substring(0, pos);
 			}
 			
-			Date date = Utils.getServerDateFormat().parse(dateString);
+			Date date = DateFormatUtils.getServerDateFormat().parse(dateString);
 			dateLong = date.getTime();
 			setDate(dateLong);
 			
@@ -241,17 +240,6 @@ public class Entry extends Item {
 		values.append(10, appID);
 
 		return values;
-	}
-
-
-
-	public static class DateDescCompare implements Comparator<Item>{
-
-		@Override
-		public int compare(Item lhs, Item rhs) {
-			return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
-		}
-
 	}
 
 }

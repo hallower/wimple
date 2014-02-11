@@ -345,8 +345,6 @@ ActionBar.TabListener {
 		if(nLevel < 0){
 			nLevel = 0;
 		}
-
-		Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
 		
 		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
 		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		
@@ -494,8 +492,8 @@ ActionBar.TabListener {
 			}
 
 			@Override
-			public void onMakeEntryResponseReceived(boolean status) {
-				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, status);				
+			public void onMakeEntryResponseReceived(boolean status, String entryDate) {
+				sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, entryDate);				
 			}
 
 			@Override
@@ -511,8 +509,8 @@ ActionBar.TabListener {
 			}
 
 			@Override
-			public void onModifyEntryResponseReceived(boolean status) {
-				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, status);
+			public void onModifyEntryResponseReceived(boolean status, String entryDate) {
+				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, entryDate);
 			}
 
 			@Override
