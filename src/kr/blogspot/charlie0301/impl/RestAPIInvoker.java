@@ -8,7 +8,6 @@ import kr.blogspot.charlie0301.impl.util.AndroidServiceIteratorProvider;
 import kr.blogspot.charlie0301.impl.util.SSLClientHelper;
 import kr.blogspot.charlie0301.impl.util.Utils;
 
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -29,20 +28,7 @@ public class RestAPIInvoker {
 	
 	public RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;
-	}	
-	
-	public JSONObject invokeGET(String path){
-		return invokeRESTAPI(HTTP_METHOD.GET, path, "");
 	}
-	
-	public JSONObject invokeGET(String path, String params){
-		return invokeRESTAPI(HTTP_METHOD.GET, path, params);
-	}
-	
-	public JSONObject invokePOST(String path, String params){
-		return invokeRESTAPI(HTTP_METHOD.POST, path, params);
-	}
-
 	
 	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){		
 
@@ -127,11 +113,20 @@ public class RestAPIInvoker {
 
 		Map<String, String> list = new HashMap<String, String>();
 
-		JSONObject object = invokePOST(path, params);
+		JSONObject object = invokeRESTAPI(HTTP_METHOD.POST, path, params);
 
 		if(null == object){
 			return list;
 		}
+		/*
+		if(false == object.get("code").toString().startsWith("2")){
+			Log.e(LOG_TAG, "[invokeRESTAPIForMap] Error response - " + path + ", "+ object.get("message").toString());			
+			
+			int code = Integer.parseInt(object.get("code").toString());
+			wimple.handleRESTErrorResponse(code);
+			return list;
+		}
+		*/
 
 		for(Object key : object.keySet()){
 			String value = (String) object.get(key);

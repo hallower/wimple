@@ -46,4 +46,6 @@ public interface IWimpleImpl {
 	
 	
 	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params);
+	
+	public void handleRESTErrorResponse(int code);
 }

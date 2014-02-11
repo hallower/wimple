@@ -12,7 +12,6 @@ import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -138,6 +137,9 @@ public class EntryManager {
 					false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[AllEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+				
+				int code = Integer.parseInt(json.get("code").toString());
+				wimpl.handleRESTErrorResponse(code);
 				return;
 			}
 
@@ -208,6 +210,9 @@ public class EntryManager {
 					false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[LatestEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
+				
+				int code = Integer.parseInt(json.get("code").toString());
+				wimpl.handleRESTErrorResponse(code);
 				return;
 			}
 
@@ -261,7 +266,7 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(formatEntryPost, 
+			String pushingContent = String.format(Utils.getDefaultLocale(), formatEntryPost, 
 					Utils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
 					left.getId(),
@@ -317,7 +322,7 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(formatEntryPut,
+			String pushingContent = String.format(Utils.getDefaultLocale(),formatEntryPut,
 					entryID,
 					Utils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),

@@ -340,7 +340,7 @@ ActionBar.TabListener {
 		//Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
 		
 		if(nLevel < 0){
-			nLevel = 1;
+			nLevel = 0;
 		}
 
 		Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);

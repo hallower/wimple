@@ -47,6 +47,12 @@
             android:name="kr.blogspot.charlie0301.WimpleActivity"
             android:label="@string/title_activity_wimple" >
         </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.PaymentNoticeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_payment_notice"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
     </application>
 
 </manifest>
