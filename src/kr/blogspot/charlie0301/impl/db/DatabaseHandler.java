@@ -21,7 +21,7 @@ public class DatabaseHandler{
 	private static final String LOG_TAG = "DatabaseHandler";	
 
 	private static final boolean NEEDTOREMOVEALLTABLES = false;
-	private static final boolean DEBUGALLDATAS = true;
+	private static final boolean DEBUGALLDATAS = false;
 
 	private static PromiseDatabase dbms = null;	
 	private final String createSchema;    
@@ -499,7 +499,7 @@ public class DatabaseHandler{
 		boolean first = true;
 
 		Log.d(LOG_TAG, ">> ALL DATAS");
-		Log.d(LOG_TAG, "--------------------------------------------------------------------------------------------------------------");
+		Log.d(LOG_TAG, "----------------------------------------------------------------------------------------");
 
 		Cursor cursor = null; 
 
@@ -521,7 +521,7 @@ public class DatabaseHandler{
 
 					if(first){
 						Log.d(LOG_TAG, columnName);
-						Log.d(LOG_TAG, "--------------------------------------------------------------------------------------------------------------");
+						Log.d(LOG_TAG, "----------------------------------------------------------------------------------------");
 						first = false;
 					}
 

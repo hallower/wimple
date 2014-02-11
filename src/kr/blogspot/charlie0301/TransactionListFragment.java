@@ -187,7 +187,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 				for(Entry item : list){
 					entryAdapter.get().addItem(item);
-					Log.e(LOG_TAG, "Entry adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+					//Log.d(LOG_TAG, "Entry adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 				}
 				entryAdapter.get().notifyDataSetChanged();
 				break;
@@ -213,7 +213,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			for(Item item : list){
 				entryAdapter.get().addItem(item);
-				Log.e(LOG_TAG, "Monthly item adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+				//Log.d(LOG_TAG, "Monthly item adding - [" + item.getId() + "] " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
 			entryAdapter.get().notifyDataSetChanged();
 

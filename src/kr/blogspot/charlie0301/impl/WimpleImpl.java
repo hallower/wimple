@@ -44,6 +44,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private final EntryManager em = new EntryManager(this);
 	private final ItemManager im = new ItemManager(this);
 	private final RestAPIInvoker rai;
+	private final RestResponseHandler rrh;
 
 	private UserInfoDBHandler uidbh = null;
 	private AccountDBHandler adbh = null;
@@ -55,6 +56,7 @@ public class WimpleImpl implements IWimpleImpl {
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
+	private static final String settingsKey = "wimple.auth";
 
 	// Data
 	private int countOfRemainedAPICall = -1;
@@ -111,7 +113,7 @@ public class WimpleImpl implements IWimpleImpl {
 		dispatchHandlerThread.start();
 		mainHandler = new MainHandler(dispatchHandlerThread.getLooper());
 		rai = new RestAPIInvoker(this);
-
+		rrh = new RestResponseHandler();
 	}
 
 	/**
@@ -125,6 +127,32 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public void setApplicationContext(Context context){
 		WimpleImpl.context = context;
+		rrh.setApplicationContext(context);
+
+		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
+
+		String saved_value = settings.getString("token",null);
+		if(token.isEmpty() &&
+				null != saved_value){
+			token = saved_value;			
+		}
+
+		saved_value = settings.getString("token_secret",null);
+		if(tokenSecret.isEmpty() &&
+				null != saved_value){
+			tokenSecret = saved_value;
+		}
+
+		if(false == token.isEmpty() &&
+				false == tokenSecret.isEmpty()){
+			this.isAuthed = true;
+		}
+
+		saved_value = settings.getString("userid",null);
+		if(userID.isEmpty() &&
+				null != saved_value){
+			userID = saved_value;
+		}
 
 
 		if(null == uidbh){
@@ -138,7 +166,7 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == lidbh){
 			lidbh = new ItemDBHandler(WimpleImpl.context, "frequentitems");    
 		}
-		
+
 		if(null == sdbh){
 			sdbh = new SectionDBHandler(WimpleImpl.context);
 		}
@@ -146,7 +174,7 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == edbh){
 			edbh = new EntryDBHandler(WimpleImpl.context);
 		}
-		
+
 		if(null == midbh){
 			midbh = new ItemDBHandler(WimpleImpl.context, "monthlyitems");
 		}	
@@ -177,12 +205,17 @@ public class WimpleImpl implements IWimpleImpl {
 	private static final String appID = "140";
 	private static final String vo42iw5me4vxz = "923e20fb19eba88a47878bb51016b590ea33b24c";
 
+	//private final Semaphore authInProgress = new Semaphore(0);
+	private static Integer sequence = 10000;
+
 	private String token = "";
 	private String tokenSecret = "";
 	private String userID = "";
 
-	//private final Semaphore authInProgress = new Semaphore(0);
-	private static Integer sequence = 10000;
+	/*
+	 *  Login success = isAuthed(true) >> success getting section, account = isInitializedFinished(true)
+	 *  In case of isAuthed(true), token & tokenSecret & userID are all filled(false == isEmpty())
+	 */
 	private boolean isAuthed = false;
 	private boolean isInitializedFinished = false;
 
@@ -267,6 +300,9 @@ public class WimpleImpl implements IWimpleImpl {
 		return rai.invokeRESTAPI(method, path, params);
 	}
 
+	public void handleRESTErrorResponse(int code){
+		rrh.handleRestResponse(code);
+	}
 
 	/*
 	 * Handler
@@ -350,7 +386,9 @@ public class WimpleImpl implements IWimpleImpl {
 					//throw new Exception("Application Context is not set!!!");
 				}
 
-				SharedPreferences settings = context.getSharedPreferences("wimple.settings", 0);
+				SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
+				settings.edit().putString("token", token).commit();
+				settings.edit().putString("token_secret", tokenSecret).commit(); 
 				settings.edit().putString("userid", userID).commit(); 
 
 				if(booleanStatus){
@@ -415,7 +453,7 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_PUT_ENTRY :
 				responseListener.onModifyEntryResponseReceived(booleanStatus);
 				break;
-				
+
 			case CommandID.CMD_GET_MONTHLY_ITEMS :
 				responseListener.onGetMonthlyItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
 				break;
@@ -446,6 +484,21 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public Boolean isInitializedFinished(){
 		return this.isInitializedFinished;
+	}
+
+	public void cleanAuth(){
+
+		token = "";
+		tokenSecret = "";
+		userID = "";
+
+		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
+		settings.edit().putString("token", "").commit();
+		settings.edit().putString("token_secret", "").commit(); 
+		settings.edit().putString("userid", "").commit();
+
+		this.isInitializedFinished = false;
+		this.isAuthed = false;
 	}
 
 	public Boolean getTempToken(){
@@ -492,7 +545,7 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.e(LOG_TAG, "[getAccessToken] Already authenticated.");
 			return false;
 		}
-		*/
+		 */
 
 		new GetAccessTokenTaskThread(token, pin).start();
 
@@ -532,7 +585,7 @@ public class WimpleImpl implements IWimpleImpl {
 			sm(CommandID.CMD_GET_ACCESS_TOKEN, 1, 0, list);
 		}
 	}
-/*
+	/*
 	public boolean getAllSections(){
 
 		if(false == isAuthed()){
@@ -584,7 +637,7 @@ public class WimpleImpl implements IWimpleImpl {
 		}.start();		
 		return true;
 	}
-*/
+	 */
 
 	public boolean getUserInfo(boolean forceUpdate){
 
@@ -619,7 +672,7 @@ public class WimpleImpl implements IWimpleImpl {
 				return;
 			}
 
-			JSONObject json = rai.invokeGET(Path.USER_INFO);
+			JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.USER_INFO, "");
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
@@ -672,7 +725,7 @@ public class WimpleImpl implements IWimpleImpl {
 				return;
 			}
 
-			JSONObject json = rai.invokeGET(Path.SECTIONS_DEFAULT);
+			JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_DEFAULT, "");
 
 			if(null == json ||
 					false == json.get("code").toString().startsWith("2")){
@@ -795,7 +848,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}			
 
 			try{
-				JSONObject json = rai.invokeGET(Path.ACCOUNT_ALL + path);
+				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
 				if(null == json ||
 						false == json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
@@ -833,10 +886,10 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public Entry getEntry(String entryID){
-		
+
 		return edbh.getEntry(entryID);
 	}
-	
+
 	public boolean getAllEntries(String latestDate, String oldestDate){
 
 		if(false == isInitializedFinished()){
@@ -877,7 +930,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return em.makeEntry(defaultSectionID, date, left, right, title, amount, memo);
 	}
-	
+
 	public boolean modifyEntry(String entryID, Long date, Account left, Account right, 
 			String title, Double amount, String memo){
 		if(false == isInitializedFinished()){
@@ -918,9 +971,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getLatestItems(defaultSectionID, forceUpdate);
 	}
-	
+
 	public Item getMonthlyItem(String itemID){
-		
+
 		midbh.print();
 		return midbh.getItem(itemID);
 	}
@@ -931,7 +984,7 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.e(LOG_TAG, "[getMonthlyItems] Initialization is on progressing.");
 			return false;
 		}
-		*/
+		 */
 
 		return im.getMonthlyItems(defaultSectionID, false);
 	}
@@ -944,7 +997,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getMonthlyItems(defaultSectionID, forceUpdate);
 	}
-	
+
 	public String getAccountName(String accountCode){
 		String name = "?";
 
@@ -967,7 +1020,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public Integer getRemainedAPICall() {		
 		return countOfRemainedAPICall;
 	}
-	
+
 	@Override
 	public Integer getTotalAPICall() {
 		return countOfTotalAPICall;
@@ -993,9 +1046,34 @@ public class WimpleImpl implements IWimpleImpl {
 	public EntryDBHandler getEntryDBHandler() {
 		return edbh;
 	}
-	
+
 	@Override
 	public ItemDBHandler getMonthlyItemDBHandler() {		
 		return midbh;
 	}
+
+	private class ProfileDownloadTaskThread extends Thread {
+
+		private final String url;
+
+		public ProfileDownloadTaskThread(String url) {
+			this.url = url;
+		}
+
+		public void run() {
+			/*
+			String sPath = getFriendProfilePath(sID);
+			if(url.isEmpty() || url.equals(""))
+				continue;
+
+			if(remoteContent.download(url, sPath, true)){
+				Log.d(LOG_TAG, "Profile Image download is succeed!!!");
+			}else{
+				Log.e(LOG_TAG, "Profile Image download is failed!!!");
+			}
+			 */
+			//mainHandler.sendMessage(Message.obtain(mainHandler, CommandID.UPDATED_FRIENDS_PROFILE, 1, 0, ""));
+		}
+	}
+
 }

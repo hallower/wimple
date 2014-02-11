@@ -9,8 +9,8 @@
     <string name="loggin_auth">로그인 확인</string>
     <string name="loggin_success">로그인 완료</string>
     <string name="loggin_failed">로그인 실패</string>
-    <string name="loggin_user_info">사용자 정보획득</string>
-    <string name="loggin_end">정보획득 완료</string>
+    <string name="loggin_user_info">사용자 계정정보 획득</string>
+    <string name="loggin_end">계정정보획득 완료</string>
     <string name="drawer_open">사이드메뉴 열기</string>
     <string name="drawer_close">사이드메뉴 닫기</string>
     <string name="drawer_menu_transaction">거래</string>
@@ -41,7 +41,7 @@
     <string name="pad_eq">=</string>
     <string name="pad_back">B</string>
     <string name="transaction_monthly">월별 거래들</string>
-    <string name="insert_item_title">거래 이름</string>
+    <string name="insert_item_title">거래명</string>
     <string name="insert_left_accounts">왼쪽</string>
     <string name="insert_right_accounts">오른쪽</string>
     <string name="insert_invalid_title">거래 제목을 확인해 주세요.</string>
@@ -64,5 +64,12 @@
     <string name="entry_header_expenses">비용</string>
     <string name="title_activity_splash_screen">wimple</string>
     <string name="title_activity_wimple">wimple</string>
-
+    <string name="notice_need_auth">사용자 인증이 만료 되어 재인증이 필요합니다. 다시 로그인 및 승인을 해주세요.</string>
+    <string name="notice_need_upgrade">후잉에서 제공되는 무료 보고서 조회 횟수를 모두 사용하셨습니다.(기본 하루 당 30번) 업그레이드를 추천 드립니다.</string>
+    <string name="title_activity_payment_notice">PaymentNoticeActivity</string>
+    <string name="about_payment_smile">(^_^);</string>
+    <string name="about_payment">사용가능한 일일 API 요청수를 초과하였습니다.\n유료 사용자로 업그레이드를 하시면 더욱더 풍족하게 사용할 수 있습니다.</string>
+    <string name="go_to_payment">업그레이드 방법 보기</string>
+    <string name="close">오늘 하루 그만 보기</string>
+    
 </resources>

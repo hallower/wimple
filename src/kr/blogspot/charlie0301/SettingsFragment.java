@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301;
 
+import kr.blogspot.charlie0301.impl.WimpleImpl;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
@@ -47,6 +48,8 @@ public class SettingsFragment extends Fragment implements IWimpleFragment{
 
 			@Override
 			public void onClick(View v) {
+				WimpleImpl.getInstance().cleanAuth();
+				
 				CookieSyncManager.createInstance(context);
 				CookieManager cookieManager = CookieManager.getInstance();
 				cookieManager.removeAllCookie();
