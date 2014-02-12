@@ -13,17 +13,23 @@ import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
 
@@ -35,7 +41,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static Context context = null;
 
 	// Static reference
-	private final static Long monthlyDisplayAllowanceDays = 10L;	// 10 days
+	private static Long monthlyDisplayAllowanceDays = 10L;	// 10 days
 
 	// GUI
 	private WeakReference<EntryItemListView> entryList;
@@ -44,7 +50,11 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private boolean isAllOldActivityFechted = false;
 	private static final Semaphore available = new Semaphore(1);
 
-
+	private int maxHeight = 0;
+	private float touchBaseY = 0;
+	private boolean isShowingFirstItem = false;
+	private boolean isSwipeDowned = false;
+	
 	private String prevLastDate = "";
 	private int countLastDateRequest = 0;
 
@@ -62,6 +72,14 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
 		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);		
 		super.onResume();
+	}
+
+	public void updateItems(){
+		// TODO : what is best? performance
+		Log.e(LOG_TAG, "Force Refresh!!!");
+		entryAdapter.get().removeAllMonthlyItem();
+		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
+		wimple.getMonthlyItems(true);
 	}
 
 	@Override
@@ -92,8 +110,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				//Log.d(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
 				//		", totalItemcount=" + totalItemCount);
 
-				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
+				if(firstVisibleItem == 0){
+					isShowingFirstItem = true;
+				}else{
+					isShowingFirstItem = false;
+				}
 
+				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", available permit=" + available.availablePermits());
 
 				if(percentage >= 70 &&
@@ -143,6 +166,53 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			}
 		});
 
+
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);		
+		maxHeight = size.y;
+
+		entryList.get().setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				switch(event.getAction())
+				{
+				case MotionEvent.ACTION_DOWN:
+					//TOUCH STARTED
+					touchBaseY = event.getY();
+					isSwipeDowned = false;
+					return false;
+				case MotionEvent.ACTION_MOVE:
+
+					float currentY = event.getY();
+					double sizeInY = touchBaseY - currentY;
+
+					// TODO : position check
+					if( sizeInY < 0 && 
+							isShowingFirstItem){
+						if(Math.abs(sizeInY) > ((double)maxHeight * 0.17)){
+							isSwipeDowned = true;	
+						}
+					}
+					return false;
+				case MotionEvent.ACTION_CANCEL:
+				case MotionEvent.ACTION_UP:
+					//TOUCH COMPLETED
+					if(isSwipeDowned){
+						isSwipeDowned = false;
+						updateItems();
+						Toast.makeText(context, getResources().getString(R.string.update_items), Toast.LENGTH_SHORT).show();
+					}
+					return false;
+				}
+
+
+				return false;
+			}
+		});
 
 		// TODO : remove old data
 		wimple.getStoredEntries();
@@ -248,12 +318,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			for(Item item : list){
 
 				if(monthlyDisplayAllowanceDays < DateFormatUtils.getDifferenceDays(item.getDate())){
-					Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+					//Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 					continue;
 				}
 
 				entryAdapter.get().addItem(item);
-				Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+				//Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
 			entryAdapter.get().notifyDataSetChanged();
 
