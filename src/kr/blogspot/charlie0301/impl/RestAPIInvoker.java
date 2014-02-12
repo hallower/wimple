@@ -24,7 +24,7 @@ public class RestAPIInvoker {
 	private final IWimpleImpl wimple;
 	public enum HTTP_METHOD { GET, POST, PUT, DELETE }
 
-	private static final boolean isNeedToPrintResult = false;
+	private static final boolean isNeedToPrintResult = true;
 	
 	public RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;

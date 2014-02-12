@@ -125,6 +125,11 @@ public class ItemManager {
 			for(int i = 0; i < results.size(); i++){
 				JSONObject row = (JSONObject) results.get(i);
 
+				// to hide unnecessary entries
+				if(row.get("item").toString().startsWith("Adjusted to close")){
+					continue;
+				}
+				
 				list.add(new Item(row));
 			}
 			wimpl.getLatestItemDBHandler().insert(list);
