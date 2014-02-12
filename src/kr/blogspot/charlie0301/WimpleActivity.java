@@ -515,7 +515,7 @@ ActionBar.TabListener {
 
 			@Override
 			public void onGetMonthlyItemsResponseReceived(boolean status,
-					Collection<Item> list) {
+					ArrayList<Item> list) {
 				sm(CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, list);				
 			}				
 

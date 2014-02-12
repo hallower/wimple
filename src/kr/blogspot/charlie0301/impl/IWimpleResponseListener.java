@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -50,6 +51,6 @@ public interface IWimpleResponseListener {
 	
 	public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list);
 	
-	public void onGetMonthlyItemsResponseReceived(boolean status, Collection<Item> list);
+	public void onGetMonthlyItemsResponseReceived(boolean status, ArrayList<Item> list);
 	
 }

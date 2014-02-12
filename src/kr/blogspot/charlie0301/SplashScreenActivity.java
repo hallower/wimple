@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -245,7 +246,7 @@ public class SplashScreenActivity extends Activity {
 
 			@Override
 			public void onGetMonthlyItemsResponseReceived(boolean status,
-					Collection<Item> list) {
+					ArrayList<Item> list) {
 			}				
 
 		});
