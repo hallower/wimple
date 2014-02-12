@@ -48,25 +48,41 @@ public class EntryItemListAdapter extends BaseAdapter {
 	 * just remove all same dated monthly items before all monthly item updating
 	 */
 	public void removeSameDatedMonthlyItem(String entryDate){
-		
+
 		String parsedEntryDate = entryDate;
 		int pos = parsedEntryDate.indexOf(".");
 		if(pos > 0){
 			parsedEntryDate = parsedEntryDate.substring(0, pos);
 		}
-		
+
 		for(int i=0; i < items.size(); i++){
-			
+
 			String itemDate = items.get(i).getDateValue();
 			/*
 			if(itemDate.startsWith("9")){
 				Log.e(LOG_TAG, "MonthlyItem- date=" + items.get(i).getDateValue() + 
 						", name=" + items.get(i).getItem() + " <> " + itemDate + " <>" + parsedEntryDate);
 			}
-			*/
-			
+			 */
+
 			if(itemDate.startsWith("9") &&
 					0 == itemDate.substring(1).compareTo(parsedEntryDate) ){
+				Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
+						", name=" + items.get(i).getItem());
+				items.remove(i);
+				i-=1;
+				//return;
+			}
+		}
+	}
+
+	public void removeAllMonthlyItem(){
+
+		for(int i=0; i < items.size(); i++){
+
+			String itemDate = items.get(i).getDateValue();
+
+			if(itemDate.startsWith("9")){
 				Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
 						", name=" + items.get(i).getItem());
 				items.remove(i);

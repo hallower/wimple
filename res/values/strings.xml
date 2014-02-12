@@ -71,5 +71,7 @@
     <string name="about_payment">사용가능한 일일 API 요청수를 초과하였습니다.\n유료 사용자로 업그레이드를 하시면 더욱더 풍족하게 사용할 수 있습니다.</string>
     <string name="go_to_payment">업그레이드 방법 보기</string>
     <string name="close">오늘 하루 그만 보기</string>
+    <string name="update_items">거래내역을 업데이트 합니다.</string>
+    
     
 </resources>
