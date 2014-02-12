@@ -31,6 +31,7 @@ public class Entry extends Item {
 		columns.append(8, "balance");
 		columns.append(9, "memo");
 		columns.append(10, "appID");
+		columns.append(11, "dateValue");
 	}
 
 	// Only for the database item inserting.
@@ -182,6 +183,9 @@ public class Entry extends Item {
 			case 10 :
 				this.appID = value;
 				break;
+			case 11 :
+				setDateValue(value);
+				break;
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
 				break;
@@ -216,6 +220,8 @@ public class Entry extends Item {
 			return memo;
 		case 10 :
 			return appID;
+		case 11 :
+			return getDateValue();			
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
 			break;
@@ -238,6 +244,7 @@ public class Entry extends Item {
 		values.append(8, balance.toString());
 		values.append(9, memo);
 		values.append(10, appID);
+		values.append(11, getDateValue());
 
 		return values;
 	}

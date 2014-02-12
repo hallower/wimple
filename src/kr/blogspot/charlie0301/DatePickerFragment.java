@@ -23,6 +23,8 @@ implements DatePickerDialog.OnDateSetListener {
 	private int year;
 	private int month;
 	private int day;
+	
+	private boolean isDateChanged = false;
 
 	private WeakReference<TextView> tv = null;
 	
@@ -53,6 +55,8 @@ implements DatePickerDialog.OnDateSetListener {
 
 	@Override
 	public void onDateSet(DatePicker view, int year, int month, int day) {
+		isDateChanged = true;
+		
 		this.year = year;
 		this.month = month;
 		this.day = day;
@@ -69,13 +73,15 @@ implements DatePickerDialog.OnDateSetListener {
 	}
 	
 	public void setDate(Long date) {
+		isDateChanged = false;
+		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date(date));		
 		this.current = cal.getTimeInMillis();
 		this.year = cal.get(Calendar.YEAR);
 		this.month = cal.get(Calendar.MONTH);
 		this.day = cal.get(Calendar.DAY_OF_MONTH);
-		setWidgetText();
+		setWidgetText();		
 	}
 
 	public Long getSelectedDate(){
@@ -94,6 +100,10 @@ implements DatePickerDialog.OnDateSetListener {
 		return day;
 	}
 
+	public boolean isDateChanged() {
+		return isDateChanged;
+	}
+	
 	public void setTextViewWidget(TextView tv){
 		this.tv = new WeakReference<TextView>(tv);	
 		setWidgetText();  

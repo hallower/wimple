@@ -946,7 +946,7 @@ public class WimpleImpl implements IWimpleImpl {
 		return em.makeEntry(defaultSectionID, date, left, right, title, amount, memo);
 	}
 
-	public boolean modifyEntry(String entryID, Long date, Account left, Account right, 
+	public boolean modifyEntry(String entryID, String date, Account left, Account right, 
 			String title, Double amount, String memo){
 		if(false == isInitializedFinished()){
 			Log.e(LOG_TAG, "[makeEntry] Initialization is on progressing.");

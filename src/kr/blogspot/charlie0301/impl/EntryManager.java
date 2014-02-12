@@ -24,27 +24,25 @@ public class EntryManager {
 	private final IWimpleImpl wimpl;	
 
 	private final String formatEntryPost = "[{" +
-			"\"entry_date\" : %s," +
-			"\"l_account\" : \"%s\"," +
-			"\"l_account_id\" : \"%s\"," +
-			"\"r_account\" : \"%s\"," +
-			"\"r_account_id\" : \"%s\"," +
-			"\"item\" : \"%s\"," +
-			"\"money\" : %f," +
-			"\"memo\" : \"%s\"" +
+			"'entry_date' : %s," +
+			"'l_account' : '%s'," +
+			"'l_account_id' : '%s'," +
+			"'r_account' : '%s'," +
+			"'r_account_id' : '%s'," +
+			"'item' : '%s'," +
+			"'money' : %f," +
+			"'memo' : '%s'" +
 			"}]";
 	
-	private final String formatEntryPut = "[{" +
-			"\"entry_id\" : %s," +
-			"\"entry_date\" : %s," +			
-			"\"l_account\" : \"%s\"," +
-			"\"l_account_id\" : \"%s\"," +
-			"\"r_account\" : \"%s\"," +
-			"\"r_account_id\" : \"%s\"," +
-			"\"item\" : \"%s\"," +
-			"\"money\" : %f," +
-			"\"memo\" : \"%s\"" +
-			"}]";
+	private final String formatEntryPut = "" +
+			"&entry_date=%s" +			
+			"&l_account=%s" +
+			"&l_account_id=%s" +
+			"&r_account=%s" +
+			"&r_account_id=%s" +
+			"&item=%s" +
+			"&money=%f" +
+			"";
 
 	public EntryManager(IWimpleImpl wimpl) {
 		super();
@@ -99,7 +97,7 @@ public class EntryManager {
 		return true;
 	}
 	
-	public boolean modifyEntry(String sectionID, String entryID, Long date, Account left, Account right, 
+	public boolean modifyEntry(String sectionID, String entryID, String date, Account left, Account right, 
 			String title, Double amount, String memo){
 
 		new PutEntryTaskThread(sectionID, entryID, date, left, right, title, amount, memo).start();		
@@ -266,7 +264,8 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(), formatEntryPost, 
+			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(), 
+					formatEntryPost, 
 					DateFormatUtils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
 					left.getId(),
@@ -303,14 +302,14 @@ public class EntryManager {
 
 		final String sectionID;
 		final String entryID;
-		final Long date;
+		final String date;
 		final Account left;
 		final Account right;
 		final String title;
 		final Double amount;
 		final String memo;
 
-		PutEntryTaskThread(String sectionID, String entryID, Long date, Account left, Account right, 
+		PutEntryTaskThread(String sectionID, String entryID, String date, Account left, Account right, 
 				String title, Double amount, String memo){
 			this.sectionID = sectionID;
 			this.entryID = entryID;
@@ -325,19 +324,21 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(),formatEntryPut,
-					entryID,
-					DateFormatUtils.getServerDateFormat().format(new Date(date)), 
+			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
+					formatEntryPut,
+					date, 
 					left.getWhat(),
 					left.getId(),
 					right.getWhat(),
 					right.getId(),
 					title,
-					amount,
-					memo
+					amount
 					);
 
-			String path = "section_id=" + sectionID + "&data_type=json" + "&entries=" + pushingContent;
+			String path = "section_id=" + sectionID + "&data_type=json" + pushingContent;
+			if(false == memo.isEmpty()){
+				path += "&memo=" + memo;
+			}
 
 			Log.d(LOG_TAG, path);
 
@@ -350,11 +351,10 @@ public class EntryManager {
 				return;
 			}
 
-			JSONArray results = (JSONArray) json.get("results");
-			JSONObject row = (JSONObject) results.get(0);			
+			JSONObject results = (JSONObject) json.get("results");
 		
 			Log.d(LOG_TAG, "[PutEntry] Providing response");
-			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, row.get("entry_date").toString());
+			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, results.get("entry_date").toString());
 		}
 
 	}

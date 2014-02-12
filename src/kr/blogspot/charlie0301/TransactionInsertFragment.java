@@ -69,7 +69,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private ArrayAdapter<Item> adapterLatestItems;
 	private Long itemDate = Calendar.getInstance().getTimeInMillis();
 	private boolean isEditing = false;
-	private String editingEntryID = "";
+	private Item editingItem = null;
 	
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
@@ -228,7 +228,15 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				if(isEditing){
 					isEditing = false;
 					
-					boolean res = wimple.modifyEntry(editingEntryID, datePicker.getSelectedDate(), 
+					/*
+					 * server doesn't receive yyyyMMdd.xxxx format
+					String date = editingItem.getDateValue();
+					if(datePicker.isDateChanged()){
+						date = DateFormatUtils.getServerDateString(datePicker.getSelectedDate());
+					}
+					*/
+					
+					boolean res = wimple.modifyEntry(editingItem.getId(), DateFormatUtils.getServerDateString(datePicker.getSelectedDate()), 
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 							txtTitle.getText().toString(), amount, "");
 					
@@ -236,7 +244,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 					}
 					
-					editingEntryID = "";
+					editingItem = null;
 					
 				}else{
 					boolean res = wimple.makeEntry(datePicker.getSelectedDate(), 
@@ -456,7 +464,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		
 		if(this.isEditing){
 			this.isEditing = false;
-			editingEntryID = "";
+			editingItem = null;
 		}
 	}
 
@@ -601,7 +609,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			// Modifying 
 			Item item = wimple.getEntry(itemID);
 			isEditing = true;
-			editingEntryID = itemID;
 			
 			if(null == item){
 				// Add Monthly Item
@@ -610,9 +617,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}			
 			
 			if(null == item){
+				isEditing = false;
+				editingItem = null;
 				Toast.makeText(context, "oops", Toast.LENGTH_SHORT).show();
 				return;
 			}
+			editingItem = item;
 
 			if(isEditing){
 				Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();	
