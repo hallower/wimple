@@ -26,7 +26,7 @@ public class EntryItemView extends LinearLayout {
 	private TextView total = null;
 	private TextView left = null;
 	private TextView right = null;
-
+	private TextView notyet = null;
 
 	public EntryItemView(Context context){
 		super(context);
@@ -44,7 +44,7 @@ public class EntryItemView extends LinearLayout {
 		total = (TextView)findViewById(R.id.entry_item_total);
 		left = (TextView)findViewById(R.id.entry_item_left);
 		right = (TextView)findViewById(R.id.entry_item_right);
-
+		notyet = (TextView)findViewById(R.id.entry_item_notyet);
 	}
 
 	public EntryItemView(Context context, Item item) {
@@ -67,12 +67,13 @@ public class EntryItemView extends LinearLayout {
 			
 			Entry entry = (Entry)item;
 			
+			notyet.setVisibility(View.INVISIBLE);
 			if(entry.getMemo().isEmpty()){
 				memo.setVisibility(View.GONE);
 			}else{
 				memo.setText(entry.getMemo());
 				memo.setVisibility(View.VISIBLE);
-			}		
+			}
 			total.setText(DateFormatUtils.getDecimalFormat().format(entry.getBalance()));	
 			
 			date.setTextColor(context.getResources().getColor(R.color.text_basic));
@@ -85,6 +86,7 @@ public class EntryItemView extends LinearLayout {
 			params.setMargins(Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3), Utils.getDPSize(3));
 			background.setLayoutParams(params);
 			*/
+			notyet.setVisibility(View.VISIBLE);
 			if(item.getDate() < Calendar.getInstance().getTimeInMillis()){
 				date.setTextColor(context.getResources().getColor(R.color.text_red));
 			}else{

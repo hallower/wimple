@@ -325,7 +325,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			ArrayList<Item> list = (ArrayList<Item>) obj;
 			Collections.sort(list, new DateAscCompare());
 			
-			for(int i=0; i < monthlyDisplayItemsNumbers; i++){
+			int counts = (monthlyDisplayItemsNumbers > list.size())?list.size():monthlyDisplayItemsNumbers;
+
+			for(int i=0; i <  counts; i++){
 				entryAdapter.get().addItem(list.get(i));
 			}
 			
