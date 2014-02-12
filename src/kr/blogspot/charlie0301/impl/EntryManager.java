@@ -158,6 +158,11 @@ public class EntryManager {
 						// TODO : handle this as removed item.
 						continue;
 					}
+					
+					// to hide unnecessary entries
+					if(row.get("item").toString().startsWith("Adjusted to close")){
+						continue;
+					}
 
 					Entry item = new Entry(row);
 					String balance = row.get("total").toString();
@@ -222,6 +227,11 @@ public class EntryManager {
 				if(0 == row.get("l_account_id").toString().compareToIgnoreCase("x0") ||
 						0 == row.get("r_account_id").toString().compareToIgnoreCase("x0") ){
 					// TODO : handle this as removed item.
+					continue;
+				}
+
+				// to hide unnecessary entries
+				if(row.get("item").toString().startsWith("Adjusted to close")){
 					continue;
 				}
 
