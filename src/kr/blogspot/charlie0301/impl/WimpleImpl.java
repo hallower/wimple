@@ -621,8 +621,13 @@ public class WimpleImpl implements IWimpleImpl {
 
 				JSONObject json = rai.invokeGET(Path.SECTIONS_ALL);
 
-				if(null == json ||
-						false == json.get("code").toString().startsWith("2")){
+				if(null == json){
+				Log.e(LOG_TAG, "[getAllSections] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
+				return;
+			}
+
+			if(	false == json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[getAllSections] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
@@ -689,8 +694,13 @@ public class WimpleImpl implements IWimpleImpl {
 
 			JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.USER_INFO, "");
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[User Info] Error response - null returned");
+				sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[User Info] Error response - " + json.get("message").toString());
 				sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
 				return;
@@ -742,8 +752,13 @@ public class WimpleImpl implements IWimpleImpl {
 
 			JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_DEFAULT, "");
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[Default Sections] Error response - null returned");
+				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[Default Sections] Error response - " + json.get("message").toString());
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
 				return;
@@ -864,8 +879,13 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
-				if(null == json ||
-						false == json.get("code").toString().startsWith("2")){
+				if(null == json){
+				Log.e(LOG_TAG, "[Account] Error response - null returned");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				return;
+			}
+
+			if(	false == json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;

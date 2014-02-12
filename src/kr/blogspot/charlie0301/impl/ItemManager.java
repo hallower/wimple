@@ -48,8 +48,13 @@ public class ItemManager {
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[Frequent Item] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[Frequent Item] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 				return;
@@ -113,8 +118,13 @@ public class ItemManager {
 			JSONObject json = null; 
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_LATEST + path, "");
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[Latest Item] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.d(LOG_TAG, "[Latest Item] Failed - GetLatestItems from Server!!!" + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 				return;
@@ -171,8 +181,13 @@ public class ItemManager {
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_MONTHLY + path, "");
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[Monthly Item] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[Monthly Item] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 0, 0, list);
 				return;

@@ -131,8 +131,13 @@ public class EntryManager {
 			}
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[AllEntries] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[AllEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 				
@@ -209,8 +214,13 @@ public class EntryManager {
 			JSONObject json = null; 
 			json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[LatestEntries] Error response - null returned");
+				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[LatestEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 				
@@ -292,8 +302,13 @@ public class EntryManager {
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.POST, Path.ENTRIES_LATEST, path);
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[PostEntry] Error response - null returned");
+				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[PostEntry] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
@@ -354,8 +369,13 @@ public class EntryManager {
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.PUT, Path.ENTRIES_MODIFY + entryID + ".json_array", path);
 
-			if(null == json ||
-					false == json.get("code").toString().startsWith("2")){
+			if(null == json){
+				Log.e(LOG_TAG, "[PutEntry] Error response - null returned");
+				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, "");
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[PutEntry] Error response -  - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, "");
 				return;
