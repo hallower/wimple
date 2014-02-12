@@ -8,7 +8,6 @@ import kr.blogspot.charlie0301.impl.WimpleImpl.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl.Path;
 import kr.blogspot.charlie0301.model.Item;
 
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -163,7 +162,7 @@ public class ItemManager {
 				return;
 			}
 			
-			Collection<Item> list = new ArrayList<Item>();
+			ArrayList<Item> list = new ArrayList<Item>();
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_MONTHLY + path, "");

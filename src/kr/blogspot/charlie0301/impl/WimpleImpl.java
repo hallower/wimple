@@ -108,7 +108,7 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void onModifyEntryResponseReceived(boolean status, String entryDate) { }
 		@Override
-		public void onGetMonthlyItemsResponseReceived(boolean status, Collection<Item> list) { }
+		public void onGetMonthlyItemsResponseReceived(boolean status, ArrayList<Item> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -470,7 +470,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_MONTHLY_ITEMS :
-				responseListener.onGetMonthlyItemsResponseReceived(booleanStatus, (Collection<Item>)obj);
+				responseListener.onGetMonthlyItemsResponseReceived(booleanStatus, (ArrayList<Item>)obj);
 				break;
 
 			default : 

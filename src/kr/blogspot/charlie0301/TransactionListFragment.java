@@ -1,8 +1,9 @@
 package kr.blogspot.charlie0301;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.Collections;
 import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
@@ -12,6 +13,7 @@ import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
+import kr.blogspot.charlie0301.model.Item.DateAscCompare;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -41,7 +43,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static Context context = null;
 
 	// Static reference
-	private static Long monthlyDisplayAllowanceDays = 10L;	// 10 days
+	
+	// by date limit
+	//private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
+	private static int monthlyDisplayItemsNumbers = 5;	// 5 items
 
 	// GUI
 	private WeakReference<EntryItemListView> entryList;
@@ -285,7 +290,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				return;
 			}
 
-			wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowanceDays)), 0);
+			wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayItemsNumbers)), 0);
+			// by date limit
+			//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);
 
 			if(booleanStatus){
 				entryAdapter.get().removeSameDatedMonthlyItem(entryDate);
@@ -299,7 +306,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			String entryDate = (String)obj;
 
 			if(booleanStatus){
-				wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowanceDays)), 0);				
+				wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayItemsNumbers)), 0);
+				// by date limit
+				//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);				
 			}
 		}
 		break;
@@ -313,18 +322,24 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				return;
 			}
 
-			Collection<Item> list = (Collection<Item>) obj;
-
+			ArrayList<Item> list = (ArrayList<Item>) obj;
+			Collections.sort(list, new DateAscCompare());
+			
+			for(int i=0; i < monthlyDisplayItemsNumbers; i++){
+				entryAdapter.get().addItem(list.get(i));
+			}
+			
+			/*
+			 * by date limit
 			for(Item item : list){
-
-				if(monthlyDisplayAllowanceDays < DateFormatUtils.getDifferenceDays(item.getDate())){
+				if(monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.getDate())){
 					//Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 					continue;
 				}
-
 				entryAdapter.get().addItem(item);
 				//Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
+			 */
 			entryAdapter.get().notifyDataSetChanged();
 
 		}

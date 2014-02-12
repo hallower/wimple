@@ -335,6 +335,15 @@ public class Item implements IDatabaseRecord {
 
 	}
 
+	public static class DateAscCompare implements Comparator<Item>{
+
+		@Override
+		public int compare(Item lhs, Item rhs) {
+			return lhs.getDateValue().compareTo(rhs.getDateValue());
+		}
+
+	}
+	
 	/*
 	int compareTo(Object o){
 		if(false == (o instanceof Item)){
