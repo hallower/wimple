@@ -24,14 +24,14 @@ public class EntryManager {
 	private final IWimpleImpl wimpl;	
 
 	private final String formatEntryPost = "[{" +
-			"'entry_date' : %s," +
-			"'l_account' : '%s'," +
-			"'l_account_id' : '%s'," +
-			"'r_account' : '%s'," +
-			"'r_account_id' : '%s'," +
-			"'item' : '%s'," +
-			"'money' : %f," +
-			"'memo' : '%s'" +
+			"\"entry_date\" : %s," +
+			"\"l_account\" : \"%s\"," +
+			"\"l_account_id\" : \"%s\"," +
+			"\"r_account\" : \"%s\"," +
+			"\"r_account_id\" : \"%s\"," +
+			"\"item\" : \"%s\"," +
+			"\"money\" : %f," +
+			"\"memo\" : \"%s\"" +
 			"}]";
 	
 	private final String formatEntryPut = "" +
