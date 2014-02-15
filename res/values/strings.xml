@@ -2,7 +2,9 @@
 <resources>
 
     <string name="app_name">wimple</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_more">..</string>
+    <string name="action_go_to_whooing">후잉 바로가기</string>
+    <string name="action_find_entry">검색</string>
     <string name="title_activity_web_view">후잉 서비스 로그인</string>
     <string name="program_exit">사용을 위해서는 로그인이 필요합니다. :)</string>
     <string name="na"></string>
