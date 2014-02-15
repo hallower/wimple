@@ -20,7 +20,9 @@ import android.app.ActionBar;
 import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,16 +41,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class WimpleActivity extends FragmentActivity implements
-ActionBar.TabListener {
+ActionBar.TabListener, OnMenuItemClickListener {
 
 	private static final String LOG_TAG = "WimpleActivity";
-
+	private static final String whooingURL = "https://whooing.com";
 
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
@@ -294,7 +299,7 @@ ActionBar.TabListener {
 
 			if(n >= len)
 				return;
-			
+
 			setPagerAdapter(n);	        
 		}
 	}
@@ -332,20 +337,20 @@ ActionBar.TabListener {
 	}
 
 	private void updateAPIRemainning() {
-		
+
 		if(null == textLevel){
 			return;
 		}
-		
+
 		double totalLevel = wimple.getTotalAPICall();
 		int nLevel = wimple.getRemainedAPICall();
-		
+
 		//Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
-		
+
 		if(nLevel < 0){
 			nLevel = 0;
 		}
-		
+
 		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
 		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		
 		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams ) progressLevel.getLayoutParams();
@@ -537,7 +542,7 @@ ActionBar.TabListener {
 				Object obj = msg.obj;
 
 				updateAPIRemainning();
-				
+
 				switch(command){
 
 				case CommandID.TOAST_LONG :
@@ -553,7 +558,7 @@ ActionBar.TabListener {
 					setMyInfoOnMenu((UserInfo)obj);
 					break;
 				}
-				
+
 				case CommandID.WIMPLE_PROFILE_PICTURE_UPDATED :
 				{
 					WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
@@ -584,12 +589,12 @@ ActionBar.TabListener {
 					}
 					break;
 				}
-				
+
 				// to all
 				case CommandID.WIMPLE_LOGGIN_SUCCESS :
 					wimple.getMonthlyItems();
 					// No break;
-					
+
 				case CommandID.WIMPLE_LOGGIN_FAILED :
 				case CommandID.WIMPLE_LOGGOUT :
 				case CommandID.GET_ALL_ACCOUNT_RECEIVED :
@@ -598,10 +603,10 @@ ActionBar.TabListener {
 				case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
 				case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED :
-					
+
 				case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
 				case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : 
-					
+
 				default :
 				{
 
@@ -626,8 +631,19 @@ ActionBar.TabListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+		super.onCreateOptionsMenu(menu);
 		getMenuInflater().inflate(R.menu.main, menu);
+
+		/*
+		ImageButton locButton = (ImageButton) menu.findItem(R.id.action_more).getActionView();
+		locButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				showMenu(v);
+			}
+		});
+		*/
 		return true;
 	}
 
@@ -737,17 +753,37 @@ ActionBar.TabListener {
 		// Handle action buttons
 		switch(item.getItemId()) {
 
-		/*
-        case R.id.action_add_promise: {
-        	Intent intent = new Intent(getApplicationContext(), SessionCreateActivity.class);
-        	startActivity(intent);
-        	return true;
-        }
-		 */
+
+		case R.id.action_go_to_whooing: {
+			Intent i = new Intent(Intent.ACTION_VIEW);
+			i.setData(Uri.parse(whooingURL));
+			startActivity(i);
+			return true;
+		}
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+
+	public void showMenu(View v) {
+		PopupMenu popup = new PopupMenu(this, v);
+
+		// This activity implements OnMenuItemClickListener
+		popup.setOnMenuItemClickListener(this);
+		popup.inflate(R.menu.more_options);
+		popup.show();
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_find_entry:
+			// TODO : find entry
+			return true;
+		default:
+			return false;
+		}
+	}
 }

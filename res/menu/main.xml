@@ -1,9 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_go_to_whooing"
         android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/action_go_to_whooing"/>
+    <item
+        android:id="@+id/action_more"
+        android:actionViewClass="android.widget.ImageButton"
+        android:icon="@drawable/ic_action_overflow"
+        android:orderInCategory="900"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_more"/>
 
 </menu>
