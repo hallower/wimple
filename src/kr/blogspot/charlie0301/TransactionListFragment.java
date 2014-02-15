@@ -30,7 +30,9 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
@@ -43,7 +45,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static Context context = null;
 
 	// Static reference
-	
+
 	// by date limit
 	//private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
 	private static int monthlyDisplayItemsNumbers = 5;	// 5 items
@@ -51,6 +53,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	// GUI
 	private WeakReference<EntryItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
+	private LinearLayout llNotification;
+	private TextView txtNotification;
 
 	private boolean isAllOldActivityFechted = false;
 	private static final Semaphore available = new Semaphore(1);
@@ -59,7 +63,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private float touchBaseY = 0;
 	private boolean isShowingFirstItem = false;
 	private boolean isSwipeDowned = false;
-	
+
 	private String prevLastDate = "";
 	private int countLastDateRequest = 0;
 
@@ -79,9 +83,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		super.onResume();
 	}
 
-	public void updateItems(){
+	public void updateLatestItems(){
 		// TODO : what is best? performance
 		Log.e(LOG_TAG, "Force Refresh!!!");
+		setShowingNotification(true, true);
 		entryAdapter.get().removeAllMonthlyItem();
 		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
 		wimple.getMonthlyItems(true);
@@ -92,10 +97,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			Bundle savedInstanceState) {
 
 		context = WimpleActivity.context;
-		view = (LinearLayout)inflater.inflate(R.layout.fragment_transaction_list_tab, container, false);
+		view = (FrameLayout)inflater.inflate(R.layout.fragment_transaction_list_tab, container, false);
 
-		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+		llNotification = (LinearLayout)view.findViewById(R.id.entry_list_notification);
+		txtNotification = (TextView)view.findViewById(R.id.entry_list_notification_text);
+
+		FrameLayout.LayoutParams sessionParams = new FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 		entryList = new WeakReference<EntryItemListView>((EntryItemListView)view.findViewById(R.id.entry_list_view));
 		entryAdapter = new WeakReference<EntryItemListAdapter>(new EntryItemListAdapter(context));
 
@@ -130,7 +138,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 					Log.d(LOG_TAG, "Get More!!!, percentage=" + percentage);
 
-					if(entryAdapter.get().getCount() == 0){						
+					if(entryAdapter.get().getCount() == 0){	
+						setShowingNotification(true, false);
 						wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);	
 					}else{
 						Item entry = (Item) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
@@ -155,6 +164,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 						}
 						//Log.d(LOG_TAG, "2 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
 
+						setShowingNotification(true, false);
 						wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getLastMonthDateString(lastDate), 0);
 					}
 				}
@@ -208,8 +218,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 					//TOUCH COMPLETED
 					if(isSwipeDowned){
 						isSwipeDowned = false;
-						updateItems();
-						Toast.makeText(context, getResources().getString(R.string.update_items), Toast.LENGTH_SHORT).show();
+						updateLatestItems();
+						//Toast.makeText(context, getResources().getString(R.string.update_latest_items), Toast.LENGTH_SHORT).show();
 					}
 					return false;
 				}
@@ -257,6 +267,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		}
 
 		case CommandID.GET_ENTRIES_RECEIVED :{
+
+			setShowingNotification(false,true);
 			try{				
 				if(false == booleanStatus){				
 					return;
@@ -324,13 +336,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			ArrayList<Item> list = (ArrayList<Item>) obj;
 			Collections.sort(list, new DateAscCompare());
-			
+
 			int counts = (monthlyDisplayItemsNumbers > list.size())?list.size():monthlyDisplayItemsNumbers;
 
 			for(int i=0; i <  counts; i++){
 				entryAdapter.get().addItem(list.get(i));
 			}
-			
+
 			/*
 			 * by date limit
 			for(Item item : list){
@@ -371,5 +383,18 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		mainActivity = instance;
 	}
 
+	public void setShowingNotification(boolean show, boolean isLatest){
 
+		if(isLatest){
+			txtNotification.setText(context.getResources().getString(R.string.update_latest_items));
+		}else{
+			txtNotification.setText(context.getResources().getString(R.string.update_old_items));
+		}
+
+		if(show){
+			llNotification.setVisibility(View.VISIBLE);
+		}else{
+			llNotification.setVisibility(View.GONE);
+		}
+	}
 }
