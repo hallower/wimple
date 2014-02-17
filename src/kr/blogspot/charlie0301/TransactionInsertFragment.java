@@ -32,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -70,6 +71,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private Long itemDate = Calendar.getInstance().getTimeInMillis();
 	private boolean isEditing = false;
 	private Item editingItem = null;
+	private boolean isFirstTimeForUniqueFiltering = true;
 	
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
@@ -595,7 +597,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
 				clearForms();
 				wimple.getLatestItems(true);
-				mainActivity.moveTabOfPager(1);
+				//mainActivity.moveTabOfPager(1);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 			}
