@@ -371,7 +371,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		txtTitle.setText(selected.getItem());
 		cal.setValue(selected.getAmount());
-		setAmountText(selected.getAmount());
+		//setAmountText(selected.getAmount());
 
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(selected.getLeftAccountID());
 		if(selectedLeftGroup > -1){
