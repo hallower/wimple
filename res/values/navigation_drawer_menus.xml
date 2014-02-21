@@ -9,7 +9,7 @@
     </string-array>
     <string-array name="drawer_menus_class">
         <item>kr.blogspot.charlie0301.TransactionInsertFragment,kr.blogspot.charlie0301.TransactionListFragment</item>
-        <item>kr.blogspot.charlie0301.SettingsFragment</item>
+        <item>kr.blogspot.charlie0301.SettingsFragment2</item>
     </string-array>
 
     <integer-array name="side_menu_layout_id">

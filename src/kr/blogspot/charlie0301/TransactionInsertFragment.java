@@ -14,11 +14,11 @@ import kr.blogspot.charlie0301.impl.util.Calculator;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Item;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -32,7 +32,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -47,7 +46,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
-	
+
 	private final static Calculator cal = new Calculator();
 	private static int[] padRIDs = null;
 
@@ -64,7 +63,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private TextView txtItemDate; 
 
 	private DatePickerFragment datePicker;
-	
+
 	// Data
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
@@ -72,7 +71,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private boolean isEditing = false;
 	private Item editingItem = null;
 	private boolean isFirstTimeForUniqueFiltering = true;
-	
+
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
@@ -215,7 +214,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			public void onClick(View v) {
 
 				setAmountText(cal.eq());
-				
+
 				if(false == validateForms()){
 					return;
 				}
@@ -226,33 +225,33 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					return;
 				}
 
-				
+
 				if(isEditing){
 					isEditing = false;
-					
+
 					/*
 					 * server doesn't receive yyyyMMdd.xxxx format
 					String date = editingItem.getDateValue();
 					if(datePicker.isDateChanged()){
 						date = DateFormatUtils.getServerDateString(datePicker.getSelectedDate());
 					}
-					*/
-					
+					 */
+
 					boolean res = wimple.modifyEntry(editingItem.getId(), DateFormatUtils.getServerDateString(datePicker.getSelectedDate()), 
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 							txtTitle.getText().toString(), amount, "");
-					
+
 					if(false == res){
 						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 					}
-					
+
 					editingItem = null;
-					
+
 				}else{
 					boolean res = wimple.makeEntry(datePicker.getSelectedDate(), 
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 							txtTitle.getText().toString(), amount, "");
-					
+
 					if(false == res){
 						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 					}
@@ -260,7 +259,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 
-	
+
 		// latest items
 		List<Item> latestItems = new ArrayList<Item>();
 		listViewLatestItems = (ListView) view.findViewById(R.id.insert_frequent_items);
@@ -275,7 +274,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 
 		});
-		
+
 		ImageView titleClear = (ImageView) view.findViewById(R.id.insert_title_clear);
 		titleClear.setOnClickListener(new OnClickListener() {
 
@@ -284,7 +283,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				clearForms();
 			}
 		});
-		
+
 		// post.. 
 
 		buttons = new TextView[padRIDs.length];
@@ -332,7 +331,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		setAmountText(0.0);
 
 		initWimple();
-		
+
 		return view;
 	}
 
@@ -375,7 +374,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(selected.getLeftAccountID());
 		if(selectedLeftGroup > -1){
-			
+
 			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
 				leftAccountListView.collapseGroup(i);
 			}
@@ -386,7 +385,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		int selectedRightGroup = rightAccountListAdapter.setSelected(selected.getRightAccountID());
 		if(selectedRightGroup > -1){
-			
+
 			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
 				rightAccountListView.collapseGroup(i);
 			}
@@ -395,16 +394,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);			
 		}
 	}
-	
+
 	private void setEntry(Item entry) {
 		txtTitle.setText(entry.getItem());
 		cal.setValue(entry.getAmount());
 		setAmountText(entry.getAmount());
 		datePicker.setDate(entry.getDate());
-		
+
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(entry.getLeftAccountID());
 		if(selectedLeftGroup > -1){
-			
+
 			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
 				leftAccountListView.collapseGroup(i);
 			}
@@ -415,7 +414,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		int selectedRightGroup = rightAccountListAdapter.setSelected(entry.getRightAccountID());
 		if(selectedRightGroup > -1){
-			
+
 			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
 				rightAccountListView.collapseGroup(i);
 			}
@@ -463,7 +462,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		setAmountText(0.0);
 		leftAccountListAdapter.clearSelection();
 		rightAccountListAdapter.clearSelection();
-		
+
 		if(this.isEditing){
 			this.isEditing = false;
 			editingItem = null;
@@ -481,7 +480,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(false == isAdded()){
 			return;
 		}
-		
+
 		switch(command){
 
 		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
@@ -506,7 +505,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				if(0 == item.getType().compareTo("group")){
 					continue;
 				}
-				
+
 				switch(item.getWhat().charAt(0)){
 				case 'a' :	// assets
 					assets.add(item);
@@ -591,7 +590,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
 		{	
 			String entryDate = (String)obj;
-			
+
 			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
@@ -607,17 +606,17 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		case CommandID.MODIFY_ENTRY : {
 
 			String itemID = obj.toString();
-			
+
 			// Modifying 
 			Item item = wimple.getEntry(itemID);
 			isEditing = true;
-			
+
 			if(null == item){
 				// Add Monthly Item
 				isEditing = false;
 				item = wimple.getMonthlyItem(itemID);
 			}			
-			
+
 			if(null == item){
 				isEditing = false;
 				editingItem = null;
@@ -632,13 +631,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
 			}			
 			//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
-			
+
 			setEntry(item);
 			break;
 		}
-		
+
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
-			
+
 			//String entryDate = (String)obj;
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
@@ -649,7 +648,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 			break;
 		}
-			
+
 		}
 	}
 
