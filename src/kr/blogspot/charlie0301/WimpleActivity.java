@@ -18,6 +18,8 @@ import kr.blogspot.charlie0301.model.UserInfo;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.TabListener;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
@@ -26,12 +28,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -41,7 +41,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -67,7 +66,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	private String[] menuTitles;
 	private List<Integer> mListSideMemuID;
 	private List<List<String>> listSubmenuTitles;
-	private List<List<Fragment>> listSubmenuClasses;
+	private List<List<Object>> listSubmenuClasses;
 	private SideMenuClickListener mSideMenuClickListener;
 	private ActionBar actionBar;
 
@@ -197,7 +196,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+				getFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -233,7 +232,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		{
 			listSubmenuTitles = new ArrayList<List<String>>();
-			listSubmenuClasses = new ArrayList<List<Fragment>>();
+			listSubmenuClasses = new ArrayList<List<Object>>();
 			mListSideMemuID = new ArrayList<Integer>();
 
 			String[] allTitles = getResources().getStringArray(R.array.drawer_menus_title);        	
@@ -252,13 +251,13 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			String[] allClasses = getResources().getStringArray(R.array.drawer_menus_class);
 			for(String clas : allClasses)
 			{
-				List<Fragment> clases = new ArrayList<Fragment>();
+				List<Object> clases = new ArrayList<Object>();
 				//Log.d(LOG_TAG, "class =");
 				for(String cla : clas.split(",")){
 					//Log.d(LOG_TAG, cla + ", ");
 					try{
 						Class<?> c = Class.forName(cla);
-						Fragment frag = (Fragment)c.newInstance();
+						Object frag = (Object)c.newInstance();
 
 						if(frag instanceof IWimpleFragment){
 							((IWimpleFragment) frag).setActivityInstance(this);
@@ -361,7 +360,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	private void setPagerAdapter(int n)
 	{
 		List<String> titles = listSubmenuTitles.get(n);
-		List<Fragment> fragments = listSubmenuClasses.get(n);
+		List<Object> fragments = listSubmenuClasses.get(n);
 		int nFragment = titles.size();
 
 		if(currentMenuId == n){
@@ -374,7 +373,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		mSectionsPagerAdapter.clear();    	
 
 		for(int i = 0; i < nFragment; i++){
-			Fragment fg = fragments.get(i);
+			Object fg = fragments.get(i);
 			Log.d(LOG_TAG, "SetpageAdapter Adding >> " + fg.getClass().getName());
 			mSectionsPagerAdapter.addItem(fg);
 		}
@@ -612,7 +611,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 					for(int i=0; i < mSectionsPagerAdapter.getCount() ; i++){
 
-						Fragment fg = mSectionsPagerAdapter.getItem(i);
+						Object fg = mSectionsPagerAdapter.getItem(i);
 
 						if(fg instanceof IWimpleFragment){
 							IWimpleFragment wfg = (IWimpleFragment) fg;
@@ -671,7 +670,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	 */
 	public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
-		private Collection<Fragment> frags = new ArrayList<Fragment>();
+		private Collection<Object> frags = new ArrayList<Object>();
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -688,7 +687,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			return frags.size();
 		}
 
-		public void addItem(Fragment fragment){
+		public void addItem(Object fragment){
 			frags.add(fragment);
 		}
 
@@ -699,9 +698,9 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		@Override
 		public int getItemPosition(Object object) {
 
-			Fragment frag = (Fragment)object;
+			Object frag = (Object)object;
 			for(int i = 0 ; i < frags.size() ; i++){
-				Fragment fragInList = (Fragment) frags.toArray()[i];
+				Object fragInList = (Object) frags.toArray()[i];
 
 				if(fragInList.equals(frag)){
 					return i;

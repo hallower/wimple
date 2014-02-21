@@ -21,6 +21,7 @@
     <string name="title_transaction_list_fragment">거래 목록</string>
     <string name="title_settings_fragment">설정</string>
     <string name="settings_loggout">로그아웃</string>
+    <string name="settings_summary_loggout">다른 계정으로 로그인하고자 로그아웃 합니다.</string>
     <string name="number_api_count">남은 보고서 조회 횟수 : </string>
     <string name="fatal_error">죄송합니다. 문제가 발생되어 실행할 수 없습니다. \n업데이트 혹은 삭제 후 재설치 해주시고, \n그래도 안된다면 ㅜㅜ..</string>
     <string name="pad_1">1</string>
