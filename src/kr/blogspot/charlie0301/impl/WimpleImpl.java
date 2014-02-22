@@ -542,6 +542,14 @@ public class WimpleImpl implements IWimpleImpl {
 		return true;
 	}
 
+	public void clearAllDBRecords(){
+		uidbh.clean();
+		adbh.clean();
+		lidbh.clean();
+		sdbh.clean();
+		edbh.clean();
+		midbh.clean();
+	}
 
 	/*
 	private String getPin(String token){

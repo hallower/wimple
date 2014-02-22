@@ -7,9 +7,10 @@
     <TextView
         android:id="@+id/expListGroupHeader"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
+        android:gravity="center_vertical"
         android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
         android:textColor="@color/text_group"
-        android:textSize="15sp" />
+        android:textSize="16sp" />
 
 </LinearLayout>

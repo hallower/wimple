@@ -362,12 +362,18 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		List<String> titles = listSubmenuTitles.get(n);
 		List<Object> fragments = listSubmenuClasses.get(n);
 		int nFragment = titles.size();
-
+		
 		if(currentMenuId == n){
 			mDrawerLayout.closeDrawer(mSideMenu);
 			return;
 		}
 
+		if(titles.size() == 0 ||
+				fragments.size() == 0){
+			Log.e(LOG_TAG, "Oops setPagerAdapter, title, fragments are 0");
+			return;
+		}
+		
 		currentMenuId = n;
 		actionBar.removeAllTabs();
 		mSectionsPagerAdapter.clear();    	

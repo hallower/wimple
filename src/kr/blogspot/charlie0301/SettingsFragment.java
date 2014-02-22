@@ -15,6 +15,10 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 	private static WimpleActivity wimpleActivity;
 	
+	public static final String KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount";
+	public static final String KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay";
+	
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +32,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				WimpleImpl.getInstance().cleanAuth();
+				WimpleImpl.getInstance().clearAllDBRecords();
 				
 				CookieSyncManager.createInstance(WimpleActivity.context);
 				CookieManager cookieManager = CookieManager.getInstance();

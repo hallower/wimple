@@ -40,7 +40,9 @@ public class UserInfoDBHandler {
 		//Log.d(LOG_TAG, "Database Hander :" + LOG_TAG + " is created!!!");
 	}
 
-
+	public void clean(){
+		dbHandler.deleteAll();
+	}
 
 	public boolean cleanAndInsert(UserInfo userinfo) {
 		boolean res = false;
