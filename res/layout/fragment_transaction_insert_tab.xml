@@ -15,13 +15,23 @@
         android:weightSum="1" >
 
         <TextView
+            android:id="@+id/insert_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:text="@string/mode_entry_insert"
+            android:textStyle="bold"
+            android:layout_weight="0.1" />
+
+        <TextView
             android:id="@+id/insert_amount"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_gravity="right|center_vertical"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:layout_weight="0.7"
+            android:layout_weight="0.6"
             android:background="@drawable/input_box_dark"
             android:gravity="right|center_vertical"
             android:lines="1"
@@ -33,7 +43,7 @@
 
         <ImageView
             android:id="@+id/insert_submit"
-            android:layout_width="70dp"
+            android:layout_width="80dp"
             android:layout_height="55dp"
             android:layout_gravity="center"
             android:layout_weight="0.3"
@@ -425,6 +435,7 @@
             android:orientation="vertical" >
 
             <TextView
+                android:id="@+id/insert_category_left_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/input_color_box_9"
@@ -439,7 +450,7 @@
 
             <ExpandableListView
                 android:id="@+id/insert_category_left"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/input_box_rect"
@@ -455,6 +466,7 @@
             android:orientation="vertical" >
 
             <TextView
+                android:id="@+id/insert_category_right_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/input_color_box_3"
@@ -469,7 +481,7 @@
 
             <ExpandableListView
                 android:id="@+id/insert_category_right"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/input_box_rect"

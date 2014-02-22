@@ -79,7 +79,8 @@
                         android:layout_marginTop="30dp"
                         android:layout_marginRight="20dp"
                         android:textColor="#6f6f6f"
-                        android:textSize="11sp" />
+                        android:textScaleX="0.8"
+                        android:textSize="12sp" />
 
                     <FrameLayout
                         android:layout_width="match_parent"

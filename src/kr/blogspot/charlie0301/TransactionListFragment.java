@@ -16,9 +16,11 @@ import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Item.DateAscCompare;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -33,6 +35,7 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
 
@@ -40,15 +43,18 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	private WimpleActivity mainActivity = null;
 
-	private static View view = null;
-	private static Context context = null;
+	private static View view;
+	private static Context context;
+	private static SharedPreferences sharedPref;
 
 	// Static reference
 
 	// by date limit
 	//private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
-	private static int monthlyDisplayItemsNumbers = 5;	// 5 items
+	private static boolean monthlyDisplay = true;
+	private static int monthlyDisplayItemsNumbers = 4;
 
+	
 	// GUI
 	private WeakReference<EntryItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
@@ -76,19 +82,22 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
-
+		updateSettings();
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
-		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);		
+		updateLatestItems(false);		
 		super.onResume();
 	}
 
-	public void updateLatestItems(){
+	public void updateLatestItems(boolean forceUpdateMonthlyItems){
 		// TODO : what is best? performance
 		Log.e(LOG_TAG, "Force Refresh!!!");
 		setShowingNotification(true, true);
 		entryAdapter.get().removeAllMonthlyItem();
 		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
-		wimple.getMonthlyItems(true);
+		
+		if(monthlyDisplay){
+			wimple.getMonthlyItems(forceUpdateMonthlyItems);	
+		}		
 	}
 
 	@Override
@@ -217,7 +226,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 					//TOUCH COMPLETED
 					if(isSwipeDowned){
 						isSwipeDowned = false;
-						updateLatestItems();
+						updateLatestItems(true);
 						//Toast.makeText(context, getResources().getString(R.string.update_latest_items), Toast.LENGTH_SHORT).show();
 					}
 					return false;
@@ -333,6 +342,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				return;
 			}
 
+			if(false == monthlyDisplay){
+				return;
+			}
+			
 			ArrayList<Item> list = (ArrayList<Item>) obj;
 			Collections.sort(list, new DateAscCompare());
 
@@ -395,5 +408,14 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		}else{
 			llNotification.setVisibility(View.GONE);
 		}
+	}
+	
+	private void updateSettings(){
+		sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		
+		monthlyDisplay = sharedPref.getBoolean(SettingsFragment.KEY_MONTHLY_ITEM_DISPLAY, true);
+		String pref = sharedPref.getString(SettingsFragment.KEY_MONTHLY_ITEM_COUNT, "5");
+		monthlyDisplayItemsNumbers = Integer.parseInt(pref);
+		//Toast.makeText(context, "" + syncConnPref, Toast.LENGTH_LONG).show();	
 	}
 }
