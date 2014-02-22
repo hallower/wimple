@@ -9,7 +9,12 @@ import java.util.Locale;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
@@ -65,7 +70,7 @@ implements DatePickerDialog.OnDateSetListener {
 		cal.set(year, month, day);
 		this.current = cal.getTimeInMillis();
 
-		setWidgetText();
+		setWidgetText(false);
 		
 		if(null != this.listener){
 			this.listener.onDateSet(this.current);
@@ -75,13 +80,20 @@ implements DatePickerDialog.OnDateSetListener {
 	public void setDate(Long date) {
 		isDateChanged = false;
 		
-		Calendar cal = Calendar.getInstance();
+		Calendar cal = Calendar.getInstance();		
 		cal.setTime(new Date(date));		
 		this.current = cal.getTimeInMillis();
 		this.year = cal.get(Calendar.YEAR);
 		this.month = cal.get(Calendar.MONTH);
 		this.day = cal.get(Calendar.DAY_OF_MONTH);
-		setWidgetText();		
+		
+		if(this.year == Calendar.getInstance().get(Calendar.YEAR) &&
+			this.month == Calendar.getInstance().get(Calendar.MONTH) &&
+			this.day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)){
+			setWidgetText(true);
+		}else{
+			setWidgetText(false);
+		}
 	}
 
 	public Long getSelectedDate(){
@@ -106,12 +118,20 @@ implements DatePickerDialog.OnDateSetListener {
 	
 	public void setTextViewWidget(TextView tv){
 		this.tv = new WeakReference<TextView>(tv);	
-		setWidgetText();  
+		setWidgetText(false);  
 	}
 
-	private void setWidgetText(){
+	private void setWidgetText(boolean isBold){
 		if(null != tv){						
-			tv.get().setText(sdf.format(current));	
+			if(isBold){
+				SpannableStringBuilder sb = new SpannableStringBuilder();
+				String str = sdf.format(current);
+				sb.append(str);
+				sb.setSpan(new StyleSpan(Typeface.BOLD), 0, str.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				tv.get().setText(sb);
+			}else{
+				tv.get().setText(sdf.format(current));	
+			}
 		}
 	}
 	public void setColorOfTextViewWidget(int color){
