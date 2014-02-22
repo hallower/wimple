@@ -519,8 +519,8 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			}
 
 			@Override
-			public void onModifyEntryResponseReceived(boolean status, String entryDate) {
-				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, entryDate);
+			public void onModifyEntryResponseReceived(boolean status, Entry entry) {
+				sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, entry);
 			}
 
 			@Override

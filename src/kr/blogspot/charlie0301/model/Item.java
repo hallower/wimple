@@ -26,7 +26,7 @@ public class Item implements IDatabaseRecord {
 	/*
 	 * dateValue => [prefix]yyyy/MM/dd.[sequence]
 	 *               120140101.002
-	 *               prefix, item=1, entry=3
+	 *               prefix, item=9, entry=7
 	 */
 	private String dateValue;
 

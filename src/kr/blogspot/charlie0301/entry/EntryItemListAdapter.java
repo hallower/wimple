@@ -43,6 +43,32 @@ public class EntryItemListAdapter extends BaseAdapter {
 		sortByDate();
 	}
 
+	
+
+	public void removeEntry(String entryID){
+
+		for(int i=0; i < items.size(); i++){
+
+			String itemDate = items.get(i).getDateValue();
+			/*
+			if(itemDate.startsWith("7")){
+				Log.e(LOG_TAG, "MonthlyItem- date=" + items.get(i).getDateValue() + 
+						", name=" + items.get(i).getItem() + " <> " + itemDate + " <>" + parsedEntryDate);
+			}
+			 */
+
+			if(itemDate.startsWith("7") &&
+					0 == items.get(i).getId().compareTo(entryID) ){
+				Log.d(LOG_TAG, "Remove entry - id=" + items.get(i).getId() + 
+						", name=" + items.get(i).getItem());
+				items.remove(i);
+				return;
+			}
+		}
+		Log.d(LOG_TAG, "Cante Remove entry - id=" + entryID);
+	}
+
+	
 	/*
 	 * because of no consistence between monthly item and newly added entry item,
 	 * just remove all same dated monthly items before all monthly item updating
