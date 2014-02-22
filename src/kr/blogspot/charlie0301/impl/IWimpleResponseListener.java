@@ -42,7 +42,7 @@ public interface IWimpleResponseListener {
 	 */
 	public void onMakeEntryResponseReceived(boolean status, String entryDate);
 	
-	public void onModifyEntryResponseReceived(boolean status, String entryDate);
+	public void onModifyEntryResponseReceived(boolean status, Entry entry);
 	
 	/*
 	 * R, Items

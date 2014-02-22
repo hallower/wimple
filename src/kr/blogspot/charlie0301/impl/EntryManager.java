@@ -33,7 +33,7 @@ public class EntryManager {
 			"\"money\" : %f," +
 			"\"memo\" : \"%s\"" +
 			"}]";
-	
+
 	private final String formatEntryPut = "" +
 			"&entry_date=%s" +			
 			"&l_account=%s" +
@@ -62,7 +62,7 @@ public class EntryManager {
 				cl.add(Calendar.MONTH, -1);
 				Log.d(LOG_TAG, "[StoredEntries] Flushing entries before " + cl.getTime().toString());
 				wimpl.getEntryDBHandler().cleanOldEntries(cl.getTimeInMillis());
-				
+
 				Log.d(LOG_TAG, "[StoredEntries] Providing Stored Entries from Cache.");
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, wimpl.getEntryDBHandler().getAllEntrys());
 			}			
@@ -96,14 +96,14 @@ public class EntryManager {
 		new PostEntryTaskThread(sectionID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
-	
+
 	public boolean modifyEntry(String sectionID, String entryID, String date, Account left, Account right, 
 			String title, Double amount, String memo){
 
 		new PutEntryTaskThread(sectionID, entryID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
-	
+
 	private class GetAllEntriesTaskThread extends Thread{
 
 		final String sectionID;
@@ -140,7 +140,7 @@ public class EntryManager {
 			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[AllEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
-				
+
 				int code = Integer.parseInt(json.get("code").toString());
 				wimpl.handleRESTErrorResponse(code);
 				return;
@@ -163,7 +163,7 @@ public class EntryManager {
 						// TODO : handle this as removed item.
 						continue;
 					}
-					
+
 					// to hide unnecessary entries
 					if(row.get("item").toString().startsWith("Adjusted to close")){
 						continue;
@@ -179,12 +179,12 @@ public class EntryManager {
 					list.add(item);
 				}
 			}
-			
+
 			if(list.isEmpty()){
 				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 				return;
 			}
-			
+
 			Log.d(LOG_TAG, "[AllEntries] Providing All Entries from Server");
 			wimpl.getEntryDBHandler().insert(list);
 			wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
@@ -223,7 +223,7 @@ public class EntryManager {
 			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[LatestEntries] Error response - " + json.get("message").toString());
 				wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
-				
+
 				int code = Integer.parseInt(json.get("code").toString());
 				wimpl.handleRESTErrorResponse(code);
 				return;
@@ -313,16 +313,16 @@ public class EntryManager {
 				wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 				return;
 			}
-			
+
 			JSONArray results = (JSONArray) json.get("results");
 			JSONObject row = (JSONObject) results.get(0);			
-			
+
 			Log.d(LOG_TAG, "[PostEntry] Providing response");
 			wimpl.sm(CommandID.CMD_POST_ENTRY, 1, 0, row.get("entry_date").toString());
 		}
 
 	}
-	
+
 	private class PutEntryTaskThread extends Thread{
 
 		final String sectionID;
@@ -371,20 +371,22 @@ public class EntryManager {
 
 			if(null == json){
 				Log.e(LOG_TAG, "[PutEntry] Error response - null returned");
-				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, "");
+				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, new Entry());
 				return;
 			}
 
 			if(false == json.get("code").toString().startsWith("2")){
 				Log.e(LOG_TAG, "[PutEntry] Error response -  - " + json.get("message").toString());
-				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, "");
+				wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, new Entry());
 				return;
 			}
 
-			JSONObject results = (JSONObject) json.get("results");
-		
+			JSONObject row = (JSONObject) json.get("results");
+			
+			Entry item = new Entry(row);
+
 			Log.d(LOG_TAG, "[PutEntry] Providing response");
-			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, results.get("entry_date").toString());
+			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, item);
 		}
 
 	}

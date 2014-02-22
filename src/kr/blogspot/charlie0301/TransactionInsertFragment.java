@@ -662,7 +662,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
 
-			//String entryDate = (String)obj;
+			//Entry entry = (Entry)obj;
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
 				clearForms();

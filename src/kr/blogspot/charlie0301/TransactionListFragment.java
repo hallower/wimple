@@ -310,7 +310,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				return;
 			}
 
-			wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayItemsNumbers)), 0);
+			wimple.getAllEntries(DateFormatUtils.getServerDateString(entryDate), DateFormatUtils.getServerDateString(entryDate, -1), 0);
 			// by date limit
 			//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);
 
@@ -323,10 +323,18 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
 
-			String entryDate = (String)obj;
+			Entry entry = (Entry)obj;
 
 			if(booleanStatus){
-				wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayItemsNumbers)), 0);
+				entryAdapter.get().removeEntry(entry.getId());
+				entryAdapter.get().notifyDataSetChanged();
+				
+				String lastDate = entry.getDateValue();
+
+				if(false == lastDate.isEmpty()){
+					lastDate = lastDate.substring(1);	
+				}
+				wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getServerDateString(lastDate, -1), 0);
 				// by date limit
 				//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);				
 			}

@@ -241,7 +241,7 @@ public class SplashScreenActivity extends Activity {
 			}
 
 			@Override
-			public void onModifyEntryResponseReceived(boolean status, String entryDate) {
+			public void onModifyEntryResponseReceived(boolean status, Entry entry) {
 			}
 
 			@Override
