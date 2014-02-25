@@ -434,17 +434,18 @@ public class DatabaseHandler{
 		String countQuery = String.format(SQLQueries.deleteSome, tableName, pkFieldName);
 		SQLiteDatabase db = dbms.getWritableDatabase();
 		Cursor cursor = null;
-
+		int count = 0;
+		
 		try{
 			cursor = db.rawQuery(countQuery, new String[] {value} );
+			count = cursor.getCount();
+			cursor.close();
 		} catch(SQLException e){
 			if(e.getMessage().contains("no such table")){
 				db.execSQL(createSchema);
 				return 0;
 			}
 		}
-		int count = cursor.getCount();
-		cursor.close();
 		return count;
 	}
 
@@ -452,17 +453,21 @@ public class DatabaseHandler{
 		String countQuery = String.format(SQLQueries.deleteSomeWithWhereStatement, tableName, where);
 		SQLiteDatabase db = dbms.getWritableDatabase();
 		Cursor cursor = null;
-
+		int count = 0;
+		
 		try{
 			cursor = db.rawQuery(countQuery, null );
+			count = cursor.getCount();
+			cursor.close();
 		} catch(SQLException e){
 			if(e.getMessage().contains("no such table")){
 				db.execSQL(createSchema);
 				return 0;
+			}else{
+				showAll();
 			}
 		}
-		int count = cursor.getCount();
-		cursor.close();
+		
 		return count;
 	}
 

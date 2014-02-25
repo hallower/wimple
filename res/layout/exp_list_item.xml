@@ -8,6 +8,7 @@
         android:id="@+id/expListGroupItem"
         android:layout_width="fill_parent"
         android:layout_height="30dp"
+        android:maxLines="1"
         android:gravity="center_vertical"
         android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:textColor="@color/text_basic"

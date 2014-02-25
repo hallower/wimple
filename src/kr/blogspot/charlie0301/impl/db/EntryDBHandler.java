@@ -58,6 +58,10 @@ public class EntryDBHandler {
 		dbHandler.delete("date < " + dateString);
 	}
 
+	public void remove(String id){		
+		dbHandler.delete("id = " + id);
+	}
+	
 	public boolean insert(Collection<Entry> data) {
 		boolean res = false;
 

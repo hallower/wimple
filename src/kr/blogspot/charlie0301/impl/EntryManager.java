@@ -103,6 +103,12 @@ public class EntryManager {
 		new PutEntryTaskThread(sectionID, entryID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
+	
+	public boolean removeEntry(String sectionID, String entryID){
+
+		new DeleteEntryTaskThread(sectionID, entryID).start();		
+		return true;
+	}
 
 	private class GetAllEntriesTaskThread extends Thread{
 
@@ -388,6 +394,39 @@ public class EntryManager {
 			Log.d(LOG_TAG, "[PutEntry] Providing response");
 			wimpl.sm(CommandID.CMD_PUT_ENTRY, 1, 0, item);
 		}
+	}
+	
+	private class DeleteEntryTaskThread extends Thread{
 
+		@SuppressWarnings("unused")
+		final String sectionID;
+		final String entryID;
+
+		DeleteEntryTaskThread(String sectionID, String entryID){
+			this.sectionID = sectionID;
+			this.entryID = entryID;
+		}
+
+		@Override
+		public void run() {
+
+			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.DELETE, Path.ENTRIES_REMOVE + entryID + ".json_array", "");
+
+			if(null == json){
+				Log.e(LOG_TAG, "[DeleteEntry] Error response - null returned");
+				wimpl.sm(CommandID.CMD_DELETE_ENTRY, 0, 0, "");
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[DeleteEntry] Error response -  - " + json.get("message").toString());
+				wimpl.sm(CommandID.CMD_DELETE_ENTRY, 0, 0, "");
+				return;
+			}
+
+			Log.d(LOG_TAG, "[DeleteEntry] Providing response");
+			wimpl.getEntryDBHandler().remove(entryID);
+			wimpl.sm(CommandID.CMD_DELETE_ENTRY, 1, 0, entryID);
+		}
 	}
 }

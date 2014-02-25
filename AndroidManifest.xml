@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="kr.blogspot.charlie0301.SplashScreenActivity"
-            android:configChanges="orientation|keyboardHidden"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/title_activity_splash_screen"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
@@ -33,10 +33,12 @@
         </activity>
         <activity
             android:name="kr.blogspot.charlie0301.TransactionInsertFragment"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_transaction_insert_fragment" >
         </activity>
         <activity
             android:name="kr.blogspot.charlie0301.TransactionListFragment"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_transaction_list_fragment" >
         </activity>
         <activity
@@ -45,11 +47,12 @@
         </activity>
         <activity
             android:name="kr.blogspot.charlie0301.WimpleActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_wimple" >
         </activity>
         <activity
             android:name="kr.blogspot.charlie0301.PaymentNoticeActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/title_activity_payment_notice"
             android:theme="@style/FullscreenTheme" >
         </activity>

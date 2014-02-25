@@ -86,17 +86,17 @@ public class WimpleImpl implements IWimpleImpl {
 	private static IWimpleResponseListener responseListener = new IWimpleResponseListener(){
 
 		@Override
-		public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {}
+		public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) { }
 		@Override
-		public void onGetAuthTempToken(boolean status, String tempToken) {}
+		public void onGetAuthTempToken(boolean status, String tempToken) { }
 		@Override
-		public void onGetAuthAccessToken(boolean status, Map<String, String> result) {}
+		public void onGetAuthAccessToken(boolean status, Map<String, String> result) { }
 		@Override
 		public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { }
 		@Override
-		public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {}
+		public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) { }
 		@Override
-		public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {}
+		public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) { }
 		@Override
 		public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) { }
 		@Override
@@ -109,6 +109,10 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onModifyEntryResponseReceived(boolean status, Entry entry) { }
 		@Override
 		public void onGetMonthlyItemsResponseReceived(boolean status, ArrayList<Item> list) { }
+		@Override
+		public void onRemoveEntryResponseReceived(boolean status, String id) { }
+		@Override
+		public void onRemoveMonthlyItemResponseReceived(boolean status, String id) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -239,10 +243,12 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String ENTRIES_ALL			= "api/entries.json_array";
 		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
 		public static final String ENTRIES_MODIFY			= "api/entries/";
+		public static final String ENTRIES_REMOVE			= ENTRIES_MODIFY;
 
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
+		public static final String ITEM_MONTHLY_REMOVE		= "api/monthly_items/slot1/";
 
 	};
 
@@ -336,7 +342,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_PUT_ENTRY = CMD_BASE + 27;		
 		public static final int CMD_GET_MONTHLY_ITEMS = CMD_BASE + 29;		
 		public static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
-		
+		public static final int CMD_DELETE_ENTRY = CMD_BASE + 33;
+		public static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;		
 	}
 
 
@@ -473,6 +480,14 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onGetMonthlyItemsResponseReceived(booleanStatus, (ArrayList<Item>)obj);
 				break;
 
+			case CommandID.CMD_DELETE_ENTRY :
+				responseListener.onRemoveEntryResponseReceived(booleanStatus, (String)obj);
+				break;
+				
+			case CommandID.CMD_DELETE_MONTHLY_ITEMS :
+				responseListener.onRemoveMonthlyItemResponseReceived(booleanStatus, (String)obj);
+				break;
+				
 			default : 
 				break;
 
@@ -977,11 +992,20 @@ public class WimpleImpl implements IWimpleImpl {
 	public boolean modifyEntry(String entryID, String date, Account left, Account right, 
 			String title, Double amount, String memo){
 		if(false == isInitializedFinished()){
-			Log.e(LOG_TAG, "[makeEntry] Initialization is on progressing.");
+			Log.e(LOG_TAG, "[modifyEntry] Initialization is on progressing.");
 			return false;
 		}
 
 		return em.modifyEntry(defaultSectionID, entryID, date, left, right, title, amount, memo);
+	}
+	
+	public boolean removeEntry(String entryID){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[removeEntry] Initialization is on progressing.");
+			return false;
+		}
+
+		return em.removeEntry(defaultSectionID, entryID);
 	}
 
 	public boolean getFrequentItems(){
@@ -1040,6 +1064,15 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getMonthlyItems(defaultSectionID, forceUpdate);
 	}
+	
+	public boolean removeMonthlyItem(String itemID){
+		if(false == isInitializedFinished()){
+			Log.e(LOG_TAG, "[removeMonthlyItem] Initialization is on progressing.");
+			return false;
+		}
+
+		return im.removeMonthlyItem(defaultSectionID, itemID);
+	}	
 
 	public String getAccountName(String accountCode){
 		String name = "?";

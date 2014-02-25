@@ -247,6 +247,14 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetMonthlyItemsResponseReceived(boolean status,
 					ArrayList<Item> list) {
+			}
+
+			@Override
+			public void onRemoveEntryResponseReceived(boolean status, String id) {				
+			}
+
+			@Override
+			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
 			}				
 
 		});

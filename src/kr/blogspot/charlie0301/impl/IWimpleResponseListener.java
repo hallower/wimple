@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import kr.blogspot.charlie0301.impl.WimpleImpl.CommandID;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
@@ -38,14 +39,17 @@ public interface IWimpleResponseListener {
 	
 	
 	/*
-	 * C, U, Entry
+	 * C, U, D, Entry
 	 */
 	public void onMakeEntryResponseReceived(boolean status, String entryDate);
 	
 	public void onModifyEntryResponseReceived(boolean status, Entry entry);
+
+	public void onRemoveEntryResponseReceived(boolean status, String id);
+	
 	
 	/*
-	 * R, Items
+	 * R, D, Items
 	 */
 	public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list);
 	
@@ -53,4 +57,5 @@ public interface IWimpleResponseListener {
 	
 	public void onGetMonthlyItemsResponseReceived(boolean status, ArrayList<Item> list);
 	
+	public void onRemoveMonthlyItemResponseReceived(boolean status, String id);
 }
