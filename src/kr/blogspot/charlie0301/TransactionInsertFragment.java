@@ -602,6 +602,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			if(booleanStatus){
 				adapterLatestItems.clear();
 				adapterLatestItems.addAll((List<Item>) obj);
+				adapterLatestItems.sort(new Item.DateDescCompare());
 				adapterLatestItems.notifyDataSetChanged();
 			}	
 		}

@@ -322,10 +322,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			// by date limit
 			//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);
 
-			if(booleanStatus){
-				entryAdapter.get().removeSameDatedMonthlyItem(entryDate);
+			if(monthlyDisplay){
+				if(booleanStatus){
+					entryAdapter.get().removeSameDatedMonthlyItem(entryDate);
+				}
+				wimple.getMonthlyItems(true);
 			}
-			wimple.getMonthlyItems(true);
 		}	
 		break;
 
@@ -385,11 +387,11 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			entryAdapter.get().notifyDataSetChanged();
 		}
 		break;
-		
+
 		case CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED : {
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.remove_entry_success), Toast.LENGTH_LONG).show();
-				
+
 				// TODO : efficient
 				entryAdapter.get().removeEntry((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
@@ -476,19 +478,19 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		switch (item.getItemId()) {
 		case R.string.context_menu_delete_item :
 			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();			
-			
+
 			Item selectedItem = (Item) entryAdapter.get().getItem(info.position);
-			
+
 			Log.d(LOG_TAG, "removing item pos=" + info.position + ", name=" + selectedItem.getItem());
 			//mAdapter.remove(info.position);
-			
+
 			// 9 : item, 7 : entry
 			if(selectedItem.getDateValue().startsWith("9")){
 				wimple.removeMonthlyItem(selectedItem.getId());
 			}else{
 				wimple.removeEntry(selectedItem.getId());
 			}
-			
+
 			return true;
 
 		case  R.string.context_menu_one :
