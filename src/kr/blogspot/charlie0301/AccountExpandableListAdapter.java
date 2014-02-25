@@ -71,7 +71,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	public View getChildView(int groupPosition, final int childPosition,
 			boolean isLastChild, View convertView, ViewGroup parent) {
 
-		final String childText = ((Account) getChild(groupPosition, childPosition)).getTitle();
+		final String childText = ((Account) getChild(groupPosition, childPosition)).getTitle().replaceAll("\\r\\n|\\r|\\n", "");
 
 		if (convertView == null) {
 			LayoutInflater infalInflater = (LayoutInflater) this.context

@@ -85,5 +85,13 @@
     <string name="update_latest_items">최신 거래내역을 업데이트 합니다.</string>
     <string name="update_old_items">이전 거래내역을 가져옵니다.</string>
     <string name="notyet">예정</string>
+    <string name="context_menu_delete_item">거래 항목 삭제</string>
+    <string name="context_menu_one">one</string>    
+    <string name="context_menu_two">two</string>
+    
+    <string name="remove_entry_success">거래 내역이 정상적으로 삭제 되었습니다.</string>
+    <string name="remove_entry_failed">거래 내역 삭제가 정상적으로 처리되지 않았습니다.</string>
+    <string name="remove_monthly_item_success">매월 입력 거래가 정상적으로 삭제 되었습니다.</string>
+    <string name="remove_monthly_item_failed">매월 입력 거래 삭제가 정상적으로 처리되지 않았습니다.</string>
     
 </resources>

@@ -22,8 +22,12 @@ import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -32,6 +36,7 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -54,7 +59,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	private static boolean monthlyDisplay = true;
 	private static int monthlyDisplayItemsNumbers = 4;
 
-	
+
 	// GUI
 	private WeakReference<EntryItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
@@ -93,8 +98,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		Log.e(LOG_TAG, "Force Refresh!!!");
 		setShowingNotification(true, true);
 		entryAdapter.get().removeAllMonthlyItem();
+		entryAdapter.get().notifyDataSetChanged();
 		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
-		
+
 		if(monthlyDisplay){
 			wimple.getMonthlyItems(forceUpdateMonthlyItems);	
 		}		
@@ -117,6 +123,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		entryList.get().setAdapter(entryAdapter.get());
 		entryList.get().setLayoutParams(sessionParams);
+
+		registerForContextMenu(entryList.get());
 
 		entryList.get().setOnScrollListener(new OnScrollListener(){
 
@@ -185,7 +193,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
 				Item item = (Item) entryAdapter.get().getItem(position);
 				//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
-				WimpleActivity.sm(CommandID.MODIFY_ENTRY, item.getId());
+				WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item.getId());
 			}
 		});
 
@@ -328,7 +336,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			if(booleanStatus){
 				entryAdapter.get().removeEntry(entry.getId());
 				entryAdapter.get().notifyDataSetChanged();
-				
+
 				String lastDate = entry.getDateValue();
 
 				if(false == lastDate.isEmpty()){
@@ -353,7 +361,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			if(false == monthlyDisplay){
 				return;
 			}
-			
+
 			ArrayList<Item> list = (ArrayList<Item>) obj;
 			Collections.sort(list, new DateAscCompare());
 
@@ -375,9 +383,37 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			}
 			 */
 			entryAdapter.get().notifyDataSetChanged();
-
 		}
+		break;
+		
+		case CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED : {
+			if(booleanStatus){
+				Toast.makeText(context, getResources().getString(R.string.remove_entry_success), Toast.LENGTH_LONG).show();
+				
+				// TODO : efficient
+				entryAdapter.get().removeEntry((String)obj);
+				entryAdapter.get().notifyDataSetChanged();
+				wimple.getMonthlyItems(true);
+				Log.d(LOG_TAG, "Delete entry - " + (String)obj);				
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.remove_entry_failed), Toast.LENGTH_LONG).show();	
+			}
+		}
+		break;
 
+		case CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED :{
+			if(booleanStatus){
+				Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_success), Toast.LENGTH_LONG).show();
+
+				// TODO : efficient
+				entryAdapter.get().removeItem((String)obj);
+				entryAdapter.get().notifyDataSetChanged();
+				Log.d(LOG_TAG, "Delete monthly item - " + (String)obj);
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_failed), Toast.LENGTH_LONG).show();	
+			}
+		}
+		break;
 
 		}
 	}
@@ -417,10 +453,55 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			llNotification.setVisibility(View.GONE);
 		}
 	}
-	
+
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+
+		if(v.getId() == R.id.entry_list_view){
+			EntryItemListView lv = (EntryItemListView) v;
+			AdapterView.AdapterContextMenuInfo acmi = (AdapterContextMenuInfo) menuInfo;
+			Item item = (Item) lv.getItemAtPosition(acmi.position);
+
+			menu.setHeaderTitle(item.getItem());
+
+			menu.add(Menu.NONE, R.string.context_menu_delete_item, Menu.NONE, getResources().getString(R.string.context_menu_delete_item));			
+		}		
+		//super.onCreateContextMenu(menu, v, menuInfo);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.string.context_menu_delete_item :
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();			
+			
+			Item selectedItem = (Item) entryAdapter.get().getItem(info.position);
+			
+			Log.d(LOG_TAG, "removing item pos=" + info.position + ", name=" + selectedItem.getItem());
+			//mAdapter.remove(info.position);
+			
+			// 9 : item, 7 : entry
+			if(selectedItem.getDateValue().startsWith("9")){
+				wimple.removeMonthlyItem(selectedItem.getId());
+			}else{
+				wimple.removeEntry(selectedItem.getId());
+			}
+			
+			return true;
+
+		case  R.string.context_menu_one :
+			Toast.makeText(context, getResources().getString(R.string.context_menu_one), Toast.LENGTH_LONG).show();
+			return true;
+		default:
+			return super.onContextItemSelected(item);
+		}
+	}
+
 	private void updateSettings(){
 		sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		
+
 		monthlyDisplay = sharedPref.getBoolean(SettingsFragment.KEY_MONTHLY_ITEM_DISPLAY, true);
 		String pref = sharedPref.getString(SettingsFragment.KEY_MONTHLY_ITEM_COUNT, "5");
 		monthlyDisplayItemsNumbers = Integer.parseInt(pref);

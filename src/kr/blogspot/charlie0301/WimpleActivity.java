@@ -102,10 +102,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
 		public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
 		public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
-		public static final int MODIFY_ENTRY = CMD_BASE + 31;
+		public static final int MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM = CMD_BASE + 31;
 		public static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
 		public static final int GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35;
 		public static final int WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37;
+		public static final int REMOVE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 39;
+		public static final int REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 41;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -117,6 +119,14 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	}
 
 	@Override
+	protected void onResume() {
+
+		setupWimpleImpl(false);
+		
+		super.onResume();
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_wimple);
@@ -125,7 +135,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		actionBar = getActionBar();
 
 		setupHandler();
-		setupWimpleImpl();
+		setupWimpleImpl(true);
 		setupMenus();
 
 
@@ -427,7 +437,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		invalidateOptionsMenu();
 	}
 
-	private void setupWimpleImpl() {
+	private void setupWimpleImpl(boolean initialTime) {
 		wimple.setApplicationContext(context);
 		wimple.setStatusListener(new IWimpleStatusListener(){
 
@@ -527,12 +537,24 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			public void onGetMonthlyItemsResponseReceived(boolean status,
 					ArrayList<Item> list) {
 				sm(CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, list);				
+			}
+
+			@Override
+			public void onRemoveEntryResponseReceived(boolean status, String id) {
+				sm(CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED, status?1:0, 0, id);
+			}
+
+			@Override
+			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
+				sm(CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, id);
 			}				
 
 		});
 
-		wimple.getUserInfo(true);
-		wimple.getDefaultSections(false);		
+		if(initialTime){
+			wimple.getUserInfo(true);
+			wimple.getDefaultSections(false);	
+		}		
 	}
 
 
@@ -583,7 +605,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 				}
 
 				// TransactionInsertFragment
-				case CommandID.MODIFY_ENTRY : {
+				case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
 
 					moveTabOfPager(0);
 					Fragment fg = mSectionsPagerAdapter.getItem(0);

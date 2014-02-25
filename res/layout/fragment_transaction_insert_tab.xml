@@ -435,13 +435,17 @@
             android:orientation="vertical" >
 
             <TextView
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:id="@+id/insert_category_left_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/input_color_box_9"
                 android:paddingBottom="2dp"
                 android:paddingLeft="14dp"
+                android:gravity="center"
                 android:paddingRight="14dp"
+                android:maxLines="1"
                 android:paddingTop="2dp"
                 android:text="@string/insert_left_accounts"
                 android:textColor="@color/text_white"
@@ -466,13 +470,17 @@
             android:orientation="vertical" >
 
             <TextView
+                android:gravity="center"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:id="@+id/insert_category_right_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/input_color_box_3"
                 android:paddingBottom="2dp"
                 android:paddingLeft="14dp"
                 android:paddingRight="14dp"
+                android:maxLines="1"
                 android:paddingTop="2dp"
                 android:text="@string/insert_right_accounts"
                 android:textColor="@color/text_white"

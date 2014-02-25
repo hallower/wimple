@@ -359,7 +359,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
 				rightAccountListAdapter.setSelected(groupPosition, childPosition, id);
-				tvRightAccountTitle.setText(((Account)leftAccountListAdapter.getChild(groupPosition, childPosition)).getTitle());
+				tvRightAccountTitle.setText(((Account)rightAccountListAdapter.getChild(groupPosition, childPosition)).getTitle());
 				return false;
 			}
 		});
@@ -435,7 +435,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			rightAccountListView.expandGroup(selectedRightGroup);
 			rightAccountListView.setSelection(selectedRightGroup);
 			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);
-			tvRightAccountTitle.setText(((Account)leftAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition())).getTitle());
+			tvRightAccountTitle.setText(((Account)rightAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition())).getTitle());
 		}
 	}
 
@@ -506,8 +506,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
 		case CommandID.GET_ALL_SECTION_RECEIVED :{
 			initWimple();
-			break;
 		}
+		break;
 
 		case CommandID.GET_ALL_ACCOUNT_RECEIVED :{
 			Collection<Account> accountList = (Collection<Account>) obj;
@@ -623,7 +623,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}	
 		break;
 
-		case CommandID.MODIFY_ENTRY : {
+		case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
 
 			String itemID = obj.toString();
 
@@ -656,9 +656,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
 			}			
-						
-			break;
 		}
+		break;
 
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
 
@@ -670,9 +669,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 			}
-			break;
 		}
-
+		break;
+				
 		}
 	}
 

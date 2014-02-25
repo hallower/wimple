@@ -63,7 +63,7 @@ public class RestAPIInvoker {
 				break;
 				
 			case DELETE :
-				response = wb.delete(ClientResponse.class, params);
+				response = wb.delete(ClientResponse.class);
 				break;
 				
 			default :

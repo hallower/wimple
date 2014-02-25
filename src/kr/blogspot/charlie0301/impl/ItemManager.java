@@ -225,4 +225,45 @@ public class ItemManager {
 
 	}
 
+	
+	public boolean removeMonthlyItem(String sectionID, String itemID){
+
+		new DeleteMonthlyItemTaskThread(sectionID, itemID).start();		
+		return true;
+	}
+
+	private class DeleteMonthlyItemTaskThread extends Thread{
+
+		final String sectionID;
+		final String itemID;
+
+		DeleteMonthlyItemTaskThread(String sectionID, String itemID){
+			this.sectionID = sectionID;
+			this.itemID = itemID;
+		}
+
+		@Override
+		public void run() {
+
+			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.DELETE, Path.ITEM_MONTHLY_REMOVE + itemID + "/" + sectionID + ".json_array", "");
+
+			if(null == json){
+				Log.e(LOG_TAG, "[DeleteMonthItem] Error response - null returned");
+				wimpl.sm(CommandID.CMD_DELETE_MONTHLY_ITEMS, 0, 0, "");
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[DeleteMonthItem] Error response -  - " + json.get("message").toString());
+				wimpl.sm(CommandID.CMD_DELETE_MONTHLY_ITEMS, 0, 0, "");
+				return;
+			}
+
+			Log.d(LOG_TAG, "[DeleteMonthItem] Providing response");
+			wimpl.getMonthlyItemDBHandler().remove(itemID);
+			wimpl.sm(CommandID.CMD_DELETE_MONTHLY_ITEMS, 1, 0, itemID);
+		}			
+
+	}
+
 }

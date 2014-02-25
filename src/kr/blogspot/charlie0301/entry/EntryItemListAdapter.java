@@ -68,6 +68,22 @@ public class EntryItemListAdapter extends BaseAdapter {
 		Log.d(LOG_TAG, "Cante Remove entry - id=" + entryID);
 	}
 
+	public void removeItem(String itemID){
+
+		for(int i=0; i < items.size(); i++){
+
+			String itemDate = items.get(i).getDateValue();
+
+			if(itemDate.startsWith("9") &&
+					0 == items.get(i).getId().compareTo(itemID) ){
+				Log.d(LOG_TAG, "Remove item - id=" + items.get(i).getId() + 
+						", name=" + items.get(i).getItem());
+				items.remove(i);
+				return;
+			}
+		}
+		Log.d(LOG_TAG, "Cante Remove item - id=" + itemID);
+	}
 	
 	/*
 	 * because of no consistence between monthly item and newly added entry item,

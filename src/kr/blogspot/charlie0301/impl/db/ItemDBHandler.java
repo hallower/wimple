@@ -50,7 +50,11 @@ public class ItemDBHandler {
     	//dbHandler.delete("user_id", ee.getInstance().getProfileID());
     	dbHandler.deleteAll();
     }
-        
+    
+    public void remove(String id){		
+		dbHandler.delete("id", id);
+	}
+    
     public boolean insert(Collection<Item> data) {
         boolean res = false;
       
