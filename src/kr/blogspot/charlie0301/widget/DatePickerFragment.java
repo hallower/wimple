@@ -1,4 +1,4 @@
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.widget;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;

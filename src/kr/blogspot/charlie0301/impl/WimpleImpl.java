@@ -12,6 +12,7 @@ import java.util.Map;
 import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.AccountDBHandler;
+import kr.blogspot.charlie0301.impl.db.AccountStateDBHandler;
 import kr.blogspot.charlie0301.impl.db.EntryDBHandler;
 import kr.blogspot.charlie0301.impl.db.ItemDBHandler;
 import kr.blogspot.charlie0301.impl.db.SectionDBHandler;
@@ -19,18 +20,19 @@ import kr.blogspot.charlie0301.impl.db.UserInfoDBHandler;
 import kr.blogspot.charlie0301.impl.util.DrawableBitmapCache;
 import kr.blogspot.charlie0301.impl.util.RemoteContent;
 import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
 import kr.blogspot.charlie0301.model.UserInfo;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -58,7 +60,8 @@ public class WimpleImpl implements IWimpleImpl {
 	private SectionDBHandler sdbh = null;
 	private EntryDBHandler edbh = null;
 	private ItemDBHandler midbh = null;
-
+	private AccountStateDBHandler asdbh = null;
+	
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
@@ -113,6 +116,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onRemoveEntryResponseReceived(boolean status, String id) { }
 		@Override
 		public void onRemoveMonthlyItemResponseReceived(boolean status, String id) { }
+		@Override
+		public void onGetFinancialStateResponseReceived(boolean status, Collection<AccountState> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -186,6 +191,10 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == midbh){
 			midbh = new ItemDBHandler(WimpleImpl.context, "monthlyitems");
 		}	
+
+		if(null == asdbh){
+			asdbh = new AccountStateDBHandler(WimpleImpl.context);
+		}
 	}
 
 	public void setStatusListener(IWimpleStatusListener listener){
@@ -249,6 +258,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
 		public static final String ITEM_MONTHLY_REMOVE		= "api/monthly_items/slot1/";
+
+		public static final String FINANCIAL_STATE			= "api/bs.json_array";
 
 	};
 
@@ -344,6 +355,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
 		public static final int CMD_DELETE_ENTRY = CMD_BASE + 33;
 		public static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;		
+		public static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;		
 	}
 
 
@@ -488,6 +500,10 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onRemoveMonthlyItemResponseReceived(booleanStatus, (String)obj);
 				break;
 				
+			case CommandID.CMD_GET_FINANCIAL_STATE :
+				responseListener.onGetFinancialStateResponseReceived(booleanStatus, (Collection<AccountState>)obj);
+				break;
+				
 			default : 
 				break;
 
@@ -564,6 +580,7 @@ public class WimpleImpl implements IWimpleImpl {
 		sdbh.clean();
 		edbh.clean();
 		midbh.clean();
+		asdbh.clean();
 	}
 
 	/*
@@ -1092,6 +1109,131 @@ public class WimpleImpl implements IWimpleImpl {
 		return name;
 	}
 
+	
+	public boolean getFinancialState(String date, boolean forceUpdate){
+		/*
+		if(false == isInitializedFinished()){
+			return false;
+		}
+		 */
+		new GetFinancialStateTaskThread(defaultSectionID, date, forceUpdate).start();		
+		return true;
+	}
+
+	private class GetFinancialStateTaskThread extends Thread{
+
+		final String sectionID;
+		final String date;
+		final boolean forceUpdate;
+
+		GetFinancialStateTaskThread(String sectionID, String date, boolean forceUpdate){
+			this.sectionID = sectionID;
+			this.date = date;
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			if((false == forceUpdate) &&
+					asdbh.hasData()){
+
+				Collection<AccountState> list = new ArrayList<AccountState>();
+				list = asdbh.getAllAccountStates();
+
+				Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+				return;
+			}
+
+			Collection<AccountState> list = new ArrayList<AccountState>();
+
+			if(null == sectionID ||
+					sectionID.isEmpty()){
+				Log.e(LOG_TAG, "[FState] Initialization is on progressing !!!");
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				return;
+			}
+
+			String path = "?section_id=" + sectionID;
+			
+			if(false == date.isEmpty()){				
+				try{
+					sdf.setLenient(false);
+					sdf.parse(date);
+
+					path += "&end_date=" + date;
+				}
+				catch(Exception e){
+					//ignore
+				}
+			}			
+
+			try{
+				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.FINANCIAL_STATE + path, "");
+				if(null == json){
+				Log.e(LOG_TAG, "[FState] Error response - null returned");
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				return;
+			}
+
+			if(	false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
+					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+					return;
+				}
+
+
+			String accountName = "";
+			
+				JSONObject results = (JSONObject) json.get("results");
+				for(Object type : results.keySet()){
+
+					JSONObject accountType  = (JSONObject) results.get(type);
+					String category = type.toString();
+					
+					for(Object name : accountType.keySet()){
+						
+						if(0 == name.toString().compareTo("accounts")){
+							JSONArray rows = (JSONArray) accountType.get(name);
+							
+							for(int i = 0; i < rows.size(); i++){
+
+								accountName = "";
+								
+								JSONObject row = (JSONObject) rows.get(i);
+								AccountState as = new AccountState(row, category);
+								
+								as.setAccountName(adbh.getAccountName(as.getAccountID()));
+								
+								list.add(as);	
+							}						
+						}
+
+					}
+				}
+			} catch(Exception e){
+				Log.e(LOG_TAG, "[FState] Failed - GetFinancialStateTaskThread!!!");
+				e.printStackTrace();
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				return;
+			}
+
+			asdbh.insert(list);
+
+			Log.d(LOG_TAG, "[FState] Providing GetFinancialStateTaskThread from Server!!!");
+			sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+		}			
+
+	}
+
+
+	
+	
+	
+	
+	
+	
 	@Override
 	public Integer getRemainedAPICall() {		
 		return countOfRemainedAPICall;

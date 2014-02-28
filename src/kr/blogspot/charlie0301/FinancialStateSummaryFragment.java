@@ -1,7 +1,15 @@
 package kr.blogspot.charlie0301;
 
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.widget.ItemListView;
+import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
+import kr.blogspot.charlie0301.widget.entry.EntryItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -9,7 +17,7 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 public class FinancialStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
@@ -22,6 +30,11 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 
 
+	// GUI
+
+	private WeakReference<ItemListView> asList;
+	private WeakReference<AccountStateItemListAdapter> asAdapter;
+	
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -29,9 +42,21 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		context = WimpleActivity.context;		
 
-		view = (FrameLayout)inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
+		view = (RelativeLayout)inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
 
-		// TODO Auto-generated method stub
+		RelativeLayout.LayoutParams sessionParams = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.as_list_view));
+		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
+
+		asList.get().setAdapter(asAdapter.get());
+		asList.get().setLayoutParams(sessionParams);
+
+		registerForContextMenu(asList.get());
+
+		
+		
+		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
 	@Override
@@ -49,6 +74,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		// TODO Auto-generated method stub
 		super.onResume();
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public void handleMessage(Message msg) {
 		int command = msg.what;
@@ -62,9 +88,13 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		switch(command){
 
-		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
-		case CommandID.GET_ALL_SECTION_RECEIVED :{
-			//initWimple();
+		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
+
+			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
+			for(AccountState as : accountStates){
+				asAdapter.get().addAccountState(as);
+			}
+			asAdapter.get().notifyDataSetChanged();
 		}
 		break;
 		}

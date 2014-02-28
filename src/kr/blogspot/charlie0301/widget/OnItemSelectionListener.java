@@ -1,5 +1,5 @@
 
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.widget;
 
 import android.view.View;
 import android.widget.AdapterView;

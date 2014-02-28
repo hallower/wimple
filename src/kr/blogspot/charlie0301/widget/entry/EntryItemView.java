@@ -1,4 +1,4 @@
-package kr.blogspot.charlie0301.entry;
+package kr.blogspot.charlie0301.widget.entry;
 
 import java.util.Calendar;
 import java.util.Date;

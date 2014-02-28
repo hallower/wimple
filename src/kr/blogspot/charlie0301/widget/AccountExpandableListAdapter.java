@@ -1,10 +1,12 @@
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.widget;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.model.Account;
-
+import kr.blogspot.charlie0301.model.AccountState;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -35,12 +37,21 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		this(context);
 		this.listDataHeader = listDataHeader;
 		this.listDataChild = listChildData;
+		sort();
 	}
 
 	public void setData(List<String> listDataHeader,
 			Map<String, List<Account>> listChildData) {
 		this.listDataHeader = listDataHeader;
 		this.listDataChild = listChildData;
+		sort();
+	}
+	
+	private void sort(){
+		for(String key : this.listDataChild.keySet()){
+			List<Account> value = this.listDataChild.get(key);
+			Collections.sort(value, new Account.DateAscCompare());
+		}
 	}
 	
 	public void clear(){

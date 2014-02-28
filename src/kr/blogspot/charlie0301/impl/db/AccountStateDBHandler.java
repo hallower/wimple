@@ -3,40 +3,32 @@ package kr.blogspot.charlie0301.impl.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.model.Account;
-
+import kr.blogspot.charlie0301.model.AccountState;
 import android.content.Context;
 
-public class AccountDBHandler {
+public class AccountStateDBHandler {
 
-	private static String tableName = "accountinfo";
+	private static String tableName = "accountstate";
 	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"what TEXT, " +
-			"id TEXT, " +
-			"type TEXT, " +
-			"title TEXT, " +
-			"description TEXT, " +
-			"openedDate TEXT, " +
-			"closedDate TEXT, " +
+			"accountid TEXT, " +
+			"accountname TEXT, " +
 			"category TEXT, " +
-			"useDate TEXT, " +
-			"payDate TEXT, " +
-			"payAccount TEXT, " +
-
-			"PRIMARY KEY (id)" +
+			"amount TEXT, " +
+			
+			"PRIMARY KEY (accountid)" +
 			") ";
 
 	private static DatabaseHandler dbHandler = null;
 
-	public AccountDBHandler(Context context) {
+	public AccountStateDBHandler(Context context) {
 		super();
 
 		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
-		dbHandler.setColumns(Account.columns);
+		dbHandler.setColumns(AccountState.columns);
 	}
 
-	public boolean insert(Account data) {
+	public boolean insert(AccountState data) {
 		if(data instanceof IDatabaseRecord){
 			return dbHandler.addItem(data);
 		}
@@ -53,7 +45,7 @@ public class AccountDBHandler {
 		dbHandler.deleteAll();
 	}
 
-	public boolean insert(Collection<Account> data) {
+	public boolean insert(Collection<AccountState> data) {
 		boolean res = false;
 
 		if(data==null || data.isEmpty()){
@@ -61,25 +53,25 @@ public class AccountDBHandler {
 		}
 
 		// TODO : use TCL
-		for(Account act : (Collection<Account>)data) {
+		for(AccountState act : (Collection<AccountState>)data) {
 
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
 			}
 		}
-		//dbHandler.showAll();
+		dbHandler.showAll();
 		return res;
 	}
 
 	/*
-    private Collection<Account> get(String where){
-    	Collection<Account> acts = new ArrayList<Account>();
+    private Collection<AccountState> get(String where){
+    	Collection<AccountState> acts = new ArrayList<AccountState>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
 
     	Log.d(tableName, where);
 
     	for(IDatabaseRecord record : records){
-    		Account data = new Account();
+    		AccountState data = new AccountState();
 
     		if(false == data.setValues(record.getValues())){
     			continue;
@@ -92,12 +84,12 @@ public class AccountDBHandler {
     }
 	 */
 
-	public Collection<Account> getAllAccounts(){
-		Collection<Account> acts = new ArrayList<Account>();
+	public Collection<AccountState> getAllAccountStates(){
+		Collection<AccountState> acts = new ArrayList<AccountState>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){
-			Account data = new Account();
+			AccountState data = new AccountState();
 
 			if(false == data.setValues(record.getValues())){
 				continue;
@@ -109,23 +101,6 @@ public class AccountDBHandler {
 		return acts;
 	}
 
-	public String getAccountName(String accountID){
-
-		try{
-			IDatabaseRecord record = dbHandler.getItem("id", accountID);
-			Account account = new Account();
-			
-			if(false == account.setValues(record.getValues())){
-				return "";
-			}
-			
-			return account.getTitle();
-			
-		}catch(Exception e){
-			e.printStackTrace();
-			return "";
-		}
-	}
 
 	public void print(){
 		dbHandler.showAll();
