@@ -11,6 +11,7 @@ import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
@@ -79,6 +80,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	ImageView progressLevel;
 	ImageView profileIcon;
 
+	// TODO : change this as enum
 	public static final class CommandID {
 
 		private CommandID() {}
@@ -108,6 +110,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		public static final int WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37;
 		public static final int REMOVE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 39;
 		public static final int REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 41;
+		public static final int GET_FINANCIAL_STATE_RESPONSE_RECEIVED = CMD_BASE + 43;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -122,7 +125,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	protected void onResume() {
 
 		setupWimpleImpl(false);
-		
+
 		super.onResume();
 	}
 
@@ -372,7 +375,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		List<String> titles = listSubmenuTitles.get(n);
 		List<Object> fragments = listSubmenuClasses.get(n);
 		int nFragment = titles.size();
-		
+
 		if(currentMenuId == n){
 			mDrawerLayout.closeDrawer(mSideMenu);
 			return;
@@ -383,7 +386,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			Log.e(LOG_TAG, "Oops setPagerAdapter, title, fragments are 0");
 			return;
 		}
-		
+
 		currentMenuId = n;
 		actionBar.removeAllTabs();
 		mSectionsPagerAdapter.clear();    	
@@ -482,7 +485,6 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 			@Override
 			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
-				// TODO : we have to save to DB and use it at initial time
 				if(status){
 					Log.e(LOG_TAG, info.toString());
 					sm(CommandID.UPDATE_USER_INFO, 1, 0, info);	
@@ -547,6 +549,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			@Override
 			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
 				sm(CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED, status?1:0, 0, id);
+			}
+
+			@Override
+			public void onGetFinancialStateResponseReceived(boolean status,
+					Collection<AccountState> list) {
+				sm(CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED, status?1:0, 0, list);
 			}				
 
 		});
@@ -670,7 +678,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 				showMenu(v);
 			}
 		});
-		*/
+		 */
 		return true;
 	}
 

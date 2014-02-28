@@ -7,13 +7,14 @@ import java.util.Collections;
 import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.entry.EntryItemListAdapter;
-import kr.blogspot.charlie0301.entry.EntryItemListView;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Item.DateAscCompare;
+import kr.blogspot.charlie0301.widget.ItemListView;
+import kr.blogspot.charlie0301.widget.OnItemSelectionListener;
+import kr.blogspot.charlie0301.widget.entry.EntryItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -61,7 +62,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 
 	// GUI
-	private WeakReference<EntryItemListView> entryList;
+	private WeakReference<ItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
 	private LinearLayout llNotification;
 	private TextView txtNotification;
@@ -116,7 +117,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		FrameLayout.LayoutParams sessionParams = new FrameLayout.LayoutParams(
 				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		entryList = new WeakReference<EntryItemListView>((EntryItemListView)view.findViewById(R.id.entry_list_view));
+		entryList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.entry_list_view));
 		entryAdapter = new WeakReference<EntryItemListAdapter>(new EntryItemListAdapter(context));
 
 		entryList.get().setAdapter(entryAdapter.get());
@@ -462,7 +463,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			ContextMenuInfo menuInfo) {
 
 		if(v.getId() == R.id.entry_list_view){
-			EntryItemListView lv = (EntryItemListView) v;
+			ItemListView lv = (ItemListView) v;
 			AdapterView.AdapterContextMenuInfo acmi = (AdapterContextMenuInfo) menuInfo;
 			Item item = (Item) lv.getItemAtPosition(acmi.position);
 

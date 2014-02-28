@@ -1,5 +1,7 @@
 package kr.blogspot.charlie0301.model;
 
+import java.util.Comparator;
+
 import kr.blogspot.charlie0301.impl.db.IDatabaseRecord;
 
 import org.json.simple.JSONObject;
@@ -282,4 +284,43 @@ public class Account implements IDatabaseRecord {
 		return values;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if(false == (o instanceof Account)){
+			return false;
+		}
+
+		Account item = (Account)o;
+		return id.equals(item.id);
+	}
+
+	/*
+	int compareTo(Object o){
+		if(false == (o instanceof Item)){
+			return -1;
+		}
+
+		Item item = (Item)o;
+		return date.compareTo(item.date);
+	}
+	 */
+	
+
+	public static class DateDescCompare implements Comparator<Account>{
+
+		@Override
+		public int compare(Account lhs, Account rhs) {
+			return -1 * lhs.getId().compareTo(rhs.getId());
+		}
+
+	}
+
+	public static class DateAscCompare implements Comparator<Account>{
+
+		@Override
+		public int compare(Account lhs, Account rhs) {
+			return lhs.getId().compareTo(rhs.getId());
+		}
+
+	}
 }

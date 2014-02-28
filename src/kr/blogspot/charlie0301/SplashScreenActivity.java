@@ -8,7 +8,9 @@ import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
@@ -114,6 +116,7 @@ public class SplashScreenActivity extends Activity {
 		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
+		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
 	}
 
 	private void setupWimpleImpl() {
@@ -255,6 +258,13 @@ public class SplashScreenActivity extends Activity {
 
 			@Override
 			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
+			}
+
+			@Override
+			public void onGetFinancialStateResponseReceived(boolean status,
+					Collection<AccountState> list) {
+				// TODO Auto-generated method stub
+				
 			}				
 
 		});

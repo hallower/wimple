@@ -1,7 +1,6 @@
 
-package kr.blogspot.charlie0301.entry;
+package kr.blogspot.charlie0301.widget;
 
-import kr.blogspot.charlie0301.OnItemSelectionListener;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -9,17 +8,17 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-public class EntryItemListView extends ListView {
+public class ItemListView extends ListView {
 
 	private OnItemSelectionListener selectionListener;
 
-	public EntryItemListView(Context context) {
+	public ItemListView(Context context) {
 		super(context);
 
 		init();
 	}
 
-	public EntryItemListView(Context context, AttributeSet attrs) {
+	public ItemListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		init();
