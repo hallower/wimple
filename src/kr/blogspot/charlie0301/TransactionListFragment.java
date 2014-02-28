@@ -97,8 +97,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		// TODO : what is best? performance
 		Log.e(LOG_TAG, "Force Refresh!!!");
 		setShowingNotification(true, true);
-		entryAdapter.get().removeAllMonthlyItem();
-		entryAdapter.get().notifyDataSetChanged();
 		wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
 
 		if(monthlyDisplay){
@@ -363,6 +361,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			if(false == monthlyDisplay){
 				return;
 			}
+			
+			entryAdapter.get().removeAllMonthlyItem();
 
 			ArrayList<Item> list = (ArrayList<Item>) obj;
 			Collections.sort(list, new DateAscCompare());
