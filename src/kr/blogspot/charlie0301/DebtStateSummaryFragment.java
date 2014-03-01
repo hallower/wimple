@@ -1,11 +1,13 @@
 package kr.blogspot.charlie0301;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.widget.ItemListView;
 import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
@@ -16,6 +18,8 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout;
 
@@ -32,7 +36,8 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	// GUI
 	private WeakReference<ItemListView> asList;
 	private WeakReference<AccountStateItemListAdapter> asAdapter;
-
+	private DoughnutChartView cv;
+	private LinearLayout llChart;
 
 
 	@Override
@@ -43,8 +48,8 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		view = (RelativeLayout)inflater.inflate(R.layout.fragment_debt_state_summary_tab, container, false);
 
-		RelativeLayout.LayoutParams sessionParams = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.debt_list_view));
 		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
 
@@ -53,14 +58,18 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		registerForContextMenu(asList.get());
 
-		
-		
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+		
+		asList.clear();
+		asList = null;
+		asAdapter.clear();
+		asAdapter = null;
+		cv = null;
+		llChart = null;
+		
 		super.onDestroy();
 	}
 	@Override
@@ -88,14 +97,46 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
+			ArrayList<Double> values = new ArrayList<Double>();
+			ArrayList<String> names = new ArrayList<String>();
+			
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
+				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
+				//		" = " + as.getCategory() + ", " + as.getGroup());
 				if(false == as.getCategory().startsWith("li")){
 					continue;
 				}
+				
+				if(as.getGroup()){
+					continue;
+				}
+				values.add(as.getAmount());
+				names.add(as.getAccountName());
 				asAdapter.get().addAccountState(as);
 			}
 			asAdapter.get().notifyDataSetChanged();
+			
+			if(null == cv){
+				cv = new DoughnutChartView(context);
+				llChart = (LinearLayout)view.findViewById(R.id.chart);	
+			}
+
+			double[] doubleValues = new double[values.size()];
+			for(int i = 0; i < doubleValues.length; i++){
+				doubleValues[i] = values.get(i).doubleValue();
+			}
+			String[] stringValues = new String[names.size()];
+			for(int i = 0; i < stringValues.length; i++){
+				stringValues[i] = names.get(i);
+			}
+			
+			setGraphicChart(doubleValues, stringValues);
+
+			llChart.removeAllViews();
+			llChart.addView(cv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+
+		
 		}
 		break;
 		}
@@ -108,8 +149,19 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 		// TODO Auto-generated method stub
-
 	}
 
+	private void setGraphicChart(double[] values, String[] names){
+
+		cv.setDataValues(values);
+		cv.setLegendValues(names);		
+		int[] colors = new int[values.length];
+		for(int i = 0; i < values.length; i++){
+			colors[i] = WidgetItem.predefinedColors[i%9];
+		}
+		cv.setBarColorValues(colors);
+		cv.setDisplayLabels(true);
+		cv.makeChart();
+	}
 
 }

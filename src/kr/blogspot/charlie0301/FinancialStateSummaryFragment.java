@@ -6,12 +6,12 @@ import java.util.Collection;
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.widget.ItemListView;
 import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.LayoutInflater;
@@ -40,7 +40,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	private LinearLayout llChart;
 	private TextView tvSavingValue;
 	private TextView tvDebtValue;
-	
+	private TextView tvSumValue;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -59,15 +60,27 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		registerForContextMenu(asList.get());
 
+		tvSumValue = (TextView)view.findViewById(R.id.as_sum_value);
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
 
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+
+		asList.clear();
+		asList = null;
+		asAdapter.clear();
+		asAdapter = null;
+
+		cv = null;
+		llChart = null;
+		tvSavingValue = null;
+		tvDebtValue = null;
+		tvSumValue = null;
+
 		super.onDestroy();
 	}
 	@Override
@@ -98,26 +111,39 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 			Double saving = 0.0;
 			Double debt = 0.0;
-			
+
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
-				if(as.getCategory().startsWith("li")){
-					debt += as.getAmount();
-				}if(as.getCategory().startsWith("as")){
-					saving += as.getAmount();
+
+				if(false == as.getGroup()){		
+					if(as.getCategory().startsWith("li")){
+						debt += as.getAmount();
+					}if(as.getCategory().startsWith("as")){
+						saving += as.getAmount();
+					}
+				}else{
+					asAdapter.get().addAccountState(as);
 				}
-				asAdapter.get().addAccountState(as);
 			}
 			asAdapter.get().notifyDataSetChanged();
-			
+
 			if(null == cv){
 				cv = new DoughnutChartView(context);
 				llChart = (LinearLayout)view.findViewById(R.id.chart);	
 			}
 
 			tvSavingValue.setText(DateFormatUtils.getDecimalFormat().format(saving));
-			tvDebtValue.setText(DateFormatUtils.getDecimalFormat().format(debt));
-			
+			tvDebtValue.setText(DateFormatUtils.getDecimalFormat().format(-debt));
+
+			Double sum = saving - debt;
+
+			tvSumValue.setText(DateFormatUtils.getDecimalFormat().format(sum));
+			if(sum >= 0){
+				tvSumValue.setTextColor(getResources().getColor(R.color.text_blue));
+			}else{
+				tvSumValue.setTextColor(getResources().getColor(R.color.text_red));
+			}
+
 			setGraphicChart(new double[] {Math.abs(saving), Math.abs(debt)}, 
 					new String[] {getResources().getString(R.string.title_saving),
 					getResources().getString(R.string.title_debt)});
@@ -140,11 +166,6 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 	}
 
-	private static int[] predefinedColors = new int[] { 
-		Color.rgb(0x00, 0x5C, 0xA9), Color.rgb(0x13, 0x86, 0xC8), Color.rgb(0x31, 0xBC, 0xEC), Color.rgb(0x80, 0xDF, 0xF8),
-		Color.rgb(0xBD, 0xF8, 0xFF), Color.rgb(0x7F, 0xC4, 0x12), Color.rgb(0xEA, 0xC5, 0x0F), Color.rgb(0xE5, 0x51, 0x10),
-		Color.rgb(0xC6, 0x14, 0x6A), Color.rgb(0x62, 0x00, 0xA8)
-	}; 
 
 	private void setGraphicChart(double[] values, String[] names){
 
@@ -152,7 +173,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		cv.setLegendValues(names);		
 		int[] colors = new int[values.length];
 		for(int i = 0; i < values.length; i++){
-			colors[i] = predefinedColors[9-i];
+			colors[i] = WidgetItem.predefinedColors[9-i];
 		}
 		cv.setBarColorValues(colors);
 		cv.setDisplayLabels(true);

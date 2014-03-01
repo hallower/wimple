@@ -9,7 +9,6 @@ import java.util.Locale;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
