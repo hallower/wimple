@@ -38,7 +38,7 @@ public class AccountStateItemListAdapter extends BaseAdapter {
 		}else{
 			items.add(it);	
 		}
-		//sort();
+		sort();
 	}
 
 	

@@ -23,6 +23,7 @@ public class AccountDBHandler {
 			"useDate TEXT, " +
 			"payDate TEXT, " +
 			"payAccount TEXT, " +
+			"seq TEXT, " +
 
 			"PRIMARY KEY (id)" +
 			") ";
@@ -109,21 +110,21 @@ public class AccountDBHandler {
 		return acts;
 	}
 
-	public String getAccountName(String accountID){
+	public Account getAccountName(String accountID){
 
 		try{
 			IDatabaseRecord record = dbHandler.getItem("id", accountID);
 			Account account = new Account();
 			
 			if(false == account.setValues(record.getValues())){
-				return "";
+				return null;
 			}
 			
-			return account.getTitle();
+			return account;
 			
 		}catch(Exception e){
 			e.printStackTrace();
-			return "";
+			return null;
 		}
 	}
 

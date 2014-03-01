@@ -74,6 +74,8 @@
     <string name="entry_header_capital_m">순자산-</string>
     <string name="entry_header_income">수익</string>
     <string name="entry_header_expenses">비용</string>
+    <string name="title_saving">자산</string>
+    <string name="title_debt">부채</string>
     <string name="title_activity_splash_screen">wimple</string>
     <string name="title_activity_wimple">wimple</string>
     <string name="notice_need_auth">사용자 인증이 만료 되어 재인증이 필요합니다. 다시 로그인 및 승인을 해주세요.</string>

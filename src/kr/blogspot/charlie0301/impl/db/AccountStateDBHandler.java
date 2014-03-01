@@ -15,6 +15,7 @@ public class AccountStateDBHandler {
 			"accountname TEXT, " +
 			"category TEXT, " +
 			"amount TEXT, " +
+			"seq TEXT, " +
 			
 			"PRIMARY KEY (accountid)" +
 			") ";

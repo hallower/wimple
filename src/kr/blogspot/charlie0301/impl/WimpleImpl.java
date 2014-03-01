@@ -1204,7 +1204,14 @@ public class WimpleImpl implements IWimpleImpl {
 								JSONObject row = (JSONObject) rows.get(i);
 								AccountState as = new AccountState(row, category);
 								
-								as.setAccountName(adbh.getAccountName(as.getAccountID()));
+								Account account = adbh.getAccountName(as.getAccountID());
+								if(null == account){
+									continue;
+								}
+								if(0 == account.getType().compareTo("group")){
+									continue;
+								}
+								as.setAccountName(account.getTitle());
 								
 								list.add(as);	
 							}						
