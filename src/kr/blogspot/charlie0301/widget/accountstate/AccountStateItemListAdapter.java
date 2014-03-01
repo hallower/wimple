@@ -13,7 +13,7 @@ import android.widget.BaseAdapter;
 
 public class AccountStateItemListAdapter extends BaseAdapter {
 
-	private static final String LOG_TAG = "AccountStateListAdapter";
+	//private static final String LOG_TAG = "AccountStateListAdapter";
 	private Context mContext;
 
 	private List<AccountState> items = new ArrayList<AccountState>();

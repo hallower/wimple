@@ -61,7 +61,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private EntryDBHandler edbh = null;
 	private ItemDBHandler midbh = null;
 	private AccountStateDBHandler asdbh = null;
-	
+
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
@@ -441,18 +441,18 @@ public class WimpleImpl implements IWimpleImpl {
 						break;
 					}					
 				}
-				
+
 				new ProfileDownloadTaskThread(ui.getUserImgURL()).start();
 				responseListener.onGetUserInfoResponseReceived(booleanStatus, ui);
 				break;
 			}
-			
+
 			case CommandID.CMD_PROFILE_PICTURE_UPDATED :
 			{
 				statusListener.onProfilePictureUpdated();
 				break;
 			}
-			
+
 			case CommandID.CMD_GET_SECTIONS :
 			case CommandID.CMD_GET_SECTIONS_DEFAULT :
 				isInitializedFinished = true;
@@ -495,15 +495,15 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_DELETE_ENTRY :
 				responseListener.onRemoveEntryResponseReceived(booleanStatus, (String)obj);
 				break;
-				
+
 			case CommandID.CMD_DELETE_MONTHLY_ITEMS :
 				responseListener.onRemoveMonthlyItemResponseReceived(booleanStatus, (String)obj);
 				break;
-				
+
 			case CommandID.CMD_GET_FINANCIAL_STATE :
 				responseListener.onGetFinancialStateResponseReceived(booleanStatus, (Collection<AccountState>)obj);
 				break;
-				
+
 			default : 
 				break;
 
@@ -920,12 +920,12 @@ public class WimpleImpl implements IWimpleImpl {
 			try{
 				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
 				if(null == json){
-				Log.e(LOG_TAG, "[Account] Error response - null returned");
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-				return;
-			}
+					Log.e(LOG_TAG, "[Account] Error response - null returned");
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+					return;
+				}
 
-			if(	false == json.get("code").toString().startsWith("2")){
+				if(	false == json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
@@ -1015,7 +1015,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return em.modifyEntry(defaultSectionID, entryID, date, left, right, title, amount, memo);
 	}
-	
+
 	public boolean removeEntry(String entryID){
 		if(false == isInitializedFinished()){
 			Log.e(LOG_TAG, "[removeEntry] Initialization is on progressing.");
@@ -1081,7 +1081,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		return im.getMonthlyItems(defaultSectionID, forceUpdate);
 	}
-	
+
 	public boolean removeMonthlyItem(String itemID){
 		if(false == isInitializedFinished()){
 			Log.e(LOG_TAG, "[removeMonthlyItem] Initialization is on progressing.");
@@ -1109,7 +1109,7 @@ public class WimpleImpl implements IWimpleImpl {
 		return name;
 	}
 
-	
+
 	public boolean getFinancialState(String date, boolean forceUpdate){
 		/*
 		if(false == isInitializedFinished()){
@@ -1156,7 +1156,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 
 			String path = "?section_id=" + sectionID;
-			
+
 			if(false == date.isEmpty()){				
 				try{
 					sdf.setLenient(false);
@@ -1172,47 +1172,51 @@ public class WimpleImpl implements IWimpleImpl {
 			try{
 				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.FINANCIAL_STATE + path, "");
 				if(null == json){
-				Log.e(LOG_TAG, "[FState] Error response - null returned");
-				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
-				return;
-			}
-
-			if(	false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
+					Log.e(LOG_TAG, "[FState] Error response - null returned");
 					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
 					return;
 				}
 
+				if(	false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
+					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
 
-			String accountName = "";
-			
+					int code = Integer.parseInt(json.get("code").toString());
+					handleRESTErrorResponse(code);
+					return;
+				}
+
+
+				String accountName = "";
+
 				JSONObject results = (JSONObject) json.get("results");
 				for(Object type : results.keySet()){
 
 					JSONObject accountType  = (JSONObject) results.get(type);
 					String category = type.toString();
-					
+
 					for(Object name : accountType.keySet()){
-						
+
 						if(0 == name.toString().compareTo("accounts")){
 							JSONArray rows = (JSONArray) accountType.get(name);
-							
+
 							for(int i = 0; i < rows.size(); i++){
 
 								accountName = "";
-								
+
 								JSONObject row = (JSONObject) rows.get(i);
 								AccountState as = new AccountState(row, category);
-								
+
 								Account account = adbh.getAccountName(as.getAccountID());
 								if(null == account){
 									continue;
 								}
-								if(0 == account.getType().compareTo("group")){
-									continue;
-								}
+
+								Log.d(LOG_TAG, "[" + account.getId() + "], " + account.getTitle() + ", date=" +
+								account.getOpenedDate() + " - " + account.getClosedDate());
+								as.setGroup(0 == account.getType().compareTo("group"));
 								as.setAccountName(account.getTitle());
-								
+
 								list.add(as);	
 							}						
 						}
@@ -1235,12 +1239,12 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	@Override
 	public Integer getRemainedAPICall() {		
 		return countOfRemainedAPICall;
@@ -1283,21 +1287,21 @@ public class WimpleImpl implements IWimpleImpl {
 		if(filename.contains("@")){
 			filename = filename.replace("@", "_");
 		}
-		
+
 		/*
 		String packageName = context.getPackageName();
 		File externalPath = Environment.getExternalStorageDirectory();		
-		
+
 		String storagePath = externalPath.getAbsolutePath() +
                 "/Android/data/" + packageName + "/files";
-*/
+		 */
 		File filePath = context.getFilesDir();
 		String storagePath = filePath.getAbsolutePath();
-		
+
 		if(false == storagePath.endsWith("/")){
 			storagePath += "/";
 		}
-		
+
 		return new String( storagePath + filename + ".bin");
 	}
 
@@ -1314,7 +1318,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return DrawableBitmapCache.getBitmap(R.drawable.user);
 		}
 	}
-	
+
 	private class ProfileDownloadTaskThread extends Thread {
 
 		private final String url;
@@ -1336,7 +1340,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}else{
 				Log.e(LOG_TAG, "Profile Image download is failed!!!");
 			}
-			
+
 			sm(CommandID.CMD_PROFILE_PICTURE_UPDATED, 1, 0, "");
 		}
 	}

@@ -12,8 +12,8 @@
 
         <LinearLayout
             android:id="@+id/chart"
-            android:layout_width="220dp"
-            android:layout_height="220dp"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
             android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical" />
@@ -21,9 +21,43 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="40dp"
             android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
             android:layout_marginTop="8dp"
+            android:background="@drawable/input_box_round_2"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:paddingTop="6dp" >
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="@string/na"
+                android:src="@drawable/graph" />
+
+            <TextView
+                android:id="@+id/as_sum_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:text="..."
+                android:textScaleX="0.9"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="70dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal" >
 
             <TextView
@@ -31,8 +65,15 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
+                android:background="@drawable/input_color_box"
+                android:alpha="90"
+                android:paddingBottom="4dp"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:paddingTop="4dp"
+                android:textColor="@color/text_white"
                 android:text="@string/title_saving"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -43,6 +84,8 @@
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="30dp"
                 android:text="..."
+                android:textColor="@color/text_blue"
+                android:textScaleX="0.9"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </RelativeLayout>
@@ -50,8 +93,9 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="40dp"
-            android:layout_marginLeft="40dp"
+            android:layout_marginBottom="30dp"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="70dp"
             android:layout_marginTop="8dp"
             android:orientation="horizontal" >
 
@@ -60,8 +104,14 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
+                android:background="@drawable/input_color_box_3"
+                android:paddingBottom="4dp"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:paddingTop="4dp"
+                android:textColor="@color/text_white"
                 android:text="@string/title_debt"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -72,6 +122,8 @@
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="30dp"
                 android:text="..."
+                android:textColor="@color/text_red"
+                android:textScaleX="0.9"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </RelativeLayout>
@@ -80,7 +132,8 @@
             android:id="@+id/as_list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            android:divider="@null"
+            android:dividerHeight="0dp" />
     </LinearLayout>
 
 </RelativeLayout>

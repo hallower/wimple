@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.R;
-import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.AccountState;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -15,24 +15,24 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
+public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter{
 	private Context context;
 	private static final String LOG_TAG = "ExpandableListAdapter";
 
 	private List<String> listDataHeader; // header titles
 	// child data in format of header title, child title
-	private Map<String, List<Account>> listDataChild;
+	private Map<String, List<AccountState>> listDataChild;
 
 	private boolean isSelected = false;
 	private int selectedGroupPosition = -1;
 	private int selectedChildPosition = -1;
 
-	public AccountExpandableListAdapter(Context context) {
+	public AccountStateExpandableListAdapter(Context context) {
 		this.context = context;
 	}
 	
-	public AccountExpandableListAdapter(Context context, List<String> listDataHeader,
-			Map<String, List<Account>> listChildData) {
+	public AccountStateExpandableListAdapter(Context context, List<String> listDataHeader,
+			Map<String, List<AccountState>> listChildData) {
 		this(context);
 		this.listDataHeader = listDataHeader;
 		this.listDataChild = listChildData;
@@ -40,7 +40,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	}
 
 	public void setData(List<String> listDataHeader,
-			Map<String, List<Account>> listChildData) {
+			Map<String, List<AccountState>> listChildData) {
 		this.listDataHeader = listDataHeader;
 		this.listDataChild = listChildData;
 		sort();
@@ -48,8 +48,8 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	
 	private void sort(){
 		for(String key : this.listDataChild.keySet()){
-			List<Account> value = this.listDataChild.get(key);
-			Collections.sort(value, new Account.DateAscCompare());
+			List<AccountState> value = this.listDataChild.get(key);
+			Collections.sort(value, new AccountState.DateAscCompare());
 		}
 	}
 	
@@ -81,7 +81,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	public View getChildView(int groupPosition, final int childPosition,
 			boolean isLastChild, View convertView, ViewGroup parent) {
 
-		final String childText = ((Account) getChild(groupPosition, childPosition)).getTitle().replaceAll("\\r\\n|\\r|\\n", "");
+		final String childText = ((AccountState) getChild(groupPosition, childPosition)).getAccountName().replaceAll("\\r\\n|\\r|\\n", "");
 
 		if (convertView == null) {
 			LayoutInflater infalInflater = (LayoutInflater) this.context
@@ -184,15 +184,15 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		this.selectedGroupPosition = groupPosition;
 		this.selectedChildPosition = childPosition;
 		this.notifyDataSetChanged();
-		Log.d(LOG_TAG, "Selected => " + getSelected().getTitle());
+		Log.d(LOG_TAG, "Selected => " + getSelected().getAccountName());
 	}
-
+/*
 	public int setSelected(String id){
 		
 		for(String key : listDataChild.keySet()){
-			List<Account> list = listDataChild.get(key);			
+			List<AccountState> list = listDataChild.get(key);			
 			
-			for(Account account : list){
+			for(AccountState account : list){
 				if(0 == account.getId().compareTo(id)){
 					this.isSelected = true;
 					this.selectedGroupPosition = listDataHeader.indexOf(key);
@@ -208,7 +208,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		Log.e(LOG_TAG, "Cant find selected item => " + id);
 		return -1;
 	}
-
+*/
 	
 	public int getSelectedGroupPosition() {
 		return selectedGroupPosition;
@@ -218,12 +218,12 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		return selectedChildPosition;
 	}
 
-	public Account getSelected(){
+	public AccountState getSelected(){
 		if(false == this.isSelected){
 			return null;
 		}
 
-		return (Account) getChild(selectedGroupPosition, selectedChildPosition);
+		return (AccountState) getChild(selectedGroupPosition, selectedChildPosition);
 	}
 	
 	public boolean isSelected(){

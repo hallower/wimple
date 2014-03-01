@@ -18,6 +18,7 @@ public class AccountState implements IDatabaseRecord {
 	private String category;
 	private Double amount;
 	private Integer seq;
+	private Boolean group;
 	
 	public static final SparseArray<String> columns = new SparseArray<String>();    
 
@@ -27,6 +28,7 @@ public class AccountState implements IDatabaseRecord {
 		columns.append(2, "category");
 		columns.append(3, "amount");
 		columns.append(4, "seq");
+		columns.append(5, "group_");
 	}
 
 	// This must be used only for DB result inserting.
@@ -38,6 +40,7 @@ public class AccountState implements IDatabaseRecord {
 		category = "";
 		amount = 0.0;
 		seq = 0;
+		group = false;
 	}
 
 	public AccountState(String accountID, String accountName,
@@ -92,6 +95,14 @@ public class AccountState implements IDatabaseRecord {
 		return seq;
 	}
 
+	public void setGroup(boolean group){
+		this.group = group;
+	}
+	
+	public Boolean getGroup() {
+		return group;
+	}
+	
 	@Override
 	public String toString() {
 		/*
@@ -146,6 +157,9 @@ public class AccountState implements IDatabaseRecord {
 			case 4 :
 				this.seq = Integer.valueOf(value);
 				break;
+			case 5 :
+				this.group = Boolean.valueOf(value);
+				break;
 				
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
@@ -169,6 +183,8 @@ public class AccountState implements IDatabaseRecord {
 			return amount.toString();
 		case 4 :
 			return seq.toString();
+		case 5 :
+			return group.toString();
 			
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
@@ -186,6 +202,7 @@ public class AccountState implements IDatabaseRecord {
 		values.append(2, category);
 		values.append(3, amount.toString());
 		values.append(4, seq.toString());
+		values.append(5, group.toString());
 		return values;
 	}
 
@@ -225,6 +242,11 @@ public class AccountState implements IDatabaseRecord {
 
 		@Override
 		public int compare(AccountState lhs, AccountState rhs) {
+			
+			int category = lhs.getCategory().compareTo(rhs.getCategory());
+			if(0 != category){
+				return category;
+			}
 			return lhs.getSeq().compareTo(rhs.getSeq());
 		}
 
