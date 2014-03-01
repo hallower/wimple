@@ -116,7 +116,8 @@ public class SplashScreenActivity extends Activity {
 		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+		// Because of Free API count reduction
+		//wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
 	}
 
 	private void setupWimpleImpl() {

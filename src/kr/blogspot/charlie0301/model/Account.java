@@ -25,7 +25,8 @@ public class Account implements IDatabaseRecord {
 	private Boolean useDate;
 	private Boolean payDate;
 	private Boolean payAccount;
-
+	private Integer seq;
+	
 	public static final SparseArray<String> columns = new SparseArray<String>();    
 
 	static {
@@ -40,6 +41,7 @@ public class Account implements IDatabaseRecord {
 		columns.append(8, "useDate");
 		columns.append(9, "payDate");
 		columns.append(10, "payAccount");
+		columns.append(11, "seq");
 	}
 
 	// This must be used only for DB result inserting.
@@ -58,6 +60,7 @@ public class Account implements IDatabaseRecord {
 		useDate = false;
 		payDate = false;
 		payAccount = false;
+		seq = 0;
 	}
 
 	public Account(String what, String id, String type, String title,
@@ -73,6 +76,8 @@ public class Account implements IDatabaseRecord {
 		this.openedDate = openedDate;
 		this.closedDate = closedDate;
 		this.category = category;
+		
+		this.seq = Integer.valueOf(id.substring(1, id.length()));
 	}
 
 
@@ -142,7 +147,9 @@ public class Account implements IDatabaseRecord {
 		this.payAccount = payAccount;
 	}
 
-
+	public Integer getSeq(){
+		return this.seq;
+	}
 
 	@Override
 	public String toString() {
@@ -220,7 +227,9 @@ public class Account implements IDatabaseRecord {
 			case 10 :
 				this.payAccount = Boolean.parseBoolean(value);
 				break;
-				
+			case 11 :
+				this.seq = Integer.valueOf(value);
+				break;
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
 				break;
@@ -257,6 +266,8 @@ public class Account implements IDatabaseRecord {
 			return payDate.toString();
 		case 10 :
 			return payAccount.toString();
+		case 11 :
+			return seq.toString();
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
 			break;
@@ -280,6 +291,7 @@ public class Account implements IDatabaseRecord {
 		values.append(8, useDate.toString());
 		values.append(9, payDate.toString());
 		values.append(10, payAccount.toString());
+		values.append(11, seq.toString());
 
 		return values;
 	}
@@ -310,7 +322,7 @@ public class Account implements IDatabaseRecord {
 
 		@Override
 		public int compare(Account lhs, Account rhs) {
-			return -1 * lhs.getId().compareTo(rhs.getId());
+			return -1 * lhs.getSeq().compareTo(rhs.getSeq());
 		}
 
 	}
@@ -319,7 +331,7 @@ public class Account implements IDatabaseRecord {
 
 		@Override
 		public int compare(Account lhs, Account rhs) {
-			return lhs.getId().compareTo(rhs.getId());
+			return lhs.getSeq().compareTo(rhs.getSeq());
 		}
 
 	}

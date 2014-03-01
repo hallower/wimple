@@ -1,7 +1,13 @@
 package kr.blogspot.charlie0301;
 
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.widget.ItemListView;
+import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -9,7 +15,8 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout;
 
 public class SavingStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
@@ -21,6 +28,9 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	private static Context context = null;
 
 
+	// GUI
+	private WeakReference<ItemListView> asList;
+	private WeakReference<AccountStateItemListAdapter> asAdapter;
 
 
 	@Override
@@ -29,9 +39,20 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 
 		context = WimpleActivity.context;		
 
-		view = (FrameLayout)inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
+		view = (RelativeLayout)inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
 
-		// TODO Auto-generated method stub
+
+		RelativeLayout.LayoutParams sessionParams = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.saving_list_view));
+		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
+
+		asList.get().setAdapter(asAdapter.get());
+		asList.get().setLayoutParams(sessionParams);
+
+		registerForContextMenu(asList.get());
+
+		
 		return view;
 	}
 	@Override
@@ -62,9 +83,16 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 
 		switch(command){
 
-		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
-		case CommandID.GET_ALL_SECTION_RECEIVED :{
-			//initWimple();
+		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
+
+			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
+			for(AccountState as : accountStates){
+				if(false == as.getCategory().startsWith("as")){
+					continue;
+				}
+				asAdapter.get().addAccountState(as);
+			}
+			asAdapter.get().notifyDataSetChanged();
 		}
 		break;
 		}

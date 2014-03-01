@@ -17,6 +17,7 @@ public class AccountState implements IDatabaseRecord {
 	private String accountName;
 	private String category;
 	private Double amount;
+	private Integer seq;
 	
 	public static final SparseArray<String> columns = new SparseArray<String>();    
 
@@ -25,6 +26,7 @@ public class AccountState implements IDatabaseRecord {
 		columns.append(1, "accountname");
 		columns.append(2, "category");
 		columns.append(3, "amount");
+		columns.append(4, "seq");
 	}
 
 	// This must be used only for DB result inserting.
@@ -35,6 +37,7 @@ public class AccountState implements IDatabaseRecord {
 		accountName = "";
 		category = "";
 		amount = 0.0;
+		seq = 0;
 	}
 
 	public AccountState(String accountID, String accountName,
@@ -44,6 +47,7 @@ public class AccountState implements IDatabaseRecord {
 		this.accountName = accountName;
 		this.category = category;
 		this.amount = amount;
+		this.seq = Integer.valueOf(accountID.substring(1, accountID.length()));
 	}
 
 	public AccountState(JSONObject item, String category) {
@@ -82,6 +86,10 @@ public class AccountState implements IDatabaseRecord {
 
 	public void setAmount(Double amount) {
 		this.amount = amount;
+	}
+
+	public Integer getSeq() {
+		return seq;
 	}
 
 	@Override
@@ -135,7 +143,10 @@ public class AccountState implements IDatabaseRecord {
 			case 3 :
 				this.amount = Double.valueOf(value);
 				break;
-
+			case 4 :
+				this.seq = Integer.valueOf(value);
+				break;
+				
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
 				break;
@@ -156,7 +167,9 @@ public class AccountState implements IDatabaseRecord {
 			return category;
 		case 3 :
 			return amount.toString();
-
+		case 4 :
+			return seq.toString();
+			
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
 			break;
@@ -172,7 +185,7 @@ public class AccountState implements IDatabaseRecord {
 		values.append(1, accountName);
 		values.append(2, category);
 		values.append(3, amount.toString());
-		
+		values.append(4, seq.toString());
 		return values;
 	}
 
@@ -203,7 +216,7 @@ public class AccountState implements IDatabaseRecord {
 
 		@Override
 		public int compare(AccountState lhs, AccountState rhs) {
-			return -1 * lhs.getAccountID().compareTo(rhs.getAccountID());
+			return -1 * lhs.getSeq().compareTo(rhs.getSeq());
 		}
 
 	}
@@ -212,7 +225,7 @@ public class AccountState implements IDatabaseRecord {
 
 		@Override
 		public int compare(AccountState lhs, AccountState rhs) {
-			return lhs.getAccountID().compareTo(rhs.getAccountID());
+			return lhs.getSeq().compareTo(rhs.getSeq());
 		}
 
 	}
