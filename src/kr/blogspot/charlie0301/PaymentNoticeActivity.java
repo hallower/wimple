@@ -1,7 +1,11 @@
 package kr.blogspot.charlie0301;
 
+import java.util.Calendar;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -12,12 +16,26 @@ public class PaymentNoticeActivity extends Activity {
 	private static final String paymentURL = "https://whooing.com/#account/payment";
 	public static boolean noMore = false;
 
+	private static final String SETTING_KEY = "wimple.settings";
+	private static final String NOMORE_TIME = "nomoretime";
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_payment_notice);
 
+		SharedPreferences settings = getApplicationContext().getSharedPreferences(SETTING_KEY, Context.MODE_PRIVATE);
+		Long value = settings.getLong(NOMORE_TIME, 0);
+		if(value != 0){
+			value -= Calendar.getInstance().getTimeInMillis();
+			if(value < 1000 * 60 * 60 * 24){
+				PaymentNoticeActivity.noMore = true;
+				finish();
+				return;
+			}	
+		}
+		
 		findViewById(R.id.fullscreen_go_to_payment).setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -34,6 +52,9 @@ public class PaymentNoticeActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				PaymentNoticeActivity.noMore = true;
+				SharedPreferences settings = getApplicationContext().getSharedPreferences(SETTING_KEY, Context.MODE_PRIVATE);
+				settings.edit().putLong(NOMORE_TIME, Long.valueOf(Calendar.getInstance().getTimeInMillis())).commit(); 
+				
 				finish();
 			}
 		});
