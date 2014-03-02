@@ -7,6 +7,7 @@ import java.util.Collection;
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.widget.DoughnutChartView;
 import kr.blogspot.charlie0301.widget.ItemListView;
 import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
 import android.app.Fragment;

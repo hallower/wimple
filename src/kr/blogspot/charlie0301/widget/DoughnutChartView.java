@@ -1,4 +1,4 @@
-package kr.blogspot.charlie0301;
+package kr.blogspot.charlie0301.widget;
 
 import org.achartengine.chart.DoughnutChart;
 import org.achartengine.model.MultipleCategorySeries;
@@ -81,8 +81,10 @@ public class DoughnutChartView extends View {
 
 		renderer.setShowLegend(false);	        
 		renderer.setDisplayValues(true);
-		renderer.setStartAngle(-90);
-		renderer.setLabelsTextSize(30);		
+		//renderer.setStartAngle(0);
+		renderer.setLabelsTextSize(30);
+		//renderer.setScale(0.8f);
+		//renderer.setZoomEnabled(true);
 		for(int color : barColorValues){
 			SimpleSeriesRenderer ssr = new SimpleSeriesRenderer();
 			ssr.setColor(color);
