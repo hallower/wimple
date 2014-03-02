@@ -10,13 +10,28 @@
         android:layout_centerHorizontal="true"
         android:orientation="vertical" >
 
-        <LinearLayout
-            android:id="@+id/chart"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="vertical" />
+            android:layout_height="160dp" >
+
+            <LinearLayout
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical" />
+
+            <ImageView
+                android:id="@+id/as_refresh"
+                android:layout_width="30dp"
+                android:layout_gravity="right|top"
+                android:layout_marginTop="18dp"
+                android:src="@drawable/refresh"
+                android:layout_marginRight="18dp"
+                android:contentDescription="@string/na"
+                android:layout_height="30dp" />
+        </FrameLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -65,14 +80,14 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
-                android:background="@drawable/input_color_box"
                 android:alpha="90"
+                android:background="@drawable/input_color_box"
                 android:paddingBottom="4dp"
                 android:paddingLeft="6dp"
                 android:paddingRight="6dp"
                 android:paddingTop="4dp"
-                android:textColor="@color/text_white"
                 android:text="@string/title_saving"
+                android:textColor="@color/text_white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -109,8 +124,8 @@
                 android:paddingLeft="6dp"
                 android:paddingRight="6dp"
                 android:paddingTop="4dp"
-                android:textColor="@color/text_white"
                 android:text="@string/title_debt"
+                android:textColor="@color/text_white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 

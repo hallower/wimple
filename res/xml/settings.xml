@@ -22,5 +22,12 @@
             android:key="pref_monthlyItemCount"
             android:title="@string/settings_entry_monthly_display_count" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/drawer_menu_financial_state" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_financialStatePrefetch"
+            android:summary="@string/settings_summary_financial_state_prefetch"
+            android:title="@string/settings_financial_state_prefetch" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

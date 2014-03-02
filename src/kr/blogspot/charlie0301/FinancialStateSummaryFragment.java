@@ -16,8 +16,10 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -62,7 +64,24 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
 
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
+		/*
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean prefetch = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_PREFETCH, true);
+		if(prefetch){
+			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);	
+		}
+		*/
+
+		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);	
+		
+		((ImageView) view.findViewById(R.id.as_refresh)).setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+			}
+		});
+			
 		return view;
 	}
 	@Override
