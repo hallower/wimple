@@ -111,7 +111,8 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 					continue;
 				}
 				
-				if(false == as.getGroup()){
+				if(false == as.getGroup()  &&
+						as.getAmount() != 0){
 					values.add(as.getAmount());
 					names.add(as.getAccountName());
 				}
