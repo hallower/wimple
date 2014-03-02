@@ -127,73 +127,79 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			Collection<Entry> list = new ArrayList<Entry>();
-			String path = "?section_id=" + sectionID + "&start_date=" + oldestDate + "&end_date=" + latestDate;
+			try{
 
-			if(0 > count){
-				path += "&limit=" + count;
-			}else{
-				path += "&limit=40";
-			}
+				Collection<Entry> list = new ArrayList<Entry>();
+				String path = "?section_id=" + sectionID + "&start_date=" + oldestDate + "&end_date=" + latestDate;
 
-			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
-			if(null == json){
-				Log.e(LOG_TAG, "[AllEntries] Error response - null returned");
-				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
-				return;
-			}
-
-			if(false == json.get("code").toString().startsWith("2")){
-				Log.e(LOG_TAG, "[AllEntries] Error response - " + json.get("message").toString());
-				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
-
-				int code = Integer.parseInt(json.get("code").toString());
-				wimpl.handleRESTErrorResponse(code);
-				return;
-			}
-
-			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
-			JSONObject results = (JSONObject) json.get("results");
-			for(Object type : results.keySet()){
-
-				if(0 != type.toString().compareTo("rows")){
-					continue;
+				if(0 > count){
+					path += "&limit=" + count;
+				}else{
+					path += "&limit=40";
 				}
 
-				JSONArray rows  = (JSONArray) results.get(type);
-				for(int i = 0; i < rows.size(); i++){
-					JSONObject row = (JSONObject) rows.get(i);
+				JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
+				if(null == json){
+					Log.e(LOG_TAG, "[AllEntries] Error response - null returned");
+					wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+					return;
+				}
 
-					if(0 == row.get("l_account_id").toString().compareToIgnoreCase("x0") ||
-							0 == row.get("r_account_id").toString().compareToIgnoreCase("x0") ){
-						// TODO : handle this as removed item.
+				if(false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[AllEntries] Error response - " + json.get("message").toString());
+					wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+
+					int code = Integer.parseInt(json.get("code").toString());
+					wimpl.handleRESTErrorResponse(code);
+					return;
+				}
+
+				wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
+				JSONObject results = (JSONObject) json.get("results");
+				for(Object type : results.keySet()){
+
+					if(0 != type.toString().compareTo("rows")){
 						continue;
 					}
 
-					// to hide unnecessary entries
-					if(row.get("item").toString().startsWith("Adjusted to close")){
-						continue;
-					}
+					JSONArray rows  = (JSONArray) results.get(type);
+					for(int i = 0; i < rows.size(); i++){
+						JSONObject row = (JSONObject) rows.get(i);
 
-					Entry item = new Entry(row);
-					String balance = row.get("total").toString();
-					if(null != balance && 
-							false == balance.isEmpty()){
-						item.setBalance(balance);
-					}
+						if(0 == row.get("l_account_id").toString().compareToIgnoreCase("x0") ||
+								0 == row.get("r_account_id").toString().compareToIgnoreCase("x0") ){
+							// TODO : handle this as removed item.
+							continue;
+						}
 
-					list.add(item);
+						// to hide unnecessary entries
+						if(row.get("item").toString().startsWith("Adjusted to close")){
+							continue;
+						}
+
+						Entry item = new Entry(row);
+						String balance = row.get("total").toString();
+						if(null != balance && 
+								false == balance.isEmpty()){
+							item.setBalance(balance);
+						}
+
+						list.add(item);
+					}
 				}
-			}
 
-			if(list.isEmpty()){
-				wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
-				return;
-			}
+				if(list.isEmpty()){
+					wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
+					return;
+				}
 
-			Log.d(LOG_TAG, "[AllEntries] Providing All Entries from Server");
-			wimpl.getEntryDBHandler().insert(list);
-			wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
+				Log.d(LOG_TAG, "[AllEntries] Providing All Entries from Server");
+				wimpl.getEntryDBHandler().insert(list);
+				wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, list);
+				
+			}finally{
+				wimpl.getApiAvailableSemaphore("getAllEntries").release();
+			}
 		}
 	}
 

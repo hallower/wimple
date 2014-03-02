@@ -13,7 +13,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 	//private final static String LOG_TAG = "SettingsFragment";
 
-	private static WimpleActivity wimpleActivity;
+	//private static WimpleActivity wimpleActivity;
 	
 	public static final String KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount";
 	public static final String KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay";
@@ -29,6 +29,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
         Preference logout = findPreference("preference_logout");
         logout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			
+			@SuppressWarnings("deprecation")
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				WimpleImpl.getInstance().cleanAuth();
@@ -56,6 +57,6 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		SettingsFragment.wimpleActivity = instance;
+		//SettingsFragment.wimpleActivity = instance;
 	}
 }

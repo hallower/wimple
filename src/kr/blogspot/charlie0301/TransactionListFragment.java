@@ -47,7 +47,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 	private final static String LOG_TAG = "TransactionFragment";
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	private WimpleActivity mainActivity = null;
+	//private WimpleActivity mainActivity = null;
 
 	private static View view;
 	private static Context context;
@@ -439,7 +439,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		mainActivity = instance;
+		//mainActivity = instance;
 	}
 
 	public void setShowingNotification(boolean show, boolean isLatest){

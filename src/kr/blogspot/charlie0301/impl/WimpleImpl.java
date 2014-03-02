@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
@@ -71,6 +73,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private int countOfRemainedAPICall = -1;
 	private int countOfTotalAPICall = 1;
 	private String defaultSectionID;
+	private Hashtable<String, Semaphore> apiAvailableSemaphore = new Hashtable<String, Semaphore>();
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
 
@@ -127,8 +130,15 @@ public class WimpleImpl implements IWimpleImpl {
 		mainHandler = new MainHandler(dispatchHandlerThread.getLooper());
 		rai = new RestAPIInvoker(this);
 		rrh = new RestResponseHandler();
+
+		apiAvailableSemaphore.put("getAllEntries", new Semaphore(1));
+		apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
+		apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
 	}
 
+	public Semaphore getApiAvailableSemaphore(String key){
+		return apiAvailableSemaphore.get(key);
+	}
 	/**
 	 * Get instance of Promise class
 	 * <p>
@@ -247,7 +257,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String SECTIONS_ALL			= "api/sections.json";
 		public static final String SECTIONS_DEFAULT		= "api/sections/default.json";
 
-		public static final String ACCOUNT_ALL			= "api/accounts.json";
+		public static final String ACCOUNT_ALL			= "api/accounts.json_array";
 
 		public static final String ENTRIES_ALL			= "api/entries.json_array";
 		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
@@ -831,6 +841,10 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
+		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
+			return true;
+		}
+
 		new GetAllAccountsTaskThread(defaultSectionID, "", forceUpdate).start();		
 		return true;
 	}
@@ -841,6 +855,11 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		 */
+
+		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
+			return true;
+		}
+
 		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, false).start();		
 		return true;
 	}
@@ -860,98 +879,112 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			if((false == forceUpdate) &&
-					adbh.hasData()){
+			try{
 
-				Collection<Account> accountList = adbh.getAllAccounts();
+				if((false == forceUpdate) &&
+						adbh.hasData()){
+
+					Collection<Account> accountList = adbh.getAllAccounts();
+					Collection<Account> list = new ArrayList<Account>();
+					for(Account item : accountList){
+						String open = item.getOpenedDate();
+						String closed = item.getClosedDate();
+
+						try{
+							sdf.setLenient(false);
+							Date itemDate = sdf.parse(dateFilter);
+
+							Date openDate = sdf.parse(open);
+							Date closedDate = sdf.parse(closed);
+
+							if(itemDate.getTime() >= openDate.getTime() &&
+									itemDate.getTime() <= closedDate.getTime()){
+								list.add(item);
+							}
+
+						}
+						catch(Exception e){
+							Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Cache!!!");
+							sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, accountList);
+							return;
+						}					
+
+					}
+					Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
+					return;
+				}
+
 				Collection<Account> list = new ArrayList<Account>();
-				for(Account item : accountList){
-					String open = item.getOpenedDate();
-					String closed = item.getClosedDate();
 
+				if(null == sectionID ||
+						sectionID.isEmpty()){
+					Log.e(LOG_TAG, "[Account] Initialization is on progressing !!!");
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+					return;
+				}
+
+				String path = "?section_id=" + sectionID;
+
+				if(false == dateFilter.isEmpty()){				
 					try{
 						sdf.setLenient(false);
-						Date itemDate = sdf.parse(dateFilter);
+						sdf.parse(dateFilter);
 
-						Date openDate = sdf.parse(open);
-						Date closedDate = sdf.parse(closed);
-
-						if(itemDate.getTime() >= openDate.getTime() &&
-								itemDate.getTime() <= closedDate.getTime()){
-							list.add(item);
-						}
-
+						path += "&start_date=" + dateFilter;
 					}
 					catch(Exception e){
-						Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Cache!!!");
-						sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, accountList);
-						return;
-					}					
-
-				}
-				Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
-				return;
-			}
-
-			Collection<Account> list = new ArrayList<Account>();
-
-			if(null == sectionID ||
-					sectionID.isEmpty()){
-				Log.e(LOG_TAG, "[Account] Initialization is on progressing !!!");
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-				return;
-			}
-
-			String path = "?section_id=" + sectionID;
-
-			if(false == dateFilter.isEmpty()){				
-				try{
-					sdf.setLenient(false);
-					sdf.parse(dateFilter);
-
-					path += "&start_date=" + dateFilter;
-				}
-				catch(Exception e){
-					//ignore
-				}
-			}			
-
-			try{
-				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
-				if(null == json){
-					Log.e(LOG_TAG, "[Account] Error response - null returned");
-					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-					return;
-				}
-
-				if(	false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
-					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-					return;
-				}
-
-				JSONObject results = (JSONObject) json.get("results");
-				for(Object type : results.keySet()){
-
-					JSONObject accountType  = (JSONObject) results.get(type);
-					for(Object name : accountType.keySet()){
-						JSONObject account = (JSONObject) accountType.get(name);
-
-						list.add(new Account(type.toString(), account));
+						//ignore
 					}
+				}			
+
+				try{
+					JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
+					if(null == json){
+						Log.e(LOG_TAG, "[Account] Error response - null returned");
+						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+						return;
+					}
+
+					if(	false == json.get("code").toString().startsWith("2")){
+						Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
+						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+						return;
+					}
+
+					JSONObject results = (JSONObject) json.get("results");
+					int seq = 1;
+
+					for(Object type : results.keySet()){
+
+						JSONArray accountType  = (JSONArray) results.get(type);
+
+						for(int i = 0; i < accountType.size(); i++){
+
+							JSONObject account = (JSONObject) accountType.get(i);
+
+							Account newlyAccount = new Account(type.toString(), account);
+							newlyAccount.setSeq(seq++);
+							//Log.e(LOG_TAG, "---" + newlyAccount.toString());
+							list.add(newlyAccount);
+						}
+					}
+				} catch(Exception e){
+					Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
+					e.printStackTrace();
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+					return;
 				}
-			} catch(Exception e){
-				Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
-				e.printStackTrace();
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-				return;
-			}
 
-			adbh.insert(list);
+				adbh.insert(list);
 
-			Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
-			sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
+				Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
+
+
+			}finally{
+				apiAvailableSemaphore.get("getAllAccounts").release();
+			}		
 		}			
 
 	}
@@ -972,6 +1005,10 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
+		if(false == apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
+			return true;
+		}
+
 		return em.getAllEntries(defaultSectionID, latestDate, oldestDate);
 	}
 
@@ -980,6 +1017,10 @@ public class WimpleImpl implements IWimpleImpl {
 		if(false == isInitializedFinished()){
 			Log.e(LOG_TAG, "[getAllEntries] Initialization is on progressing.");
 			return false;
+		}
+
+		if(false == apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
+			return true;
 		}
 
 		return em.getAllEntries(defaultSectionID, latestDate, oldestDate, count);
@@ -1116,6 +1157,11 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		 */
+
+		if(false == apiAvailableSemaphore.get("getFinancialState").tryAcquire()){
+			return true;
+		}
+
 		new GetFinancialStateTaskThread(defaultSectionID, date, forceUpdate).start();		
 		return true;
 	}
@@ -1135,105 +1181,106 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			if((false == forceUpdate) &&
-					asdbh.hasData()){
+			try{
+
+				if((false == forceUpdate) &&
+						asdbh.hasData()){
+
+					Collection<AccountState> list = new ArrayList<AccountState>();
+					list = asdbh.getAllAccountStates();
+
+					Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
+					sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+					return;
+				}
 
 				Collection<AccountState> list = new ArrayList<AccountState>();
-				list = asdbh.getAllAccountStates();
 
-				Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
-				sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
-				return;
-			}
-
-			Collection<AccountState> list = new ArrayList<AccountState>();
-
-			if(null == sectionID ||
-					sectionID.isEmpty()){
-				Log.e(LOG_TAG, "[FState] Initialization is on progressing !!!");
-				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
-				return;
-			}
-
-			String path = "?section_id=" + sectionID;
-
-			if(false == date.isEmpty()){				
-				try{
-					sdf.setLenient(false);
-					sdf.parse(date);
-
-					path += "&end_date=" + date;
-				}
-				catch(Exception e){
-					//ignore
-				}
-			}			
-
-			try{
-				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.FINANCIAL_STATE + path, "");
-				if(null == json){
-					Log.e(LOG_TAG, "[FState] Error response - null returned");
+				if(null == sectionID ||
+						sectionID.isEmpty()){
+					Log.e(LOG_TAG, "[FState] Initialization is on progressing !!!");
 					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
 					return;
 				}
 
-				if(	false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
-					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				String path = "?section_id=" + sectionID;
 
-					int code = Integer.parseInt(json.get("code").toString());
-					handleRESTErrorResponse(code);
-					return;
-				}
+				if(false == date.isEmpty()){				
+					try{
+						sdf.setLenient(false);
+						sdf.parse(date);
 
-
-				String accountName = "";
-
-				JSONObject results = (JSONObject) json.get("results");
-				for(Object type : results.keySet()){
-
-					JSONObject accountType  = (JSONObject) results.get(type);
-					String category = type.toString();
-
-					for(Object name : accountType.keySet()){
-
-						if(0 == name.toString().compareTo("accounts")){
-							JSONArray rows = (JSONArray) accountType.get(name);
-
-							for(int i = 0; i < rows.size(); i++){
-
-								accountName = "";
-
-								JSONObject row = (JSONObject) rows.get(i);
-								AccountState as = new AccountState(row, category);
-
-								Account account = adbh.getAccountName(as.getAccountID());
-								if(null == account){
-									continue;
-								}
-
-								Log.d(LOG_TAG, "[" + account.getId() + "], " + account.getTitle() + ", date=" +
-								account.getOpenedDate() + " - " + account.getClosedDate());
-								as.setGroup(0 == account.getType().compareTo("group"));
-								as.setAccountName(account.getTitle());
-
-								list.add(as);	
-							}						
-						}
-
+						path += "&end_date=" + date;
 					}
+					catch(Exception e){
+						//ignore
+					}
+				}			
+
+				try{
+					JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.FINANCIAL_STATE + path, "");
+					if(null == json){
+						Log.e(LOG_TAG, "[FState] Error response - null returned");
+						sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+						return;
+					}
+
+					if(	false == json.get("code").toString().startsWith("2")){
+						Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
+						sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+
+						int code = Integer.parseInt(json.get("code").toString());
+						handleRESTErrorResponse(code);
+						return;
+					}
+
+					JSONObject results = (JSONObject) json.get("results");
+					for(Object type : results.keySet()){
+
+						JSONObject accountType  = (JSONObject) results.get(type);
+						String category = type.toString();
+
+						for(Object name : accountType.keySet()){
+
+							if(0 == name.toString().compareTo("accounts")){
+								JSONArray rows = (JSONArray) accountType.get(name);
+
+								for(int i = 0; i < rows.size(); i++){
+
+									JSONObject row = (JSONObject) rows.get(i);
+									AccountState as = new AccountState(row, category);
+
+									Account account = adbh.getAccountName(as.getAccountID());
+									if(null == account){
+										continue;
+									}
+
+									//Log.d(LOG_TAG, "---[" + account.getId() + "], " + account.getTitle() + ", date=" +
+									//		account.getOpenedDate() + " - " + account.getClosedDate());
+									as.setGroup(0 == account.getType().compareTo("group"));
+									as.setAccountName(account.getTitle());
+									as.setSeq(i);
+									list.add(as);	
+								}						
+							}
+
+						}
+					}
+				} catch(Exception e){
+					Log.e(LOG_TAG, "[FState] Failed - GetFinancialStateTaskThread!!!");
+					e.printStackTrace();
+					sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+					return;
 				}
-			} catch(Exception e){
-				Log.e(LOG_TAG, "[FState] Failed - GetFinancialStateTaskThread!!!");
-				e.printStackTrace();
-				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
-				return;
+
+				asdbh.insert(list);
+
+				Log.d(LOG_TAG, "[FState] Providing GetFinancialStateTaskThread from Server!!!");
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+
+			}finally{
+				apiAvailableSemaphore.get("getFinancialState").release();
 			}
-
-			asdbh.insert(list);
-
-			Log.d(LOG_TAG, "[FState] Providing GetFinancialStateTaskThread from Server!!!");
-			sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
 		}			
 
 	}

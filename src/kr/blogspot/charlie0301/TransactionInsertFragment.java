@@ -18,11 +18,9 @@ import kr.blogspot.charlie0301.widget.DatePickerFragment;
 import kr.blogspot.charlie0301.widget.DatePickerFragment.OnDateSetListener;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -77,7 +75,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private ArrayAdapter<Item> adapterLatestItems;
 	private boolean isEditing = false;
 	private Item editingItem = null;
-	private boolean isFirstTimeForUniqueFiltering = true;
+	//private boolean isFirstTimeForUniqueFiltering = true;
 
 	/**
 	 * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()

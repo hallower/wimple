@@ -59,7 +59,8 @@ public class SplashScreenActivity extends Activity {
 	// Data
 	private static final int PIN_NUMBER_REQUEST = 1379;
 	private String storedTempToken = "";
-
+	private boolean cacheRefreshed = false;
+	
 	public static void sm(int cmd, Object msg){
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, 1, 0, msg));    
 	}    
@@ -113,10 +114,14 @@ public class SplashScreenActivity extends Activity {
 	}
 
 	private void refreshCache(){
+		if(cacheRefreshed){
+			return;
+		}
+		cacheRefreshed = true;
 		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
-		// Because of Free API count reduction
+		// TODO : option needs, Because of Free API count reduction
 		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
 	}
 

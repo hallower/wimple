@@ -39,7 +39,7 @@ public class AccountState implements IDatabaseRecord {
 		accountName = "";
 		category = "";
 		amount = 0.0;
-		seq = 0;
+		seq = 9999;
 		group = false;
 	}
 
@@ -50,7 +50,7 @@ public class AccountState implements IDatabaseRecord {
 		this.accountName = accountName;
 		this.category = category;
 		this.amount = amount;
-		this.seq = Integer.valueOf(accountID.substring(1, accountID.length()));
+		//this.seq = Integer.valueOf(accountID.substring(1, accountID.length()));
 	}
 
 	public AccountState(JSONObject item, String category) {
@@ -91,6 +91,10 @@ public class AccountState implements IDatabaseRecord {
 		this.amount = amount;
 	}
 
+	public void setSeq(int seq){
+		this.seq = seq;
+	}
+	
 	public Integer getSeq() {
 		return seq;
 	}

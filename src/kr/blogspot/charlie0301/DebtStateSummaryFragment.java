@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.impl.WimpleImpl;
-import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.widget.ItemListView;
@@ -21,14 +19,13 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.RelativeLayout;
 
 public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "TransactionInsertFragment";
+	//private final static String LOG_TAG = "TransactionInsertFragment";
 
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	private WimpleActivity mainActivity = null;
+	//private final static WimpleImpl wimple = WimpleImpl.getInstance();
+	//private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
 
@@ -82,6 +79,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		// TODO Auto-generated method stub
 		super.onResume();
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public void handleMessage(Message msg) {
 		int command = msg.what;
@@ -97,6 +95,10 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
+			if(false == booleanStatus){
+				return;
+			}
+			
 			ArrayList<Double> values = new ArrayList<Double>();
 			ArrayList<String> names = new ArrayList<String>();
 			
@@ -108,11 +110,10 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 					continue;
 				}
 				
-				if(as.getGroup()){
-					continue;
+				if(false == as.getGroup()){
+					values.add(as.getAmount());
+					names.add(as.getAccountName());
 				}
-				values.add(as.getAmount());
-				names.add(as.getAccountName());
 				asAdapter.get().addAccountState(as);
 			}
 			asAdapter.get().notifyDataSetChanged();

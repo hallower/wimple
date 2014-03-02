@@ -60,7 +60,7 @@ public class Account implements IDatabaseRecord {
 		useDate = false;
 		payDate = false;
 		payAccount = false;
-		seq = 0;
+		seq = 999;
 	}
 
 	public Account(String what, String id, String type, String title,
@@ -77,7 +77,7 @@ public class Account implements IDatabaseRecord {
 		this.closedDate = closedDate;
 		this.category = category;
 		
-		this.seq = Integer.valueOf(id.substring(1, id.length()));
+		//this.seq = Integer.valueOf(id.substring(1, id.length()));
 	}
 
 
@@ -147,6 +147,10 @@ public class Account implements IDatabaseRecord {
 		this.payAccount = payAccount;
 	}
 
+	public void setSeq(int seq){
+		this.seq = seq;
+	}
+	
 	public Integer getSeq(){
 		return this.seq;
 	}
@@ -155,13 +159,14 @@ public class Account implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n-[Account : " + what + " - " + id + " ]------------------------------");
+		sb.append("\n-[Account : " + what + " - " + id + " (" + type + ") ]------------------------------");
 		sb.append("\n   type = " + type);
 		sb.append("\n   title = " + title);
 		sb.append("\n   description = " + description);
 		sb.append("\n   openedDate = " + openedDate);
 		sb.append("\n   closedDate = " + closedDate);
 		sb.append("\n   category = " + category);
+		sb.append("\n   seq = " + seq);
 		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();

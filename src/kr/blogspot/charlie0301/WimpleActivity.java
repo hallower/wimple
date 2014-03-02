@@ -761,7 +761,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			return super.onPrepareOptionsMenu(menu);
 		}
 		// If the nav drawer is open, hide action items related to the content view
-		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mSideMenu);
+		//boolean drawerOpen = mDrawerLayout.isDrawerOpen(mSideMenu);
 		/*
         menu.findItem(R.id.action_add_promise).setVisible(true);
         menu.findItem(R.id.action_temp).setVisible(drawerOpen);

@@ -1,5 +1,7 @@
 package kr.blogspot.charlie0301.impl;
 
+import java.util.concurrent.Semaphore;
+
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.EntryDBHandler;
 import kr.blogspot.charlie0301.impl.db.ItemDBHandler;
@@ -10,6 +12,8 @@ import org.json.simple.JSONObject;
 public interface IWimpleImpl {
 
 	// subsystem
+	public Semaphore getApiAvailableSemaphore(String key);
+	
 	public ItemDBHandler getLatestItemDBHandler();
 	public EntryDBHandler getEntryDBHandler();
 	public ItemDBHandler getMonthlyItemDBHandler();
