@@ -19,11 +19,13 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -121,8 +123,12 @@ public class SplashScreenActivity extends Activity {
 		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
-		// TODO : option needs, Because of Free API count reduction
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+		
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean prefetch = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_PREFETCH, true);
+		if(prefetch){
+			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+		}
 	}
 
 	private void setupWimpleImpl() {
