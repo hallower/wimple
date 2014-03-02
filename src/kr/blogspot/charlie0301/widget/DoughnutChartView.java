@@ -82,8 +82,8 @@ public class DoughnutChartView extends View {
 		renderer.setShowLegend(false);	        
 		renderer.setDisplayValues(true);
 		//renderer.setStartAngle(0);
-		renderer.setLabelsTextSize(30);
-		//renderer.setScale(0.8f);
+		renderer.setLabelsTextSize(40);
+		renderer.setScale(0.9f);
 		//renderer.setZoomEnabled(true);
 		for(int color : barColorValues){
 			SimpleSeriesRenderer ssr = new SimpleSeriesRenderer();

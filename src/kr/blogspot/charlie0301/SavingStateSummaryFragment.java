@@ -112,7 +112,8 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 					continue;
 				}
 				
-				if(false == as.getGroup()){
+				if(false == as.getGroup() &&
+						as.getAmount() != 0){
 					values.add(as.getAmount());
 					names.add(as.getAccountName());	
 				}
