@@ -24,14 +24,12 @@ import android.widget.TextView;
 
 public class FinancialStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "TransactionInsertFragment";
+	//private final static String LOG_TAG = "TransactionInsertFragment";
 
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	private WimpleActivity mainActivity = null;
+	//private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
-
-
 
 	// GUI
 	private WeakReference<ItemListView> asList;
@@ -109,6 +107,10 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
+			if(false == booleanStatus){
+				return;
+			}
+			
 			Double saving = 0.0;
 			Double debt = 0.0;
 
