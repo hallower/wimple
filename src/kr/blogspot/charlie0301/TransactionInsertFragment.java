@@ -417,10 +417,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		int selectedLeftGroup = leftAccountListAdapter.setSelected(entry.getLeftAccountID());
 		if(selectedLeftGroup > -1){
 
+			/*
 			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
 				leftAccountListView.collapseGroup(i);
 			}
 			leftAccountListView.expandGroup(selectedLeftGroup);
+			*/
 			leftAccountListView.setSelection(selectedLeftGroup);
 			leftAccountListView.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition(), true);
 			tvLeftAccountTitle.setText(((Account)leftAccountListAdapter.getChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition())).getTitle());
@@ -429,10 +431,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		int selectedRightGroup = rightAccountListAdapter.setSelected(entry.getRightAccountID());
 		if(selectedRightGroup > -1){
 
+			/*
 			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
 				rightAccountListView.collapseGroup(i);
 			}
 			rightAccountListView.expandGroup(selectedRightGroup);
+			*/
 			rightAccountListView.setSelection(selectedRightGroup);
 			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);
 			tvRightAccountTitle.setText(((Account)rightAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition())).getTitle());
@@ -562,7 +566,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 				leftAccountListAdapter.clear();
 				leftAccountListAdapter.setData(lHeader, lChild);
-				leftAccountListAdapter.notifyDataSetChanged();	
+				leftAccountListAdapter.notifyDataSetChanged();
+				
+				for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
+					leftAccountListView.expandGroup(i);
+				}
 			}
 
 			{
@@ -581,6 +589,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
+				
+				for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
+					rightAccountListView.expandGroup(i);
+				}
 			}			
 
 			break;			
