@@ -138,31 +138,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void setupTitlenSubmit() {
 		txtAmount = (TextView) view.findViewById(R.id.insert_amount);
-		txtInsertMode  = (TextView) view.findViewById(R.id.insert_mode);
-		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
-		txtTitle.addTextChangedListener(new TextWatcher() {
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				String changed = s.toString();
-				if(changed.contains("(")){
-					changed = changed.substring(0, changed.indexOf("(") - 1);
-				}
-				adapterLatestItems.getFilter().filter(changed);
-			}
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-			}
-		});
-
-		ImageView submit = (ImageView) view.findViewById(R.id.insert_submit);
-		submit.setOnClickListener(new OnClickListener() {
+		txtInsertMode  = (TextView) view.findViewById(R.id.btn_submit);
+		txtInsertMode.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -212,6 +189,30 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}
 			}
 		});
+		setSubmitButton(true);
+
+		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
+		txtTitle.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				String changed = s.toString();
+				if(changed.contains("(")){
+					changed = changed.substring(0, changed.indexOf("(") - 1);
+				}
+				adapterLatestItems.getFilter().filter(changed);
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
+
 	}
 
 	private void setupLatestItems() {
@@ -252,7 +253,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					txtTitle.clearFocus();
 					((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
 							txtTitle.getWindowToken(), 0);
-					
+
 					//double right = Double.parseDouble(amount.getText().toString());
 					double result = 0.0;
 					switch(v.getId())
@@ -333,6 +334,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void setupAccountLists() {
 		tvLeftAccountTitle = (TextView) view.findViewById(R.id.insert_category_left_title);		
+		tvLeftAccountTitle.getBackground().setAlpha(128);
+		
 		leftAccountListAdapter = new AccountExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
@@ -349,6 +352,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		});
 
 		tvRightAccountTitle = (TextView) view.findViewById(R.id.insert_category_right_title);
+		tvRightAccountTitle.getBackground().setAlpha(128);
+
 		rightAccountListAdapter = new AccountExpandableListAdapter(context);
 		rightAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_right);
 		rightAccountListView.setAdapter(rightAccountListAdapter);
@@ -422,7 +427,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				leftAccountListView.collapseGroup(i);
 			}
 			leftAccountListView.expandGroup(selectedLeftGroup);
-			*/
+			 */
 			leftAccountListView.setSelection(selectedLeftGroup);
 			leftAccountListView.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition(), true);
 			tvLeftAccountTitle.setText(((Account)leftAccountListAdapter.getChild(selectedLeftGroup, leftAccountListAdapter.getSelectedChildPosition())).getTitle());
@@ -436,7 +441,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListView.collapseGroup(i);
 			}
 			rightAccountListView.expandGroup(selectedRightGroup);
-			*/
+			 */
 			rightAccountListView.setSelection(selectedRightGroup);
 			rightAccountListView.setSelectedChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition(), true);
 			tvRightAccountTitle.setText(((Account)rightAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.getSelectedChildPosition())).getTitle());
@@ -480,7 +485,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		txtTitle.setText("");
 		setAmountText(0.0);
 		datePicker.setDate(Calendar.getInstance().getTimeInMillis());
-		
+
 		tvLeftAccountTitle.setText(getResources().getString(R.string.insert_left_accounts));
 		tvRightAccountTitle.setText(getResources().getString(R.string.insert_right_accounts));;
 		leftAccountListAdapter.clearSelection();
@@ -490,7 +495,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			this.isEditing = false;
 			editingItem = null;
 		}
-		txtInsertMode.setText(getResources().getString(R.string.mode_entry_insert));
+		setSubmitButton(true);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -567,7 +572,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				leftAccountListAdapter.clear();
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
-				
+
 				for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
 					leftAccountListView.expandGroup(i);
 				}
@@ -589,7 +594,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
-				
+
 				for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
 					rightAccountListView.expandGroup(i);
 				}
@@ -643,27 +648,27 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			// Modifying 
 			Item item = wimple.getEntry(itemID);
 			isEditing = true;
-			txtInsertMode.setText(getResources().getString(R.string.mode_entry_modify));
-			
+			setSubmitButton(false);
+
 			if(null == item){
 				// Add Monthly Item
 				isEditing = false;
 				item = wimple.getMonthlyItem(itemID);
-				txtInsertMode.setText(getResources().getString(R.string.mode_monthly_insert));
+				setSubmitButton(true);
 			}			
 
 			if(null == item){
 				isEditing = false;
 				editingItem = null;
 				Toast.makeText(context, "oops", Toast.LENGTH_SHORT).show();
-				txtInsertMode.setText(getResources().getString(R.string.mode_entry_insert));
+				setSubmitButton(true);
 				return;
 			}
-			
+
 			editingItem = item;
-			
+
 			setEntry(item);
-			
+
 			if(isEditing){
 				Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();	
 			}else{
@@ -684,8 +689,20 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		}
 		break;
-				
+
 		}
+	}
+
+	public void setSubmitButton(boolean isInserting){
+
+		if(isInserting){
+			txtInsertMode.setText(getResources().getString(R.string.mode_monthly_insert));
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);
+		}else{
+			txtInsertMode.setText(getResources().getString(R.string.mode_entry_modify));
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_6);	
+		}
+		txtInsertMode.getBackground().setAlpha(192);
 	}
 
 	@Override
