@@ -35,8 +35,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	private static Context context = null;
 
 	// GUI
-	private WeakReference<ItemListView> asList;
-	private WeakReference<AccountStateItemListAdapter> asAdapter;
+	//private WeakReference<ItemListView> asList;
+	//private WeakReference<AccountStateItemListAdapter> asAdapter;
 	private DoughnutChartView cv;
 	private LinearLayout llChart;
 	private TextView tvSavingValue;
@@ -51,6 +51,16 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		view = (RelativeLayout)inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
 
+		/*
+		 *         <kr.blogspot.charlie0301.widget.ItemListView
+            android:id="@+id/as_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@null"
+            android:dividerHeight="0dp" />
+
+		 */
+		/*
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.as_list_view));
@@ -60,7 +70,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		asList.get().setLayoutParams(sessionParams);
 
 		registerForContextMenu(asList.get());
-
+		 */
+		
 		tvSumValue = (TextView)view.findViewById(R.id.as_sum_value);
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
@@ -88,11 +99,13 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	@Override
 	public void onDestroy() {
 
+		/*
 		asList.clear();
 		asList = null;
 		asAdapter.clear();
 		asAdapter = null;
-
+		 */
+		
 		cv = null;
 		llChart = null;
 		tvSavingValue = null;
@@ -144,10 +157,10 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 						saving += as.getAmount();
 					}
 				}else{
-					asAdapter.get().addAccountState(as);
+					//asAdapter.get().addAccountState(as);
 				}
 			}
-			asAdapter.get().notifyDataSetChanged();
+			//asAdapter.get().notifyDataSetChanged();
 
 			if(null == cv){
 				cv = new DoughnutChartView(context);
