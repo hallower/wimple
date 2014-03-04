@@ -84,10 +84,35 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onResume() {
+		Log.e(LOG_TAG, "Insert - onResume");
 		context = WimpleActivity.context;
 		initWimple();
 
 		super.onResume();
+	}
+
+	@Override
+	public void onPause() {
+		Log.e(LOG_TAG, "Insert - onPause");
+
+		// TODO Auto-generated method stub
+		super.onPause();
+	}
+
+	@Override
+	public void onStart() {
+		Log.e(LOG_TAG, "Insert - onStart");
+
+		// TODO Auto-generated method stub
+		super.onStart();
+	}
+
+	@Override
+	public void onStop() {
+		Log.e(LOG_TAG, "Insert - onStop");
+
+		// TODO Auto-generated method stub
+		super.onStop();
 	}
 
 	private void initWimple() {
@@ -99,6 +124,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
+		Log.e(LOG_TAG, "Insert - onCreateView");
 		context = WimpleActivity.context;		
 
 		// Data 
@@ -335,7 +361,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private void setupAccountLists() {
 		tvLeftAccountTitle = (TextView) view.findViewById(R.id.insert_category_left_title);		
 		tvLeftAccountTitle.getBackground().setAlpha(128);
-		
+
 		leftAccountListAdapter = new AccountExpandableListAdapter(context);
 		leftAccountListView = (ExpandableListView) view.findViewById(R.id.insert_category_left);
 		leftAccountListView.setAdapter(leftAccountListAdapter);
@@ -519,7 +545,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		break;
 
 		case CommandID.GET_ALL_ACCOUNT_RECEIVED :{
+
+			if(false == booleanStatus){
+				return;
+			}
+
 			Collection<Account> accountList = (Collection<Account>) obj;
+
+			if(accountList.isEmpty()){
+				return;
+			}
 
 			List<Account> assets = new ArrayList<Account>();
 			List<Account> liabilities = new ArrayList<Account>();
@@ -573,7 +608,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
 
-				for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
+				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++){
 					leftAccountListView.expandGroup(i);
 				}
 			}
@@ -595,7 +630,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
 
-				for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
+				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++){
 					rightAccountListView.expandGroup(i);
 				}
 			}			
