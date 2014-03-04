@@ -167,12 +167,12 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 				llChart = (LinearLayout)view.findViewById(R.id.chart);	
 			}
 
-			tvSavingValue.setText(DateFormatUtils.getDecimalFormat().format(saving));
-			tvDebtValue.setText(DateFormatUtils.getDecimalFormat().format(-debt));
+			tvSavingValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(saving));
+			tvDebtValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(-debt));
 
 			Double sum = saving - debt;
 
-			tvSumValue.setText(DateFormatUtils.getDecimalFormat().format(sum));
+			tvSumValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(sum));
 			if(sum >= 0){
 				tvSumValue.setTextColor(getResources().getColor(R.color.text_blue));
 			}else{
