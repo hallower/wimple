@@ -7,6 +7,7 @@ import org.achartengine.renderer.SimpleSeriesRenderer;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -84,6 +85,7 @@ public class DoughnutChartView extends View {
 		//renderer.setStartAngle(0);
 		renderer.setLabelsTextSize(40);
 		renderer.setScale(0.9f);
+		renderer.setLabelsColor(Color.BLACK);
 		//renderer.setZoomEnabled(true);
 		for(int color : barColorValues){
 			SimpleSeriesRenderer ssr = new SimpleSeriesRenderer();
