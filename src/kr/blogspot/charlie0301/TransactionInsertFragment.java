@@ -131,7 +131,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		setAmountText(0.0);
 
-		initWimple();
+		//initWimple();
 
 		return view;
 	}
