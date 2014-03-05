@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -29,7 +30,8 @@ public class PaymentNoticeActivity extends Activity {
 		Long value = settings.getLong(NOMORE_TIME, 0);
 		if(value != 0){
 			value -= Calendar.getInstance().getTimeInMillis();
-			if(value < 1000 * 60 * 60 * 24){
+			if(value < 1000 * 60 * 60 * 12){
+				Log.d("PaymentNoticeActivity", "within 12 hours, user clicked no more payment notice activity.");
 				PaymentNoticeActivity.noMore = true;
 				finish();
 				return;

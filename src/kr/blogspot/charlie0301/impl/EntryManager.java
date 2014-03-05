@@ -326,6 +326,7 @@ public class EntryManager {
 				return;
 			}
 
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONArray results = (JSONArray) json.get("results");
 			JSONObject row = (JSONObject) results.get(0);			
 
@@ -393,6 +394,7 @@ public class EntryManager {
 				return;
 			}
 
+			wimpl.setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONObject row = (JSONObject) json.get("results");
 			
 			Entry item = new Entry(row);
