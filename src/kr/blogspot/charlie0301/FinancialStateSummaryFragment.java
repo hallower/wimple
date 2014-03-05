@@ -1,6 +1,5 @@
 package kr.blogspot.charlie0301;
 
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
@@ -9,12 +8,12 @@ import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.widget.DoughnutChartView;
-import kr.blogspot.charlie0301.widget.ItemListView;
-import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -76,15 +75,13 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
 
-		/*
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		boolean prefetch = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_PREFETCH, true);
-		if(prefetch){
+		boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+		if(autoRefresh){
+			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+		}else{
 			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);	
 		}
-		*/
-
-		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);	
 		
 		((ImageView) view.findViewById(R.id.as_refresh)).setOnClickListener(new OnClickListener() {
 			

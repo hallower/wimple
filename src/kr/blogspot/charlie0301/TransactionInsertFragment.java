@@ -84,7 +84,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onResume() {
-		Log.e(LOG_TAG, "Insert - onResume");
+		//Log.e(LOG_TAG, "Insert - onResume");
 		context = WimpleActivity.context;
 		initWimple();
 
@@ -93,7 +93,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onPause() {
-		Log.e(LOG_TAG, "Insert - onPause");
+		//Log.e(LOG_TAG, "Insert - onPause");
 
 		// TODO Auto-generated method stub
 		super.onPause();
@@ -101,7 +101,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onStart() {
-		Log.e(LOG_TAG, "Insert - onStart");
+		//Log.e(LOG_TAG, "Insert - onStart");
 
 		// TODO Auto-generated method stub
 		super.onStart();
@@ -109,7 +109,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onStop() {
-		Log.e(LOG_TAG, "Insert - onStop");
+		//Log.e(LOG_TAG, "Insert - onStop");
 
 		// TODO Auto-generated method stub
 		super.onStop();
@@ -124,7 +124,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		Log.e(LOG_TAG, "Insert - onCreateView");
+		//Log.e(LOG_TAG, "Insert - onCreateView");
 		context = WimpleActivity.context;		
 
 		// Data 
