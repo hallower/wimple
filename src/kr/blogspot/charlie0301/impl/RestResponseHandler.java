@@ -47,6 +47,7 @@ public class RestResponseHandler {
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				context.startActivity(intent);
 			}else{
+				Log.e(LOG_TAG, "User wanted to close PaymentNoticeActivity anymore today");
 				// TODO : show toast!!!
 				//Toast.makeText(context, context.getResources().getString(R.string.notice_need_upgrade), Toast.LENGTH_LONG).show();
 			}

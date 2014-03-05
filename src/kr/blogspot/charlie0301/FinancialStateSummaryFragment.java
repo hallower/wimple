@@ -42,6 +42,9 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	private TextView tvDebtValue;
 	private TextView tvSumValue;
 
+	// Data
+	private boolean firstUpdate;
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -75,13 +78,9 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
 
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
-		if(autoRefresh){
-			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
-		}else{
-			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);	
-		}
+		firstUpdate = true;
+		
+		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		
 		((ImageView) view.findViewById(R.id.as_refresh)).setOnClickListener(new OnClickListener() {
 			
@@ -137,6 +136,16 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
+			if(firstUpdate){
+				firstUpdate = false;
+				// To show previous data during new data dispatching without any GUI display delay.
+				SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+				if(autoRefresh){
+					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+				}
+			}			
+			
 			if(false == booleanStatus){
 				return;
 			}

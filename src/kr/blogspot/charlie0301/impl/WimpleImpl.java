@@ -756,6 +756,7 @@ public class WimpleImpl implements IWimpleImpl {
 				return;
 			}
 
+			setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONObject result = (JSONObject) json.get("results");				
 
 			info = new UserInfo(result);
@@ -814,6 +815,7 @@ public class WimpleImpl implements IWimpleImpl {
 				return;
 			}
 
+			setRemainedAPICall(json.get("rest_of_api").toString());
 			JSONObject results = (JSONObject) json.get("results");				
 
 			Object isolation = results.get("isolation");
@@ -952,6 +954,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
+					setRemainedAPICall(json.get("rest_of_api").toString());
 					JSONObject results = (JSONObject) json.get("results");
 					int seq = 1;
 
@@ -1234,6 +1237,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
+					setRemainedAPICall(json.get("rest_of_api").toString());
 					JSONObject results = (JSONObject) json.get("results");
 					for(Object type : results.keySet()){
 
