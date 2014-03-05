@@ -95,7 +95,6 @@ public class SplashScreenActivity extends Activity {
 		if(true == wimple.getTempToken()){
 			// Already Logged-in
 			wimple.getDefaultSections(true);
-			refreshCache();
 		}
 
 		// final View controlsView =
@@ -123,12 +122,6 @@ public class SplashScreenActivity extends Activity {
 		wimple.getAllAccounts(true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
-		
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		boolean prefetch = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_PREFETCH, true);
-		if(prefetch){
-			wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
-		}
 	}
 
 	private void setupWimpleImpl() {
@@ -214,7 +207,7 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
 				if(status){
-					Log.e(LOG_TAG, info.toString());	
+					Log.i(LOG_TAG, info.toString());	
 				}
 			}
 

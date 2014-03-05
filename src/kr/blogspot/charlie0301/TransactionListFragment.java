@@ -397,7 +397,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				entryAdapter.get().removeEntry((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
 				wimple.getMonthlyItems(true);
-				Log.d(LOG_TAG, "Delete entry - " + (String)obj);				
+				//Log.d(LOG_TAG, "Delete entry - " + (String)obj);				
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.remove_entry_failed), Toast.LENGTH_LONG).show();	
 			}
@@ -411,7 +411,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				// TODO : efficient
 				entryAdapter.get().removeItem((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
-				Log.d(LOG_TAG, "Delete monthly item - " + (String)obj);
+				//Log.d(LOG_TAG, "Delete monthly item - " + (String)obj);
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_failed), Toast.LENGTH_LONG).show();	
 			}

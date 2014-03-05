@@ -235,7 +235,31 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		if (savedInstanceState == null) {
 			setPagerAdapter(0);
+		}else{
+			currentMenuId = savedInstanceState.getInt("currentMenuId");
+			currentTabPosition = savedInstanceState.getInt("currentTabPosition");
+			setPagerAdapter(currentMenuId);
+			moveTabOfPager(currentTabPosition);
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+
+		savedInstanceState.putInt("currentMenuId", currentMenuId);
+		savedInstanceState.putInt("currentTabPosition", currentTabPosition);
+	}
+
+	@Override
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+
+		Log.e(LOG_TAG, "wimple onRestoreInstanceState");
+		currentMenuId = savedInstanceState.getInt("currentMenuId");
+		currentTabPosition = savedInstanceState.getInt("currentTabPosition");
+		setPagerAdapter(currentMenuId);
+		moveTabOfPager(currentTabPosition);
 	}
 
 	private void setupMenus() {
@@ -486,7 +510,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			@Override
 			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
 				if(status){
-					Log.e(LOG_TAG, info.toString());
+					Log.i(LOG_TAG, info.toString());
 					sm(CommandID.UPDATE_USER_INFO, 1, 0, info);	
 				}else{
 					Toast.makeText(context, "Login FaileD!!!!", Toast.LENGTH_LONG).show();

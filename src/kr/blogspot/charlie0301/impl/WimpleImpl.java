@@ -1213,7 +1213,7 @@ public class WimpleImpl implements IWimpleImpl {
 						path += "&end_date=" + date;
 					}
 					catch(Exception e){
-						//ignore
+						e.printStackTrace();
 					}
 				}			
 

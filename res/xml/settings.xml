@@ -25,9 +25,9 @@
     <PreferenceCategory android:title="@string/drawer_menu_financial_state" >
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="pref_financialStatePrefetch"
-            android:summary="@string/settings_summary_financial_state_prefetch"
-            android:title="@string/settings_financial_state_prefetch" />
+            android:key="pref_financialStateAutoRefresh"
+            android:summary="@string/settings_summary_financial_state_auto_refresh"
+            android:title="@string/settings_financial_state_auto_refresh" />
     </PreferenceCategory>
 
 </PreferenceScreen>

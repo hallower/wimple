@@ -59,8 +59,8 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 			if(itemDate.startsWith("7") &&
 					0 == items.get(i).getId().compareTo(entryID) ){
-				Log.d(LOG_TAG, "Remove entry - id=" + items.get(i).getId() + 
-						", name=" + items.get(i).getItem());
+				//Log.d(LOG_TAG, "Remove entry - id=" + items.get(i).getId() + 
+				//		", name=" + items.get(i).getItem());
 				items.remove(i);
 				return;
 			}
@@ -76,8 +76,8 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 			if(itemDate.startsWith("9") &&
 					0 == items.get(i).getId().compareTo(itemID) ){
-				Log.d(LOG_TAG, "Remove item - id=" + items.get(i).getId() + 
-						", name=" + items.get(i).getItem());
+				//Log.d(LOG_TAG, "Remove item - id=" + items.get(i).getId() + 
+				//		", name=" + items.get(i).getItem());
 				items.remove(i);
 				return;
 			}
@@ -109,8 +109,8 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 			if(itemDate.startsWith("9") &&
 					0 == itemDate.substring(1).compareTo(parsedEntryDate) ){
-				Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
-						", name=" + items.get(i).getItem());
+				//Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
+				//		", name=" + items.get(i).getItem());
 				items.remove(i);
 				i-=1;
 				//return;
@@ -125,8 +125,8 @@ public class EntryItemListAdapter extends BaseAdapter {
 			String itemDate = items.get(i).getDateValue();
 
 			if(itemDate.startsWith("9")){
-				Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
-						", name=" + items.get(i).getItem());
+				//Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() + 
+				//		", name=" + items.get(i).getItem());
 				items.remove(i);
 				i-=1;
 				//return;
