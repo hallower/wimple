@@ -95,6 +95,7 @@
     <string name="close">오늘 하루 그만 보기</string>
     <string name="update_latest_items">최신 거래내역을 업데이트 합니다.</string>
     <string name="update_old_items">이전 거래내역을 가져옵니다.</string>
+    <string name="update_as_date">최신 데이터로 업데이트 합니다.</string>
     <string name="notyet">예정</string>
     <string name="context_menu_delete_item">거래 항목 삭제</string>
     <string name="context_menu_one">one</string>    
