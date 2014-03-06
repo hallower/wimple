@@ -38,6 +38,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	//private WeakReference<AccountStateItemListAdapter> asAdapter;
 	private DoughnutChartView cv;
 	private LinearLayout llChart;
+	
+	private LinearLayout llUpdateNotice;
 	private TextView tvSavingValue;
 	private TextView tvDebtValue;
 	private TextView tvSumValue;
@@ -78,6 +80,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
 		tvDebtValue = (TextView)view.findViewById(R.id.as_debt_value);
 
+		llUpdateNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
+		
 		firstUpdate = true;
 		
 		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
@@ -86,7 +90,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 			
 			@Override
 			public void onClick(View v) {
-				wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+				wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+				llUpdateNotice.setVisibility(View.VISIBLE);
 			}
 		});
 			
@@ -136,6 +141,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
+			llUpdateNotice.setVisibility(View.GONE);
+			
 			if(firstUpdate){
 				firstUpdate = false;
 				// To show previous data during new data dispatching without any GUI display delay.
@@ -143,6 +150,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
 				if(autoRefresh){
 					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+					llUpdateNotice.setVisibility(View.VISIBLE);
 				}
 			}			
 			

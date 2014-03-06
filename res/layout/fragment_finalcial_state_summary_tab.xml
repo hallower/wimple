@@ -140,4 +140,39 @@
         </RelativeLayout>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/as_update_notification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/input_box_round_2"
+        android:orientation="horizontal"
+        android:paddingBottom="2dp"
+        android:paddingLeft="7dp"
+        android:paddingTop="4dp"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/as_list_notification_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:text="@string/update_as_date"
+            android:textColor="@color/text_blue" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/na"
+            android:gravity="center_vertical"
+            android:src="@drawable/waiting" />
+    </LinearLayout>
+
 </RelativeLayout>
