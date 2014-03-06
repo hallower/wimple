@@ -86,7 +86,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public void onResume() {
 		//Log.e(LOG_TAG, "Insert - onResume");
 		context = WimpleActivity.context;
-		initWimple();
+		//initWimple();
 
 		super.onResume();
 	}
@@ -157,7 +157,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		setAmountText(0.0);
 
-		//initWimple();
+		initWimple();
 
 		return view;
 	}
