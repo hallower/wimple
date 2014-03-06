@@ -199,6 +199,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			}
 
 			public void onDrawerOpened(View drawerView) {
+				updateAPIRemainning();
 				actionBar.setDisplayHomeAsUpEnabled(false);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 			}
