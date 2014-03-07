@@ -249,6 +249,9 @@ public class DatabaseHandler{
 		} catch(SQLException e){
 			if(e.getMessage().contains("no such table")){
 				db.execSQL(createSchema);
+				if(cursor != null){
+					cursor.close();
+				}
 				return items;
 			}
 		}
