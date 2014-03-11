@@ -84,7 +84,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onResume() {
-		//Log.e(LOG_TAG, "Insert - onResume");
 		context = WimpleActivity.context;
 		//initWimple();
 
@@ -92,26 +91,22 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	@Override
-	public void onPause() {
-		//Log.e(LOG_TAG, "Insert - onPause");
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
 
-		// TODO Auto-generated method stub
+	@Override
+	public void onPause() {
 		super.onPause();
 	}
 
 	@Override
 	public void onStart() {
-		//Log.e(LOG_TAG, "Insert - onStart");
-
-		// TODO Auto-generated method stub
 		super.onStart();
 	}
 
 	@Override
 	public void onStop() {
-		//Log.e(LOG_TAG, "Insert - onStop");
-
-		// TODO Auto-generated method stub
 		super.onStop();
 	}
 
@@ -124,7 +119,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		//Log.e(LOG_TAG, "Insert - onCreateView");
 		context = WimpleActivity.context;		
 
 		// Data 
@@ -530,16 +524,17 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		int command = msg.what;
 		boolean booleanStatus = msg.arg1 == 1;
 		Object obj = msg.obj;
-
+		
 		// if fragment is added or not to the activity
 		if(false == isAdded()){
 			return;
 		}
-
+		
 		switch(command){
 
-		//case CommandID.WIMPLE_LOGGIN_SUCCESS :
-		case CommandID.GET_ALL_SECTION_RECEIVED :{
+		case CommandID.WIMPLE_LOGGIN_SUCCESS :
+		//case CommandID.GET_ALL_SECTION_RECEIVED :
+		{
 			initWimple();
 		}
 		break;
@@ -604,10 +599,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				lChild.put(lHeader.get(2), capital);
 				lChild.put(lHeader.get(3), expenses);
 
+				String selectedID = leftAccountListAdapter.getSelected().getId();
+				
 				leftAccountListAdapter.clear();
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
 
+				if(false == selectedID.isEmpty()){
+					leftAccountListAdapter.setSelected(selectedID);
+				}
+				
 				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++){
 					leftAccountListView.expandGroup(i);
 				}
@@ -626,10 +627,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rChild.put(rHeader.get(2), capital);
 				rChild.put(rHeader.get(3), income);
 
+				String selectedID = rightAccountListAdapter.getSelected().getId();
+				
 				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
 
+				if(false == selectedID.isEmpty()){
+					rightAccountListAdapter.setSelected(selectedID);
+				}
+				
 				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++){
 					rightAccountListView.expandGroup(i);
 				}
