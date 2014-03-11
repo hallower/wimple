@@ -8,7 +8,6 @@ import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
-import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.model.Entry;
@@ -19,13 +18,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,6 +69,7 @@ public class SplashScreenActivity extends Activity {
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, a1, a2, msg));    
 	}
 
+	@SuppressWarnings("deprecation")
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,10 +77,17 @@ public class SplashScreenActivity extends Activity {
 		setContentView(R.layout.activity_splash_screen);
 		context = getApplicationContext();
 
+		mWebview = (WebView) findViewById(R.id.webview);
+		
 		// double check if app is restarted forcedly
 		Intent intent= getIntent();
 	    if(intent.hasExtra("auth_again")){
 	    	Log.e(LOG_TAG, "Need to do Auth again, clean auth!!!");
+	    	
+	    	mWebview.clearHistory();
+			mWebview.clearCache(true);
+			mWebview.clearView();
+			
 	    	Toast.makeText(context, context.getResources().getString(R.string.notice_need_auth), Toast.LENGTH_LONG).show();
 	    	wimple.cleanAuth();
 	    }
@@ -101,11 +107,14 @@ public class SplashScreenActivity extends Activity {
 		// findViewById(R.id.fullscreen_content_controls);
 		CookieManager cookieManager = CookieManager.getInstance(); 
 		cookieManager.setAcceptCookie(true); 
-		mWebview = (WebView) findViewById(R.id.webview);
+		//mWebview = (WebView) findViewById(R.id.webview);
 		//mWebviewPop = (WebView) findViewById(R.id.webviewPop);
 		mContainer = (FrameLayout) findViewById(R.id.webview_frame);
 		WebSettings webSettings = mWebview.getSettings();
 		webSettings.setJavaScriptEnabled(true);
+		if (Build.VERSION.SDK_INT <= 18) {
+			webSettings.setSavePassword(false);
+	    }
 		webSettings.setAppCacheEnabled(true);
 		webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
 		webSettings.setSupportMultipleWindows(true);
