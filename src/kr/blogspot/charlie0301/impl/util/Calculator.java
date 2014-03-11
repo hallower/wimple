@@ -1,6 +1,5 @@
 package kr.blogspot.charlie0301.impl.util;
 
-import android.util.Log;
 
 public class Calculator {
 
