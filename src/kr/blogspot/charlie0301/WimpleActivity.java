@@ -67,7 +67,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	private String[] menuTitles;
 	private List<Integer> mListSideMemuID;
 	private List<List<String>> listSubmenuTitles;
-	private List<List<Object>> listSubmenuClasses;
+	private List<List<Fragment>> listSubmenuClasses;
 	private SideMenuClickListener mSideMenuClickListener;
 	private ActionBar actionBar;
 
@@ -236,11 +236,6 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		if (savedInstanceState == null) {
 			setPagerAdapter(0);
-		}else{
-			currentMenuId = savedInstanceState.getInt("currentMenuId");
-			currentTabPosition = savedInstanceState.getInt("currentTabPosition");
-			setPagerAdapter(currentMenuId);
-			moveTabOfPager(currentTabPosition);
 		}
 	}
 
@@ -256,11 +251,13 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 
-		Log.e(LOG_TAG, "wimple onRestoreInstanceState");
-		currentMenuId = savedInstanceState.getInt("currentMenuId");
-		currentTabPosition = savedInstanceState.getInt("currentTabPosition");
-		setPagerAdapter(currentMenuId);
-		moveTabOfPager(currentTabPosition);
+		int restoredMenuId = savedInstanceState.getInt("currentMenuId");
+		int restoredTabPosition = savedInstanceState.getInt("currentTabPosition");
+		setPagerAdapter(restoredMenuId, true);
+		moveTabOfPager(restoredTabPosition, true);
+
+		wimple.getUserInfo(false);
+		wimple.getDefaultSections(false);	
 	}
 
 	private void setupMenus() {
@@ -270,7 +267,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		{
 			listSubmenuTitles = new ArrayList<List<String>>();
-			listSubmenuClasses = new ArrayList<List<Object>>();
+			listSubmenuClasses = new ArrayList<List<Fragment>>();
 			mListSideMemuID = new ArrayList<Integer>();
 
 			String[] allTitles = getResources().getStringArray(R.array.drawer_menus_title);        	
@@ -289,13 +286,13 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			String[] allClasses = getResources().getStringArray(R.array.drawer_menus_class);
 			for(String clas : allClasses)
 			{
-				List<Object> clases = new ArrayList<Object>();
+				List<Fragment> clases = new ArrayList<Fragment>();
 				//Log.d(LOG_TAG, "class =");
 				for(String cla : clas.split(",")){
 					//Log.d(LOG_TAG, cla + ", ");
 					try{
 						Class<?> c = Class.forName(cla);
-						Object frag = (Object)c.newInstance();
+						Fragment frag = (Fragment)c.newInstance();
 
 						if(frag instanceof IWimpleFragment){
 							((IWimpleFragment) frag).setActivityInstance(this);
@@ -397,33 +394,38 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 	private void setPagerAdapter(int n)
 	{
+		setPagerAdapter(n, false);	
+	}
+
+	private void setPagerAdapter(int n, boolean forceUpdate)
+	{
 		List<String> titles = listSubmenuTitles.get(n);
-		List<Object> fragments = listSubmenuClasses.get(n);
+		List<Fragment> fragments = listSubmenuClasses.get(n);
 		int nFragment = titles.size();
 
-		if(currentMenuId == n){
+		if(currentMenuId == n &&
+				forceUpdate == false){
 			mDrawerLayout.closeDrawer(mSideMenu);
 			return;
 		}
 
 		if(titles.size() == 0 ||
 				fragments.size() == 0){
-			Log.e(LOG_TAG, "Oops setPagerAdapter, title, fragments are 0");
 			return;
 		}
 
 		currentMenuId = n;
 		actionBar.removeAllTabs();
-		mSectionsPagerAdapter.clear();    	
+		mSectionsPagerAdapter.clear();
 
 		for(int i = 0; i < nFragment; i++){
-			Object fg = fragments.get(i);
+			Fragment fg = fragments.get(i);
 			Log.d(LOG_TAG, "SetpageAdapter Adding >> " + fg.getClass().getName());
 			mSectionsPagerAdapter.addItem(fg);
 		}
-		Log.d(LOG_TAG, "SetpageAdapter Added Total " + nFragment + " submenus");
-
 		mSectionsPagerAdapter.notifyDataSetChanged();
+
+		Log.d(LOG_TAG, "SetpageAdapter Added Total " + nFragment + " submenus");
 
 		if(nFragment> 1)
 		{
@@ -439,12 +441,18 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		currentTabPosition = 0;
 		setTitle(menuTitles[n]);
+		
 		mDrawerLayout.closeDrawer(mSideMenu);
 	}
 
 	public void moveTabOfPager(int pageID){
+		moveTabOfPager(pageID, false);
+	}
 
-		if(currentTabPosition == pageID){
+	public void moveTabOfPager(int pageID, boolean forceUpdate){
+
+		if(currentTabPosition == pageID &&
+				false == forceUpdate ){
 			return;
 		}
 
@@ -731,7 +739,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	 */
 	public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
-		private Collection<Object> frags = new ArrayList<Object>();
+		private ArrayList<Fragment> frags = new ArrayList<Fragment>();
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -739,7 +747,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		@Override
 		public Fragment getItem(int position) {
-			return (Fragment)frags.toArray()[position];
+			return frags.get(position);
 		}
 
 
@@ -748,7 +756,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			return frags.size();
 		}
 
-		public void addItem(Object fragment){
+		public void addItem(Fragment fragment){
 			frags.add(fragment);
 		}
 
@@ -759,9 +767,9 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		@Override
 		public int getItemPosition(Object object) {
 
-			Object frag = (Object)object;
+			Fragment frag = (Fragment)object;
 			for(int i = 0 ; i < frags.size() ; i++){
-				Object fragInList = (Object) frags.toArray()[i];
+				Fragment fragInList = (Fragment) frags.toArray()[i];
 
 				if(fragInList.equals(frag)){
 					return i;
