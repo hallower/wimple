@@ -86,7 +86,7 @@
     <string name="title_group">그룹</string>
     <string name="title_activity_splash_screen">wimple</string>
     <string name="title_activity_wimple">wimple</string>
-    <string name="notice_need_auth">사용자 인증이 만료 되어 재인증이 필요합니다. 다시 로그인 및 승인을 해주세요.</string>
+    <string name="notice_need_auth">로그아웃 되거나 사용자 인증이 만료 되어 재인증이 필요합니다. 다시 로그인 및 승인을 해주세요.</string>
     <string name="notice_need_upgrade">후잉에서 제공되는 무료 보고서 조회 횟수를 모두 사용하셨습니다.(기본 하루 당 30번) 업그레이드를 추천 드립니다.</string>
     <string name="title_activity_payment_notice">PaymentNoticeActivity</string>
     <string name="about_payment_smile">(^_^);</string>
