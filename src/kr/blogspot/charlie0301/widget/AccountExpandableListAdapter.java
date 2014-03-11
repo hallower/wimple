@@ -53,15 +53,6 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		}
 	}
 	
-	public void clear(){
-		try{
-			this.listDataHeader.clear();
-			this.listDataChild.clear();
-		}catch(Exception e){
-			// ignore
-		}		
-	}
-
 	@Override
 	public Object getChild(int groupPosition, int childPosititon) {
 		try{
@@ -171,6 +162,18 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		super.notifyDataSetChanged();
 	}
 
+	public void clear(){
+		try{
+			this.isSelected = false;
+			this.selectedGroupPosition = -1;
+			this.selectedChildPosition = -1;
+			this.listDataHeader.clear();
+			this.listDataChild.clear();
+		}catch(Exception e){
+			// ignore
+		}		
+	}
+
 	public void clearSelection(){
 		this.isSelected = false;
 		this.selectedGroupPosition = -1;
@@ -220,7 +223,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 
 	public Account getSelected(){
 		if(false == this.isSelected){
-			return null;
+			return new Account();
 		}
 
 		return (Account) getChild(selectedGroupPosition, selectedChildPosition);
