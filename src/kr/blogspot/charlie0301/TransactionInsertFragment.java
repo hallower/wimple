@@ -71,10 +71,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private DatePickerFragment datePicker;
 
 	// Data
+	
+	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT };
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
-	private boolean isEditing = false;
 	private Item editingItem = null;
+	private CurrentToolMode toolMode = CurrentToolMode.INSERT;
 	//private boolean isFirstTimeForUniqueFiltering = true;
 
 	/**
@@ -177,8 +179,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}
 
 
-				if(isEditing){
-					isEditing = false;
+				if(toolMode == CurrentToolMode.EDITING){
+					toolMode = CurrentToolMode.INSERT;
 
 					/*
 					 * server doesn't receive yyyyMMdd.xxxx format
@@ -209,7 +211,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}
 			}
 		});
-		setSubmitButton(true);
+		setSubmitButton(toolMode);
 
 		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
 		txtTitle.addTextChangedListener(new TextWatcher() {
@@ -511,11 +513,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		leftAccountListAdapter.clearSelection();
 		rightAccountListAdapter.clearSelection();
 
-		if(this.isEditing){
-			this.isEditing = false;
+		if(CurrentToolMode.EDITING == toolMode){
 			editingItem = null;
 		}
-		setSubmitButton(true);
+		toolMode = CurrentToolMode.INSERT;
+		setSubmitButton(toolMode);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -689,21 +691,22 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			// Modifying 
 			Item item = wimple.getEntry(itemID);
-			isEditing = true;
-			setSubmitButton(false);
+
+			toolMode = CurrentToolMode.EDITING;
+			setSubmitButton(toolMode);
 
 			if(null == item){
 				// Add Monthly Item
-				isEditing = false;
 				item = wimple.getMonthlyItem(itemID);
-				setSubmitButton(true);
+				toolMode = CurrentToolMode.MONTHLY_INSERT;
+				setSubmitButton(toolMode);
 			}			
 
 			if(null == item){
-				isEditing = false;
-				editingItem = null;
 				Toast.makeText(context, "oops", Toast.LENGTH_SHORT).show();
-				setSubmitButton(true);
+				toolMode = CurrentToolMode.INSERT;
+				editingItem = null;
+				setSubmitButton(toolMode);
 				return;
 			}
 
@@ -711,7 +714,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			setEntry(item);
 
-			if(isEditing){
+			if(CurrentToolMode.EDITING == toolMode){
 				Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();	
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
@@ -735,14 +738,24 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 	}
 
-	public void setSubmitButton(boolean isInserting){
+	public void setSubmitButton(CurrentToolMode mode){
 
-		if(isInserting){
-			txtInsertMode.setText(getResources().getString(R.string.mode_monthly_insert));
-			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);
-		}else{
+		switch(mode){
+		
+		case INSERT :
+			txtInsertMode.setText(getResources().getString(R.string.mode_entry_insert));
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);	
+			break;
+			
+		case EDITING :
 			txtInsertMode.setText(getResources().getString(R.string.mode_entry_modify));
 			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_6);	
+			break;
+			
+		case MONTHLY_INSERT :
+			txtInsertMode.setText(getResources().getString(R.string.mode_monthly_insert));
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);
+			break;
 		}
 		txtInsertMode.getBackground().setAlpha(192);
 	}

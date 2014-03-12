@@ -15,7 +15,8 @@ public class DateFormatUtils {
 	private static final SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd", locale);
 	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);	
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
-	private static final DecimalFormat formatCalcNumNoPoint = (DecimalFormat)nf;
+	private static final NumberFormat nf2 = NumberFormat.getCurrencyInstance(locale);	
+	private static final DecimalFormat formatCalcNumNoPoint = (DecimalFormat)nf2;
 
 	static {
 		formatCalcNum.applyPattern("###,###.####");
