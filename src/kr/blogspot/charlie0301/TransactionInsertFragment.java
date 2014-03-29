@@ -113,7 +113,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
-		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()));
+		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()), false);
 		wimple.getLatestItems();
 	}
 
@@ -394,7 +394,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void setupItemDate(Long date) {
 		datePicker.setDate(date);
-		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()));
+		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()), false);
 	}
 
 	private void setAmountText(Double amount){

@@ -832,10 +832,9 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
 			sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 		}			
-
 	}
 
-	public boolean getAllAccounts(boolean forceUpdate){
+	public boolean getAllAccounts(String dateFilter, boolean forceUpdate){
 
 		if((true == forceUpdate) &&
 				(false == isInitializedFinished())){
@@ -847,22 +846,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return true;
 		}
 
-		new GetAllAccountsTaskThread(defaultSectionID, "", forceUpdate).start();		
-		return true;
-	}
-
-	public boolean getAllAccounts(String dateFilter){
-		/*
-		if(false == isInitializedFinished()){
-			return false;
-		}
-		 */
-
-		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
-			return true;
-		}
-
-		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, false).start();		
+		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, forceUpdate).start();		
 		return true;
 	}
 

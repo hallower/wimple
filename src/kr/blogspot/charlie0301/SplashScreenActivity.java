@@ -1,6 +1,7 @@
 package kr.blogspot.charlie0301;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.AccountState;
 import kr.blogspot.charlie0301.model.Entry;
@@ -128,7 +130,7 @@ public class SplashScreenActivity extends Activity {
 			return;
 		}
 		cacheRefreshed = true;
-		wimple.getAllAccounts(true);		
+		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(Calendar.getInstance().getTimeInMillis()), true);		
 		wimple.getLatestItems(true);
 		wimple.getMonthlyItems(true);
 	}
