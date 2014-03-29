@@ -1,6 +1,7 @@
 package kr.blogspot.charlie0301.widget;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 
 	private List<String> listDataHeader; // header titles
 	// child data in format of header title, child title
-	private Map<String, List<Account>> listDataChild;
+	private Map<String, List<Account>> listDataChild = new HashMap<String, List<Account>>();
 
 	private boolean isSelected = false;
 	private int selectedGroupPosition = -1;
