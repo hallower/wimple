@@ -113,6 +113,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void initWimple() {
+		Log.e(LOG_TAG, "initWimple()");
 		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()), false);
 		wimple.getLatestItems();
 	}
@@ -424,7 +425,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			return;
 		}
 
-		txtTitle.setText(selected.getItem());
+		//txtTitle.setText(selected.getItem());
 		//cal.setValue(selected.getAmount());
 		//setAmountText(selected.getAmount());
 

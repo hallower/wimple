@@ -219,7 +219,7 @@ public class ItemManager {
 			}
 			wimpl.getMonthlyItemDBHandler().clean();
 			wimpl.getMonthlyItemDBHandler().insert(list);
-			Log.d(LOG_TAG, "[Monthly Item] Providing Frequent Items");
+			Log.d(LOG_TAG, "[Monthly Item] Providing Monthly Items");
 			wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 1, 0, list);
 		}			
 

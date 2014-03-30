@@ -132,7 +132,8 @@ public class WimpleImpl implements IWimpleImpl {
 		rrh = new RestResponseHandler();
 
 		apiAvailableSemaphore.put("getAllEntries", new Semaphore(1));
-		apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
+		// Because of delayed account list display, ignore multiple Account get request and response received situation.
+		//apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
 		apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
 	}
 
@@ -841,11 +842,11 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.e(LOG_TAG, "[Account] Initialization is on progressing.");
 			return false;
 		}
-
+/*
 		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
 			return true;
 		}
-
+*/
 		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, forceUpdate).start();		
 		return true;
 	}
@@ -870,32 +871,7 @@ public class WimpleImpl implements IWimpleImpl {
 				if((false == forceUpdate) &&
 						adbh.hasData()){
 
-					Collection<Account> accountList = adbh.getAllAccounts();
-					Collection<Account> list = new ArrayList<Account>();
-					for(Account item : accountList){
-						String open = item.getOpenedDate();
-						String closed = item.getClosedDate();
-
-						try{
-							sdf.setLenient(false);
-							Date itemDate = sdf.parse(dateFilter);
-
-							Date openDate = sdf.parse(open);
-							Date closedDate = sdf.parse(closed);
-
-							if(itemDate.getTime() >= openDate.getTime() &&
-									itemDate.getTime() <= closedDate.getTime()){
-								list.add(item);
-							}
-
-						}
-						catch(Exception e){
-							Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Cache!!!");
-							sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, accountList);
-							return;
-						}					
-
-					}
+					Collection<Account> list = filterOutAccounts();
 					Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
 					return;
@@ -911,18 +887,6 @@ public class WimpleImpl implements IWimpleImpl {
 				}
 
 				String path = "?section_id=" + sectionID;
-
-				if(false == dateFilter.isEmpty()){				
-					try{
-						sdf.setLenient(false);
-						sdf.parse(dateFilter);
-
-						path += "&start_date=" + dateFilter;
-					}
-					catch(Exception e){
-						//ignore
-					}
-				}			
 
 				try{
 					JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
@@ -965,13 +929,46 @@ public class WimpleImpl implements IWimpleImpl {
 
 				adbh.insert(list);
 
-				Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
-				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
-
-
+				{
+					Collection<Account> filtredList = filterOutAccounts();
+					Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
+					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, filtredList);	
+				}
+				
 			}finally{
-				apiAvailableSemaphore.get("getAllAccounts").release();
+				//apiAvailableSemaphore.get("getAllAccounts").release();
 			}		
+		}
+
+		private Collection<Account> filterOutAccounts() {
+			
+			Collection<Account> accountList = adbh.getAllAccounts();
+			Collection<Account> list = new ArrayList<Account>();
+
+			for(Account item : accountList){
+				String open = item.getOpenedDate();
+				String closed = item.getClosedDate();
+
+				try{
+					sdf.setLenient(false);
+					Date itemDate = sdf.parse(dateFilter);
+
+					Date openDate = sdf.parse(open);
+					Date closedDate = sdf.parse(closed);
+
+					if(itemDate.getTime() >= openDate.getTime() &&
+							itemDate.getTime() <= closedDate.getTime()){
+						list.add(item);
+					}
+
+				}
+				catch(Exception e){
+					Log.d(LOG_TAG, "[Account] Filtering failed !!! with item=" + item.getTitle() + ", open=" + open + ", close=" + closed);
+					continue;
+				}					
+
+			}
+			return list;
 		}			
 
 	}
