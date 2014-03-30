@@ -323,7 +323,7 @@ public class Item implements IDatabaseRecord {
 		}
 
 		Item item = (Item)o;
-		return id.equals(item.id);
+		return item.equals(item.item);
 	}
 
 	public static class DateDescCompare implements Comparator<Item>{
@@ -351,7 +351,7 @@ public class Item implements IDatabaseRecord {
 		}
 
 		Item item = (Item)o;
-		return date.compareTo(item.date);
+		return item.compareTo(item.item);
 	}
 	 */
 }
