@@ -425,7 +425,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			return;
 		}
 
-		//txtTitle.setText(selected.getItem());
+		String title = txtTitle.getText().toString();
+		int pos = title.indexOf("(");
+		if( pos > 0 ){
+			title = title.substring(0, pos);
+		}
+		
+		if(	0 != title.compareTo(selected.getItem())){
+			txtTitle.setText(selected.getItem());
+			txtTitle.setSelection(txtTitle.getText().length());
+		}
 		//cal.setValue(selected.getAmount());
 		//setAmountText(selected.getAmount());
 
