@@ -7,414 +7,456 @@
     android:paddingLeft="3dp"
     android:paddingRight="3dp" >
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal"
-        android:weightSum="1" >
-
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:layout_weight="0.4"
-            android:background="@drawable/input_box_dark"
-            android:gravity="center" >
-
-            <ImageView
-                android:id="@+id/insert_yesterday"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:contentDescription="@string/na"
-                android:gravity="center"
-                android:paddingBottom="5dp"
-                android:paddingTop="5dp"
-                android:src="@drawable/ic_action_previous_item" />
-
-            <ImageView
-                android:id="@+id/insert_tomorrow"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:contentDescription="@string/na"
-                android:gravity="center"
-                android:paddingBottom="5dp"
-                android:paddingTop="5dp"
-                android:src="@drawable/ic_action_next_item" />
-
-            <TextView
-                android:id="@+id/insert_date"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:layout_toLeftOf="@id/insert_tomorrow"
-                android:layout_toRightOf="@id/insert_yesterday"
-                android:gravity="center"
-                android:textColor="@color/text_white"
-                android:textSize="15sp" />
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/insert_amount"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_gravity="right|center_vertical"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            android:layout_weight="0.6"
-            android:background="@drawable/input_box_dark"
-            android:gravity="right|center_vertical"
-            android:lines="1"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:textColor="@color/text_white"
-            android:textScaleX="0.9"
-            android:textSize="23sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
-        android:weightSum="1" >
+        android:layout_height="wrap_content" >
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.4"
             android:orientation="vertical" >
 
-            <FrameLayout
-                android:layout_width="fill_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center" >
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal"
+                android:weightSum="1" >
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.4"
+                    android:background="@drawable/input_box_dark"
+                    android:gravity="center" >
+
+                    <ImageView
+                        android:id="@+id/insert_yesterday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/na"
+                        android:gravity="center"
+                        android:paddingBottom="5dp"
+                        android:paddingTop="5dp"
+                        android:src="@drawable/ic_action_previous_item" />
+
+                    <ImageView
+                        android:id="@+id/insert_tomorrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/na"
+                        android:gravity="center"
+                        android:paddingBottom="5dp"
+                        android:paddingTop="5dp"
+                        android:src="@drawable/ic_action_next_item" />
+
+                    <TextView
+                        android:id="@+id/insert_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="center"
+                        android:layout_toLeftOf="@id/insert_tomorrow"
+                        android:layout_toRightOf="@id/insert_yesterday"
+                        android:gravity="center"
+                        android:textColor="@color/text_white"
+                        android:textSize="15sp" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/insert_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="right|center_vertical"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="2dp"
+                    android:layout_weight="0.6"
+                    android:background="@drawable/input_box_dark"
+                    android:gravity="right|center_vertical"
+                    android:lines="1"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:textColor="@color/text_white"
+                    android:textScaleX="0.9"
+                    android:textSize="23sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="1" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:orientation="vertical" >
+
+                    <FrameLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" >
+
+                        <EditText
+                            android:id="@+id/insert_entry_title"
+                            android:layout_width="fill_parent"
+                            android:layout_height="32dp"
+                            android:layout_gravity="left|center_vertical"
+                            android:background="@drawable/input_box_dark"
+                            android:gravity="left|center_vertical"
+                            android:hint="@string/insert_item_title"
+                            android:inputType="text"
+                            android:paddingLeft="8dp"
+                            android:textColor="@color/text_light_blue"
+                            android:textColorHint="@color/text_white"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/insert_title_clear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="right|center_vertical"
+                            android:contentDescription="@string/na"
+                            android:src="@drawable/close" />
+                    </FrameLayout>
+
+                    <ListView
+                        android:id="@+id/insert_frequent_items"
+                        android:layout_width="fill_parent"
+                        android:layout_height="150dp"
+                        android:background="@drawable/input_box_rect"
+                        android:padding="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:layout_weight="0.6"
+                    android:orientation="vertical" >
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:stretchColumns="1" >
+
+                        <TableRow>
+
+                            <TextView
+                                android:id="@+id/insert_pad_7"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_7"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_8"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_8"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_9"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_9"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_back"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_back"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_clear"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_clear"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+                        </TableRow>
+
+                        <TableRow>
+
+                            <TextView
+                                android:id="@+id/insert_pad_4"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_4"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_5"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_5"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_6"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_6"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_multiply"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_multiply"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_divide"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_divide"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+                        </TableRow>
+
+                        <TableRow>
+
+                            <TextView
+                                android:id="@+id/insert_pad_1"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_1"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_2"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_2"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_3"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_3"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_minus"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_minus"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_plus"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_plus"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+                        </TableRow>
+
+                        <TableRow>
+
+                            <TextView
+                                android:id="@+id/insert_pad_10"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_10"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_point"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/gray_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_point"
+                                android:textColor="@color/calc_number_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_100"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_100"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+
+                            <TextView
+                                android:id="@+id/insert_pad_eq"
+                                android:layout_width="0dp"
+                                android:layout_height="@dimen/calc_btn_height"
+                                android:layout_gravity="center"
+                                android:layout_span="1"
+                                android:layout_weight="2"
+                                android:background="@drawable/white_box"
+                                android:gravity="center"
+                                android:padding="3dp"
+                                android:text="@string/pad_eq"
+                                android:textColor="@color/calc_func_btn"
+                                android:textSize="20sp" />
+                        </TableRow>
+                    </TableLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="2dp" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/input_box_dark"
+                    android:gravity="center"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:text="@string/title_memo"
+                    android:textColor="@color/text_white"
+                    android:textSize="16sp" />
 
                 <EditText
-                    android:id="@+id/insert_entry_title"
+                    android:id="@+id/insert_memo"
                     android:layout_width="fill_parent"
-                    android:layout_height="32dp"
-                    android:layout_gravity="left|center_vertical"
-                    android:background="@drawable/input_box_dark"
-                    android:gravity="left|center_vertical"
-                    android:hint="@string/insert_item_title"
-                    android:inputType="text"
-                    android:paddingLeft="8dp"
-                    android:textColor="@color/text_light_blue"
-                    android:textColorHint="@color/text_white"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/insert_title_clear"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right|center_vertical"
-                    android:contentDescription="@string/na"
-                    android:src="@drawable/close" />
-            </FrameLayout>
-
-            <ListView
-                android:id="@+id/insert_frequent_items"
-                android:layout_width="fill_parent"
-                android:layout_height="150dp"
-                android:background="@drawable/input_box_rect"
-                android:padding="2dp" />
+                    android:layout_height="30dp"
+                    android:background="@drawable/input_box_round_2"
+                    android:hint="@string/description_memo"
+                    android:lines="1"
+                    android:maxLength="40"
+                    android:maxLines="1"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="3dp"
-            android:layout_weight="0.6"
-            android:orientation="vertical" >
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:stretchColumns="1" >
-
-                <TableRow>
-
-                    <TextView
-                        android:id="@+id/insert_pad_7"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_7"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_8"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_8"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_9"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_9"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_back"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_back"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_clear"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_clear"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-                </TableRow>
-
-                <TableRow>
-
-                    <TextView
-                        android:id="@+id/insert_pad_4"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_4"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_5"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_5"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_6"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_6"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_multiply"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_multiply"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_divide"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_divide"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-                </TableRow>
-
-                <TableRow>
-
-                    <TextView
-                        android:id="@+id/insert_pad_1"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_1"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_2"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_2"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_3"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_3"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_minus"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_minus"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_plus"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_plus"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-                </TableRow>
-
-                <TableRow>
-
-                    <TextView
-                        android:id="@+id/insert_pad_10"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_10"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_point"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/gray_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_point"
-                        android:textColor="@color/calc_number_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_100"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_100"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/insert_pad_eq"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/calc_btn_height"
-                        android:layout_gravity="center"
-                        android:layout_span="1"
-                        android:layout_weight="2"
-                        android:background="@drawable/white_box"
-                        android:gravity="center"
-                        android:padding="3dp"
-                        android:text="@string/pad_eq"
-                        android:textColor="@color/calc_func_btn"
-                        android:textSize="20sp" />
-                </TableRow>
-            </TableLayout>
-        </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:orientation="vertical"
         android:weightSum="1" >
 

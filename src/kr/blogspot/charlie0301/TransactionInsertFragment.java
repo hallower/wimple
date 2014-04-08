@@ -12,6 +12,7 @@ import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.Calculator;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
+import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.widget.AccountExpandableListAdapter;
 import kr.blogspot.charlie0301.widget.DatePickerFragment;
@@ -67,11 +68,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private EditText txtTitle;
 	private TextView txtItemDate; 
 	private TextView txtInsertMode;
+	private EditText txtMemo;
 
 	private DatePickerFragment datePicker;
 
 	// Data
-	
+
 	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT };
 	private ListView listViewLatestItems;
 	private ArrayAdapter<Item> adapterLatestItems;
@@ -193,7 +195,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					boolean res = wimple.modifyEntry(editingItem.getId(), DateFormatUtils.getServerDateString(datePicker.getSelectedDate()), 
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
-							txtTitle.getText().toString(), amount, "");
+							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(false == res){
 						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
@@ -204,7 +206,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}else{
 					boolean res = wimple.makeEntry(datePicker.getSelectedDate(), 
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
-							txtTitle.getText().toString(), amount, "");
+							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(false == res){
 						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
@@ -213,6 +215,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 		});
 		setSubmitButton(toolMode);
+
+		txtMemo = (EditText)view.findViewById(R.id.insert_memo);
 
 		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
 		txtTitle.addTextChangedListener(new TextWatcher() {
@@ -274,6 +278,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					// remove virtual keyboard
 					txtTitle.clearFocus();
+					txtMemo.clearFocus();
 					((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
 							txtTitle.getWindowToken(), 0);
 
@@ -430,7 +435,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if( pos > 0 ){
 			title = title.substring(0, pos);
 		}
-		
+
 		if(	0 != title.compareTo(selected.getItem())){
 			txtTitle.setText(selected.getItem());
 			txtTitle.setSelection(txtTitle.getText().length());
@@ -443,6 +448,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void setEntry(Item entry) {
 		txtTitle.setText(entry.getItem());
+		if(entry instanceof Entry){
+			Entry entryItem = (Entry) entry;
+			txtMemo.setText(entryItem.getMemo());	
+		}
 		cal.setValue(entry.getAmount());
 		setAmountText(entry.getAmount());
 		datePicker.setDate(entry.getDate());
@@ -515,6 +524,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void clearForms(){
 		txtTitle.setText("");
+		txtMemo.setText("");
 		setAmountText(0.0);
 		datePicker.setDate(Calendar.getInstance().getTimeInMillis());
 
@@ -536,16 +546,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		int command = msg.what;
 		boolean booleanStatus = msg.arg1 == 1;
 		Object obj = msg.obj;
-		
+
 		// if fragment is added or not to the activity
 		if(false == isAdded()){
 			return;
 		}
-		
+
 		switch(command){
 
 		case CommandID.WIMPLE_LOGGIN_SUCCESS :
-		//case CommandID.GET_ALL_SECTION_RECEIVED :
+			//case CommandID.GET_ALL_SECTION_RECEIVED :
 		{
 			initWimple();
 		}
@@ -612,7 +622,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				lChild.put(lHeader.get(3), expenses);
 
 				String selectedID = leftAccountListAdapter.getSelected().getId();
-				
+
 				leftAccountListAdapter.clear();
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
@@ -620,7 +630,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				if(false == selectedID.isEmpty()){
 					leftAccountListAdapter.setSelected(selectedID);
 				}
-				
+
 				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++){
 					leftAccountListView.expandGroup(i);
 				}
@@ -640,7 +650,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rChild.put(rHeader.get(3), income);
 
 				String selectedID = rightAccountListAdapter.getSelected().getId();
-				
+
 				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
@@ -648,7 +658,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				if(false == selectedID.isEmpty()){
 					rightAccountListAdapter.setSelected(selectedID);
 				}
-				
+
 				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++){
 					rightAccountListView.expandGroup(i);
 				}
@@ -751,17 +761,17 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public void setSubmitButton(CurrentToolMode mode){
 
 		switch(mode){
-		
+
 		case INSERT :
 			txtInsertMode.setText(getResources().getString(R.string.mode_entry_insert));
 			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);	
 			break;
-			
+
 		case EDITING :
 			txtInsertMode.setText(getResources().getString(R.string.mode_entry_modify));
 			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_6);	
 			break;
-			
+
 		case MONTHLY_INSERT :
 			txtInsertMode.setText(getResources().getString(R.string.mode_monthly_insert));
 			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);

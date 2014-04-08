@@ -84,6 +84,8 @@
     <string name="title_expense">지출</string>
     <string name="title_adjust">조정</string>
     <string name="title_group">그룹</string>
+    <string name="title_memo">메모</string>
+    <string name="description_memo">거래내역에 대한 메모를 입력하세요.</string>
     <string name="title_activity_splash_screen">wimple</string>
     <string name="title_activity_wimple">wimple</string>
     <string name="notice_need_auth">로그아웃 되거나 사용자 인증이 만료 되어 재인증이 필요합니다. 다시 로그인 및 승인을 해주세요.</string>
