@@ -683,7 +683,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			if(booleanStatus){
 				adapterLatestItems.clear();
 				adapterLatestItems.addAll((List<Item>) obj);
-				adapterLatestItems.sort(new Item.DateDescCompare());
+				// Do not sort this items, because they doesn't have date value!!!
+				//adapterLatestItems.sort(new Item.DateDescCompare());
 				adapterLatestItems.notifyDataSetChanged();
 			}	
 		}
