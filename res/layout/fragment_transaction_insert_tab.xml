@@ -430,11 +430,11 @@
                     android:layout_gravity="center"
                     android:background="@drawable/input_box_dark"
                     android:gravity="center"
-                    android:paddingLeft="3dp"
-                    android:paddingRight="3dp"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
                     android:text="@string/title_memo"
                     android:textColor="@color/text_white"
-                    android:textSize="16sp" />
+                    android:textSize="14sp" />
 
                 <EditText
                     android:id="@+id/insert_memo"
@@ -445,8 +445,8 @@
                     android:lines="1"
                     android:maxLength="40"
                     android:maxLines="1"
-                    android:paddingLeft="4dp"
-                    android:paddingRight="4dp"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
