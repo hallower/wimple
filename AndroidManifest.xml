@@ -28,13 +28,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="kr.blogspot.charlie0301.WebViewActivity"
-            android:label="@string/title_activity_web_view" >
-        </activity>
-        <activity
             android:name="kr.blogspot.charlie0301.TransactionInsertFragment"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_transaction_insert_fragment" >
+            android:label="@string/title_transaction_insert_fragment"
+            android:windowSoftInputMode="adjustResize" >
         </activity>
         <activity
             android:name="kr.blogspot.charlie0301.TransactionListFragment"
