@@ -281,6 +281,13 @@ public class SplashScreenActivity extends Activity {
 					Collection<AccountState> list) {
 				// TODO Auto-generated method stub
 				
+			}
+
+			@Override
+			public void onGetIncomeAndExpenseResponseReceived(boolean status,
+					Collection<AccountState> list) {
+				// TODO Auto-generated method stub
+				
 			}				
 
 		});

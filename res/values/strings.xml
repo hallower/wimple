@@ -17,6 +17,7 @@
     <string name="drawer_close">사이드메뉴 닫기</string>
     <string name="drawer_menu_transaction">거래</string>
     <string name="drawer_menu_financial_state">자산부채</string>
+    <string name="drawer_menu_income_expense">비용수익</string>
     <string name="drawer_menu_preference">설정</string>
     <string name="mode_entry_insert">거래 입력</string>
     <string name="mode_entry_modify">거래 수정</string>

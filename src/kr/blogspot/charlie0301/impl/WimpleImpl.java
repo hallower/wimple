@@ -121,6 +121,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onRemoveMonthlyItemResponseReceived(boolean status, String id) { }
 		@Override
 		public void onGetFinancialStateResponseReceived(boolean status, Collection<AccountState> list) { }
+		@Override
+		public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -272,6 +274,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		public static final String FINANCIAL_STATE			= "api/bs.json_array";
 
+		public static final String INCOME_AND_EXPENSE		= "api/pl.json_array";
 	};
 
 
@@ -366,7 +369,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
 		public static final int CMD_DELETE_ENTRY = CMD_BASE + 33;
 		public static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;		
-		public static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;		
+		public static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;
+		public static final int CMD_GET_INCOME_AND_EXPENSE = CMD_BASE + 39;
 	}
 
 
@@ -515,6 +519,10 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onGetFinancialStateResponseReceived(booleanStatus, (Collection<AccountState>)obj);
 				break;
 
+			case CommandID.CMD_GET_INCOME_AND_EXPENSE :
+				responseListener.onGetIncomeAndExpenseResponseReceived(booleanStatus, (Collection<AccountState>)obj);
+				break;
+				
 			default : 
 				break;
 
@@ -842,11 +850,11 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.e(LOG_TAG, "[Account] Initialization is on progressing.");
 			return false;
 		}
-/*
+		/*
 		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
 			return true;
 		}
-*/
+		 */
 		new GetAllAccountsTaskThread(defaultSectionID, dateFilter, forceUpdate).start();		
 		return true;
 	}
@@ -934,14 +942,14 @@ public class WimpleImpl implements IWimpleImpl {
 					Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, filtredList);	
 				}
-				
+
 			}finally{
 				//apiAvailableSemaphore.get("getAllAccounts").release();
 			}		
 		}
 
 		private Collection<Account> filterOutAccounts() {
-			
+
 			Collection<Account> accountList = adbh.getAllAccounts();
 			Collection<Account> list = new ArrayList<Account>();
 
@@ -1270,6 +1278,189 @@ public class WimpleImpl implements IWimpleImpl {
 
 	}
 
+
+
+
+
+	public boolean getIncomeAndExpense(String startDate, String endDate, boolean forceUpdate){
+		/*
+		if(false == isInitializedFinished()){
+			return false;
+		}
+		 */
+		/*
+		if(false == apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()){
+			return true;
+		}
+		 */
+		new GetIncomeAndExpenseTaskThread(defaultSectionID, startDate, endDate, forceUpdate).start();		
+		return true;
+	}
+
+	private class GetIncomeAndExpenseTaskThread extends Thread{
+
+		final String sectionID;
+		final String startDate;
+		final String endDate;
+		final boolean forceUpdate;
+
+		GetIncomeAndExpenseTaskThread(String sectionID, String startDate, String endDate, boolean forceUpdate){
+			this.sectionID = sectionID;
+			this.startDate = startDate;
+			this.endDate = endDate;
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			/*
+			try{
+			 */
+			/*
+				if((false == forceUpdate) &&
+						asdbh.hasData()){
+
+					Collection<AccountState> list = new ArrayList<AccountState>();
+					list = asdbh.getAllAccountStates();
+
+					Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
+					sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+					return;
+				}
+			 */
+			Collection<AccountState> list = new ArrayList<AccountState>();
+
+			if(null == sectionID ||
+					sectionID.isEmpty()){
+				Log.e(LOG_TAG, "[InE] Initialization is on progressing !!!");
+				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				return;
+			}
+
+			String path = "?section_id=" + sectionID;
+
+			try{
+				sdf.setLenient(false);
+				sdf.parse(startDate);
+				path += "&start_date=" + startDate;
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}					
+
+			try{
+				sdf.setLenient(false);
+				sdf.parse(endDate);
+				path += "&end_date=" + endDate;
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+
+			try{
+				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.INCOME_AND_EXPENSE + path, "");
+				if(null == json){
+					Log.e(LOG_TAG, "[InE] Error response - null returned");
+					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+					return;
+				}
+
+				if(	false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[InE] Error response - " + json.get("message").toString());
+					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+
+					int code = Integer.parseInt(json.get("code").toString());
+					handleRESTErrorResponse(code);
+					return;
+				}
+
+				/*
+	"results" : {
+		"income" : {
+			"total" : 11621000,
+			"total_steady" : 10920000,
+			"total_floating" : 701000,
+			"accounts" : [
+				{
+					"account_id" : "x21",
+					"money" : 500000
+				},
+				{
+					"account_id" : "x22",
+					"money" : 201000
+				}
+				...
+			]
+		},
+		"expenses" : {
+			...
+		}
+	}
+				 */
+
+				setRemainedAPICall(json.get("rest_of_api").toString());
+				JSONObject results = (JSONObject) json.get("results");
+				for(Object type : results.keySet()){
+
+					JSONObject accountType  = (JSONObject) results.get(type);
+					String category = type.toString();
+
+					for(Object name : accountType.keySet()){
+
+						/*
+							if(0 == name.toString().compareTo("total")){
+
+							}else if(0 == name.toString().compareTo("total_steady")){
+
+
+							}else if(0 == name.toString().compareTo("total_floating")){
+
+							}else*/
+						if(0 == name.toString().compareTo("accounts")){
+							JSONArray rows = (JSONArray) accountType.get(name);
+
+							for(int i = 0; i < rows.size(); i++){
+
+								JSONObject row = (JSONObject) rows.get(i);
+								AccountState as = new AccountState(row, category);
+
+								Account account = adbh.getAccountName(as.getAccountID());
+								if(null == account){
+									continue;
+								}
+
+								//Log.d(LOG_TAG, "---[" + account.getId() + "], " + account.getTitle() + ", date=" +
+								//		account.getOpenedDate() + " - " + account.getClosedDate());
+								as.setGroup(0 == account.getType().compareTo("group"));
+								as.setAccountName(account.getTitle());
+								as.setSeq(i);
+								list.add(as);	
+							}						
+						}
+
+					}
+				}
+			} catch(Exception e){
+				Log.e(LOG_TAG, "[InE] Failed - GetFinancialStateTaskThread!!!");
+				e.printStackTrace();
+				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+				return;
+			}
+
+			//asdbh.insert(list);
+
+			Log.d(LOG_TAG, "[InE] Providing GetFinancialStateTaskThread from Server!!!");
+			sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
+
+			/*
+			}finally{
+				apiAvailableSemaphore.get("getFinancialState").release();
+			}
+			 */
+		}			
+
+	}
 
 
 

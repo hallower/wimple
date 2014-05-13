@@ -111,6 +111,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		public static final int REMOVE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 39;
 		public static final int REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 41;
 		public static final int GET_FINANCIAL_STATE_RESPONSE_RECEIVED = CMD_BASE + 43;
+		public static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -588,6 +589,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			public void onGetFinancialStateResponseReceived(boolean status,
 					Collection<AccountState> list) {
 				sm(CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED, status?1:0, 0, list);
+			}
+
+			@Override
+			public void onGetIncomeAndExpenseResponseReceived(boolean status,
+					Collection<AccountState> list) {
+				sm(CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED, status?1:0, 0, list);
 			}				
 
 		});
