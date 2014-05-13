@@ -63,4 +63,10 @@ public interface IWimpleResponseListener {
 	 * R, Financial State
 	 */
 	public void onGetFinancialStateResponseReceived(boolean status, Collection<AccountState> list);
+	
+	/*
+	 * R, Income and Expense
+	 */
+	public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list);
+	
 }
