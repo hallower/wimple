@@ -16,6 +16,7 @@ import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.AccountDBHandler;
 import kr.blogspot.charlie0301.impl.db.AccountStateDBHandler;
 import kr.blogspot.charlie0301.impl.db.EntryDBHandler;
+import kr.blogspot.charlie0301.impl.db.IncomeExpenseDBHandler;
 import kr.blogspot.charlie0301.impl.db.ItemDBHandler;
 import kr.blogspot.charlie0301.impl.db.SectionDBHandler;
 import kr.blogspot.charlie0301.impl.db.UserInfoDBHandler;
@@ -62,7 +63,8 @@ public class WimpleImpl implements IWimpleImpl {
 	private SectionDBHandler sdbh = null;
 	private EntryDBHandler edbh = null;
 	private ItemDBHandler midbh = null;
-	private AccountStateDBHandler asdbh = null;
+	private AccountStateDBHandler asdbh = null;		// financial status
+	private IncomeExpenseDBHandler iedbh = null;	// income and expense
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -137,6 +139,7 @@ public class WimpleImpl implements IWimpleImpl {
 		// Because of delayed account list display, ignore multiple Account get request and response received situation.
 		//apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
 		apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
+		apiAvailableSemaphore.put("getIncomeAndExpense", new Semaphore(1));
 	}
 
 	public Semaphore getApiAvailableSemaphore(String key){
@@ -207,6 +210,10 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(null == asdbh){
 			asdbh = new AccountStateDBHandler(WimpleImpl.context);
+		}
+		
+		if(null == iedbh){
+			iedbh = new IncomeExpenseDBHandler(WimpleImpl.context);
 		}
 	}
 
@@ -600,6 +607,7 @@ public class WimpleImpl implements IWimpleImpl {
 		edbh.clean();
 		midbh.clean();
 		asdbh.clean();
+		iedbh.clean();
 	}
 
 	/*
@@ -1288,11 +1296,11 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		 */
-		/*
+		
 		if(false == apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()){
 			return true;
 		}
-		 */
+		
 		new GetIncomeAndExpenseTaskThread(defaultSectionID, startDate, endDate, forceUpdate).start();		
 		return true;
 	}
@@ -1314,27 +1322,27 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			/*
+
 			try{
-			 */
-			/*
+			 
+			
 				if((false == forceUpdate) &&
-						asdbh.hasData()){
+						iedbh.hasData()){
 
 					Collection<AccountState> list = new ArrayList<AccountState>();
-					list = asdbh.getAllAccountStates();
+					list = iedbh.getAllAccountStates();
 
-					Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
-					sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
+					Log.d(LOG_TAG, "[InE] Providing FILTERRED GetIncomeAndExpenseTaskThread from Cache!!!");
+					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
 					return;
 				}
-			 */
+			
 			Collection<AccountState> list = new ArrayList<AccountState>();
 
 			if(null == sectionID ||
 					sectionID.isEmpty()){
 				Log.e(LOG_TAG, "[InE] Initialization is on progressing !!!");
-				sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
+				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
 				return;
 			}
 
@@ -1442,22 +1450,22 @@ public class WimpleImpl implements IWimpleImpl {
 					}
 				}
 			} catch(Exception e){
-				Log.e(LOG_TAG, "[InE] Failed - GetFinancialStateTaskThread!!!");
+				Log.e(LOG_TAG, "[InE] Failed - GetIncomeAndExpenseTaskThread!!!");
 				e.printStackTrace();
 				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
 				return;
 			}
 
-			//asdbh.insert(list);
+			iedbh.insert(list);
 
-			Log.d(LOG_TAG, "[InE] Providing GetFinancialStateTaskThread from Server!!!");
+			Log.d(LOG_TAG, "[InE] Providing GetIncomeAndExpenseTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
 
-			/*
+
 			}finally{
-				apiAvailableSemaphore.get("getFinancialState").release();
+				apiAvailableSemaphore.get("getIncomeAndExpense").release();
 			}
-			 */
+
 		}			
 
 	}

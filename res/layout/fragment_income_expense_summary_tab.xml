@@ -27,7 +27,7 @@
                     android:orientation="vertical" />
 
                 <ImageView
-                    android:id="@+id/as_refresh"
+                    android:id="@+id/ine_refresh"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="right|top"
@@ -58,7 +58,7 @@
                     android:src="@drawable/graph" />
 
                 <TextView
-                    android:id="@+id/as_sum_value"
+                    android:id="@+id/ine_sum_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
@@ -83,7 +83,7 @@
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
                     android:alpha="90"
-                    android:background="@drawable/input_color_box"
+                    android:background="@drawable/input_color_box_3"
                     android:paddingBottom="4dp"
                     android:paddingLeft="16dp"
                     android:paddingRight="16dp"
@@ -94,7 +94,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/as_income_value"
+                    android:id="@+id/ine_income_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
@@ -120,7 +120,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:background="@drawable/input_color_box_3"
+                    android:background="@drawable/input_color_box"
                     android:paddingBottom="4dp"
                     android:paddingLeft="16dp"
                     android:paddingRight="16dp"
@@ -131,7 +131,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/as_expense_value"
+                    android:id="@+id/ine_expense_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
@@ -146,7 +146,7 @@
     </ScrollView>
 
     <LinearLayout
-        android:id="@+id/as_update_notification"
+        android:id="@+id/ine_update_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -163,7 +163,7 @@
         android:visibility="gone" >
 
         <TextView
-            android:id="@+id/as_list_notification_text"
+            android:id="@+id/ine_list_notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
