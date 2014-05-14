@@ -79,6 +79,20 @@ public class AccountStateItemView extends LinearLayout {
 			tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
+		case 'i' :
+			type.setText(context.getResources().getString(R.string.title_income));
+			type.setTextColor(context.getResources().getColor(R.color.text_blue));
+
+			tv.setBackgroundResource(R.drawable.input_color_box_6);
+			break;
+
+		case 'e' :
+			type.setText(context.getResources().getString(R.string.title_expense));
+			type.setTextColor(context.getResources().getColor(R.color.text_red));
+
+			tv.setBackgroundResource(R.drawable.input_color_box_4);
+			break;
+
 		default :
 			type.setText(context.getResources().getString(R.string.title_adjust));
 			tv.setBackgroundResource(R.drawable.progress_n);
