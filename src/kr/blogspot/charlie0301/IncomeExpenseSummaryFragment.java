@@ -29,7 +29,7 @@ import android.widget.TextView;
 
 public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "TransactionInsertFragment";
+	private final static String LOG_TAG = "IncomeExpenseSummaryFragment";
 
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
@@ -70,7 +70,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		/*
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.as_list_view));
+		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.ine_list_view));
 		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
 
 		asList.get().setAdapter(asAdapter.get());
@@ -79,11 +79,11 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		registerForContextMenu(asList.get());
 		 */
 
-		tvSumValue = (TextView)view.findViewById(R.id.as_sum_value);
-		tvIncomeValue = (TextView)view.findViewById(R.id.as_income_value);
-		tvExpenseValue = (TextView)view.findViewById(R.id.as_expense_value);
+		tvSumValue = (TextView)view.findViewById(R.id.ine_sum_value);
+		tvIncomeValue = (TextView)view.findViewById(R.id.ine_income_value);
+		tvExpenseValue = (TextView)view.findViewById(R.id.ine_expense_value);
 
-		llUpdateNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
+		llUpdateNotice = (LinearLayout)view.findViewById(R.id.ine_update_notification);
 
 		firstUpdate = true;
 
@@ -93,7 +93,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 
-		((ImageView) view.findViewById(R.id.as_refresh)).setOnClickListener(new OnClickListener() {
+		((ImageView) view.findViewById(R.id.ine_refresh)).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -165,7 +165,11 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
 				if(autoRefresh){
-					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
+					Calendar c = Calendar.getInstance ( );
+					c.setTime ( new Date() );
+					c.set(Calendar.DATE, 1);
+					wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+
 					llUpdateNotice.setVisibility(View.VISIBLE);
 				}
 			}			

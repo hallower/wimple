@@ -2,7 +2,7 @@ package kr.blogspot.charlie0301.impl.db;
 
 public final class SQLQueries {
 
-	public static final int DB_VERSION = 2;
+	public static final int DB_VERSION = 3;
 	
 	public static final String dbName = "wimple";
 	
