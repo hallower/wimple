@@ -77,6 +77,8 @@
     <string name="entry_header_capital_m">순자산-</string>
     <string name="entry_header_income">수익</string>
     <string name="entry_header_expenses">비용</string>
+    <string name="entry_header_income_expense_status"> 현재 수익/지출 현황 </string>
+    <string name="entry_header_budget_income_expense_status"> 예산대비 수익/지출 현황 </string>
     <string name="currency"></string>
     
     <string name="title_saving">자산</string>
@@ -108,5 +110,7 @@
     <string name="remove_entry_failed">거래 내역 삭제가 정상적으로 처리되지 않았습니다.</string>
     <string name="remove_monthly_item_success">매월 입력 거래가 정상적으로 삭제 되었습니다.</string>
     <string name="remove_monthly_item_failed">매월 입력 거래 삭제가 정상적으로 처리되지 않았습니다.</string>
+    
+    <string name="budget_not_yet">예산을 정해주세요.</string>
     
 </resources>

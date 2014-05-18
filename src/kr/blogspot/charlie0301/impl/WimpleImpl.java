@@ -24,6 +24,7 @@ import kr.blogspot.charlie0301.impl.util.DrawableBitmapCache;
 import kr.blogspot.charlie0301.impl.util.RemoteContent;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.model.Budget;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
@@ -125,6 +126,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onGetFinancialStateResponseReceived(boolean status, Collection<AccountState> list) { }
 		@Override
 		public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) { }
+		@Override
+		public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Collection<Budget> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -140,6 +143,7 @@ public class WimpleImpl implements IWimpleImpl {
 		//apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
 		apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
 		apiAvailableSemaphore.put("getIncomeAndExpense", new Semaphore(1));
+		apiAvailableSemaphore.put("getBudget", new Semaphore(1));
 	}
 
 	public Semaphore getApiAvailableSemaphore(String key){
@@ -211,7 +215,7 @@ public class WimpleImpl implements IWimpleImpl {
 		if(null == asdbh){
 			asdbh = new AccountStateDBHandler(WimpleImpl.context);
 		}
-		
+
 		if(null == iedbh){
 			iedbh = new IncomeExpenseDBHandler(WimpleImpl.context);
 		}
@@ -282,6 +286,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String FINANCIAL_STATE			= "api/bs.json_array";
 
 		public static final String INCOME_AND_EXPENSE		= "api/pl.json_array";
+		public static final String BUDGET_INCOME			= "api/budget/income.json_array";
+		public static final String BUDGET_EXPENSES			= "api/budget/expenses.json_array";
 	};
 
 
@@ -378,6 +384,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;		
 		public static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;
 		public static final int CMD_GET_INCOME_AND_EXPENSE = CMD_BASE + 39;
+		public static final int CMD_GET_BUDGET = CMD_BASE + 41;
 	}
 
 
@@ -529,7 +536,11 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_GET_INCOME_AND_EXPENSE :
 				responseListener.onGetIncomeAndExpenseResponseReceived(booleanStatus, (Collection<AccountState>)obj);
 				break;
-				
+
+			case CommandID.CMD_GET_BUDGET :
+				responseListener.onGetBudgetResponseReceived(booleanStatus, (msg.arg2==1)?true:false, (Collection<Budget>)obj);
+				break;
+
 			default : 
 				break;
 
@@ -1287,20 +1298,17 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-
-
-
 	public boolean getIncomeAndExpense(String startDate, String endDate, boolean forceUpdate){
 		/*
 		if(false == isInitializedFinished()){
 			return false;
 		}
 		 */
-		
+
 		if(false == apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()){
 			return true;
 		}
-		
+
 		new GetIncomeAndExpenseTaskThread(defaultSectionID, startDate, endDate, forceUpdate).start();		
 		return true;
 	}
@@ -1324,8 +1332,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 
 			try{
-			 
-			
+
+
 				if((false == forceUpdate) &&
 						iedbh.hasData()){
 
@@ -1336,13 +1344,196 @@ public class WimpleImpl implements IWimpleImpl {
 					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
 					return;
 				}
-			
-			Collection<AccountState> list = new ArrayList<AccountState>();
+
+				Collection<AccountState> list = new ArrayList<AccountState>();
+
+				if(null == sectionID ||
+						sectionID.isEmpty()){
+					Log.e(LOG_TAG, "[InE] Initialization is on progressing !!!");
+					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+					return;
+				}
+
+				String path = "?section_id=" + sectionID;
+
+				try{
+					sdf.setLenient(false);
+					sdf.parse(startDate);
+					path += "&start_date=" + startDate;
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}					
+
+				try{
+					sdf.setLenient(false);
+					sdf.parse(endDate);
+					path += "&end_date=" + endDate;
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+
+				try{
+					JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.INCOME_AND_EXPENSE + path, "");
+					if(null == json){
+						Log.e(LOG_TAG, "[InE] Error response - null returned");
+						sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+						return;
+					}
+
+					if(	false == json.get("code").toString().startsWith("2")){
+						Log.e(LOG_TAG, "[InE] Error response - " + json.get("message").toString());
+						sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+
+						int code = Integer.parseInt(json.get("code").toString());
+						handleRESTErrorResponse(code);
+						return;
+					}
+
+					/*
+	"results" : {
+		"income" : {
+			"total" : 11621000,
+			"total_steady" : 10920000,
+			"total_floating" : 701000,
+			"accounts" : [
+				{
+					"account_id" : "x21",
+					"money" : 500000
+				},
+				{
+					"account_id" : "x22",
+					"money" : 201000
+				}
+				...
+			]
+		},
+		"expenses" : {
+			...
+		}
+	}
+					 */
+
+					setRemainedAPICall(json.get("rest_of_api").toString());
+					JSONObject results = (JSONObject) json.get("results");
+					for(Object type : results.keySet()){
+
+						JSONObject accountType  = (JSONObject) results.get(type);
+						String category = type.toString();
+
+						for(Object name : accountType.keySet()){
+
+							/*
+							if(0 == name.toString().compareTo("total")){
+
+							}else if(0 == name.toString().compareTo("total_steady")){
+
+
+							}else if(0 == name.toString().compareTo("total_floating")){
+
+							}else*/
+							if(0 == name.toString().compareTo("accounts")){
+								JSONArray rows = (JSONArray) accountType.get(name);
+
+								for(int i = 0; i < rows.size(); i++){
+
+									JSONObject row = (JSONObject) rows.get(i);
+									AccountState as = new AccountState(row, category);
+
+									Account account = adbh.getAccountName(as.getAccountID());
+									if(null == account){
+										continue;
+									}
+
+									//Log.d(LOG_TAG, "---[" + account.getId() + "], " + account.getTitle() + ", date=" +
+									//		account.getOpenedDate() + " - " + account.getClosedDate());
+									as.setGroup(0 == account.getType().compareTo("group"));
+									as.setAccountName(account.getTitle());
+									as.setSeq(i);
+									list.add(as);	
+								}						
+							}
+
+						}
+					}
+				} catch(Exception e){
+					Log.e(LOG_TAG, "[InE] Failed - GetIncomeAndExpenseTaskThread!!!");
+					e.printStackTrace();
+					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+					return;
+				}
+
+				iedbh.insert(list);
+
+				Log.d(LOG_TAG, "[InE] Providing GetIncomeAndExpenseTaskThread from Server!!!");
+				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
+
+
+			}finally{
+				apiAvailableSemaphore.get("getIncomeAndExpense").release();
+			}
+
+		}			
+
+	}
+
+
+	public boolean getBudget(Boolean isIncome, String startDate, String endDate, boolean forceUpdate){
+		/*
+		if(false == isInitializedFinished()){
+			return false;
+		}
+		 */
+		/*
+		if(false == apiAvailableSemaphore.get("getBudget").tryAcquire()){
+			return true;
+		}
+		 */
+		new GetBudgetTaskThread(defaultSectionID, isIncome, startDate, endDate, forceUpdate).start();		
+		return true;
+	}
+
+	private class GetBudgetTaskThread extends Thread{
+
+		final String sectionID;
+		final Boolean isIncome;
+		final String startDate;
+		final String endDate;
+		final boolean forceUpdate;
+
+		GetBudgetTaskThread(String sectionID, Boolean isIncome, String startDate, String endDate, boolean forceUpdate){
+			this.sectionID = sectionID;
+			this.isIncome = isIncome;
+			this.startDate = startDate;
+			this.endDate = endDate;
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+
+			//try{
+
+			/*
+				if((false == forceUpdate) &&
+						iedbh.hasData()){
+
+					Collection<AccountState> list = new ArrayList<AccountState>();
+					list = iedbh.getAllAccountStates();
+
+					Log.d(LOG_TAG, "[InE] Providing FILTERRED GetBudgetTaskThread from Cache!!!");
+					sm(CommandID.CMD_GET_BUDGET, 1, 0, list);
+					return;
+				}
+			 */
+			Collection<Budget> list = new ArrayList<Budget>();
 
 			if(null == sectionID ||
 					sectionID.isEmpty()){
-				Log.e(LOG_TAG, "[InE] Initialization is on progressing !!!");
-				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+				Log.e(LOG_TAG, "[Budget] Initialization is on progressing !!!");
+				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
 				return;
 			}
 
@@ -1367,16 +1558,24 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 
 			try{
-				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.INCOME_AND_EXPENSE + path, "");
+				JSONObject json;
+
+				if(isIncome){
+					json = invokeRESTAPI(HTTP_METHOD.GET, Path.BUDGET_INCOME + path, "");
+
+				}else{
+					json = invokeRESTAPI(HTTP_METHOD.GET, Path.BUDGET_EXPENSES + path, "");
+
+				}
 				if(null == json){
-					Log.e(LOG_TAG, "[InE] Error response - null returned");
-					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+					Log.e(LOG_TAG, "[Budget] Error response - null returned");
+					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
 					return;
 				}
 
 				if(	false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[InE] Error response - " + json.get("message").toString());
-					sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+					Log.e(LOG_TAG, "[Budget] Error response - " + json.get("message").toString());
+					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
 
 					int code = Integer.parseInt(json.get("code").toString());
 					handleRESTErrorResponse(code);
@@ -1385,91 +1584,130 @@ public class WimpleImpl implements IWimpleImpl {
 
 				/*
 	"results" : {
-		"income" : {
-			"total" : 11621000,
-			"total_steady" : 10920000,
-			"total_floating" : 701000,
+		"aggregate" : {
+			"total" : {
+				"budget" : 9929000,
+				"money" : 2399000,
+				"remains" : 7530000
+			}
+			"total_steady" : {
+				"budget" : 2983023,
+				"money" : 182000,
+				"remains" : 2304000
+			}
+			"total_floating" : {
+				"budget" : 6945977,
+				"money" : 234000,
+				"remains" 44320023
+			}
 			"accounts" : [
 				{
-					"account_id" : "x21",
-					"money" : 500000
-				},
-				{
-					"account_id" : "x22",
-					"money" : 201000
+					"account_id" : "x12",
+					"budget" : 120000,
+					"money" : 234002,
+					"remains" : -59203
 				}
-				...
-			]
-		},
-		"expenses" : {
-			...
-		}
-	}
-				 */
+				{
+					"account_id" : "x13",
+					"budget" : 120000,
+					"money" : 234002,
+					"remains" : -59203
+				}
+				.
+				.
+				.
+			],
+			"misc" : {
+				"standard" : 2939,
+				"possibility" : 29.239892,
+				"daily_remains" : 23983,
+				"weekly_remains" : 82983,
+				"today" : {
+					"budget" : 2300,
+					"money" : 300,
+					"remains" : 2000
+				}
+			}
+		},					 */
 
 				setRemainedAPICall(json.get("rest_of_api").toString());
 				JSONObject results = (JSONObject) json.get("results");
 				for(Object type : results.keySet()){
 
-					JSONObject accountType  = (JSONObject) results.get(type);
-					String category = type.toString();
+					if(0 == type.toString().compareTo("aggregate"))
+					{
 
-					for(Object name : accountType.keySet()){
+						JSONObject accountType  = (JSONObject) results.get(type);
+						String category = type.toString();
 
-						/*
+						for(Object name : accountType.keySet()){
+
+
 							if(0 == name.toString().compareTo("total")){
 
+								JSONObject rows = (JSONObject) accountType.get(name);
+
+								double budget = 0;
+								double money = 0;
+								double remains = 0;
+
+								for(Object totalKey : rows.keySet()){
+
+									Long totalValue = (Long) rows.get(totalKey);
+									String subname = totalKey.toString();
+
+									if(0 == subname.compareTo("budget")){
+										budget = totalValue;
+									}else if(0 == subname.compareTo("money")){
+										money = totalValue;
+									}else if(0 == subname.compareTo("remains")){
+										remains = totalValue;	
+									}
+								}
+
+								Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains);
+								list.add(bd);	
+
+								/*
 							}else if(0 == name.toString().compareTo("total_steady")){
 
 
 							}else if(0 == name.toString().compareTo("total_floating")){
+								 */
+							}else if(0 == name.toString().compareTo("accounts")){
+								JSONArray rows = (JSONArray) accountType.get(name);
 
-							}else*/
-						if(0 == name.toString().compareTo("accounts")){
-							JSONArray rows = (JSONArray) accountType.get(name);
+								for(int i = 0; i < rows.size(); i++){
 
-							for(int i = 0; i < rows.size(); i++){
+									JSONObject row = (JSONObject) rows.get(i);
+									Budget bd = new Budget(row);
+									list.add(bd);	
+								}						
+							}
 
-								JSONObject row = (JSONObject) rows.get(i);
-								AccountState as = new AccountState(row, category);
-
-								Account account = adbh.getAccountName(as.getAccountID());
-								if(null == account){
-									continue;
-								}
-
-								//Log.d(LOG_TAG, "---[" + account.getId() + "], " + account.getTitle() + ", date=" +
-								//		account.getOpenedDate() + " - " + account.getClosedDate());
-								as.setGroup(0 == account.getType().compareTo("group"));
-								as.setAccountName(account.getTitle());
-								as.setSeq(i);
-								list.add(as);	
-							}						
 						}
-
 					}
 				}
 			} catch(Exception e){
-				Log.e(LOG_TAG, "[InE] Failed - GetIncomeAndExpenseTaskThread!!!");
+				Log.e(LOG_TAG, "[Budget] Failed - GetBudgetTaskThread!!!");
 				e.printStackTrace();
-				sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
+				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
 				return;
 			}
 
-			iedbh.insert(list);
+			//iedbh.insert(list);
 
-			Log.d(LOG_TAG, "[InE] Providing GetIncomeAndExpenseTaskThread from Server!!!");
-			sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 1, 0, list);
+			Log.d(LOG_TAG, "[Budget] Providing GetBudgetTaskThread from Server!!!");
+			sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, list);
 
-
+			/*
 			}finally{
-				apiAvailableSemaphore.get("getIncomeAndExpense").release();
+				apiAvailableSemaphore.get("getBudget").release();
 			}
-
+			 */
 		}			
 
 	}
-
 
 
 

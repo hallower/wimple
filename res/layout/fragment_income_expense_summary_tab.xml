@@ -16,26 +16,114 @@
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp" >
+                android:layout_height="wrap_content" >
 
-                <LinearLayout
-                    android:id="@+id/chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:orientation="vertical" />
+                <!-- refrech button -->
 
                 <ImageView
                     android:id="@+id/ine_refresh"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="right|top"
-                    android:layout_marginRight="18dp"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="8dp"
                     android:contentDescription="@string/na"
                     android:src="@drawable/refresh" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|left"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/progress_p"
+                    android:padding="3dp"
+                    android:scaleType="fitXY"
+                    android:text="@string/entry_header_income_expense_status"
+                    android:textColor="@color/text_white" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="58dp" >
+
+                    <!-- 수익 -->
+
+                    <ImageView
+                        android:id="@+id/ine_bar_income"
+                        android:layout_width="50dp"
+                        android:layout_height="58dp"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="65dp"
+                        android:contentDescription="@string/na"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/input_color_box_3" />
+
+                    <TextView
+                        android:id="@+id/ine_income_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="80dp"
+                        android:background="@color/text_white"
+                        android:text="..."
+                        android:textColor="@color/text_blue"
+                        android:textScaleX="0.8"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="15dp"
+                        android:text="@string/entry_header_income"
+                        android:textScaleX="0.8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
             </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" >
+
+                <!-- 지출 -->
+
+                <ImageView
+                    android:id="@+id/ine_bar_expense"
+                    android:layout_width="70dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box" />
+
+                <TextView
+                    android:id="@+id/ine_expense_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
+                    android:text="..."
+                    android:textColor="@color/text_red"
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="15dp"
+                    android:text="@string/entry_header_expenses"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <!-- total value -->
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -69,81 +157,125 @@
                     android:textSize="55sp" />
             </RelativeLayout>
 
-            <RelativeLayout
+            <!-- 예산 대비 수익 지출 현황 -->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/progress_p"
+                android:padding="3dp"
+                android:scaleType="fitXY"
+                android:text="@string/entry_header_budget_income_expense_status"
+                android:textColor="@color/text_white" />
+
+            <!-- 예산 대비 수익 -->
+
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="70dp"
-                android:layout_marginRight="70dp"
-                android:layout_marginTop="20dp"
-                android:orientation="horizontal" >
+                android:layout_gravity="top|left"
+                android:layout_marginTop="20dp" >
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_base_income"
+                    android:layout_width="100dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/progress_n" />
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_current_income"
+                    android:layout_width="130dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box_3" />
 
                 <TextView
+                    android:id="@+id/ine_bar_budget_current_income_percentage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:alpha="90"
-                    android:background="@drawable/input_color_box_3"
-                    android:paddingBottom="4dp"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
-                    android:paddingTop="4dp"
-                    android:text="@string/title_income"
-                    android:textColor="@color/text_white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/ine_income_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="30dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
                     android:text="..."
                     android:textColor="@color/text_blue"
-                    android:textScaleX="0.9"
-                    android:textSize="22sp" />
-            </RelativeLayout>
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
 
-            <RelativeLayout
+                <TextView
+                    android:id="@+id/ine_income_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="25dp"
+                    android:text="@string/title_income"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp" />
+            </FrameLayout>
+
+            <!-- 예산 대비 지출 -->
+
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="30dp"
-                android:layout_marginLeft="70dp"
-                android:layout_marginRight="70dp"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal" >
+                android:layout_gravity="top|left"
+                android:layout_marginTop="10dp" >
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_base_expense"
+                    android:layout_width="100dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/progress_n" />
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_current_expense"
+                    android:layout_width="130dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box" />
 
                 <TextView
+                    android:id="@+id/ine_bar_budget_current_expense_percentage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/input_color_box"
-                    android:paddingBottom="4dp"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
-                    android:paddingTop="4dp"
-                    android:text="@string/title_expense"
-                    android:textColor="@color/text_white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/ine_expense_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="30dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
                     android:text="..."
                     android:textColor="@color/text_red"
-                    android:textScaleX="0.9"
-                    android:textSize="22sp" />
-            </RelativeLayout>
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/ine_expense_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="25dp"
+                    android:text="@string/title_expense"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp" />
+            </FrameLayout>
         </LinearLayout>
     </ScrollView>
+
+    <!-- update notification 표시 -->
 
     <LinearLayout
         android:id="@+id/ine_update_notification"

@@ -12,6 +12,7 @@ import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.model.Budget;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
@@ -279,15 +280,16 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetFinancialStateResponseReceived(boolean status,
 					Collection<AccountState> list) {
-				// TODO Auto-generated method stub
-				
 			}
 
 			@Override
 			public void onGetIncomeAndExpenseResponseReceived(boolean status,
 					Collection<AccountState> list) {
-				// TODO Auto-generated method stub
-				
+			}
+
+			@Override
+			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
+					Collection<Budget> list) {
 			}				
 
 		});

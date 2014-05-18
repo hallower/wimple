@@ -7,21 +7,24 @@ import java.util.Date;
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.impl.util.WidgetItem;
+import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.model.AccountState;
-import kr.blogspot.charlie0301.widget.DoughnutChartView;
+import kr.blogspot.charlie0301.model.Budget;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -39,9 +42,15 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	// GUI
 	//private WeakReference<ItemListView> asList;
 	//private WeakReference<AccountStateItemListAdapter> asAdapter;
-	private DoughnutChartView cv;
-	private LinearLayout llChart;
-
+	private ImageView ivIncomeBar;
+	private ImageView ivExpenseBar;
+	private ImageView ivIncomeBudgetBase;
+	private ImageView ivIncomeBudgetCurrent;
+	private TextView ivIncomeBudgetCurrentPercentage;
+	private ImageView ivExpenseBudgetBase;
+	private ImageView ivExpenseBudgetCurrent;
+	private TextView ivExpenseBudgetCurrentPercentage;
+	
 	private LinearLayout llUpdateNotice;
 	private TextView tvIncomeValue;
 	private TextView tvExpenseValue;
@@ -79,6 +88,16 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		registerForContextMenu(asList.get());
 		 */
 
+		ivIncomeBar = (ImageView)view.findViewById(R.id.ine_bar_income);
+		ivExpenseBar = (ImageView)view.findViewById(R.id.ine_bar_expense);
+		ivIncomeBudgetBase = (ImageView)view.findViewById(R.id.ine_bar_budget_base_income);
+		ivIncomeBudgetCurrent = (ImageView)view.findViewById(R.id.ine_bar_budget_current_income);
+		ivIncomeBudgetCurrentPercentage = (TextView)view.findViewById(R.id.ine_bar_budget_current_income_percentage);
+		ivExpenseBudgetBase = (ImageView)view.findViewById(R.id.ine_bar_budget_base_expense);
+		ivExpenseBudgetCurrent = (ImageView)view.findViewById(R.id.ine_bar_budget_current_expense);
+		ivExpenseBudgetCurrentPercentage = (TextView)view.findViewById(R.id.ine_bar_budget_current_expense_percentage);
+		
+		
 		tvSumValue = (TextView)view.findViewById(R.id.ine_sum_value);
 		tvIncomeValue = (TextView)view.findViewById(R.id.ine_income_value);
 		tvExpenseValue = (TextView)view.findViewById(R.id.ine_expense_value);
@@ -92,6 +111,8 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		c.set(Calendar.DATE, 1);
 
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 
 		((ImageView) view.findViewById(R.id.ine_refresh)).setOnClickListener(new OnClickListener() {
 
@@ -102,6 +123,8 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				c.set(Calendar.DATE, 1);
 
 				wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+				wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+				wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 
 				llUpdateNotice.setVisibility(View.VISIBLE);
 			}
@@ -119,8 +142,8 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		asAdapter = null;
 		 */
 
-		cv = null;
-		llChart = null;
+		ivIncomeBar = null;
+		ivExpenseBar = null;
 		tvIncomeValue = null;
 		tvExpenseValue = null;
 		tvSumValue = null;
@@ -139,6 +162,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		c.set(Calendar.DATE, 1);
 
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -169,6 +195,8 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					c.setTime ( new Date() );
 					c.set(Calendar.DATE, 1);
 					wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+					wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+					wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 
 					llUpdateNotice.setVisibility(View.VISIBLE);
 				}
@@ -196,11 +224,6 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 			}
 			//asAdapter.get().notifyDataSetChanged();
 
-			if(null == cv){
-				cv = new DoughnutChartView(context);
-				llChart = (LinearLayout)view.findViewById(R.id.chart);	
-			}
-
 			tvIncomeValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(income));
 			tvExpenseValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(-expense));
 
@@ -211,15 +234,166 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				tvSumValue.setTextColor(getResources().getColor(R.color.text_blue));
 			}else{
 				tvSumValue.setTextColor(getResources().getColor(R.color.text_red));
+			}		
+			
+			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+			Display display = wm.getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			int width = size.x - Utils.getDPSize(100);
+
+			Log.d(LOG_TAG, "width = " + width + ", expense = " + expense + ", income = " + income);			
+			
+			FrameLayout.LayoutParams params; 
+			
+			if(income > expense)
+			{
+				Log.d(LOG_TAG, "expense / income = " + ((double)expense / (double)income));
+			
+				params = (FrameLayout.LayoutParams ) ivIncomeBar.getLayoutParams();
+				params.width = width;
+				ivIncomeBar.setLayoutParams(params);
+				
+				width = (int)(width * ((double)expense / (double)income));
+				
+				params = (FrameLayout.LayoutParams ) ivExpenseBar.getLayoutParams();
+				params.width = width;
+				ivExpenseBar.setLayoutParams(params);
+				
+			}else{
+				Log.d(LOG_TAG, "income / expense = " + ((double)income/ (double)expense));
+
+				params = (FrameLayout.LayoutParams ) ivExpenseBar.getLayoutParams();
+				params.width = width;
+				ivExpenseBar.setLayoutParams(params);
+				
+				width = (int)(width * ((double)income / (double)expense));
+				
+				params = (FrameLayout.LayoutParams ) ivIncomeBar.getLayoutParams();
+				params.width = width;
+				ivIncomeBar.setLayoutParams(params);
+			}
+					
+			
+		}
+		break;
+
+		case CommandID.GET_BUDGET_RESPONSE_RECEIVED :
+		{
+
+			if(false == booleanStatus){
+				return;
 			}
 
-			setGraphicChart(new double[] {Math.abs(income), Math.abs(expense)}, 
-					new String[] {getResources().getString(R.string.title_income),
-					getResources().getString(R.string.title_expense)});
+			boolean isIncome = msg.arg2==1?true:false;
+			
+			Collection<Budget> list = (Collection<Budget>)obj;
+			Budget budgetStatus = null;
+			
+			for(Budget budget : list){
+				if(0 == budget.getAccountID().compareTo(Budget.SUMMARYACCOUNTID)){
+					budgetStatus = budget;
+					break;
+				}	
+			}
+				
+			if(null == budgetStatus){
+				Log.d(LOG_TAG, "oops no budget summary!!!");
+				return;
+			}
+				
+			Double current = budgetStatus.getCurrent();
+			Double budget = budgetStatus.getBudget();
 
-			llChart.removeAllViews();
-			llChart.addView(cv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+			Display display = wm.getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			int width = size.x - Utils.getDPSize(130);
 
+			FrameLayout.LayoutParams params;
+
+			if(0 == budget){
+				
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetBase.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetBase.setLayoutParams(params);
+					
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetCurrent.getLayoutParams();
+					params.width = 0;
+					ivIncomeBudgetCurrent.setLayoutParams(params);
+					
+					ivIncomeBudgetCurrentPercentage.setText(getResources().getString(R.string.budget_not_yet));
+					
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetBase.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetBase.setLayoutParams(params);
+					
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetCurrent.getLayoutParams();
+					params.width = 0;
+					ivExpenseBudgetCurrent.setLayoutParams(params);
+					
+					ivExpenseBudgetCurrentPercentage.setText(getResources().getString(R.string.budget_not_yet));
+				}
+				
+			}else if(budget > current)
+			{
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetBase.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetBase.setLayoutParams(params);
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetBase.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetBase.setLayoutParams(params);	
+				}
+				
+				int percentage = (int)((((double)current / (double)budget))*100);
+				Log.d(LOG_TAG, "current / budget = " + (((double)current / (double)budget))*100);
+				width = (int)(width * (double)current / (double)budget);
+				
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetCurrent.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetCurrent.setLayoutParams(params);
+					ivIncomeBudgetCurrentPercentage.setText("" + percentage + "%");
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetCurrent.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetCurrent.setLayoutParams(params);
+					ivExpenseBudgetCurrentPercentage.setText("" + percentage + "%");
+				}
+			}else{
+				
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetBase.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetBase.setLayoutParams(params);
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetBase.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetBase.setLayoutParams(params);
+				}
+				
+				Log.d(LOG_TAG, "current / budget = " + ((double)current/ (double)budget));
+
+				int percentage = (int)((((double)budget / (double)current))*100);
+				width = (int)(width * ((double)budget / (double)current));
+				
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetCurrent.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetCurrent.setLayoutParams(params);
+					ivIncomeBudgetCurrentPercentage.setText("" + percentage + "%");
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetCurrent.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetCurrent.setLayoutParams(params);
+					ivExpenseBudgetCurrentPercentage.setText("" + percentage + "%");
+				}
+			}			
 		}
 		break;
 		}
@@ -234,21 +408,5 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		// TODO Auto-generated method stub
 
 	}
-
-
-	private void setGraphicChart(double[] values, String[] names){
-
-		cv.setDataValues(values);
-		cv.setLegendValues(names);		
-		int[] colors = new int[values.length];
-		for(int i = 0; i < values.length; i++){
-			colors[i] = WidgetItem.predefinedColors[9-i];
-		}
-		cv.setBarColorValues(colors);
-		cv.setDisplayLabels(true);
-		cv.makeChart();
-
-	}
-
 
 }

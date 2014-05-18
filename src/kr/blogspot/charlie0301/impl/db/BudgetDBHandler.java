@@ -1,0 +1,109 @@
+package kr.blogspot.charlie0301.impl.db;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import kr.blogspot.charlie0301.model.Budget;
+import android.content.Context;
+
+public class BudgetDBHandler {
+	
+	private static String tableName = "budget";
+	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+
+			"accountid TEXT, " +
+			"budget TEXT, " +
+			"current TEXT, " +
+			"remains TEXT, " +
+
+			"PRIMARY KEY (accountid)" +
+			") ";
+
+	private static DatabaseHandler dbHandler = null;
+
+	public BudgetDBHandler(Context context) {
+		super();
+
+		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
+		dbHandler.setColumns(Budget.columns);
+	}
+
+	public boolean insert(Budget data) {
+		if(data instanceof IDatabaseRecord){
+			return dbHandler.addItem(data);
+		}
+		//dbHandler.showAll();
+		return false;
+	}
+
+	public boolean hasData() {
+		return dbHandler.getCountAll() > 0;
+	}
+
+	public void clean(){
+		//dbHandler.delete("user_id", ee.getInstance().getProfileID());
+		dbHandler.deleteAll();
+	}
+
+	public boolean insert(Collection<Budget> data) {
+		boolean res = false;
+
+		if(data==null || data.isEmpty()){
+			return false;
+		}
+
+		// TODO : use TCL
+		for(Budget act : (Collection<Budget>)data) {
+
+			if(act instanceof IDatabaseRecord){
+				dbHandler.addItem(act);
+			}
+		}
+		dbHandler.showAll();
+		return res;
+	}
+
+	/*
+    private Collection<Budget> get(String where){
+    	Collection<Budget> acts = new ArrayList<Budget>();
+    	Collection<IDatabaseRecord> records = dbHandler.getItems(where);
+
+    	Log.d(tableName, where);
+
+    	for(IDatabaseRecord record : records){
+    		Budget data = new Budget();
+
+    		if(false == data.setValues(record.getValues())){
+    			continue;
+    		}
+    		acts.add(data);
+    	}
+
+    	dbHandler.showAll();
+    	return acts;
+    }
+	 */
+
+	public Collection<Budget> getAllBudgets(){
+		Collection<Budget> acts = new ArrayList<Budget>();
+		Collection<IDatabaseRecord> records = dbHandler.getItems();
+
+		for(IDatabaseRecord record : records){
+			Budget data = new Budget();
+
+			if(false == data.setValues(record.getValues())){
+				continue;
+			}
+			acts.add(data);
+		}
+
+		//dbHandler.showAll();
+		return acts;
+	}
+
+
+	public void print(){
+		dbHandler.showAll();
+	}
+
+}
