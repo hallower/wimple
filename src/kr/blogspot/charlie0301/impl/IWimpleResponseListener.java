@@ -6,6 +6,7 @@ import java.util.Map;
 
 import kr.blogspot.charlie0301.model.Account;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.model.Budget;
 import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
@@ -69,4 +70,5 @@ public interface IWimpleResponseListener {
 	 */
 	public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list);
 	
+	public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Collection<Budget> list);
 }
