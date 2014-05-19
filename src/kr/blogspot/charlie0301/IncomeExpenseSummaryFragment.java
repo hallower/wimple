@@ -286,7 +286,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				return;
 			}
 
-			boolean isIncome = msg.arg2==1?true:false;
+			boolean isIncome = (msg.arg2==1)?true:false;
 			
 			Map<String, Budget> map = (Map<String, Budget>)obj;
 			Budget budgetStatus = null;
