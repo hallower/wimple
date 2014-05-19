@@ -34,6 +34,9 @@
     <string name="settings_entry_monthly_display_count">월별 거래 입력 항목 표시 갯수</string>
     <string name="settings_summary_financial_state_auto_refresh">자산 부채 정보를 페이지를 열때 마다 업데이트 합니다.</string>
     <string name="settings_financial_state_auto_refresh">자산 부채 정보 자동 업데이트</string>
+    <string name="settings_summary_income_expense_state_auto_refresh">비용 수익 정보를 페이지를 열때 마다 업데이트 합니다.</string>
+    <string name="settings_income_expense_state_auto_refresh">비용 수익 정보 자동 업데이트</string>
+
     <string name="number_api_count">남은 보고서 조회 횟수 : </string>
     <string name="fatal_error">후잉 입력 앱을 실행할 수 없습니다. \n네트워크를 확인해 주시고, \n그래도 안된다면 ㅜㅜ..</string>
     <string name="pad_1">1</string>

@@ -190,7 +190,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				firstUpdate = false;
 				// To show previous data during new data dispatching without any GUI display delay.
 				SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true);
 				if(autoRefresh){
 					Calendar c = Calendar.getInstance ( );
 					c.setTime ( new Date() );

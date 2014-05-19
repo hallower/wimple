@@ -29,5 +29,12 @@
             android:summary="@string/settings_summary_financial_state_auto_refresh"
             android:title="@string/settings_financial_state_auto_refresh" />
     </PreferenceCategory>
-
+    <PreferenceCategory android:title="@string/drawer_menu_income_expense" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_incomeExpenseStateAutoRefresh"
+            android:summary="@string/settings_summary_income_expense_state_auto_refresh"
+            android:title="@string/settings_income_expense_state_auto_refresh" />
+    </PreferenceCategory>
+    
 </PreferenceScreen>
