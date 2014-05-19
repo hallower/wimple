@@ -3,6 +3,7 @@ package kr.blogspot.charlie0301;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
@@ -287,14 +288,14 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 			boolean isIncome = msg.arg2==1?true:false;
 			
-			Collection<Budget> list = (Collection<Budget>)obj;
+			Map<String, Budget> map = (Map<String, Budget>)obj;
 			Budget budgetStatus = null;
 			
-			for(Budget budget : list){
-				if(0 == budget.getAccountID().compareTo(Budget.SUMMARYACCOUNTID)){
-					budgetStatus = budget;
-					break;
-				}	
+			try{
+				budgetStatus = map.get(Budget.SUMMARYACCOUNTID);
+			}catch(Exception e){
+				Log.d(LOG_TAG, "oops no budget summary!!!");
+				return;
 			}
 				
 			if(null == budgetStatus){

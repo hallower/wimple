@@ -289,7 +289,7 @@ public class SplashScreenActivity extends Activity {
 
 			@Override
 			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
-					Collection<Budget> list) {
+					Map<String, Budget> list) {
 			}				
 
 		});

@@ -127,7 +127,7 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) { }
 		@Override
-		public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Collection<Budget> list) { }
+		public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Map<String, Budget> list) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -538,7 +538,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_BUDGET :
-				responseListener.onGetBudgetResponseReceived(booleanStatus, (msg.arg2==1)?true:false, (Collection<Budget>)obj);
+				responseListener.onGetBudgetResponseReceived(booleanStatus, (msg.arg2==1)?true:false, (Map<String, Budget>)obj);
 				break;
 
 			default : 
@@ -1528,12 +1528,12 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 			 */
-			Collection<Budget> list = new ArrayList<Budget>();
+			Map<String, Budget> map = new HashMap<String, Budget>();
 
 			if(null == sectionID ||
 					sectionID.isEmpty()){
 				Log.e(LOG_TAG, "[Budget] Initialization is on progressing !!!");
-				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
+				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, map);
 				return;
 			}
 
@@ -1569,13 +1569,13 @@ public class WimpleImpl implements IWimpleImpl {
 				}
 				if(null == json){
 					Log.e(LOG_TAG, "[Budget] Error response - null returned");
-					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
+					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, map);
 					return;
 				}
 
 				if(	false == json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[Budget] Error response - " + json.get("message").toString());
-					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
+					sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, map);
 
 					int code = Integer.parseInt(json.get("code").toString());
 					handleRESTErrorResponse(code);
@@ -1666,7 +1666,7 @@ public class WimpleImpl implements IWimpleImpl {
 								}
 
 								Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains);
-								list.add(bd);	
+								map.put(Budget.SUMMARYACCOUNTID, bd);	
 
 								/*
 							}else if(0 == name.toString().compareTo("total_steady")){
@@ -1681,7 +1681,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 									JSONObject row = (JSONObject) rows.get(i);
 									Budget bd = new Budget(row);
-									list.add(bd);	
+									map.put(bd.getAccountID(), bd);	
 								}						
 							}
 
@@ -1691,14 +1691,14 @@ public class WimpleImpl implements IWimpleImpl {
 			} catch(Exception e){
 				Log.e(LOG_TAG, "[Budget] Failed - GetBudgetTaskThread!!!");
 				e.printStackTrace();
-				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, list);
+				sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, map);
 				return;
 			}
 
 			//iedbh.insert(list);
 
 			Log.d(LOG_TAG, "[Budget] Providing GetBudgetTaskThread from Server!!!");
-			sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, list);
+			sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, map);
 
 			/*
 			}finally{

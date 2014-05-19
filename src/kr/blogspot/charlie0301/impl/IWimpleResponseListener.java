@@ -70,5 +70,5 @@ public interface IWimpleResponseListener {
 	 */
 	public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list);
 	
-	public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Collection<Budget> list);
+	public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Map<String, Budget> list);
 }

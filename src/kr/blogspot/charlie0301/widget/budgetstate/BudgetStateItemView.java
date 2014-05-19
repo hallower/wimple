@@ -1,8 +1,9 @@
-package kr.blogspot.charlie0301.widget.accountstate;
+package kr.blogspot.charlie0301.widget.budgetstate;
 
 import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.model.Budget;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -10,41 +11,49 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class AccountStateItemView extends LinearLayout {
+public class BudgetStateItemView extends LinearLayout {
 
 	private final Context context;
 
 	private LinearLayout llbackground = null;
-	private TextView type = null;
+	private TextView budget = null;
 	private TextView title = null;
 	private TextView amount = null;
 
-	public AccountStateItemView(Context context){
+	public BudgetStateItemView(Context context){
 		super(context);
 		this.context = context;	
 
 		// Layout Inflation
 		LayoutInflater inflater = (LayoutInflater)this.context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		inflater.inflate(R.layout.list_account_state, this, true);
+		inflater.inflate(R.layout.list_budget_state, this, true);
 
 		llbackground = (LinearLayout)findViewById(R.id.as_backgroud);
-		type = (TextView)findViewById(R.id.as_item_type);
+		budget = (TextView)findViewById(R.id.as_item_budget);
 		title = (TextView)findViewById(R.id.as_item_title);
 		amount = (TextView)findViewById(R.id.as_item_amount);
 	}
 
-	public AccountStateItemView(Context context, AccountState item) {
+	public BudgetStateItemView(Context context, AccountState item) {
 		this(context);
 		setData(item);
 	}
 
+	public BudgetStateItemView(Context context, AccountState item, Budget budget) {
+		this(context);
+		setData(item, budget);
+	}
 
 	public void setData(AccountState item) {
+		setData(item, null);
+	}
+
+	public void setData(AccountState item, Budget budget) {
 
 		title.setText(item.getAccountName());
 		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
-
+		amount.setTextColor(getResources().getColor(R.color.text_black));
 		setBackgroundAccountWidget(title, item.getCategory());
 
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
@@ -62,40 +71,46 @@ public class AccountStateItemView extends LinearLayout {
 		}
 		llbackground.setLayoutParams(layoutParams);
 
+		if(null == budget){
+			return;
+		}
+		
+		if(item.getAmount() > budget.getBudget()){
+			if(item.getCategory().startsWith("in")){
+				amount.setTextColor(getResources().getColor(R.color.text_blue));	
+			}else{
+				amount.setTextColor(getResources().getColor(R.color.text_red));	
+			}
+		}
+		
+		if(budget.getBudget() > 0){
+			this.budget.setText(DateFormatUtils.getDecimalFormat().format(budget.getBudget()));
+		}else{
+			this.budget.setText(getResources().getString(R.string.budget_no_budget));
+		}
+		
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){
 		switch(account.charAt(0)){
 
 		case 'a' :
-			type.setText(context.getResources().getString(R.string.title_saving));
-			type.setTextColor(context.getResources().getColor(R.color.text_blue));
 			tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
 
 		case 'l' :
-			type.setText(context.getResources().getString(R.string.title_debt));
-			type.setTextColor(context.getResources().getColor(R.color.text_red));
-
 			tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
 		case 'i' :
-			type.setText(context.getResources().getString(R.string.title_income));
-			type.setTextColor(context.getResources().getColor(R.color.text_blue));
-
 			tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case 'e' :
-			type.setText(context.getResources().getString(R.string.title_expense));
-			type.setTextColor(context.getResources().getColor(R.color.text_red));
-
 			tv.setBackgroundResource(R.drawable.input_color_box_4);
 			break;
 
 		default :
-			type.setText(context.getResources().getString(R.string.title_adjust));
 			tv.setBackgroundResource(R.drawable.progress_n);
 			break;	
 
@@ -105,7 +120,7 @@ public class AccountStateItemView extends LinearLayout {
 	}
 
 	public void clear(){
-		type = null;
+		budget = null;
 		title = null;
 		amount = null;
 	}

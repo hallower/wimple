@@ -112,5 +112,6 @@
     <string name="remove_monthly_item_failed">매월 입력 거래 삭제가 정상적으로 처리되지 않았습니다.</string>
     
     <string name="budget_not_yet">예산을 정해주세요.</string>
+    <string name="budget_no_budget">예산없음</string>
     
 </resources>
