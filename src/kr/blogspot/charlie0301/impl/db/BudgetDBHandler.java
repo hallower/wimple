@@ -2,9 +2,11 @@ package kr.blogspot.charlie0301.impl.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import kr.blogspot.charlie0301.model.Budget;
 import android.content.Context;
+import android.util.Log;
 
 public class BudgetDBHandler {
 	
@@ -15,8 +17,9 @@ public class BudgetDBHandler {
 			"budget TEXT, " +
 			"current TEXT, " +
 			"remains TEXT, " +
+			"type TEXT, " +
 
-			"PRIMARY KEY (accountid)" +
+			"PRIMARY KEY (accountid, type)" +
 			") ";
 
 	private static DatabaseHandler dbHandler = null;
@@ -45,7 +48,7 @@ public class BudgetDBHandler {
 		dbHandler.deleteAll();
 	}
 
-	public boolean insert(Collection<Budget> data) {
+	public boolean insert(Map<String, Budget> data) {
 		boolean res = false;
 
 		if(data==null || data.isEmpty()){
@@ -53,8 +56,9 @@ public class BudgetDBHandler {
 		}
 
 		// TODO : use TCL
-		for(Budget act : (Collection<Budget>)data) {
+		for(String key : data.keySet()) {
 
+			Budget act = data.get(key);
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
 			}
@@ -84,13 +88,13 @@ public class BudgetDBHandler {
     }
 	 */
 
-	public Collection<Budget> getAllBudgets(){
+	public Collection<Budget> getAllBudgets(boolean isIncome){
 		Collection<Budget> acts = new ArrayList<Budget>();
-		Collection<IDatabaseRecord> records = dbHandler.getItems();
+		Collection<IDatabaseRecord> records = dbHandler.getItems("type", isIncome?"income":"expense");
 
 		for(IDatabaseRecord record : records){
 			Budget data = new Budget();
-
+			
 			if(false == data.setValues(record.getValues())){
 				continue;
 			}

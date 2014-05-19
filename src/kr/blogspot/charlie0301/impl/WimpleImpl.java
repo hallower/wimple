@@ -15,6 +15,7 @@ import kr.blogspot.charlie0301.R;
 import kr.blogspot.charlie0301.impl.RestAPIInvoker.HTTP_METHOD;
 import kr.blogspot.charlie0301.impl.db.AccountDBHandler;
 import kr.blogspot.charlie0301.impl.db.AccountStateDBHandler;
+import kr.blogspot.charlie0301.impl.db.BudgetDBHandler;
 import kr.blogspot.charlie0301.impl.db.EntryDBHandler;
 import kr.blogspot.charlie0301.impl.db.IncomeExpenseDBHandler;
 import kr.blogspot.charlie0301.impl.db.ItemDBHandler;
@@ -66,6 +67,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private ItemDBHandler midbh = null;
 	private AccountStateDBHandler asdbh = null;		// financial status
 	private IncomeExpenseDBHandler iedbh = null;	// income and expense
+	private BudgetDBHandler bddbh = null;
 
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
@@ -218,6 +220,10 @@ public class WimpleImpl implements IWimpleImpl {
 
 		if(null == iedbh){
 			iedbh = new IncomeExpenseDBHandler(WimpleImpl.context);
+		}
+		
+		if(null == bddbh){
+			bddbh = new BudgetDBHandler(WimpleImpl.context);
 		}
 	}
 
@@ -538,7 +544,7 @@ public class WimpleImpl implements IWimpleImpl {
 				break;
 
 			case CommandID.CMD_GET_BUDGET :
-				responseListener.onGetBudgetResponseReceived(booleanStatus, (msg.arg2==1)?true:false, (Map<String, Budget>)obj);
+				responseListener.onGetBudgetResponseReceived(booleanStatus, (msg.arg2==1), (Map<String, Budget>)obj);
 				break;
 
 			default : 
@@ -619,6 +625,7 @@ public class WimpleImpl implements IWimpleImpl {
 		midbh.clean();
 		asdbh.clean();
 		iedbh.clean();
+		bddbh.clean();
 	}
 
 	/*
@@ -1502,7 +1509,8 @@ public class WimpleImpl implements IWimpleImpl {
 		final String endDate;
 		final boolean forceUpdate;
 
-		GetBudgetTaskThread(String sectionID, Boolean isIncome, String startDate, String endDate, boolean forceUpdate){
+		GetBudgetTaskThread(String sectionID, Boolean isIncome, 
+				String startDate, String endDate, boolean forceUpdate){
 			this.sectionID = sectionID;
 			this.isIncome = isIncome;
 			this.startDate = startDate;
@@ -1513,21 +1521,24 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-
 			//try{
-
-			/*
+			
 				if((false == forceUpdate) &&
-						iedbh.hasData()){
+						bddbh.hasData()){
 
-					Collection<AccountState> list = new ArrayList<AccountState>();
-					list = iedbh.getAllAccountStates();
+					Collection<Budget> list = new ArrayList<Budget>();
+					list = bddbh.getAllBudgets(isIncome);
 
-					Log.d(LOG_TAG, "[InE] Providing FILTERRED GetBudgetTaskThread from Cache!!!");
-					sm(CommandID.CMD_GET_BUDGET, 1, 0, list);
+					Map<String, Budget> map = new HashMap<String, Budget>();
+					
+					for(Budget budget : list){
+						map.put(budget.getAccountID(), budget);
+					}
+					Log.d(LOG_TAG, "[InE] Providing FILTERRED GetBudgetTaskThread from Cache!!! " + isIncome);
+					sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, map);
 					return;
 				}
-			 */
+			 
 			Map<String, Budget> map = new HashMap<String, Budget>();
 
 			if(null == sectionID ||
@@ -1665,7 +1676,7 @@ public class WimpleImpl implements IWimpleImpl {
 									}
 								}
 
-								Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains);
+								Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains, isIncome);
 								map.put(Budget.SUMMARYACCOUNTID, bd);	
 
 								/*
@@ -1680,7 +1691,7 @@ public class WimpleImpl implements IWimpleImpl {
 								for(int i = 0; i < rows.size(); i++){
 
 									JSONObject row = (JSONObject) rows.get(i);
-									Budget bd = new Budget(row);
+									Budget bd = new Budget(row, isIncome);
 									map.put(bd.getAccountID(), bd);	
 								}						
 							}
@@ -1695,7 +1706,7 @@ public class WimpleImpl implements IWimpleImpl {
 				return;
 			}
 
-			//iedbh.insert(list);
+			bddbh.insert(map);
 
 			Log.d(LOG_TAG, "[Budget] Providing GetBudgetTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, map);

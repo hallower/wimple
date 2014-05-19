@@ -1,7 +1,5 @@
 package kr.blogspot.charlie0301.model;
 
-import java.util.Comparator;
-
 import kr.blogspot.charlie0301.impl.db.IDatabaseRecord;
 
 import org.json.simple.JSONObject;
@@ -19,6 +17,7 @@ public class Budget implements IDatabaseRecord {
 	private Double budget;
 	private Double current;
 	private Double remains;
+	private String type;	// income, expense
 	
 	public static final SparseArray<String> columns = new SparseArray<String>();    
 
@@ -26,7 +25,8 @@ public class Budget implements IDatabaseRecord {
 		columns.append(0, "accountid");
 		columns.append(1, "budget");
 		columns.append(2, "current");
-		columns.append(2, "remains");
+		columns.append(3, "remains");
+		columns.append(4, "type");
 	}
 
 	// This must be used only for DB result inserting.
@@ -37,22 +37,25 @@ public class Budget implements IDatabaseRecord {
 		budget = 0.0;
 		current = 0.0;
 		remains = 0.0;
+		type = "";
 	}
 
-	public Budget(String accountID, Double budget, Double current, Double remains) {
+	public Budget(String accountID, Double budget, Double current, Double remains, boolean isIncome) {
 		super();
 		this.accountID = accountID;
 		this.budget = budget;
 		this.current = current;
 		this.remains = remains;
+		this.type = isIncome?"income":"expense";
 	}
 
-	public Budget(JSONObject item) {
+	public Budget(JSONObject item, boolean isIncome) {
 
 		this(item.get("account_id").toString(), 
 				Double.valueOf(item.get("budget").toString()),
 				Double.valueOf(item.get("money").toString()),
-				Double.valueOf(item.get("remains").toString())
+				Double.valueOf(item.get("remains").toString()),
+				isIncome
 				);
 	}
 
@@ -88,6 +91,17 @@ public class Budget implements IDatabaseRecord {
 
 	public void setRemains(Double remains) {
 		this.remains = remains;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public boolean isIncome() {
+		return (type.compareTo("income") == 0);
+	}
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override
@@ -141,7 +155,10 @@ public class Budget implements IDatabaseRecord {
 			case 3 :
 				this.remains = Double.valueOf(value);
 				break;
-
+			case 4 :
+				this.type = value;
+				break;
+				
 			default :
 				Log.e(LOG_TAG, "Invalid columnID!!!");
 				break;
@@ -162,6 +179,8 @@ public class Budget implements IDatabaseRecord {
 			return current.toString();
 		case 3 :
 			return remains.toString();
+		case 4 :
+			return type;
 			
 		default :
 			Log.e(LOG_TAG, "Invalid columnID!!!");
@@ -178,6 +197,7 @@ public class Budget implements IDatabaseRecord {
 		values.append(1, budget.toString());
 		values.append(2, current.toString());
 		values.append(3, remains.toString());
+		values.append(4, type);
 		return values;
 	}
 
