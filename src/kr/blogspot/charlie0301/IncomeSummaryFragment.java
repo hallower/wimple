@@ -3,13 +3,16 @@ package kr.blogspot.charlie0301;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.AccountState;
+import kr.blogspot.charlie0301.model.Budget;
 import kr.blogspot.charlie0301.widget.DoughnutChartView;
 import kr.blogspot.charlie0301.widget.ItemListView;
-import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
+import kr.blogspot.charlie0301.widget.budgetstate.BudgetStateItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -32,7 +35,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 	// GUI
 	private WeakReference<ItemListView> asList;
-	private WeakReference<AccountStateItemListAdapter> asAdapter;
+	private WeakReference<BudgetStateItemListAdapter> asAdapter;
 	private DoughnutChartView cv;
 	private LinearLayout llChart;
 	
@@ -45,11 +48,10 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 		view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
 
-
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.saving_list_view));
-		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
+		asAdapter = new WeakReference<BudgetStateItemListAdapter>(new BudgetStateItemListAdapter(context));
 
 		asList.get().setAdapter(asAdapter.get());
 		asList.get().setLayoutParams(sessionParams);
@@ -112,6 +114,10 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 					continue;
 				}
 				
+				if(0.0 == as.getAmount()){
+					continue;
+				}
+				
 				if(false == as.getGroup() &&
 						as.getAmount() != 0){
 					values.add(as.getAmount());
@@ -142,6 +148,25 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 		}
 		break;
+		
+		case CommandID.GET_BUDGET_RESPONSE_RECEIVED :{
+
+			if(false == booleanStatus){
+				return;
+			}
+
+			boolean isIncome = msg.arg2==1?true:false;
+			
+			if(false == isIncome){
+				return;
+			}
+			
+			Map<String, Budget> map = (Map<String, Budget>)obj;
+			asAdapter.get().setBudgets(map);
+			asAdapter.get().notifyDataSetChanged();
+		}
+		break;
+		
 		}
 	}
 	@Override

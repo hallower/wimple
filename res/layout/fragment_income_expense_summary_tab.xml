@@ -66,6 +66,8 @@
                         android:layout_gravity="center_vertical|left"
                         android:layout_marginLeft="80dp"
                         android:background="@color/text_white"
+                        android:paddingLeft="3dp"
+                        android:paddingRight="3dp"
                         android:text="..."
                         android:textColor="@color/text_blue"
                         android:textScaleX="0.8"
@@ -107,6 +109,8 @@
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
                     android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
                     android:text="..."
                     android:textColor="@color/text_red"
                     android:textScaleX="0.8"
@@ -181,7 +185,7 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_base_income"
-                    android:layout_width="100dp"
+                    android:layout_width="10dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
@@ -191,7 +195,7 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_current_income"
-                    android:layout_width="130dp"
+                    android:layout_width="10dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
@@ -206,6 +210,8 @@
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
                     android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
                     android:text="..."
                     android:textColor="@color/text_blue"
                     android:textScaleX="0.8"
@@ -232,7 +238,7 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_base_expense"
-                    android:layout_width="100dp"
+                    android:layout_width="10dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
@@ -242,7 +248,7 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_current_expense"
-                    android:layout_width="130dp"
+                    android:layout_width="10dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
@@ -257,6 +263,8 @@
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
                     android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
                     android:text="..."
                     android:textColor="@color/text_red"
                     android:textScaleX="0.8"

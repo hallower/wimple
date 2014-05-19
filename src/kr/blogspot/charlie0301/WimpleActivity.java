@@ -601,7 +601,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 			@Override
 			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
-					Collection<Budget> list) {
+					Map<String, Budget> list) {
 				sm(CommandID.GET_BUDGET_RESPONSE_RECEIVED, status?1:0, isIncome?1:0, list);
 			}				
 
