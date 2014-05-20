@@ -3,7 +3,6 @@ package kr.blogspot.charlie0301;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;

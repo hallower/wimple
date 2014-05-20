@@ -145,7 +145,8 @@ public class WimpleImpl implements IWimpleImpl {
 		//apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
 		apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
 		apiAvailableSemaphore.put("getIncomeAndExpense", new Semaphore(1));
-		apiAvailableSemaphore.put("getBudget", new Semaphore(1));
+		apiAvailableSemaphore.put("getIncomeBudget", new Semaphore(1));
+		apiAvailableSemaphore.put("getExpenseBudget", new Semaphore(1));
 	}
 
 	public Semaphore getApiAvailableSemaphore(String key){
@@ -988,13 +989,20 @@ public class WimpleImpl implements IWimpleImpl {
 					Date itemDate = sdf.parse(dateFilter);
 
 					Date openDate = sdf.parse(open);
-					Date closedDate = sdf.parse(closed);
-
-					if(itemDate.getTime() >= openDate.getTime() &&
-							itemDate.getTime() <= closedDate.getTime()){
-						list.add(item);
+					
+					if(true == closed.startsWith("2999")){
+						
+						if(itemDate.getTime() >= openDate.getTime()){
+							list.add(item);
+						}						
+					}else{
+						
+						Date closedDate = sdf.parse(closed);
+						if(itemDate.getTime() >= openDate.getTime() &&
+								itemDate.getTime() <= closedDate.getTime()){
+							list.add(item);
+						}	
 					}
-
 				}
 				catch(Exception e){
 					Log.d(LOG_TAG, "[Account] Filtering failed !!! with item=" + item.getTitle() + ", open=" + open + ", close=" + closed);
@@ -1492,11 +1500,17 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		 */
-		/*
-		if(false == apiAvailableSemaphore.get("getBudget").tryAcquire()){
-			return true;
+
+		if(isIncome){
+			if(false == apiAvailableSemaphore.get("getIncomeBudget").tryAcquire()){
+				return true;
+			}	
+		}else{
+			if(false == apiAvailableSemaphore.get("getExpenseBudget").tryAcquire()){
+				return true;
+			}
 		}
-		 */
+
 		new GetBudgetTaskThread(defaultSectionID, isIncome, startDate, endDate, forceUpdate).start();		
 		return true;
 	}
@@ -1521,7 +1535,7 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			//try{
+			try{
 			
 				if((false == forceUpdate) &&
 						bddbh.hasData()){
@@ -1711,11 +1725,14 @@ public class WimpleImpl implements IWimpleImpl {
 			Log.d(LOG_TAG, "[Budget] Providing GetBudgetTaskThread from Server!!!");
 			sm(CommandID.CMD_GET_BUDGET, 1, isIncome?1:0, map);
 
-			/*
+			
 			}finally{
-				apiAvailableSemaphore.get("getBudget").release();
-			}
-			 */
+				if(isIncome){
+					apiAvailableSemaphore.get("getIncomeBudget").release();	
+				}else{
+					apiAvailableSemaphore.get("getExpenseBudget").release();	
+				}
+			}			
 		}			
 
 	}
