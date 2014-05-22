@@ -164,6 +164,7 @@
             <!-- 예산 대비 수익 지출 현황 -->
 
             <TextView
+                android:id="@+id/ine_budget_status_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
@@ -178,6 +179,7 @@
             <!-- 예산 대비 수익 -->
 
             <FrameLayout
+                android:id="@+id/ine_budget_status_income"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
@@ -231,6 +233,7 @@
             <!-- 예산 대비 지출 -->
 
             <FrameLayout
+                android:id="@+id/ine_budget_status_expense"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
