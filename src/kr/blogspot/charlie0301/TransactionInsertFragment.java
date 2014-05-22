@@ -19,9 +19,11 @@ import kr.blogspot.charlie0301.widget.DatePickerFragment;
 import kr.blogspot.charlie0301.widget.DatePickerFragment.OnDateSetListener;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -143,7 +145,14 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		//}
 
 		// View, Widget
-
+		
+		// To show previous data during new data dispatching without any GUI display delay.
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, false);
+		if(isNeedDisableMemo){
+			((LinearLayout)view.findViewById(R.id.insert_memo_window)).setVisibility(View.GONE);			
+		}
+		
 		setupDate();
 
 		setupAccountLists();
