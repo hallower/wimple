@@ -86,7 +86,7 @@ public class BudgetStateItemView extends LinearLayout {
 		if(budget.getBudget() > 0){
 			this.budget.setText(DateFormatUtils.getDecimalFormat().format(budget.getBudget()));
 		}else{
-			this.budget.setText(getResources().getString(R.string.budget_no_budget));
+			this.budget.setText(getResources().getString(R.string.budget_nothing_budget));
 		}
 		
 	}
