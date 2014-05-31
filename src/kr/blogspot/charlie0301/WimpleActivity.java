@@ -603,6 +603,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
 					Map<String, Budget> list) {
 				sm(CommandID.GET_BUDGET_RESPONSE_RECEIVED, status?1:0, isIncome?1:0, list);
+			}
+
+			@Override
+			public void onPostNewsResponseReceived(boolean status, String id) {
+				// TODO Auto-generated method stub
+				
 			}				
 
 		});

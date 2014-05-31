@@ -23,7 +23,6 @@
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -53,6 +52,15 @@
             android:label="@string/title_activity_payment_notice"
             android:theme="@style/FullscreenTheme" >
         </activity>
-    </application>
-
+        <activity
+            android:name="kr.blogspot.charlie0301.PostNewsActivity"
+            android:label="@string/title_activity_post_news" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="plain/*" />
+            </intent-filter>
+        </activity>
+    </application> 
 </manifest>

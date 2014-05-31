@@ -63,7 +63,7 @@ public class SplashScreenActivity extends Activity {
 	private static final int PIN_NUMBER_REQUEST = 1379;
 	private String storedTempToken = "";
 	private boolean cacheRefreshed = false;
-	
+
 	public static void sm(int cmd, Object msg){
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, 1, 0, msg));    
 	}    
@@ -81,20 +81,20 @@ public class SplashScreenActivity extends Activity {
 		context = getApplicationContext();
 
 		mWebview = (WebView) findViewById(R.id.webview);
-		
+
 		// double check if app is restarted forcedly
 		Intent intent= getIntent();
-	    if(intent.hasExtra("auth_again")){
-	    	Log.e(LOG_TAG, "Need to do Auth again, clean auth!!!");
-	    	
-	    	mWebview.clearHistory();
+		if(intent.hasExtra("auth_again")){
+			Log.e(LOG_TAG, "Need to do Auth again, clean auth!!!");
+
+			mWebview.clearHistory();
 			mWebview.clearCache(true);
 			mWebview.clearView();
-			
-	    	Toast.makeText(context, context.getResources().getString(R.string.notice_need_auth), Toast.LENGTH_LONG).show();
-	    	wimple.cleanAuth();
-	    }
-		
+
+			Toast.makeText(context, context.getResources().getString(R.string.notice_need_auth), Toast.LENGTH_LONG).show();
+			wimple.cleanAuth();
+		}
+
 		txtStatus = (TextView)findViewById(R.id.splash_status);
 		setupHandler();
 		setupWimpleImpl();
@@ -117,7 +117,7 @@ public class SplashScreenActivity extends Activity {
 		webSettings.setJavaScriptEnabled(true);
 		if (Build.VERSION.SDK_INT <= 18) {
 			webSettings.setSavePassword(false);
-	    }
+		}
 		webSettings.setAppCacheEnabled(true);
 		webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
 		webSettings.setSupportMultipleWindows(true);
@@ -290,6 +290,12 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
 					Map<String, Budget> list) {
+			}
+
+			@Override
+			public void onPostNewsResponseReceived(boolean status, String id) {
+				// TODO Auto-generated method stub
+
 			}				
 
 		});
@@ -387,7 +393,7 @@ public class SplashScreenActivity extends Activity {
 	private void finishedAuthentication() {
 		sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_end));
 		Intent intent = new Intent(context, WimpleActivity.class);
-		startActivity(intent);
+		startActivity(intent);	
 		finish();
 	}
 
