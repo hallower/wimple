@@ -71,4 +71,9 @@ public interface IWimpleResponseListener {
 	public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list);
 	
 	public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Map<String, Budget> list);
+	
+	/*
+	 * P MoneyNews
+	 */
+	public void onPostNewsResponseReceived(boolean status, String id);
 }
