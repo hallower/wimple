@@ -24,13 +24,17 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -54,7 +58,7 @@ public class PostNewsActivity extends Activity {
 		@Override
 		protected String doInBackground(String... urls) {
 			String response = "";
-			
+
 			for (String url : urls) {
 				DefaultHttpClient client = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet(url);
@@ -64,7 +68,7 @@ public class PostNewsActivity extends Activity {
 
 					BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
 					String s = "";
-					
+
 					while ((s = buffer.readLine()) != null) {
 						response += s;
 						if(response.contains("</title>") ||
@@ -81,27 +85,49 @@ public class PostNewsActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(String result) {
-			//textView.setText(result);
-			Log.d(LOG_TAG, result);
-			
-			int startPos = result.indexOf("<title>");
+			//Log.d(LOG_TAG, result);
+
+			int startPos = result.indexOf("<title");
 			if(startPos < 0){
-				startPos = result.indexOf("<TITLE>");
+				startPos = result.indexOf("<TITLE");
 			}
-			
+			startPos = result.indexOf( ">", startPos + 1);
+
 			int endPos = result.indexOf("</title>");
 			if(endPos < 0){
 				endPos = result.indexOf("</TITLE>");
 			}
-			
+
 			if(startPos < 0 ||
 					endPos > result.length()){
 				Log.d(LOG_TAG, "Invalid web page!!!, Cant get title");
 				return;
 			}
-			
-			tvSubject.setText(result.substring(startPos + 7, endPos));
+
+			final String exportedTitle = result.substring(startPos + 7, endPos);
+			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
 		}
+	}
+
+	void showTitleSelectionWindow(final String exportedTitle){
+		AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
+		alt_bld.setMessage("제목을 아래와 같이 변경하실래요?\n\n\"" + exportedTitle + "\"").setCancelable(
+				false).setPositiveButton("Yes",
+						new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						tvSubject.setText(exportedTitle);
+					}
+				}).setNegativeButton("No",
+						new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {							
+						dialog.cancel();
+					}
+				});
+
+		AlertDialog alert = alt_bld.create();
+		alert.setTitle("제목을 추출하였습니다.");
+		//alert.setIcon(R.drawable.icon);
+		alert.show();			
 	}
 
 	@Override
@@ -151,8 +177,8 @@ public class PostNewsActivity extends Activity {
 		tvURL.setText(url);
 
 		DownloadWebPageTask task = new DownloadWebPageTask();
-	    task.execute(new String[] { url });
-	    
+		task.execute(new String[] { url });
+
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		if(true == clipboard.hasPrimaryClip()){
 			if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
