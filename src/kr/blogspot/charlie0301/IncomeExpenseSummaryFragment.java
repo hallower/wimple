@@ -315,20 +315,40 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 			Map<String, Budget> map = (Map<String, Budget>)obj;
 			Budget budgetStatus = null;
 
-			try{
-				budgetStatus = map.get(Budget.SUMMARYACCOUNTID);
-			}catch(Exception e){
-				Log.d(LOG_TAG, "oops no budget summary!!!");
-				return;
-			}
+			// TODO : settings
 
-			if(null == budgetStatus){
-				Log.d(LOG_TAG, "oops no budget summary!!!");
-				return;
-			}
+			Double current = 0.0;
+			Double budget = 0.0;
 
-			Double current = budgetStatus.getCurrent();
-			Double budget = budgetStatus.getBudget();
+			if(true){
+				try{
+					budgetStatus = map.get(Budget.SUMMARYACCOUNTID);
+				}catch(Exception e){
+					Log.d(LOG_TAG, "oops no budget summary!!!");
+					return;
+				}
+
+				if(null == budgetStatus){
+					Log.d(LOG_TAG, "oops no budget summary!!!");
+					return;
+				}
+
+				current = budgetStatus.getCurrent();
+				budget = budgetStatus.getBudget();
+
+			}else{
+
+				for(String key : map.keySet()){
+					if(0 == key.compareTo(Budget.SUMMARYACCOUNTID)){
+						continue;
+					}
+					
+					Budget item = map.get(key);
+					
+					current += item.getCurrent();
+					budget += item.getBudget();
+				}
+			}
 
 			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 			Display display = wm.getDefaultDisplay();
