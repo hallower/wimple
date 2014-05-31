@@ -1,12 +1,13 @@
 package kr.blogspot.charlie0301;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-
-import org.json.simple.JSONObject;
 
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
@@ -17,14 +18,20 @@ import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
 import kr.blogspot.charlie0301.model.UserInfo;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -40,6 +47,62 @@ public class PostNewsActivity extends Activity {
 	private TextView tvSubject;
 	private TextView tvContent;
 	private TextView tvURL;
+
+
+
+	private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
+		@Override
+		protected String doInBackground(String... urls) {
+			String response = "";
+			
+			for (String url : urls) {
+				DefaultHttpClient client = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet(url);
+				try {
+					HttpResponse execute = client.execute(httpGet);
+					InputStream content = execute.getEntity().getContent();
+
+					BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+					String s = "";
+					
+					while ((s = buffer.readLine()) != null) {
+						response += s;
+						if(response.contains("</title>") ||
+								response.contains("</TITLE>")){
+							break;
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return response;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			//textView.setText(result);
+			Log.d(LOG_TAG, result);
+			
+			int startPos = result.indexOf("<title>");
+			if(startPos < 0){
+				startPos = result.indexOf("<TITLE>");
+			}
+			
+			int endPos = result.indexOf("</title>");
+			if(endPos < 0){
+				endPos = result.indexOf("</TITLE>");
+			}
+			
+			if(startPos < 0 ||
+					endPos > result.length()){
+				Log.d(LOG_TAG, "Invalid web page!!!, Cant get title");
+				return;
+			}
+			
+			tvSubject.setText(result.substring(startPos + 7, endPos));
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +136,7 @@ public class PostNewsActivity extends Activity {
 		}
 
 		setupWimpleImpl();
-		
+
 		// Wimple login check
 		if(false == wimple.isAuthed()){
 			Toast.makeText(context, getResources().getString(R.string.program_exit), Toast.LENGTH_SHORT).show();
@@ -87,6 +150,9 @@ public class PostNewsActivity extends Activity {
 		tvURL = (TextView)findViewById(R.id.post_news_url);
 		tvURL.setText(url);
 
+		DownloadWebPageTask task = new DownloadWebPageTask();
+	    task.execute(new String[] { url });
+	    
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		if(true == clipboard.hasPrimaryClip()){
 			if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
@@ -99,10 +165,10 @@ public class PostNewsActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				
+
 				String escapedURL = "";
 				String escapedComment = "";
-				
+
 				try {
 					escapedURL = URLEncoder.encode(tvURL.getText().toString(), "UTF-8");
 					escapedComment = URLEncoder.encode(tvContent.getText().toString(), "UTF-8");
@@ -111,16 +177,16 @@ public class PostNewsActivity extends Activity {
 					finish();
 					return;
 				}
-				
+
 				String newsContents = escapedURL;
 				newsContents += " %0A%0A";
 				newsContents += escapedComment;
 				newsContents += " %0A%0A";
 				newsContents += " posted by Wimple";
-				
+
 				wimple.postNews(tvSubject.getText().toString(), newsContents);
 			}
-		});
+		});	
 
 	}
 
