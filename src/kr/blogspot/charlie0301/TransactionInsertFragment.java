@@ -233,8 +233,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				String changed = s.toString();
-				if(changed.contains("(")){
+				if(changed.contains("(") && 
+						changed.indexOf("(") > 0){
 					changed = changed.substring(0, changed.indexOf("(") - 1);
+					changed = changed.trim();
 				}
 				adapterLatestItems.getFilter().filter(changed);
 			}
