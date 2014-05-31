@@ -208,7 +208,7 @@ public class PostNewsActivity extends Activity {
 				newsContents += " %0A%0A";
 				newsContents += escapedComment;
 				newsContents += " %0A%0A";
-				newsContents += " posted by Wimple";
+				newsContents += " posted by Wimple (https://whooing.com/zS2h)";
 
 				wimple.postNews(tvSubject.getText().toString(), newsContents);
 			}
