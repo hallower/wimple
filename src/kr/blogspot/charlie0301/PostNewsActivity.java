@@ -103,7 +103,7 @@ public class PostNewsActivity extends Activity {
 				return;
 			}
 
-			final String exportedTitle = result.substring(startPos, endPos);
+			final String exportedTitle = result.substring(startPos + 1, endPos);
 			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
 		}
 	}
