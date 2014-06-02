@@ -12,6 +12,8 @@ public class Budget implements IDatabaseRecord {
 	private final static String LOG_TAG = "Budget";
 	
 	public final static String SUMMARYACCOUNTID = "summary";
+	public final static String TYPE_ACCOUNT = "account";
+	public final static String TYPE_GROUP = "group";
 
 	private String accountID;
 	private Double budget;
@@ -26,7 +28,7 @@ public class Budget implements IDatabaseRecord {
 		columns.append(1, "budget");
 		columns.append(2, "current");
 		columns.append(3, "remains");
-		columns.append(4, "type");
+		columns.append(4, "type");		// account, group
 	}
 
 	// This must be used only for DB result inserting.
@@ -37,25 +39,25 @@ public class Budget implements IDatabaseRecord {
 		budget = 0.0;
 		current = 0.0;
 		remains = 0.0;
-		type = "";
+		type = TYPE_ACCOUNT;
 	}
 
-	public Budget(String accountID, Double budget, Double current, Double remains, boolean isIncome) {
+	public Budget(String accountID, Double budget, Double current, Double remains, String type) {
 		super();
 		this.accountID = accountID;
 		this.budget = budget;
 		this.current = current;
 		this.remains = remains;
-		this.type = isIncome?"income":"expense";
+		this.type = type;
 	}
 
-	public Budget(JSONObject item, boolean isIncome) {
+	public Budget(JSONObject item) {
 
 		this(item.get("account_id").toString(), 
 				Double.valueOf(item.get("budget").toString()),
 				Double.valueOf(item.get("money").toString()),
 				Double.valueOf(item.get("remains").toString()),
-				isIncome
+				TYPE_ACCOUNT
 				);
 	}
 
@@ -97,8 +99,8 @@ public class Budget implements IDatabaseRecord {
 		return type;
 	}
 
-	public boolean isIncome() {
-		return (type.compareTo("income") == 0);
+	public boolean isGroup() {
+		return (type.compareTo(TYPE_GROUP) == 0);
 	}
 	public void setType(String type) {
 		this.type = type;
