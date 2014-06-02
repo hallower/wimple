@@ -558,7 +558,7 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_POST_NEWS :
 				responseListener.onPostNewsResponseReceived(booleanStatus, (String)obj);
 				break;
-				
+
 			default : 
 				break;
 
@@ -994,11 +994,20 @@ public class WimpleImpl implements IWimpleImpl {
 			for(Account item : accountList){
 				String open = item.getOpenedDate();
 				String closed = item.getClosedDate();
-
+				Date itemDate = null;
+				
 				try{
 					sdf.setLenient(false);
-					Date itemDate = sdf.parse(dateFilter);
-
+					itemDate = sdf.parse(dateFilter);
+				}
+				catch(Exception e){
+					//e.printStackTrace();
+					Log.d(LOG_TAG, "[Account] Filtering failed !!! date fileter=" + dateFilter);
+					list.add(item);
+					continue;
+				}
+				
+				try{
 					Date openDate = sdf.parse(open);
 
 					if(true == closed.startsWith("2999")){
@@ -1016,7 +1025,9 @@ public class WimpleImpl implements IWimpleImpl {
 					}
 				}
 				catch(Exception e){
+					//e.printStackTrace();
 					Log.d(LOG_TAG, "[Account] Filtering failed !!! with item=" + item.getTitle() + ", open=" + open + ", close=" + closed);
+					list.add(item);
 					continue;
 				}					
 
@@ -1701,7 +1712,7 @@ public class WimpleImpl implements IWimpleImpl {
 										}
 									}
 
-									Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains, isIncome);
+									Budget bd = new Budget(Budget.SUMMARYACCOUNTID, budget, money, remains, Budget.TYPE_ACCOUNT);
 									map.put(Budget.SUMMARYACCOUNTID, bd);	
 
 									/*
@@ -1716,7 +1727,15 @@ public class WimpleImpl implements IWimpleImpl {
 									for(int i = 0; i < rows.size(); i++){
 
 										JSONObject row = (JSONObject) rows.get(i);
-										Budget bd = new Budget(row, isIncome);
+										Budget bd = new Budget(row);
+
+										Account account = adbh.getAccountName(bd.getAccountID());
+										if(null != account){
+											if(0 == account.getType().compareTo("group")){
+												bd.setType(Budget.TYPE_GROUP);
+											}
+										}
+
 										map.put(bd.getAccountID(), bd);	
 									}						
 								}
@@ -1762,7 +1781,7 @@ public class WimpleImpl implements IWimpleImpl {
 				contents.isEmpty()){
 			return false;
 		}
-			
+
 		if(false == apiAvailableSemaphore.get("postNews").tryAcquire()){
 			return true;
 		}
@@ -1788,9 +1807,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 				String postingContent = "";
 				String formatNewsPost = "subject=%s&contents=%s";
-				
+
 				postingContent = String.format(formatNewsPost, TextUtils.htmlEncode(subject), TextUtils.htmlEncode(contents));
-				
+
 				try{
 					JSONObject json = invokeRESTAPI(HTTP_METHOD.POST, Path.MONEYNEWS, postingContent);
 					if(null == json){

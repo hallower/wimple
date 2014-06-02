@@ -345,11 +345,17 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					
 					Budget item = map.get(key);
 					
+					if(0 == item.getType().compareTo(Budget.TYPE_GROUP)){
+						continue;
+					}
+					
 					current += item.getCurrent();
 					budget += item.getBudget();
 				}
 			}
 
+			Log.d(LOG_TAG, "current=" + current + ", buget=" + budget);
+			
 			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 			Display display = wm.getDefaultDisplay();
 			Point size = new Point();
@@ -395,7 +401,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					ivExpenseBudgetBase.setLayoutParams(params);	
 				}
 
-				int percentage = (int)((((double)current / (double)budget))*100);
+				int percentage = (int)(((double)current / (double)budget)*100);
 				Log.d(LOG_TAG, "current / budget = " + (((double)current / (double)budget))*100);
 				width = (int)(width * (double)current / (double)budget);
 
@@ -413,29 +419,28 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 			}else{
 
 				if(isIncome){
-					params = (FrameLayout.LayoutParams ) ivIncomeBudgetBase.getLayoutParams();
-					params.width = width;
-					ivIncomeBudgetBase.setLayoutParams(params);
-				}else{
-					params = (FrameLayout.LayoutParams ) ivExpenseBudgetBase.getLayoutParams();
-					params.width = width;
-					ivExpenseBudgetBase.setLayoutParams(params);
-				}
-
-				Log.d(LOG_TAG, "current / budget = " + ((double)current/ (double)budget));
-
-				int percentage = (int)((((double)budget / (double)current))*100);
-				width = (int)(width * ((double)budget / (double)current));
-
-				if(isIncome){
 					params = (FrameLayout.LayoutParams ) ivIncomeBudgetCurrent.getLayoutParams();
 					params.width = width;
 					ivIncomeBudgetCurrent.setLayoutParams(params);
-					ivIncomeBudgetCurrentPercentage.setText("" + percentage + "%");
 				}else{
 					params = (FrameLayout.LayoutParams ) ivExpenseBudgetCurrent.getLayoutParams();
 					params.width = width;
 					ivExpenseBudgetCurrent.setLayoutParams(params);
+				}
+
+				Log.d(LOG_TAG, "current / budget = " + ((double)current/ (double)budget));
+				int percentage = (int)(((double)current/ (double)budget)*100);
+				//width = (int)(width * ((double)budget/ (double)current));
+
+				if(isIncome){
+					params = (FrameLayout.LayoutParams ) ivIncomeBudgetBase.getLayoutParams();
+					params.width = width;
+					ivIncomeBudgetBase.setLayoutParams(params);
+					ivIncomeBudgetCurrentPercentage.setText("" + percentage + "%");
+				}else{
+					params = (FrameLayout.LayoutParams ) ivExpenseBudgetBase.getLayoutParams();
+					params.width = width;
+					ivExpenseBudgetBase.setLayoutParams(params);
 					ivExpenseBudgetCurrentPercentage.setText("" + percentage + "%");
 				}
 			}			
