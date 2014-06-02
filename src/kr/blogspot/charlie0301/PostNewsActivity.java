@@ -34,7 +34,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -104,7 +103,7 @@ public class PostNewsActivity extends Activity {
 				return;
 			}
 
-			final String exportedTitle = result.substring(startPos + 7, endPos);
+			final String exportedTitle = result.substring(startPos, endPos);
 			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
 		}
 	}
