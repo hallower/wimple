@@ -310,7 +310,7 @@ public class EntryManager {
 
 			String path = "section_id=" + sectionID + "&data_type=json" + "&entries=" + pushingContent;
 
-			Log.d(LOG_TAG, path);
+			//Log.d(LOG_TAG, path);
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.POST, Path.ENTRIES_LATEST, path);
 
@@ -378,7 +378,7 @@ public class EntryManager {
 				path += "&memo=" + memo;
 			}
 
-			Log.d(LOG_TAG, path);
+			//Log.d(LOG_TAG, path);
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.PUT, Path.ENTRIES_MODIFY + entryID + ".json_array", path);
 

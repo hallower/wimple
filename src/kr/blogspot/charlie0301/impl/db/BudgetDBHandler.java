@@ -6,7 +6,6 @@ import java.util.Map;
 
 import kr.blogspot.charlie0301.model.Budget;
 import android.content.Context;
-import android.util.Log;
 
 public class BudgetDBHandler {
 	

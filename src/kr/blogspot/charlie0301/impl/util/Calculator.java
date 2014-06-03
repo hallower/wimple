@@ -3,7 +3,7 @@ package kr.blogspot.charlie0301.impl.util;
 
 public class Calculator {
 
-	private static final String LOG_TAG = "Calculator";
+	//private static final String LOG_TAG = "Calculator";
 
 	private enum OPERATOR { NONE, PLUS, MIN, MUL, DIV };
 
