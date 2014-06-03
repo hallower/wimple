@@ -1685,7 +1685,7 @@ public class WimpleImpl implements IWimpleImpl {
 						{
 
 							JSONObject accountType  = (JSONObject) results.get(type);
-							String category = type.toString();
+							//String category = type.toString();
 
 							for(Object name : accountType.keySet()){
 
