@@ -180,21 +180,23 @@ public class PostNewsActivity extends Activity {
 
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		if(true == clipboard.hasPrimaryClip()){
-			if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
+			//if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
 				ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
 				tvSubject.setText(item.getText());	
-			}
+			//}
 		}
-
+		
 		((TextView)findViewById(R.id.post_news_do_post)).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 
+				String escapedSubject = "";
 				String escapedURL = "";
 				String escapedComment = "";
 
 				try {
+					escapedSubject = URLEncoder.encode(tvSubject.getText().toString(), "UTF-8");
 					escapedURL = URLEncoder.encode(tvURL.getText().toString(), "UTF-8");
 					escapedComment = URLEncoder.encode(tvContent.getText().toString(), "UTF-8");
 				} catch (UnsupportedEncodingException e) {					
@@ -209,7 +211,7 @@ public class PostNewsActivity extends Activity {
 				newsContents += " %0A%0A";
 				newsContents += " posted by Wimple (https://whooing.com/zS2h)";
 
-				wimple.postNews(tvSubject.getText().toString(), newsContents);
+				wimple.postNews(escapedSubject, newsContents);
 			}
 		});	
 
