@@ -1768,13 +1768,6 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 
-
-
-
-
-
-
-
 	public boolean postNews(String subject, String contents){
 
 		if(subject.isEmpty() ||
