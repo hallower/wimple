@@ -98,6 +98,7 @@ public class PostNewsActivity extends Activity {
 			}
 
 			if(startPos < 0 ||
+					endPos < 0 ||
 					endPos > result.length()){
 				Log.d(LOG_TAG, "Invalid web page!!!, Cant get title");
 				return;
