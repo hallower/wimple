@@ -444,7 +444,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		String title = txtTitle.getText().toString();
 		int pos = title.indexOf("(");
 		if( pos > 0 ){
-			title = title.substring(0, pos);
+			title = title.substring(0, pos - 1);
+			title.trim();
 		}
 
 		if(	0 != title.compareTo(selected.getItem())){
