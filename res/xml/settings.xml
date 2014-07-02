@@ -34,6 +34,11 @@
             android:key="pref_financialStateAutoRefresh"
             android:summary="@string/settings_summary_financial_state_auto_refresh"
             android:title="@string/settings_financial_state_auto_refresh" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_financialStateShowGroup"
+            android:summary="@string/settings_summary_financial_state_show_group"
+            android:title="@string/settings_financial_state_show_group" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/drawer_menu_income_expense" >
         <CheckBoxPreference
@@ -41,6 +46,11 @@
             android:key="pref_incomeExpenseStateAutoRefresh"
             android:summary="@string/settings_summary_income_expense_state_auto_refresh"
             android:title="@string/settings_income_expense_state_auto_refresh" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_incomeExpenseStateShowGroup"
+            android:summary="@string/settings_summary_income_expense_state_show_group"
+            android:title="@string/settings_income_expense_state_show_group" />
         
         <CheckBoxPreference
             android:defaultValue="true"

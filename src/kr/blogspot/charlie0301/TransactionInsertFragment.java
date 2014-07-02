@@ -538,6 +538,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		txtTitle.setText("");
 		txtMemo.setText("");
 		setAmountText(0.0);
+		cal.setValue(0.0);
 		datePicker.setDate(Calendar.getInstance().getTimeInMillis());
 
 		tvLeftAccountTitle.setText(getResources().getString(R.string.insert_left_accounts));

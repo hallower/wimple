@@ -12,8 +12,10 @@ import kr.blogspot.charlie0301.widget.ItemListView;
 import kr.blogspot.charlie0301.widget.accountstate.AccountStateItemListAdapter;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,6 +102,9 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 				return;
 			}
 			
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false);
+			
 			ArrayList<Double> values = new ArrayList<Double>();
 			ArrayList<String> names = new ArrayList<String>();
 			
@@ -111,7 +116,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 					continue;
 				}
 				
-				if(false == as.getGroup()  &&
+				if(showGroup == as.getGroup()  &&
 						as.getAmount() != 0){
 					values.add(as.getAmount());
 					names.add(as.getAccountName());

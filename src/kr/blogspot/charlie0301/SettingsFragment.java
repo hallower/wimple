@@ -19,10 +19,11 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 	public static final String KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount";
 	public static final String KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay";
 	public static final String KEY_FINANCIAL_STATE_AUTO_REFRESH = "pref_financialStateAutoRefresh";
+	public static final String KEY_FINANCIAL_STATE_SHOW_GROUP = "pref_financialStateShowGroup";
 	public static final String KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH = "pref_incomeExpenseStateAutoRefresh";
 	public static final String KEY_DISABLE_MEMO = "pref_disableMemo";
 	public static final String KEY_INCOME_EXPENSE_ENABLE_BUDGET = "pref_incomeExpenseStateEnableBudget";
-		
+	public static final String KEY_INCOME_EXPENSE_SHOW_GROUP = "pref_incomeExpenseStateShowGroup";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
