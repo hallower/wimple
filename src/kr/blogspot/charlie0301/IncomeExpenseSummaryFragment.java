@@ -174,6 +174,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	}
 	@Override
 	public void onResume() {
+		context = WimpleActivity.context;
 		Calendar c = Calendar.getInstance ( );
 		c.setTime ( new Date() );
 		c.set(Calendar.DATE, 1);
@@ -195,6 +196,10 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 		// if fragment is added or not to the activity
 		if(false == isAdded()){
+			return;
+		}
+		
+		if(null == context){
 			return;
 		}
 
