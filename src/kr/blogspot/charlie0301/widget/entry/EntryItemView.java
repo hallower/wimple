@@ -10,6 +10,7 @@ import kr.blogspot.charlie0301.model.Entry;
 import kr.blogspot.charlie0301.model.Item;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 public class EntryItemView extends LinearLayout {
 
+	private static final String LOG_TAG = "EntryItemView";
 	private final Context context;
 
 	private TextView date = null;
@@ -112,6 +114,12 @@ public class EntryItemView extends LinearLayout {
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){
+	
+		if(account.length() < 1){
+			Log.e(LOG_TAG, "fatal, account string is empty!!!");
+			return;
+		}
+		
 		switch(account.charAt(0)){
 
 		case 'c' :

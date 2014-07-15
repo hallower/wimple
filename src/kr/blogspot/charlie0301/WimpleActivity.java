@@ -1,6 +1,7 @@
 package kr.blogspot.charlie0301;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
+import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.Account;
@@ -127,7 +129,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	@Override
 	protected void onResume() {
 
-		setupWimpleImpl(false);
+		context = getApplicationContext();
+		actionBar = getActionBar();
+
+		Log.i(LOG_TAG, "csk, WimpleActivity - onResume!!!");
+
+		setupWimpleImpl();
 
 		super.onResume();
 	}
@@ -137,11 +144,13 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_wimple);
 
+		Log.i(LOG_TAG, "csk, WimpleActivity - onCreate!!!");
+
 		context = getApplicationContext();
 		actionBar = getActionBar();
 
 		setupHandler();
-		setupWimpleImpl(true);
+		setupWimpleImpl();
 		setupMenus();
 
 
@@ -259,8 +268,8 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		setPagerAdapter(restoredMenuId, true);
 		moveTabOfPager(restoredTabPosition, true);
 
-		wimple.getUserInfo(false);
-		wimple.getDefaultSections(false);	
+		//wimple.getUserInfo(false);
+		//wimple.getDefaultSections(false);	
 	}
 
 	private void setupMenus() {
@@ -476,7 +485,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		invalidateOptionsMenu();
 	}
 
-	private void setupWimpleImpl(boolean initialTime) {
+	private void setupWimpleImpl() {
 		wimple.setApplicationContext(context);
 		wimple.setStatusListener(new IWimpleStatusListener(){
 
@@ -608,15 +617,23 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			@Override
 			public void onPostNewsResponseReceived(boolean status, String id) {
 				// TODO Auto-generated method stub
-				
+
 			}				
 
 		});
 
-		if(initialTime){
+		if(true == wimple.isAuthed() &&
+				true == wimple.isInitializedFinished()){
+			// Already Logged-in
+			Log.d(LOG_TAG, "csk, wimpleactivity, logged in, default section existing");
 			wimple.getUserInfo(true);
-			wimple.getDefaultSections(false);	
-		}		
+		}else{
+			// not initialized or not Logged-in	
+			Log.d(LOG_TAG, "csk, wimpleactivity, not initialzed or not logged in");
+			Intent intent = new Intent(context, SplashScreenActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			context.startActivity(intent);
+		}
 	}
 
 
