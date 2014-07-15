@@ -82,6 +82,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 	@Override
 	public void onResume() {
 		// TODO Auto-generated method stub
+		context = WimpleActivity.context;
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -93,6 +94,10 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 
 		// if fragment is added or not to the activity
 		if(false == isAdded()){
+			return;
+		}
+		
+		if(null == context){
 			return;
 		}
 

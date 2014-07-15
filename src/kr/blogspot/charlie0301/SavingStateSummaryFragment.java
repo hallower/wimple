@@ -81,6 +81,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	@Override
 	public void onResume() {
 		// TODO Auto-generated method stub
+		context = WimpleActivity.context;
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -100,6 +101,10 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
 			if(false == booleanStatus){
+				return;
+			}
+
+			if(null == context){
 				return;
 			}
 			

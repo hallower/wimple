@@ -122,6 +122,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	}
 	@Override
 	public void onResume() {
+		context = WimpleActivity.context;
 		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		super.onResume();
 	}
@@ -134,6 +135,10 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 		// if fragment is added or not to the activity
 		if(false == isAdded()){
+			return;
+		}
+		
+		if(null == context){
 			return;
 		}
 
