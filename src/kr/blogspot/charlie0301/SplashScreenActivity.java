@@ -72,6 +72,16 @@ public class SplashScreenActivity extends Activity {
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, a1, a2, msg));    
 	}
 
+	
+	
+	@Override
+	protected void onResume() {
+		context = getApplicationContext();
+		Log.i(LOG_TAG, "csk, SplashScreen - onResume!!!");
+		
+		super.onResume();
+	}
+
 	@SuppressWarnings("deprecation")
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -80,6 +90,8 @@ public class SplashScreenActivity extends Activity {
 		setContentView(R.layout.activity_splash_screen);
 		context = getApplicationContext();
 
+		Log.i(LOG_TAG, "csk, SplashScreen - onCreate!!!");
+		
 		mWebview = (WebView) findViewById(R.id.webview);
 
 		// double check if app is restarted forcedly

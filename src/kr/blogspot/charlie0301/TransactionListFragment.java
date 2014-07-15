@@ -262,6 +262,10 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		if(false == isAdded()){
 			return;
 		}
+		
+		if(null == context){
+			return;
+		}
 
 		switch(command){
 		/*

@@ -564,6 +564,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(false == isAdded()){
 			return;
 		}
+		
+		if(null == context){
+			return;
+		}
 
 		switch(command){
 
