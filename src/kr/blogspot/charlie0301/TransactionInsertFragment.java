@@ -145,14 +145,14 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		//}
 
 		// View, Widget
-		
+
 		// To show previous data during new data dispatching without any GUI display delay.
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 		boolean isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, false);
 		if(isNeedDisableMemo){
 			((LinearLayout)view.findViewById(R.id.insert_memo_window)).setVisibility(View.GONE);			
 		}
-		
+
 		setupDate();
 
 		setupAccountLists();
@@ -290,9 +290,15 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					// remove virtual keyboard
 					txtTitle.clearFocus();
 					txtMemo.clearFocus();
-					((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-							txtTitle.getWindowToken(), 0);
 
+					if(null == context){
+						context = WimpleActivity.context;
+						if(null != context){
+							((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+									txtTitle.getWindowToken(), 0);
+						}
+					}
+					
 					//double right = Double.parseDouble(amount.getText().toString());
 					double result = 0.0;
 					switch(v.getId())
@@ -564,9 +570,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(false == isAdded()){
 			return;
 		}
-		
+
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){

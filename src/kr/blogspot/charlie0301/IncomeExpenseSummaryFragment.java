@@ -200,7 +200,10 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		}
 		
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){

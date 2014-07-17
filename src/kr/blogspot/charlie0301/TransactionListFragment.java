@@ -266,9 +266,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		if(false == isAdded()){
 			return;
 		}
-		
+
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){
@@ -370,7 +373,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			if(false == monthlyDisplay){
 				return;
 			}
-			
+
 			entryAdapter.get().removeAllMonthlyItem();
 
 			ArrayList<Item> list = (ArrayList<Item>) obj;
@@ -452,12 +455,17 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 	public void setShowingNotification(boolean show, boolean isLatest){
 
-		if(isLatest){
-			txtNotification.setText(context.getResources().getString(R.string.update_latest_items));
-		}else{
-			txtNotification.setText(context.getResources().getString(R.string.update_old_items));
+		if(null == context){
+			context = WimpleActivity.context;
+			if(null != context){
+				if(isLatest){
+					txtNotification.setText(context.getResources().getString(R.string.update_latest_items));
+				}else{
+					txtNotification.setText(context.getResources().getString(R.string.update_old_items));
+				}
+			}
 		}
-
+		
 		if(show){
 			llNotification.setVisibility(View.VISIBLE);
 		}else{
