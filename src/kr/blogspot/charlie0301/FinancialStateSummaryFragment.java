@@ -139,7 +139,10 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		}
 		
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){

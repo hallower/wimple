@@ -96,7 +96,10 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		}
 		
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){

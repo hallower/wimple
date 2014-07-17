@@ -105,7 +105,10 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 			}
 
 			if(null == context){
-				return;
+				context = WimpleActivity.context;
+				if(null == context){
+					return;
+				}
 			}
 			
 			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);

@@ -98,7 +98,10 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 		}
 		
 		if(null == context){
-			return;
+			context = WimpleActivity.context;
+			if(null == context){
+				return;
+			}
 		}
 
 		switch(command){
