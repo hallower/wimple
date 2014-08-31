@@ -278,6 +278,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				selectLatestItem(position);
+				final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 			}
 
 		});
