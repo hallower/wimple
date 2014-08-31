@@ -75,7 +75,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private DatePickerFragment datePicker;
 	private LinearLayout llInsertNotice;
-	
+
 	// Data
 
 	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT };
@@ -157,7 +157,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		llInsertNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
 		llInsertNotice.setVisibility(View.INVISIBLE);
-		
+
 		setupDate();
 
 		setupAccountLists();
@@ -198,7 +198,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 					return;
 				}
-				
+
 				if(toolMode == CurrentToolMode.EDITING){
 					toolMode = CurrentToolMode.INSERT;
 
@@ -314,7 +314,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 									txtTitle.getWindowToken(), 0);
 						}
 					}
-					
+
 					//double right = Double.parseDouble(amount.getText().toString());
 					double result = 0.0;
 					switch(v.getId())
@@ -539,15 +539,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					Toast.LENGTH_SHORT).show();
 			return false;
 		}
-		
-		try{
-			if(0.0 >= Double.parseDouble(txtAmount.getText().toString())){
-				Log.e(LOG_TAG, "Invalid entry amount.");
-				Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
-						Toast.LENGTH_SHORT).show();
-				return false;
-			}
-		}catch(Exception e){
+
+		Double amount = getAmountValue();
+		if(amount <= 0){
 			Log.e(LOG_TAG, "Invalid entry amount.");
 			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
 					Toast.LENGTH_SHORT).show();
@@ -751,7 +745,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			String entryDate = (String)obj;
 
 			llInsertNotice.setVisibility(View.INVISIBLE);
-			
+
 			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
@@ -806,7 +800,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
 
 			llInsertNotice.setVisibility(View.INVISIBLE);
-			
+
 			//Entry entry = (Entry)obj;
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
