@@ -41,6 +41,7 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +74,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private EditText txtMemo;
 
 	private DatePickerFragment datePicker;
-
+	private LinearLayout llInsertNotice;
+	
 	// Data
 
 	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT };
@@ -129,7 +131,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		context = WimpleActivity.context;		
 
 		// Data 
-		view = (LinearLayout)inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
+		view = (RelativeLayout)inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
 		//synchronized(TransactionInsertFragment.class){
 		if(null == padRIDs)
 		{
@@ -153,6 +155,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			((LinearLayout)view.findViewById(R.id.insert_memo_window)).setVisibility(View.GONE);			
 		}
 
+		llInsertNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
+		llInsertNotice.setVisibility(View.INVISIBLE);
+		
 		setupDate();
 
 		setupAccountLists();
@@ -178,19 +183,22 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			@Override
 			public void onClick(View v) {
 
+				txtInsertMode.setEnabled(false);
+
 				setAmountText(cal.eq());
 
 				if(false == validateForms()){
+					txtInsertMode.setEnabled(true);
 					return;
 				}
 
 				Double amount = getAmountValue();
 				if(amount < 0){
+					txtInsertMode.setEnabled(true);
 					Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 					return;
 				}
-
-
+				
 				if(toolMode == CurrentToolMode.EDITING){
 					toolMode = CurrentToolMode.INSERT;
 
@@ -207,7 +215,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(false == res){
+						txtInsertMode.setEnabled(true);
 						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+					}else{
+						llInsertNotice.setVisibility(View.VISIBLE);
 					}
 
 					editingItem = null;
@@ -218,7 +229,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(false == res){
+						txtInsertMode.setEnabled(true);
 						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+					}else{
+						llInsertNotice.setVisibility(View.VISIBLE);
 					}
 				}
 			}
@@ -523,6 +537,20 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					Toast.LENGTH_SHORT).show();
 			return false;
 		}
+		
+		try{
+			if(0.0 >= Double.parseDouble(txtAmount.getText().toString())){
+				Log.e(LOG_TAG, "Invalid entry amount.");
+				Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
+						Toast.LENGTH_SHORT).show();
+				return false;
+			}
+		}catch(Exception e){
+			Log.e(LOG_TAG, "Invalid entry amount.");
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}		
 
 		if(false == this.leftAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "left side account is not selected!!!");
@@ -720,6 +748,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		{	
 			String entryDate = (String)obj;
 
+			llInsertNotice.setVisibility(View.INVISIBLE);
+			
 			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
@@ -729,6 +759,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 			}
+
+			txtInsertMode.setEnabled(true);
 		}	
 		break;
 
@@ -771,6 +803,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED : {
 
+			llInsertNotice.setVisibility(View.INVISIBLE);
+			
 			//Entry entry = (Entry)obj;
 			if(booleanStatus){
 				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
@@ -779,6 +813,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}else{
 				Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 			}
+
+			txtInsertMode.setEnabled(true);
 		}
 		break;
 
