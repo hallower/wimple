@@ -545,7 +545,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_update_notification"
+        android:id="@+id/ti_update_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -562,7 +562,7 @@
         android:visibility="visible" >
 
         <TextView
-            android:id="@+id/as_list_notification_text"
+            android:id="@+id/ti_list_notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

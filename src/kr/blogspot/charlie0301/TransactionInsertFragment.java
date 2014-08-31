@@ -75,6 +75,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private DatePickerFragment datePicker;
 	private LinearLayout llInsertNotice;
+	private TextView tvNoticeMessage;
 
 	// Data
 
@@ -155,8 +156,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			((LinearLayout)view.findViewById(R.id.insert_memo_window)).setVisibility(View.GONE);			
 		}
 
-		llInsertNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
+		llInsertNotice = (LinearLayout)view.findViewById(R.id.ti_update_notification);
 		llInsertNotice.setVisibility(View.INVISIBLE);
+		tvNoticeMessage = (TextView)view.findViewById(R.id.ti_list_notification_text);
 
 		setupDate();
 
@@ -219,6 +221,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
+						tvNoticeMessage.setText(getResources().getString(R.string.modify_exist_item));
 					}
 
 					editingItem = null;
@@ -233,6 +236,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
+						tvNoticeMessage.setText(getResources().getString(R.string.insert_new_item));
 					}
 				}
 			}
