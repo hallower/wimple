@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
@@ -19,6 +20,7 @@ import kr.blogspot.charlie0301.model.Item;
 import kr.blogspot.charlie0301.model.Section;
 import kr.blogspot.charlie0301.model.UserInfo;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -26,7 +28,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,7 +52,7 @@ public class PostNewsActivity extends Activity {
 	private TextView tvContent;
 	private TextView tvURL;
 
-
+	private String charset;
 
 	private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
 		@Override
@@ -65,6 +66,19 @@ public class PostNewsActivity extends Activity {
 					HttpResponse execute = client.execute(httpGet);
 					InputStream content = execute.getEntity().getContent();
 
+					Header[] headers = execute.getHeaders("Content-Type");
+					for(Header h:headers){
+						Log.d(LOG_TAG, h.getName() + ": " + h.getValue());
+						
+						String characterset = h.getValue();
+						int pos = characterset.indexOf("charset=");
+						if(pos > 0){
+							charset = characterset.substring(pos + 8).toLowerCase(Locale.US);								
+							Log.d(LOG_TAG, "charset = " + charset);
+						}else{
+							charset = new String("euc-kr");
+						}
+					}
 					BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
 					String s = "";
 
@@ -84,7 +98,7 @@ public class PostNewsActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(String result) {
-			//Log.d(LOG_TAG, result);
+			//Log.d(LOG_TAG, "charset = " + charset + ", " + result);
 
 			int startPos = result.indexOf("<title");
 			if(startPos < 0){
@@ -104,8 +118,30 @@ public class PostNewsActivity extends Activity {
 				return;
 			}
 
-			final String exportedTitle = result.substring(startPos + 1, endPos);
-			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
+			String temp = result.substring(startPos + 1, endPos);
+			
+			Log.d(LOG_TAG, "charset = " + charset + ", " + temp);
+			
+			if(true || 
+					null == charset ||
+					0 == charset.compareToIgnoreCase("utf-8")){
+				final String exportedTitle = result.substring(startPos + 1, endPos);
+				
+				showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());	
+			}else{
+				try {
+					Log.d(LOG_TAG, "charset = " + charset + " => UTF-8");
+							
+					final String exportedTitle = new String(temp.getBytes(), charset);	
+					
+					Log.d(LOG_TAG, charset + " : " + temp + " => UTF-8 : " + exportedTitle);
+					
+					showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
+
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
