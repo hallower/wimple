@@ -973,6 +973,11 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
+				if(adbh.getAllAccounts().size() != list.size())
+				{
+					Log.e(LOG_TAG, "[Account] account is add/removed!!!");					
+					adbh.clean();
+				}			
 				adbh.insert(list);
 
 				{
@@ -1322,6 +1327,11 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
+				if(asdbh.getAllAccountStates().size() != list.size())
+				{
+					Log.e(LOG_TAG, "[FState] FinancialState is updated!!!");					
+					asdbh.clean();
+				}	
 				asdbh.insert(list);
 
 				Log.d(LOG_TAG, "[FState] Providing GetFinancialStateTaskThread from Server!!!");
@@ -1501,6 +1511,11 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
+				if(iedbh.getAllAccountStates().size() != list.size())
+				{
+					Log.e(LOG_TAG, "[InE] IncomeAndExpense is updated!!!");					
+					iedbh.clean();
+				}	
 				iedbh.insert(list);
 
 				Log.d(LOG_TAG, "[InE] Providing GetIncomeAndExpenseTaskThread from Server!!!");
