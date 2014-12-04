@@ -69,7 +69,7 @@ public class PostNewsActivity extends Activity {
 					Header[] headers = execute.getHeaders("Content-Type");
 					for(Header h:headers){
 						Log.d(LOG_TAG, h.getName() + ": " + h.getValue());
-						
+
 						String characterset = h.getValue();
 						int pos = characterset.indexOf("charset=");
 						if(pos > 0){
@@ -79,7 +79,8 @@ public class PostNewsActivity extends Activity {
 							charset = new String("euc-kr");
 						}
 					}
-					BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+
+					BufferedReader buffer = new BufferedReader(new InputStreamReader(content, charset));
 					String s = "";
 
 					while ((s = buffer.readLine()) != null) {
@@ -118,30 +119,8 @@ public class PostNewsActivity extends Activity {
 				return;
 			}
 
-			String temp = result.substring(startPos + 1, endPos);
-			
-			Log.d(LOG_TAG, "charset = " + charset + ", " + temp);
-			
-			if(true || 
-					null == charset ||
-					0 == charset.compareToIgnoreCase("utf-8")){
-				final String exportedTitle = result.substring(startPos + 1, endPos);
-				
-				showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());	
-			}else{
-				try {
-					Log.d(LOG_TAG, "charset = " + charset + " => UTF-8");
-							
-					final String exportedTitle = new String(temp.getBytes(), charset);	
-					
-					Log.d(LOG_TAG, charset + " : " + temp + " => UTF-8 : " + exportedTitle);
-					
-					showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
-
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-			}
+			final String exportedTitle = result.substring(startPos + 1, endPos);
+			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());	
 		}
 	}
 
@@ -218,11 +197,11 @@ public class PostNewsActivity extends Activity {
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		if(true == clipboard.hasPrimaryClip()){
 			//if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
-				ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-				tvSubject.setText(item.getText());	
+			ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+			tvSubject.setText(item.getText());	
 			//}
 		}
-		
+
 		((TextView)findViewById(R.id.post_news_do_post)).setOnClickListener(new OnClickListener() {
 
 			@Override
