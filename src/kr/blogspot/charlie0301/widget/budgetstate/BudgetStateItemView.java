@@ -18,6 +18,7 @@ public class BudgetStateItemView extends LinearLayout {
 	private LinearLayout llbackground = null;
 	private TextView budget = null;
 	private TextView title = null;
+	private TextView percentage = null;
 	private TextView amount = null;
 
 	public BudgetStateItemView(Context context){
@@ -32,6 +33,7 @@ public class BudgetStateItemView extends LinearLayout {
 		llbackground = (LinearLayout)findViewById(R.id.as_backgroud);
 		budget = (TextView)findViewById(R.id.as_item_budget);
 		title = (TextView)findViewById(R.id.as_item_title);
+		percentage = (TextView)findViewById(R.id.as_item_percentage);
 		amount = (TextView)findViewById(R.id.as_item_amount);
 	}
 
@@ -74,21 +76,30 @@ public class BudgetStateItemView extends LinearLayout {
 		if(null == budget){
 			return;
 		}
-		
-		if(item.getAmount() > budget.getBudget()){
-			if(item.getCategory().startsWith("in")){
-				amount.setTextColor(getResources().getColor(R.color.text_blue));	
-			}else{
-				amount.setTextColor(getResources().getColor(R.color.text_red));	
-			}
-		}
-		
+
+		amount.setTextColor(getResources().getColor(R.color.text_black));
+		percentage.setTextColor(getResources().getColor(R.color.text_black));
+
 		if(budget.getBudget() > 0){
+
+			if(item.getAmount() > budget.getBudget()){
+				if(item.getCategory().startsWith("in")){
+					amount.setTextColor(getResources().getColor(R.color.text_blue));
+					percentage.setTextColor(getResources().getColor(R.color.text_blue));
+				}else{
+					amount.setTextColor(getResources().getColor(R.color.text_red));	
+					percentage.setTextColor(getResources().getColor(R.color.text_red));
+				}
+			}		
+
 			this.budget.setText(DateFormatUtils.getDecimalFormat().format(budget.getBudget()));
+			int pc = (int) ((item.getAmount() / budget.getBudget()) * 100);
+			this.percentage.setText(String.valueOf(pc) + "%");
 		}else{
 			this.budget.setText(getResources().getString(R.string.budget_nothing_budget));
+			this.percentage.setText(getResources().getString(R.string.budget_nothing_budget));
 		}
-		
+
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){
