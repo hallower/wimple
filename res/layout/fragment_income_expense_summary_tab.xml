@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="58dp" >
 
-                    <!-- 수익 -->
+                    <!-- Incomes -->
 
                     <ImageView
                         android:id="@+id/ine_bar_income"
@@ -90,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp" >
 
-                <!-- 지출 -->
+                <!-- Expenses -->
 
                 <ImageView
                     android:id="@+id/ine_bar_expense"

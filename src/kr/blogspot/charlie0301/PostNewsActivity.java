@@ -27,6 +27,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -47,7 +48,8 @@ public class PostNewsActivity extends Activity {
 
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	public static Context context;
-
+	private static ProgressDialog dialog;
+	
 	private TextView tvSubject;
 	private TextView tvContent;
 	private TextView tvURL;
@@ -160,7 +162,6 @@ public class PostNewsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_post_news);
 
-
 		context = getApplicationContext();
 
 		// intent check
@@ -181,7 +182,7 @@ public class PostNewsActivity extends Activity {
 
 		if(null == url ||
 				url.isEmpty()){
-			Toast.makeText(context, getResources().getString(R.string.invalid_news_share_method), Toast.LENGTH_SHORT).show();
+			Toast.makeText(context, getResources().getString(R.string.post_invalid_news_share_method), Toast.LENGTH_SHORT).show();
 			finish();
 			return;
 		}
@@ -226,7 +227,7 @@ public class PostNewsActivity extends Activity {
 					escapedURL = URLEncoder.encode(tvURL.getText().toString(), "UTF-8");
 					escapedComment = URLEncoder.encode(tvContent.getText().toString(), "UTF-8");
 				} catch (UnsupportedEncodingException e) {					
-					Toast.makeText(context, getResources().getString(R.string.invalid_news_url), Toast.LENGTH_SHORT).show();
+					Toast.makeText(context, getResources().getString(R.string.post_invalid_news_url), Toast.LENGTH_SHORT).show();
 					finish();
 					return;
 				}
@@ -237,6 +238,9 @@ public class PostNewsActivity extends Activity {
 				newsContents += " %0A%0A";
 				newsContents += " posted by Wimple (https://whooing.com/zS2h)";
 
+				dialog = ProgressDialog.show(PostNewsActivity.this,"",
+						context.getResources().getText(R.string.post_news_wait_for_while),true);
+				
 				wimple.postNews(escapedSubject, newsContents);
 			}
 		});	
@@ -325,6 +329,9 @@ public class PostNewsActivity extends Activity {
 
 			@Override
 			public void onPostNewsResponseReceived(boolean status, String id) {
+				dialog.dismiss();
+				dialog = null;
+				
 				if(status){
 					Toast.makeText(context, getResources().getString(R.string.post_news_succeed), Toast.LENGTH_SHORT).show();
 				}else{

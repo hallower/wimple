@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="menu_titles">
-        <item>Transaction</item>
-        <item>Balance</item>
-        <item>Profit/Loss</item>
-        <item>Settings</item>
+        <item>거래</item>
+        <item>자산부채</item>
+        <item>비용수익</item>
+        <item>설정</item>
     </string-array>
 </resources>
