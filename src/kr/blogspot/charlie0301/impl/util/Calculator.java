@@ -66,13 +66,10 @@ public class Calculator {
 				}else{
 					res += numbers[idx] * Math.pow(10, mul);
 				}
-
-				//Log.d(LOG_TAG, "res=" + res + ", idx=" + idx + ", numbers[idx]=" + numbers[idx]);
 			}
 
 			for(int idx=(pointPosition+1), mul=1 ; idx < insertingPosition ; idx++, mul++){
 				res += numbers[idx] * (1 / Math.pow(10, mul));
-				//Log.d(LOG_TAG, "res=" + res + ", idx=" + idx + ", numbers[idx]=" + numbers[idx]);
 			}
 
 		}else{
@@ -83,8 +80,6 @@ public class Calculator {
 				}else{
 					res += numbers[idx] * Math.pow(10, mul);
 				}
-
-				//Log.d(LOG_TAG, "res=" + res + ", idx=" + idx + ", numbers[idx]=" + numbers[idx]);
 			}
 		}
 
@@ -110,9 +105,7 @@ public class Calculator {
 		right = getStackedValue();
 		resetStackedValue();
 
-		//Log.d(LOG_TAG, "" + left + op.toString() + right);
 		if(right == 0.0){
-			//Log.d(LOG_TAG, "Stacked value is 0, skip!!!");
 			return;
 		}
 
@@ -133,7 +126,6 @@ public class Calculator {
 			left /= right;
 			break;
 		}
-		//Log.d(LOG_TAG, " ==> " + left);
 		right = 0.0;
 	}
 
@@ -201,7 +193,6 @@ public class Calculator {
 			return getStackedValue();
 		}
 
-		//Log.d(LOG_TAG, "BEFORE inserting=" + insertingPosition + ", pointPos=" + pointPosition);
 		insertingPosition -= 1;
 		numbers[insertingPosition] = 0;
 
@@ -209,7 +200,6 @@ public class Calculator {
 			pointPosition = -1;
 			resetPointInserting();
 		}
-		//Log.d(LOG_TAG, "AFTER inserting=" + insertingPosition + ", pointPos=" + pointPosition);
 		return getStackedValue();
 	}
 	
