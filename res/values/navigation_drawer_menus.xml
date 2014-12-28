@@ -4,10 +4,10 @@
     <string name="drawer_menu_size">2</string>
 
     <string-array name="drawer_menus_title">
-        <item>Insert, History</item>
-        <item>Balance, Income, Expense</item>
-        <item>Profit/Loss, Profit, Loss</item>
-        <item>Settings</item>
+        <item>거래입력, 최근 입력 거래</item>
+        <item>자산부채, 자산, 부채</item>
+        <item>비용수익, 수익, 비용</item>
+        <item>설정</item>
     </string-array>
     <string-array name="drawer_menus_class">
         <item>kr.blogspot.charlie0301.TransactionInsertFragment,kr.blogspot.charlie0301.TransactionListFragment</item>

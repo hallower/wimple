@@ -4,9 +4,9 @@
     <string name="drawer_menu_size">2</string>
 
     <string-array name="drawer_menus_title">
-        <item>Insert, History</item>
-        <item>Balance, Income, Expense</item>
-        <item>Profit/Loss, Profit, Loss</item>
+        <item>Make, History</item>
+        <item>Balance, Assets, Liabilities</item>
+        <item>Profit/Loss, Incomes, Expenses</item>
         <item>Settings</item>
     </string-array>
     <string-array name="drawer_menus_class">
