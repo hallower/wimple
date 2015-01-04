@@ -305,11 +305,11 @@ public class SplashScreenActivity extends Activity {
 			}
 
 			@Override
-			public void onPostNewsResponseReceived(boolean status, String id) {
-				// TODO Auto-generated method stub
-
-			}				
-
+			public void onPostNewsResponseReceived(boolean status, String id) { }
+			
+			@Override
+			public void onPostPaymentsResponseReceived(boolean status) { }
+			
 		});
 	}
 

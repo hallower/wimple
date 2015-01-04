@@ -253,79 +253,56 @@ public class PostNewsActivity extends Activity {
 		wimple.setResponseListener(new IWimpleResponseListener(){
 
 			@Override
-			public void onGetAuthTempToken(boolean status, String tempToken) {
-			}
+			public void onGetAuthTempToken(boolean status, String tempToken) {}
 
 			@Override
 			public void onGetAuthAccessToken(boolean status,
-					Map<String, String> result) {
-			}
+					Map<String, String> result) {	}
 
 			@Override
-			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) { 
-			}
+			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) {	}
 
 			@Override
-			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {
-			}
+			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {	}
 
 			@Override
-			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
-			}
+			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {	}
 
 			@Override
-			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
-			}
+			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {	}
 
 			@Override
-			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {
-			}
+			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {	}
 
 			@Override
-			public void onMakeEntryResponseReceived(boolean status, String entryDate) {
-			}
+			public void onMakeEntryResponseReceived(boolean status, String entryDate) {	}
 
 			@Override
-			public void onGetFrequentItemsResponseReceived(boolean status,
-					Collection<Item> list) {
-			}
+			public void onGetFrequentItemsResponseReceived(boolean status,	Collection<Item> list) {	}
 
 			@Override
-			public void onGetLatestItemsResponseReceived(boolean status,
-					Collection<Item> list) {
-			}
+			public void onGetLatestItemsResponseReceived(boolean status,	Collection<Item> list) {	}
 
 			@Override
-			public void onModifyEntryResponseReceived(boolean status, Entry entry) {
-			}
+			public void onModifyEntryResponseReceived(boolean status, Entry entry) {	}
 
 			@Override
-			public void onGetMonthlyItemsResponseReceived(boolean status,
-					ArrayList<Item> list) {
-			}
+			public void onGetMonthlyItemsResponseReceived(boolean status,	ArrayList<Item> list) {	}
 
 			@Override
-			public void onRemoveEntryResponseReceived(boolean status, String id) {				
-			}
+			public void onRemoveEntryResponseReceived(boolean status, String id) {	}
 
 			@Override
-			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
-			}
+			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {	}
 
 			@Override
-			public void onGetFinancialStateResponseReceived(boolean status,
-					Collection<AccountState> list) {
-			}
+			public void onGetFinancialStateResponseReceived(boolean status,	Collection<AccountState> list) {	}
 
 			@Override
-			public void onGetIncomeAndExpenseResponseReceived(boolean status,
-					Collection<AccountState> list) {
-			}
+			public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) {		}
 
 			@Override
-			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,
-					Map<String, Budget> list) {
-			}
+			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,	Map<String, Budget> list) {		}
 
 			@Override
 			public void onPostNewsResponseReceived(boolean status, String id) {
@@ -338,7 +315,10 @@ public class PostNewsActivity extends Activity {
 					Toast.makeText(context, getResources().getString(R.string.post_news_failed), Toast.LENGTH_SHORT).show();					
 				}
 				finish();
-			}				
+			}
+
+			@Override
+			public void onPostPaymentsResponseReceived(boolean status) { }
 
 		});
 	}

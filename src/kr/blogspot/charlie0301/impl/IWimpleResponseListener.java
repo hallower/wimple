@@ -48,6 +48,7 @@ public interface IWimpleResponseListener {
 
 	public void onRemoveEntryResponseReceived(boolean status, String id);
 	
+	public void onPostPaymentsResponseReceived(boolean status);
 	
 	/*
 	 * R, D, Items
