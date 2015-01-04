@@ -13,6 +13,7 @@ public class DateFormatUtils {
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
 	private static final SimpleDateFormat sdfGUI = new SimpleDateFormat("yy-MM-dd E", locale);
 	private static final SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd", locale);
+	private static final SimpleDateFormat sdfSMS = new SimpleDateFormat("MM/dd HH:mm", locale);
 	private static final NumberFormat nf = NumberFormat.getCurrencyInstance(locale);	
 	private static final DecimalFormat formatCalcNum = (DecimalFormat)nf;
 	private static final NumberFormat nf2 = NumberFormat.getCurrencyInstance(locale);	
@@ -39,6 +40,10 @@ public class DateFormatUtils {
 		return sdfDB;
 	}
 
+	public static final SimpleDateFormat getSMSDateFormat(){
+		return sdfSMS;
+	}
+	
 	public static final NumberFormat getNumberFormat(){
 		return nf;
 	}
@@ -54,6 +59,11 @@ public class DateFormatUtils {
 	public static final String getCurrentDateString(){
 		Long today = Calendar.getInstance().getTimeInMillis();
 		return getServerDateFormat().format(today);
+	}
+	
+	public static final String getCurrentDateStringForSMS(){
+		Long today = Calendar.getInstance().getTimeInMillis();
+		return sdfSMS.format(today);
 	}
 
 	public static final String getServerDateString(Long date){		

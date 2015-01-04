@@ -6,9 +6,10 @@
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +24,7 @@
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -57,10 +59,19 @@
             android:label="@string/title_activity_post_news" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/*" />
                 <data android:mimeType="plain/*" />
             </intent-filter>
         </activity>
-    </application> 
+
+        <receiver android:name="kr.blogspot.charlie0301.SMSReceiver" >
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
 </manifest>

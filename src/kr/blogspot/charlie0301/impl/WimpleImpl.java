@@ -133,6 +133,8 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Map<String, Budget> list) { }
 		@Override
 		public void onPostNewsResponseReceived(boolean status, String id) { }
+		@Override
+		public void onPostPaymentsResponseReceived(boolean status) { }
 	};
 
 	protected WimpleImpl(){ 
@@ -151,16 +153,13 @@ public class WimpleImpl implements IWimpleImpl {
 		apiAvailableSemaphore.put("getIncomeBudget", new Semaphore(1));
 		apiAvailableSemaphore.put("getExpenseBudget", new Semaphore(1));
 		apiAvailableSemaphore.put("postNews", new Semaphore(1));
+		apiAvailableSemaphore.put("postPayments", new Semaphore(1));
 	}
 
 	public Semaphore getApiAvailableSemaphore(String key){
 		return apiAvailableSemaphore.get(key);
 	}
-	/**
-	 * Get instance of Promise class
-	 * <p>
-	 * The response of this method will be returned the instance of the Promise class.
-	 */
+
 	public static WimpleImpl getInstance(){
 		return INSTANCE;
 	}
@@ -252,8 +251,6 @@ public class WimpleImpl implements IWimpleImpl {
 	private static final String LOG_TAG = "Wimple";
 
 	private static final String serviceHost = "https://whooing.com/";
-	//private static final String appID = "139";
-	//private static final String vo42iw5me4vxz = "a33134b9c4107b9c00d2f8f128a1f69b8a3d0360";
 	private static final String appID = "140";
 	private static final String vo42iw5me4vxz = "***REDACTED-WIMPLE-APP-SECRET***";
 
@@ -288,7 +285,9 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
 		public static final String ENTRIES_MODIFY			= "api/entries/";
 		public static final String ENTRIES_REMOVE			= ENTRIES_MODIFY;
-
+		public static final String POST_PAYMENT				= "api/entries/outside.json";
+		public static final String REPORT_FAILED_PAYMENT	= "api/entries/outside_report.json";
+		
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
@@ -301,6 +300,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String BUDGET_EXPENSES			= "api/budget/expenses.json_array";
 
 		public static final String MONEYNEWS				= "api/bbs/moneynews.json";
+		
 	};
 
 
@@ -399,6 +399,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final int CMD_GET_INCOME_AND_EXPENSE = CMD_BASE + 39;
 		public static final int CMD_GET_BUDGET = CMD_BASE + 41;
 		public static final int CMD_POST_NEWS = CMD_BASE + 43;
+		public static final int CMD_POST_PAYMENTS = CMD_BASE + 45;
 	}
 
 
@@ -559,6 +560,10 @@ public class WimpleImpl implements IWimpleImpl {
 				responseListener.onPostNewsResponseReceived(booleanStatus, (String)obj);
 				break;
 
+			case CommandID.CMD_POST_PAYMENTS :
+				responseListener.onPostPaymentsResponseReceived(booleanStatus);
+				break;
+				
 			default : 
 				break;
 
@@ -697,7 +702,7 @@ public class WimpleImpl implements IWimpleImpl {
 			sm(CommandID.CMD_GET_ACCESS_TOKEN, 1, 0, list);
 		}
 	}
-	/*
+
 	public boolean getAllSections(){
 
 		if(false == isAuthed()){
@@ -709,23 +714,18 @@ public class WimpleImpl implements IWimpleImpl {
 			@Override
 			public void run() {
 
-				if(null != sectionList){
-					sm(CommandID.CMD_GET_SECTIONS, 1, 0, sectionList);
+				Collection<Section> list = new ArrayList<Section>();
+
+				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_ALL, "");
+
+				if(null == json){
+					Log.e(LOG_TAG, "[Default Sections] Error response - null returned");
+					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
 				}
 
-				Collection<Section> list = new ArrayList<Section>();
-
-				JSONObject json = rai.invokeGET(Path.SECTIONS_ALL);
-
-				if(null == json){
-				Log.e(LOG_TAG, "[getAllSections] Error response - null returned");
-				wimpl.sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
-				return;
-			}
-
-			if(	false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[getAllSections] Error response - " + json.get("message").toString());
+				if(false == json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[Default Sections] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
 				}
@@ -745,8 +745,6 @@ public class WimpleImpl implements IWimpleImpl {
 					list.add(new Section(section));
 				}
 
-				// TODO : insert into DB
-				sectionList = list;
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
 				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
 			}			
@@ -754,7 +752,6 @@ public class WimpleImpl implements IWimpleImpl {
 		}.start();		
 		return true;
 	}
-	 */
 
 	public boolean getUserInfo(boolean forceUpdate){
 
@@ -782,7 +779,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			UserInfo info = new UserInfo();
 
-			if((true == forceUpdate) &&
+			if((false == forceUpdate) &&
 					(true == uidbh.hasData())){
 				Log.d(LOG_TAG, "[User Info] Providing User Information from Cache");
 				sm(CommandID.CMD_GET_USER_INFO, 1, 0, uidbh.get());
@@ -839,7 +836,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			Collection<Section> list = new ArrayList<Section>();
 
-			if((true == forceUpdate) &&
+			if((false == forceUpdate) &&
 					(true == sdbh.hasData())){
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
@@ -1000,7 +997,7 @@ public class WimpleImpl implements IWimpleImpl {
 				String open = item.getOpenedDate();
 				String closed = item.getClosedDate();
 				Date itemDate = null;
-				
+
 				try{
 					sdf.setLenient(false);
 					itemDate = sdf.parse(dateFilter);
@@ -1011,7 +1008,7 @@ public class WimpleImpl implements IWimpleImpl {
 					list.add(item);
 					continue;
 				}
-				
+
 				try{
 					Date openDate = sdf.parse(open);
 
@@ -1851,6 +1848,81 @@ public class WimpleImpl implements IWimpleImpl {
 
 	}
 
+
+	public boolean postPayments(String message, String sender){
+
+		Log.e(LOG_TAG, "[PostPayments] start");
+		
+		if(message.isEmpty() || 
+				sender.isEmpty()){
+			return false;
+		}
+
+		if(false == apiAvailableSemaphore.get("postPayments").tryAcquire()){
+			return true;
+		}
+	
+		new PostPaymentsTaskThread(message, sender).start();		
+		return true;
+	}
+
+	private class PostPaymentsTaskThread extends Thread{
+
+		final String message;
+		final String sender;
+
+		PostPaymentsTaskThread(String message, String sender){
+			this.message = message;
+			this.sender = sender;
+		}
+
+		@Override
+		public void run() {
+
+			try{
+				String postingContent = "rows=";
+				postingContent += TextUtils.htmlEncode(message);
+
+				try{
+					JSONObject json = invokeRESTAPI(HTTP_METHOD.POST, Path.POST_PAYMENT, postingContent);
+					if(null == json){
+						Log.e(LOG_TAG, "[PostPayments] Error response - null returned");
+						sm(CommandID.CMD_POST_PAYMENTS, 0, 0, "");
+						return;
+					}
+
+					if(	false == json.get("code").toString().startsWith("2")){
+						Log.e(LOG_TAG, "[PostPayments] Error response - " + json.get("message").toString());
+						sm(CommandID.CMD_POST_PAYMENTS, 0, 0, "");
+
+						int code = Integer.parseInt(json.get("code").toString());
+						if(400 == code){
+							Log.e(LOG_TAG, "[PostPayments] Unrecognized message, reporting it!");
+							invokeRESTAPI(HTTP_METHOD.POST, Path.REPORT_FAILED_PAYMENT, sender + "\n" + postingContent);								
+						}
+						/*
+						// handleRESTErrorResponse can be show a dialog, so it should be avoided.
+						else{
+							handleRESTErrorResponse(code);	
+						}
+						*/					
+						return;
+					}
+
+				} catch(Exception e){
+					Log.e(LOG_TAG, "[PostPayments] Failed - PostNewsTaskThread!!!");
+					e.printStackTrace();
+					sm(CommandID.CMD_POST_PAYMENTS, 0, 0, "");
+					return;
+				}
+				Log.d(LOG_TAG, "[PostPayments] Posted Payments!!!");
+				sm(CommandID.CMD_POST_PAYMENTS, 1, 0, "");
+
+			}finally{
+				apiAvailableSemaphore.get("postPayments").release();
+			}
+		}
+	}
 
 
 
