@@ -59,10 +59,19 @@ public class PostNewsActivity extends Activity {
 		protected String doInBackground(String... urls) {
 			String response = "";
 
-			for (String url : urls) {
-				DefaultHttpClient client = new DefaultHttpClient();
-				HttpGet httpGet = new HttpGet(url);
+			for (String url : urls) {			
+				
+				Log.d(LOG_TAG, "submitted url is " + url);
+				
+				String lcURL = url.toLowerCase(Locale.US);
+				String targetURL = url;
+				if(false == lcURL.startsWith("http")){
+					targetURL = url.substring(url.indexOf("http"));
+				}
+				
 				try {
+					DefaultHttpClient client = new DefaultHttpClient();					
+					HttpGet httpGet = new HttpGet(targetURL);					
 					HttpResponse execute = client.execute(httpGet);
 					InputStream content = execute.getEntity().getContent();
 
@@ -126,7 +135,8 @@ public class PostNewsActivity extends Activity {
 
 	void showTitleSelectionWindow(final String exportedTitle){
 		AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
-		alt_bld.setMessage("제목을 아래와 같이 변경하실래요?\n\n\"" + exportedTitle + "\"").setCancelable(
+		alt_bld.setMessage(getResources().getString(R.string.post_news_set_title) + 
+				"\n\n\"" + exportedTitle + "\"").setCancelable(
 				false).setPositiveButton("Yes",
 						new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
@@ -140,7 +150,7 @@ public class PostNewsActivity extends Activity {
 				});
 
 		AlertDialog alert = alt_bld.create();
-		alert.setTitle("제목을 추출하였습니다.");
+		alert.setTitle(getResources().getString(R.string.post_news_title_imported));
 		//alert.setIcon(R.drawable.icon);
 		alert.show();			
 	}
