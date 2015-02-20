@@ -29,6 +29,8 @@
     <string name="settings_summary_loggout">다른 계정으로 로그인하고자 로그아웃 합니다.</string>
     <string name="settings_general">일반</string>
     <string name="settings_entry">거래</string>
+    <string name="settings_sections">섹션 선택</string>
+    <string name="settings_summary_sections">후잉에 설정된 섹션을 선택합니다. 선택 시 앱이 다시 시작됩니다.</string>
     <string name="settings_entry_disable_memo">메모 입력창 표시 안함</string>
     <string name="settings_summary_entry_disable_memo">거래 입력 화면에서 메모 작성을 위한 입력란을 표시하지 않습니다.</string>
     <string name="settings_entry_monthly_display">월별 거래 입력 항목 표시</string>

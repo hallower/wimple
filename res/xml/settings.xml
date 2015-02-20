@@ -6,6 +6,10 @@
             android:key="preference_logout"
             android:summary="@string/settings_summary_loggout"
             android:title="@string/settings_loggout" />
+        <ListPreference
+            android:key="preference_sections"
+            android:summary="@string/settings_summary_sections"
+            android:title="@string/settings_sections" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry" >
         <CheckBoxPreference

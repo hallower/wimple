@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -47,6 +48,7 @@ public class SplashScreenActivity extends Activity {
 	private static final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
 	public static Context context;
+	private SharedPreferences settings;
 
 	// GUI
 	private TextView txtStatus;
@@ -77,6 +79,7 @@ public class SplashScreenActivity extends Activity {
 	@Override
 	protected void onResume() {
 		context = getApplicationContext();
+		settings = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
 		Log.i(LOG_TAG, "csk, SplashScreen - onResume!!!");
 		
 		super.onResume();
@@ -89,6 +92,7 @@ public class SplashScreenActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash_screen);
 		context = getApplicationContext();
+		settings = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
 
 		Log.i(LOG_TAG, "csk, SplashScreen - onCreate!!!");
 		
@@ -115,7 +119,15 @@ public class SplashScreenActivity extends Activity {
 
 		if(true == wimple.getTempToken()){
 			// Already Logged-in
-			wimple.getDefaultSections(true);
+			String savedSectionID = settings.getString("section_id",null);
+			if(null == savedSectionID ||
+					savedSectionID.isEmpty()){
+				Log.d(LOG_TAG, "logged in - get default section");
+				wimple.getDefaultSections(true);	
+			}else{
+				Log.d(LOG_TAG, "logged in - get all section, section id = " + savedSectionID);
+				wimple.getAllSections(true);
+			}
 		}
 
 		// final View controlsView =
@@ -225,7 +237,15 @@ public class SplashScreenActivity extends Activity {
 
 				//sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_user_info));
 				wimple.getUserInfo(true);
-				wimple.getDefaultSections(false);				
+				String savedSectionID = settings.getString("section_id",null);
+				if(null == savedSectionID ||
+						savedSectionID.isEmpty()){
+					Log.d(LOG_TAG, "not logged in - get default section");					
+					wimple.getDefaultSections(false);	
+				}else{
+					Log.d(LOG_TAG, "not logged in - get all section, section id = " + savedSectionID);					
+					wimple.getAllSections(false);
+				}
 			}
 
 			@Override

@@ -73,7 +73,7 @@ public class WimpleImpl implements IWimpleImpl {
 	// static references
 	private static final Locale locale = new Locale("ko", "KR");
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
-	private static final String settingsKey = "wimple.auth";
+	public static final String settingsKey = "wimple.auth";
 
 	// Data
 	private int countOfRemainedAPICall = -1;
@@ -193,7 +193,13 @@ public class WimpleImpl implements IWimpleImpl {
 			userID = saved_value;
 		}
 
-
+		saved_value = settings.getString("section_id",null);
+		if((null == defaultSectionID || 
+				defaultSectionID.isEmpty()) &&
+				null != saved_value){
+			defaultSectionID = saved_value;
+		}
+		
 		if(null == uidbh){
 			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
 		}
@@ -247,6 +253,13 @@ public class WimpleImpl implements IWimpleImpl {
 		return responseListener;
 	}
 
+	public String getDefaultSectionID() {
+		return defaultSectionID;
+	}
+
+	public void setDefaultSectionID(String defaultSectionID) {
+		this.defaultSectionID = defaultSectionID;
+	}
 
 	private static final String LOG_TAG = "Wimple";
 
@@ -287,7 +300,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String ENTRIES_REMOVE			= ENTRIES_MODIFY;
 		public static final String POST_PAYMENT				= "api/entries/outside.json";
 		public static final String REPORT_FAILED_PAYMENT	= "api/entries/outside_report.json";
-		
+
 		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
 		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
 		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
@@ -300,7 +313,7 @@ public class WimpleImpl implements IWimpleImpl {
 		public static final String BUDGET_EXPENSES			= "api/budget/expenses.json_array";
 
 		public static final String MONEYNEWS				= "api/bbs/moneynews.json";
-		
+
 	};
 
 
@@ -563,7 +576,7 @@ public class WimpleImpl implements IWimpleImpl {
 			case CommandID.CMD_POST_PAYMENTS :
 				responseListener.onPostPaymentsResponseReceived(booleanStatus);
 				break;
-				
+
 			default : 
 				break;
 
@@ -597,11 +610,13 @@ public class WimpleImpl implements IWimpleImpl {
 		token = "";
 		tokenSecret = "";
 		userID = "";
+		defaultSectionID = "";
 
 		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
 		settings.edit().putString("token", "").commit();
 		settings.edit().putString("token_secret", "").commit(); 
 		settings.edit().putString("userid", "").commit();
+		settings.edit().putString("section_id", "").commit();
 
 		this.isInitializedFinished = false;
 		this.isAuthed = false;
@@ -703,54 +718,70 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 	}
 
-	public boolean getAllSections(){
+	public boolean getAllSections(Boolean forceUpdate){
 
 		if(false == isAuthed()){
 			Log.e(LOG_TAG, "[getAllSections] Already authenticated.");
 			return false;
 		}
 
-		new Thread(){
-			@Override
-			public void run() {
-
-				Collection<Section> list = new ArrayList<Section>();
-
-				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_ALL, "");
-
-				if(null == json){
-					Log.e(LOG_TAG, "[Default Sections] Error response - null returned");
-					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
-					return;
-				}
-
-				if(false == json.get("code").toString().startsWith("2")){
-					Log.e(LOG_TAG, "[Default Sections] Error response - " + json.get("message").toString());
-					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
-					return;
-				}
-
-
-				JSONObject results = (JSONObject) json.get("results");				
-
-				for(Object key : results.keySet()){
-					JSONObject section = (JSONObject) results.get(key);
-
-					Object isolation = section.get("isolation");
-					if(null != isolation &&
-							0 == isolation.toString().compareToIgnoreCase("y")){
-						continue;
-					}
-
-					list.add(new Section(section));
-				}
-
-				defaultSectionID = ((Section)list.toArray()[0]).getId();
-				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
-			}			
-
-		}.start();		
+		new GetAllSectionsTaskThread(forceUpdate).start();
 		return true;
+	}
+
+	private class GetAllSectionsTaskThread extends Thread{
+
+		final Boolean forceUpdate;
+
+		GetAllSectionsTaskThread(Boolean forceUpdate){
+			this.forceUpdate = forceUpdate;
+		}
+
+		@Override
+		public void run() {
+
+			Collection<Section> list = new ArrayList<Section>();
+
+			if((false == forceUpdate) &&
+					(true == sdbh.hasData())){
+				Log.d(LOG_TAG, "[All Sections] Providing Section from Cache");
+				list = sdbh.getAllSections();
+				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
+				return;
+			}
+
+			JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_ALL, "");
+
+			if(null == json){
+				Log.e(LOG_TAG, "[All Sections] Error response - null returned");
+				sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
+				return;
+			}
+
+			if(false == json.get("code").toString().startsWith("2")){
+				Log.e(LOG_TAG, "[All Sections] Error response - " + json.get("message").toString());
+				sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
+				return;
+			}
+
+
+			JSONObject results = (JSONObject) json.get("results");				
+
+			for(Object key : results.keySet()){
+				JSONObject section = (JSONObject) results.get(key);
+
+				Object isolation = section.get("isolation");
+				if(null != isolation &&
+						0 == isolation.toString().compareToIgnoreCase("y")){
+					continue;
+				}
+
+				list.add(new Section(section));
+			}
+
+			sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
+		}			
+
 	}
 
 	public boolean getUserInfo(boolean forceUpdate){
@@ -841,6 +872,7 @@ public class WimpleImpl implements IWimpleImpl {
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
+				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 				return;
 			}
@@ -872,7 +904,8 @@ public class WimpleImpl implements IWimpleImpl {
 			Section section = new Section(results);
 			sdbh.insert(section);
 			list = sdbh.getAllSections();
-			defaultSectionID = ((Section)list.toArray()[0]).getId();			
+			defaultSectionID = ((Section)list.toArray()[0]).getId();
+			context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
 			Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
 			sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 		}			
@@ -1852,7 +1885,7 @@ public class WimpleImpl implements IWimpleImpl {
 	public boolean postPayments(String message, String sender){
 
 		Log.e(LOG_TAG, "[PostPayments] start");
-		
+
 		if(message.isEmpty() || 
 				sender.isEmpty()){
 			return false;
@@ -1861,7 +1894,7 @@ public class WimpleImpl implements IWimpleImpl {
 		if(false == apiAvailableSemaphore.get("postPayments").tryAcquire()){
 			return true;
 		}
-	
+
 		new PostPaymentsTaskThread(message, sender).start();		
 		return true;
 	}
@@ -1905,7 +1938,7 @@ public class WimpleImpl implements IWimpleImpl {
 						else{
 							handleRESTErrorResponse(code);	
 						}
-						*/					
+						 */					
 						return;
 					}
 
