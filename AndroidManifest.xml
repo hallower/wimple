@@ -66,12 +66,13 @@
                 <data android:mimeType="plain/*" />
             </intent-filter>
         </activity>
-
+	<!-- 
         <receiver android:name="kr.blogspot.charlie0301.SMSReceiver" >
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+	-->
     </application>
 
 </manifest>
