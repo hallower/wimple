@@ -1930,24 +1930,6 @@ public class WimpleImpl implements IWimpleImpl {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	@Override
 	public Integer getRemainedAPICall() {		
 		return countOfRemainedAPICall;
