@@ -28,7 +28,9 @@
     <string name="settings_loggout">Logout</string>
     <string name="settings_summary_loggout">If you\'d like to switch to another account, the Logout is required.</string>
     <string name="settings_general">General</string>
-    <string name="settings_entry">Transaction</string>
+    <string name="settings_entry">Transaction</string>    
+    <string name="settings_sections">Select Section</string>
+    <string name="settings_summary_sections">Select a Section in your account. The Wimple will be restarted if a section is selected.</string>
     <string name="settings_entry_disable_memo">Hide Memo Input Form</string>
     <string name="settings_summary_entry_disable_memo">Hide the memo input form in the transaction making page.</string>
     <string name="settings_entry_monthly_display">Display Monthly Transactions</string>

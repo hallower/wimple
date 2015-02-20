@@ -54,7 +54,13 @@ public class SMSReceiver extends BroadcastReceiver {
 				return;
 			}
 			
-			wimple.getDefaultSections(false);
+			String savedSectionID = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE).getString("section_id",null);
+			if(null == savedSectionID ||
+					savedSectionID.isEmpty()){
+				wimple.getDefaultSections(false);	
+			}else{
+				wimple.getAllSections(false);
+			}
 
 			String totalPayments = "";
 			String senderNumber = "";
