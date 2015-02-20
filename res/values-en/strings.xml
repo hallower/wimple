@@ -43,7 +43,7 @@
     <string name="settings_summary_income_expense_state_show_group">Display the Profit/Loss graph as grouped items.</string>
     <string name="settings_income_expense_state_show_group">Show Grouped Items</string>
     <string name="settings_summary_income_expense_state_enable_budget">Display budget information in Profit/Loss status page.</string>
-    <string name="settings_income_expense_state_enable_budget">Show Budget infomration</string>
+    <string name="settings_income_expense_state_enable_budget">Show Budget information</string>
     <string name="number_api_count">Remained counts : </string>
     <string name="fatal_error">Cannot start this app due to a network problem. \nPlease check the network condition..</string>
     <string name="pad_1">1</string>
