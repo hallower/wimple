@@ -1,7 +1,6 @@
 package kr.blogspot.charlie0301;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Map;
 import kr.blogspot.charlie0301.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
-import kr.blogspot.charlie0301.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.impl.util.Utils;
 import kr.blogspot.charlie0301.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.model.Account;
@@ -132,7 +130,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		context = getApplicationContext();
 		actionBar = getActionBar();
 
-		Log.i(LOG_TAG, "csk, WimpleActivity - onResume!!!");
+		Log.i(LOG_TAG, "WimpleActivity - onResume!!!");
 
 		setupWimpleImpl();
 
@@ -144,7 +142,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_wimple);
 
-		Log.i(LOG_TAG, "csk, WimpleActivity - onCreate!!!");
+		Log.i(LOG_TAG, "WimpleActivity - onCreate!!!");
 
 		context = getApplicationContext();
 		actionBar = getActionBar();
@@ -625,11 +623,11 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		if(true == wimple.isAuthed() &&
 				true == wimple.isInitializedFinished()){
 			// Already Logged-in
-			Log.d(LOG_TAG, "csk, wimpleactivity, logged in, default section existing");
+			Log.d(LOG_TAG, "wimpleactivity, logged in, default section existing");
 			wimple.getUserInfo(true);
 		}else{
 			// not initialized or not Logged-in	
-			Log.d(LOG_TAG, "csk, wimpleactivity, not initialzed or not logged in");
+			Log.d(LOG_TAG, "wimpleactivity, not initialzed or not logged in");
 			Intent intent = new Intent(context, SplashScreenActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			context.startActivity(intent);
@@ -756,8 +754,6 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
 		mViewPager.setCurrentItem(tab.getPosition());
 	}
 
@@ -771,10 +767,6 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			FragmentTransaction fragmentTransaction) {
 	}
 
-	/**
-	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-	 * one of the sections/tabs/pages.
-	 */
 	public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
 		private ArrayList<Fragment> frags = new ArrayList<Fragment>();
@@ -824,7 +816,6 @@ ActionBar.TabListener, OnMenuItemClickListener {
 	}
 
 
-	/* Called whenever we call invalidateOptionsMenu() */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		if(null == mDrawerLayout){
@@ -851,25 +842,22 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// The action bar home/up action should open or close the drawer.
-		// ActionBarDrawerToggle will take care of this.
+
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
-		// Handle action buttons
+
 		switch(item.getItemId()) {
+			case R.id.action_go_to_whooing: {
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(whooingURL));
+				startActivity(i);
+				return true;
+			}
 
-
-		case R.id.action_go_to_whooing: {
-			Intent i = new Intent(Intent.ACTION_VIEW);
-			i.setData(Uri.parse(whooingURL));
-			startActivity(i);
-			return true;
-		}
-
-		default:
-			return super.onOptionsItemSelected(item);
-		}
+			default:
+				return super.onOptionsItemSelected(item);
+			}
 	}
 
 
