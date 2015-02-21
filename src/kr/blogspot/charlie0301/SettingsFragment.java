@@ -59,8 +59,8 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				WimpleImpl.getInstance().cleanAuth();
-				WimpleImpl.getInstance().clearAllDBRecords();
+				wimple.cleanAuth();
+				wimple.clearAllDBRecords();
 
 				CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
 				CookieManager cookieManager = CookieManager.getInstance();
@@ -136,10 +136,15 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 			listSections.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 				
 				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					Log.d(LOG_TAG, "new section id = " + newValue.toString());
+				public boolean onPreferenceChange(Preference preference, Object newValue) {					
+					if(0 == newValue.toString().compareTo(listSections.getValue())){
+						return false;
+					}
+					Log.d(LOG_TAG, "new section id = " + newValue.toString() + ", prev = " + listSections.getValue());
 					
 					wimple.setDefaultSectionID(newValue.toString());
+					wimple.clearAllDBRecords();
+					
 					settings.edit().putString("section_id", wimple.getDefaultSectionID()).commit();
 					Intent intent = new Intent(context, SplashScreenActivity.class);
 					startActivity(intent);

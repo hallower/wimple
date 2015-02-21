@@ -89,9 +89,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	public void onResume() {
 		context = WimpleActivity.context;
 
-		llNotification = (LinearLayout)view.findViewById(R.id.entry_list_notification);
-		txtNotification = (TextView)view.findViewById(R.id.entry_list_notification_text);
-
 		updateSettings();
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
 		updateLatestItems(false);		
