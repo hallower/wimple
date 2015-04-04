@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <!-- refrech button -->
+
+                <ImageView
+                    android:id="@+id/ine_refresh"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="right|top"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="8dp"
+                    android:contentDescription="@string/na"
+                    android:src="@drawable/refresh" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|left"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/progress_p"
+                    android:padding="3dp"
+                    android:scaleType="fitXY"
+                    android:text="@string/entry_header_income_expense_status"
+                    android:textColor="@color/text_white" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="58dp" >
+
+                    <!-- Incomes -->
+
+                    <ImageView
+                        android:id="@+id/ine_bar_income"
+                        android:layout_width="50dp"
+                        android:layout_height="58dp"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="65dp"
+                        android:contentDescription="@string/na"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/input_color_box_3" />
+
+                    <TextView
+                        android:id="@+id/ine_income_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="80dp"
+                        android:background="@color/text_white"
+                        android:paddingLeft="3dp"
+                        android:paddingRight="3dp"
+                        android:text="..."
+                        android:textColor="@color/text_blue"
+                        android:textScaleX="0.8"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_marginLeft="15dp"
+                        android:text="@string/entry_header_income"
+                        android:textScaleX="0.8"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" >
+
+                <!-- Expenses -->
+
+                <ImageView
+                    android:id="@+id/ine_bar_expense"
+                    android:layout_width="70dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box" />
+
+                <TextView
+                    android:id="@+id/ine_expense_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:text="..."
+                    android:textColor="@color/text_red"
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="15dp"
+                    android:text="@string/entry_header_expenses"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <!-- total value -->
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:paddingBottom="8dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="6dp" >
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/na"
+                    android:src="@drawable/graph" />
+
+                <TextView
+                    android:id="@+id/ine_sum_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="3dp"
+                    android:text="..."
+                    android:textScaleX="0.8"
+                    android:textSize="55sp" />
+            </RelativeLayout>
+
+            <!-- 예산 대비 수익 지출 현황 -->
+
+            <TextView
+                android:id="@+id/ine_budget_status_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/progress_p"
+                android:padding="3dp"
+                android:scaleType="fitXY"
+                android:text="@string/entry_header_budget_income_expense_status"
+                android:textColor="@color/text_white" />
+
+            <!-- 예산 대비 수익 -->
+
+            <FrameLayout
+                android:id="@+id/ine_budget_status_income"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:layout_marginTop="20dp" >
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_base_income"
+                    android:layout_width="10dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/progress_n" />
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_current_income"
+                    android:layout_width="10dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box_3" />
+
+                <TextView
+                    android:id="@+id/ine_bar_budget_current_income_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:text="..."
+                    android:textColor="@color/text_blue"
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/ine_income_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="25dp"
+                    android:text="@string/title_income"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp" />
+            </FrameLayout>
+
+            <!-- 예산 대비 지출 -->
+
+            <FrameLayout
+                android:id="@+id/ine_budget_status_expense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:layout_marginTop="10dp" >
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_base_expense"
+                    android:layout_width="10dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/progress_n" />
+
+                <ImageView
+                    android:id="@+id/ine_bar_budget_current_expense"
+                    android:layout_width="10dp"
+                    android:layout_height="58dp"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="65dp"
+                    android:contentDescription="@string/na"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/input_color_box" />
+
+                <TextView
+                    android:id="@+id/ine_bar_budget_current_expense_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="80dp"
+                    android:background="@color/text_white"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:text="..."
+                    android:textColor="@color/text_red"
+                    android:textScaleX="0.8"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/ine_expense_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|left"
+                    android:layout_marginLeft="25dp"
+                    android:text="@string/title_expense"
+                    android:textScaleX="0.8"
+                    android:textSize="18sp" />
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- update notification 표시 -->
+
+    <LinearLayout
+        android:id="@+id/ine_update_notification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="right"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/input_box_round_2"
+        android:orientation="horizontal"
+        android:paddingBottom="2dp"
+        android:paddingLeft="7dp"
+        android:paddingTop="4dp"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/ine_list_notification_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:text="@string/update_as_date"
+            android:textColor="@color/text_blue" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/na"
+            android:gravity="center_vertical"
+            android:src="@drawable/waiting" />
+    </LinearLayout>
+
+</RelativeLayout>
