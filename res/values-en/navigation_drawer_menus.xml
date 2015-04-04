@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="drawer_menu_size">2</string>
+
+    <string-array name="drawer_menus_title">
+        <item>Make, History</item>
+        <item>Balance, Assets, Liabilities</item>
+        <item>Profit/Loss, Incomes, Expenses</item>
+        <item>Settings</item>
+    </string-array>
+    <string-array name="drawer_menus_class">
+        <item>kr.blogspot.charlie0301.TransactionInsertFragment,kr.blogspot.charlie0301.TransactionListFragment</item>
+        <item>kr.blogspot.charlie0301.FinancialStateSummaryFragment,kr.blogspot.charlie0301.SavingStateSummaryFragment,kr.blogspot.charlie0301.DebtStateSummaryFragment</item>
+        <item>kr.blogspot.charlie0301.IncomeExpenseSummaryFragment,kr.blogspot.charlie0301.IncomeSummaryFragment,kr.blogspot.charlie0301.ExpenseSummaryFragment</item>
+        <item>kr.blogspot.charlie0301.SettingsFragment</item>
+    </string-array>
+
+    <integer-array name="side_menu_layout_id">
+        <item>@id/sidemenu_item_transaction</item>
+        <item>@id/sidemenu_item_financial_state</item>
+        <item>@id/sidemenu_item_income_expense</item>
+        <item>@id/sidemenu_item_setting</item>
+    </integer-array>
+
+</resources>
