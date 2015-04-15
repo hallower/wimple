@@ -46,6 +46,16 @@
     <string name="settings_income_expense_state_show_group">그룹 항목 그래프 보여주기</string>
     <string name="settings_summary_income_expense_state_enable_budget">비용 수익 정보와 함께 예산정보를 표시합니다.</string>
     <string name="settings_income_expense_state_enable_budget">예산 내역 표시</string>
+    <string name="settings_sms">외부입력 전송</string>
+    <string name="settings_summary_sms_post_enable">카드나 은행 사용 시 수신 된 SMS를 외부입력으로 전송합니다.</string>
+    <string name="settings_sms_post_enable">결제 SMS 전송</string>
+    <string name="settings_sms_max_store_number">전송을 위한 SMS 최소 갯수</string>
+    <string name="settings_entry_sms_max_store_number">전송을 위한 SMS 최소 갯수</string>
+    <string name="settings_summary_sms_pick_contact">외부입력을 위한 연락처를 선택합니다.</string>
+    <string name="settings_sms_pick_contact">외부입력 대상 선택</string>
+    <string name="settings_sms_contact_list">외부입력 대상 확인 및 삭제</string>
+    <string name="settings_summary_sms_send_now">설정한 최소 갯수와 상관없이 저장된 내역들을 전송합니다.</string>
+    <string name="settings_sms_send_now">저장된 SMS 강제 전송</string>
     <string name="number_api_count">남은 보고서 조회 횟수 : </string>
     <string name="fatal_error">후잉 입력 앱을 실행할 수 없습니다. \n네트워크를 확인해 주시고, \n그래도 안된다면 ㅜㅜ..</string>
     <string name="pad_1">1</string>

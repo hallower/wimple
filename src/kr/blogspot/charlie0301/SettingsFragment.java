@@ -1,13 +1,18 @@
 package kr.blogspot.charlie0301;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import kr.blogspot.charlie0301.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.impl.WimpleImpl;
 import kr.blogspot.charlie0301.model.Section;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.ListPreference;
@@ -15,6 +20,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -22,6 +28,8 @@ import android.webkit.CookieSyncManager;
 public class SettingsFragment extends PreferenceFragment  implements IWimpleFragment {
 
 	private final static String LOG_TAG = "SettingsFragment";
+
+	private final static int PICK_CONTACT_REQUEST = 1; 
 
 	private static Context context;
 
@@ -31,6 +39,12 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 	private SharedPreferences settings;
 
+	public static final String KEY_SMS_POST_ENABLE = "pref_smsPostEnable";
+	public static final String KEY_SMS_TARGET_PHONE_NUMBERS = "pref_smsTargetPhoneNumbers";
+	public static final String KEY_SMS_PICK_CONTACT = "pref_smsPickContact";
+	public static final String KEY_SMS_CONTACT_LIST = "pref_smsContactList";
+	public static final String KEY_SMS_SEND_NOW = "pref_smsSendNow";
+	public static final String KEY_SMS_MAX_STORE_NUMBER = "pref_smsMaxStoreNumber";	
 	public static final String KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount";
 	public static final String KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay";
 	public static final String KEY_FINANCIAL_STATE_AUTO_REFRESH = "pref_financialStateAutoRefresh";
@@ -49,7 +63,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 		context = WimpleActivity.context;
 		settings = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
 		wimple.getAllSections(true);
-		
+
 		addPreferencesFromResource(R.xml.settings);
 
 		listSections = (ListPreference) findPreference("preference_sections");
@@ -79,6 +93,107 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 				startActivity(intent);
 				wimpleActivity.finish();
 
+				return false;
+			}
+		});
+
+		updateContactList();
+
+		Preference pickContact = findPreference(KEY_SMS_PICK_CONTACT);
+		pickContact.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+
+				Intent pickContactIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
+				pickContactIntent.setType(Phone.CONTENT_TYPE);
+				startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
+				return false;
+			}
+		});
+
+		Preference sendNow = findPreference(KEY_SMS_SEND_NOW);
+		sendNow.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+
+				final SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
+				final String storedSMS = settings.getString(SMSReceiver.smsBodyTag, "");
+				int numberOfStoredSMSs = settings.getInt(SMSReceiver.smsNumberTag, 0);
+
+				//Log.d(LOG_TAG, "sotredSMS = " + storedSMS);
+				Log.d(LOG_TAG, "numberofSMSs = " + numberOfStoredSMSs);
+
+				if(false == storedSMS.isEmpty() &&
+						numberOfStoredSMSs > 0)
+				{
+					wimple.postPayments(storedSMS, "0000");
+					SharedPreferences.Editor editor = settings.edit();
+					editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).commit();
+				}
+
+				return false;
+			}
+		});
+	}
+
+	private void updateContactList(){
+		ListPreference contactList = (ListPreference)findPreference(KEY_SMS_CONTACT_LIST);
+		SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
+		String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
+		storedTels = storedTels.trim();
+		contactList.setSummary(storedTels);
+
+		if(storedTels.isEmpty()){
+			CharSequence entries[] = new String[1];
+			CharSequence entryValues[] = new String[1];
+			entries[0] = "---";
+			entryValues[0] = "---";
+			contactList.setEntries(entries);
+			contactList.setEntryValues(entryValues);
+			return;
+		}
+
+		List<String> list = Arrays.asList(storedTels.split("\\s*,\\s*"));
+		if(list.isEmpty()){
+			Log.d(LOG_TAG, "contact list is empty!!!");
+			return;
+		}
+
+		CharSequence entries[] = new String[list.size()];
+		CharSequence entryValues[] = new String[list.size()];
+		int i = 0;
+		for (String contact : list) {
+			entries[i] = contact;
+			entryValues[i] = contact;
+			i++;
+		}
+		contactList.setEntries(entries);
+		contactList.setEntryValues(entryValues);
+		contactList.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				Log.d(LOG_TAG, "new section id = " + newValue.toString());
+				SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
+				String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
+
+				if(storedTels.isEmpty()){
+					return false;
+				}
+				// TODO : make this efficiently,,, no time.
+				storedTels = storedTels.replace(newValue.toString(), "").trim();
+				storedTels = storedTels.replaceAll(",+", ",");
+				if(storedTels.startsWith(",")){
+					storedTels = storedTels.substring(1);
+				}
+				if(storedTels.endsWith(",")){
+					storedTels = storedTels.substring(0, storedTels.length() - 1);
+				}
+				settings.edit().putString(SMSReceiver.smsTelTag, storedTels).commit();
+
+				updateContactList();
 				return false;
 			}
 		});
@@ -116,7 +231,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 			if (listSections == null) {
 				return;
 			}
-			
+
 			CharSequence entries[] = new String[list.size()];
 			CharSequence entryValues[] = new String[list.size()];
 			int i = 0;
@@ -134,17 +249,17 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 			listSections.setEntryValues(entryValues);
 			listSections.setValueIndex(idx);
 			listSections.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-				
+
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {					
 					if(0 == newValue.toString().compareTo(listSections.getValue())){
 						return false;
 					}
 					Log.d(LOG_TAG, "new section id = " + newValue.toString() + ", prev = " + listSections.getValue());
-					
+
 					wimple.setDefaultSectionID(newValue.toString());
 					wimple.clearAllDBRecords();
-					
+
 					settings.edit().putString("section_id", wimple.getDefaultSectionID()).commit();
 					Intent intent = new Intent(context, SplashScreenActivity.class);
 					startActivity(intent);
@@ -164,5 +279,46 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 		SettingsFragment.wimpleActivity = instance;
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		if (requestCode == PICK_CONTACT_REQUEST) {
+			if (resultCode == Activity.RESULT_OK) {
+
+				Uri contactUri = data.getData();
+				String[] projection = {Phone.NUMBER};
+
+				Cursor cursor = context.getContentResolver()
+						.query(contactUri, projection, null, null, null);
+				cursor.moveToFirst();
+
+				int column = cursor.getColumnIndex(Phone.NUMBER);
+				String number = cursor.getString(column);
+
+				if(null != number)
+				{
+					number = number.replace("-", "").trim();
+
+					SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
+					String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
+					
+					if(storedTels.indexOf(number) >= 0){
+						return;
+					}
+					
+					if(storedTels.endsWith(",") ||
+							storedTels.isEmpty()){
+						storedTels = storedTels + number;
+					}else{
+						storedTels = storedTels + "," + number;	
+					}					
+					settings.edit().putString(SMSReceiver.smsTelTag, storedTels).commit();
+
+					updateContactList();
+				}
+			}
+		}
 	}
 }

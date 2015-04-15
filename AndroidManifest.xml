@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="kr.blogspot.charlie0301"
-    android:versionCode="24"
-    android:versionName="1.0.24" >
+    android:versionCode="25"
+    android:versionName="1.0.25" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -66,13 +66,11 @@
                 <data android:mimeType="plain/*" />
             </intent-filter>
         </activity>
-	<!-- 
         <receiver android:name="kr.blogspot.charlie0301.SMSReceiver" >
-            <intent-filter>
+            <intent-filter android:priority="9876">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-	-->
     </application>
 
 </manifest>
