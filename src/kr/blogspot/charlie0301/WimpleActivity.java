@@ -880,4 +880,22 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			return false;
 		}
 	}
+
+	protected void onActivityResult ( int requestCode, int resultCode, Intent data) {
+
+		int index = requestCode >> 16 ;
+			if (index != 0 ) {
+				index --;
+				if (index < 0) {
+					Log.w (LOG_TAG, "Activity result fragment index out of range : 0x"
+							+ Integer.toHexString (requestCode));
+					return ;
+				}				
+				Fragment fg = mSectionsPagerAdapter.getItem(currentTabPosition);
+				fg.onActivityResult (requestCode & 0xffff , resultCode, data);
+				return;
+			}
+
+			super.onActivityResult(requestCode, resultCode, data);
+	}
 }

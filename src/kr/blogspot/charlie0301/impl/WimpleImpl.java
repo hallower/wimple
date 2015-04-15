@@ -1895,16 +1895,18 @@ public class WimpleImpl implements IWimpleImpl {
 			return true;
 		}
 
-		new PostPaymentsTaskThread(message, sender).start();		
+		new PostPaymentsTaskThread(defaultSectionID, message, sender).start();		
 		return true;
 	}
 
 	private class PostPaymentsTaskThread extends Thread{
 
+		final String section;
 		final String message;
 		final String sender;
 
-		PostPaymentsTaskThread(String message, String sender){
+		PostPaymentsTaskThread(String section, String message, String sender){
+			this.section = section;
 			this.message = message;
 			this.sender = sender;
 		}
@@ -1913,7 +1915,9 @@ public class WimpleImpl implements IWimpleImpl {
 		public void run() {
 
 			try{
-				String postingContent = "rows=";
+				String postingContent = "section_id=";
+				postingContent += section;
+				postingContent += "&rows=";
 				postingContent += TextUtils.htmlEncode(message);
 
 				try{

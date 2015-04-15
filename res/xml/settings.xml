@@ -11,6 +11,32 @@
             android:summary="@string/settings_summary_sections"
             android:title="@string/settings_sections" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/settings_sms" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_smsPostEnable"
+            android:summary="@string/settings_summary_sms_post_enable"
+            android:title="@string/settings_sms_post_enable" />
+        <ListPreference
+            android:key="pref_smsContactList"
+            android:summary="@string/na"
+            android:title="@string/settings_sms_contact_list" />
+        <Preference
+            android:key="pref_smsPickContact"
+            android:summary="@string/settings_summary_sms_pick_contact"
+            android:title="@string/settings_sms_pick_contact" />
+        <Preference
+            android:key="pref_smsSendNow"
+            android:summary="@string/settings_summary_sms_send_now"
+            android:title="@string/settings_sms_send_now" />
+        <ListPreference
+            android:defaultValue="5"
+            android:dialogTitle="@string/settings_sms_max_store_number"
+            android:entries="@array/monthly_item_count"
+            android:entryValues="@array/monthly_item_count"
+            android:key="pref_smsMaxStoreNumber"
+            android:title="@string/settings_entry_sms_max_store_number" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry" >
         <CheckBoxPreference
             android:defaultValue="false"
