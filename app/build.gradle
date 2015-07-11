@@ -1,0 +1,39 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "kr.blogspot.charlie0301"
+        minSdkVersion 14
+        targetSdkVersion 18
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/jersey-module-version'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyReader'
+        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter'
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v13:22.2.0'
+    compile files('libs/achartengine-1.1.0.jar')
+    compile files('libs/jersey-client-1.17.1.jar')
+    compile files('libs/jersey-core-1.17.1.jar')
+    compile files('libs/jersey-json-1.17.1.jar')
+    compile files('libs/json-simple-1.1.1.jar')
+    compile files('libs/org.osgi.core-5.0.0.jar')
+}

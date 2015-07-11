@@ -14,9 +14,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
@@ -40,7 +37,7 @@ public class RemoteContent {
 	private RemoteContent(){
 
 	}	
-
+/*
 	public String uploadPicture(String restURL, String userMessagingID, String sessionID, String filePath){
 		String UPLOAD_IMAGE = restURL + "/rest/promise/file/" + userMessagingID + "/" + sessionID + "/upload";
 		String newURL = "";
@@ -54,7 +51,7 @@ public class RemoteContent {
 
 		return newURL;
 	}
-
+*/
 	public String downloadPicture(Context context, String url){
 
 		assert null == context;
@@ -87,7 +84,7 @@ public class RemoteContent {
 
 		return localFilePath;
 	}
-
+/*
 	// Synchronous API
 	public String upload(String url, String path){
 
@@ -106,7 +103,7 @@ public class RemoteContent {
 		
 		return returnedURL;
 	}
-
+*/
 	// Synchronous API
 	public boolean download(String url, String path, boolean overwrite){
 
@@ -184,7 +181,7 @@ public class RemoteContent {
 			Log.d(LOG_TAG, "DOWNLOAD DONE  > " + url);
 			return true;
 		}
-
+/*
 		public String uploadUserPhoto(String url, File image) {
 			try {
 				HttpPost httppost = new HttpPost(url);
@@ -225,5 +222,6 @@ public class RemoteContent {
 			}
 
 		}
+*/
 	}
 }
