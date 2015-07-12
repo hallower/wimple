@@ -1,11 +1,11 @@
 .DS_Store
-*.iml
 *.iws
 *.ipr
-.idea/
 .gradle/
 local.properties
 */build/
 build/
 *~
 *.swp
+workspace.xml
+tasks.xml
