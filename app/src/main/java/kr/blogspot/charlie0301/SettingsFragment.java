@@ -22,8 +22,10 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
+import android.view.Gravity;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.widget.Toast;
 
 public class SettingsFragment extends PreferenceFragment  implements IWimpleFragment {
 
@@ -68,7 +70,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 		listSections = (ListPreference) findPreference("preference_sections");
 
-		Preference logout = findPreference("preference_logout");
+		final Preference logout = findPreference("preference_logout");
 		logout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
 			@Override
@@ -99,7 +101,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 		updateContactList();
 
-		Preference pickContact = findPreference(KEY_SMS_PICK_CONTACT);
+		final Preference pickContact = findPreference(KEY_SMS_PICK_CONTACT);
 		pickContact.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
 			@Override
@@ -112,7 +114,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 			}
 		});
 
-		Preference sendNow = findPreference(KEY_SMS_SEND_NOW);
+		final Preference sendNow = findPreference(KEY_SMS_SEND_NOW);
 		sendNow.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
 			@Override
@@ -125,13 +127,16 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 				//Log.d(LOG_TAG, "sotredSMS = " + storedSMS);
 				Log.d(LOG_TAG, "numberofSMSs = " + numberOfStoredSMSs);
 
-				if(false == storedSMS.isEmpty() &&
-						numberOfStoredSMSs > 0)
+				if(storedSMS.isEmpty() ||
+						numberOfStoredSMSs <= 0)
 				{
-					wimple.postPayments(storedSMS, "0000");
-					SharedPreferences.Editor editor = settings.edit();
-					editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).commit();
+					Toast.makeText(context, getResources().getString(R.string.settings_sms_send_cant), Toast.LENGTH_LONG).show();
+					return false;
 				}
+				
+				wimple.postPayments(storedSMS, "0000");
+				SharedPreferences.Editor editor = settings.edit();
+				editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).commit();
 
 				return false;
 			}
@@ -139,19 +144,21 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 	}
 
 	private void updateContactList(){
-		ListPreference contactList = (ListPreference)findPreference(KEY_SMS_CONTACT_LIST);
-		SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
-		String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
+
+		final ListPreference contactList = (ListPreference)findPreference(KEY_SMS_CONTACT_LIST);
+		final SharedPreferences smsSettings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
+		String storedTels = smsSettings.getString(SMSReceiver.smsTelTag, "");
 		storedTels = storedTels.trim();
 		contactList.setSummary(storedTels);
 
 		if(storedTels.isEmpty()){
 			CharSequence entries[] = new String[1];
 			CharSequence entryValues[] = new String[1];
-			entries[0] = "---";
-			entryValues[0] = "---";
+			entries[0] = "------";
+			entryValues[0] = "------";
 			contactList.setEntries(entries);
 			contactList.setEntryValues(entryValues);
+
 			return;
 		}
 
@@ -164,6 +171,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 		CharSequence entries[] = new String[list.size()];
 		CharSequence entryValues[] = new String[list.size()];
 		int i = 0;
+
 		for (String contact : list) {
 			entries[i] = contact;
 			entryValues[i] = contact;
@@ -203,7 +211,7 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 	@Override
 	public void handleMessage(Message msg) {
 		int command = msg.what;
-		//boolean booleanStatus = msg.arg1 == 1;
+		boolean booleanStatus = msg.arg1 == 1;
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
@@ -268,6 +276,18 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 					return false;
 				}
 			});
+			break;
+		}
+
+		case CommandID.POST_PAYMENT_RESPONSE_RECEIVED :
+		{
+			if(booleanStatus)
+			{
+				Toast.makeText(context, getResources().getString(R.string.settings_sms_send_success), Toast.LENGTH_LONG).show();
+			}else{
+				Toast.makeText(context, getResources().getString(R.string.settings_sms_send_failed), Toast.LENGTH_LONG).show();
+			} 
+			break;
 		}
 		}
 	}
@@ -303,11 +323,11 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 
 					SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
 					String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
-					
+
 					if(storedTels.indexOf(number) >= 0){
 						return;
 					}
-					
+
 					if(storedTels.endsWith(",") ||
 							storedTels.isEmpty()){
 						storedTels = storedTels + number;
