@@ -56,6 +56,9 @@
     <string name="settings_sms_contact_list">외부입력 대상 확인 및 삭제</string>
     <string name="settings_summary_sms_send_now">설정한 최소 갯수와 상관없이 저장된 내역들을 전송합니다.</string>
     <string name="settings_sms_send_now">저장된 SMS 강제 전송</string>
+    <string name="settings_sms_send_cant">저장된 SMS가 없습니다.</string>
+    <string name="settings_sms_send_success">저장된 SMS 전송 되었습니다.</string>
+    <string name="settings_sms_send_failed">저장된 SMS 전송에 실패하였습니다.</string>
     <string name="number_api_count">남은 보고서 조회 횟수 : </string>
     <string name="fatal_error">후잉 입력 앱을 실행할 수 없습니다. \n네트워크를 확인해 주시고, \n그래도 안된다면 ㅜㅜ..</string>
     <string name="pad_1">1</string>

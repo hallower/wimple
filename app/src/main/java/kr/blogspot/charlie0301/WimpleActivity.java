@@ -114,6 +114,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		public static final int GET_FINANCIAL_STATE_RESPONSE_RECEIVED = CMD_BASE + 43;
 		public static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
 		public static final int GET_BUDGET_RESPONSE_RECEIVED = CMD_BASE + 47;
+		public static final int POST_PAYMENT_RESPONSE_RECEIVED = CMD_BASE + 49;
 	}
 
 	public static void sm(int cmd, Object msg){
@@ -616,7 +617,9 @@ ActionBar.TabListener, OnMenuItemClickListener {
 			public void onPostNewsResponseReceived(boolean status, String id) { }
 			
 			@Override
-			public void onPostPaymentsResponseReceived(boolean status) { }
+			public void onPostPaymentsResponseReceived(boolean status) { 
+				sm(CommandID.POST_PAYMENT_RESPONSE_RECEIVED, status?1:0, 0, "");
+			}
 			
 		});
 
