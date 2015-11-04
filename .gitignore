@@ -9,3 +9,5 @@ build/
 *.swp
 workspace.xml
 tasks.xml
+.idea
+*.iml
