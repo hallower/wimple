@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/list_frequent_entry_name"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:gravity="left|center_vertical"
+        android:lines="1"
+        android:maxLines="1"
+        android:textColor="@color/text_light_dimmed"
+        android:paddingBottom="1dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="1dp"
+        android:paddingTop="1dp"
+        android:textSize="16sp" />
+
+</LinearLayout>

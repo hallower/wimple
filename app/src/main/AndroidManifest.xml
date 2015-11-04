@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="kr.blogspot.charlie0301"
+    android:versionCode="25"
+    android:versionName="1.0.25" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="18" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="kr.blogspot.charlie0301.SplashScreenActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/title_activity_splash_screen"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.TransactionInsertFragment"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_transaction_insert_fragment"
+            android:windowSoftInputMode="adjustResize" >
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.TransactionListFragment"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_transaction_list_fragment" >
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.SettingsFragment"
+            android:label="@string/title_settings_fragment" >
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.WimpleActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_wimple" >
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.PaymentNoticeActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/title_activity_payment_notice"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
+        <activity
+            android:name="kr.blogspot.charlie0301.PostNewsActivity"
+            android:label="@string/title_activity_post_news" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/*" />
+                <data android:mimeType="plain/*" />
+            </intent-filter>
+        </activity>
+        <receiver android:name="kr.blogspot.charlie0301.SMSReceiver" >
+            <intent-filter android:priority="9876">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

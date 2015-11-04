@@ -1,4 +1,13 @@
-gen/
-obj/
-bin/
-.classpath
+.DS_Store
+*.iws
+*.ipr
+.gradle/
+local.properties
+*/build/
+build/
+*~
+*.swp
+workspace.xml
+tasks.xml
+.idea
+*.iml
