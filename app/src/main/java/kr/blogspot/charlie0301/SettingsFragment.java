@@ -69,6 +69,15 @@ public class SettingsFragment extends PreferenceFragment  implements IWimpleFrag
 		addPreferencesFromResource(R.xml.settings);
 
 		listSections = (ListPreference) findPreference("preference_sections");
+		{
+			CharSequence entries[] = new String[1];
+			CharSequence entryValues[] = new String[1];
+			entries[0] = "Please wait for seconds";
+			entryValues[0] = "Please wait for seconds";
+			listSections.setEntries(entries);
+			listSections.setEntryValues(entryValues);
+			listSections.setValueIndex(0);
+		}
 
 		final Preference logout = findPreference("preference_logout");
 		logout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
