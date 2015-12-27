@@ -47,7 +47,7 @@ import android.widget.Toast;
 
 public class TransactionInsertFragment extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "TransactionInsertFragment";
+	private final static String LOG_TAG = "TransactionInsertFrag";
 
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	private WimpleActivity mainActivity = null;
@@ -251,7 +251,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				String changed = s.toString();
-				if(changed.contains("(") && 
+				if(changed.contains("(") &&
 						changed.indexOf("(") > 0){
 					changed = changed.substring(0, changed.indexOf("(") - 1);
 					changed = changed.trim();
@@ -468,14 +468,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 
 		String title = txtTitle.getText().toString();
+		String inlineMemo = "";
+
 		int pos = title.indexOf("(");
 		if( pos > 0 ){
-			title = title.substring(0, pos - 1);
-			title.trim();
+			inlineMemo = title.substring(pos);
+			title = title.substring(0, pos);
 		}
 
 		if(	0 != title.compareTo(selected.getItem())){
-			txtTitle.setText(selected.getItem());
+			txtTitle.setText(selected.getItem() + inlineMemo);
 			txtTitle.setSelection(txtTitle.getText().length());
 		}
 		//cal.setValue(selected.getAmount());

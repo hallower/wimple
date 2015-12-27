@@ -42,6 +42,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -211,6 +212,10 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 			public void onDrawerOpened(View drawerView) {
 				updateAPIRemainning();
+
+				InputMethodManager mgr = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+				mgr.hideSoftInputFromWindow((findViewById(android.R.id.content)).getWindowToken(), 0);
+
 				actionBar.setDisplayHomeAsUpEnabled(false);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 			}
