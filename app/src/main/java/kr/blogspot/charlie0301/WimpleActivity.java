@@ -373,7 +373,7 @@ ActionBar.TabListener, OnMenuItemClickListener {
 
 		// Set OnClick listener => Detail Profile information
 		LinearLayout rlProfileWindow = (LinearLayout)findViewById(R.id.my_profile_information_window);
-		rlProfileWindow.setOnClickListener(new OnClickListener(){
+		rlProfileWindow.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -402,9 +402,12 @@ ActionBar.TabListener, OnMenuItemClickListener {
 		}
 
 		textLevel.setText(getResources().getString(R.string.number_api_count) + nLevel);
-		float px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));		
+		int px = Utils.getDPSize((int)(130.0 * ((double)nLevel / totalLevel)));
+		if(px > 130){
+			px = Utils.getDPSize(130);
+		}
 		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams ) progressLevel.getLayoutParams();
-		params.width = (int)px;
+		params.width = px;
 		progressLevel.setLayoutParams(params);
 	}
 
