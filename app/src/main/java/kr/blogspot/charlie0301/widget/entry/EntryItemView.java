@@ -74,6 +74,7 @@ public class EntryItemView extends LinearLayout {
 				memo.setVisibility(View.GONE);
 			}else{
 				memo.setText(entry.getMemo());
+				memo.setTextColor(context.getResources().getColor(R.color.text_black));
 				memo.setVisibility(View.VISIBLE);
 			}
 			total.setText(DateFormatUtils.getDecimalFormat().format(entry.getBalance()));	

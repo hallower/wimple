@@ -484,6 +484,9 @@ public class WimpleImpl implements IWimpleImpl {
 
 			case CommandID.CMD_GET_USER_INFO :
 			{
+				if(null == obj)
+					return;
+
 				UserInfo ui = (UserInfo) obj;
 				if(booleanStatus){
 					switch(ui.getAPICountLevel()){
