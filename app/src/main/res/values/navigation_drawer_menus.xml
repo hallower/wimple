@@ -10,10 +10,10 @@
         <item>설정</item>
     </string-array>
     <string-array name="drawer_menus_class">
-        <item>kr.blogspot.charlie0301.TransactionInsertFragment,kr.blogspot.charlie0301.TransactionListFragment</item>
-        <item>kr.blogspot.charlie0301.FinancialStateSummaryFragment,kr.blogspot.charlie0301.SavingStateSummaryFragment,kr.blogspot.charlie0301.DebtStateSummaryFragment</item>
-        <item>kr.blogspot.charlie0301.IncomeExpenseSummaryFragment,kr.blogspot.charlie0301.IncomeSummaryFragment,kr.blogspot.charlie0301.ExpenseSummaryFragment</item>
-        <item>kr.blogspot.charlie0301.SettingsFragment</item>
+        <item>com.blogspot.charlie0301.TransactionInsertFragment,com.blogspot.charlie0301.TransactionListFragment</item>
+        <item>com.blogspot.charlie0301.FinancialStateSummaryFragment,com.blogspot.charlie0301.SavingStateSummaryFragment,com.blogspot.charlie0301.DebtStateSummaryFragment</item>
+        <item>com.blogspot.charlie0301.IncomeExpenseSummaryFragment,com.blogspot.charlie0301.IncomeSummaryFragment,com.blogspot.charlie0301.ExpenseSummaryFragment</item>
+        <item>com.blogspot.charlie0301.SettingsFragment</item>
     </string-array>
 
     <integer-array name="side_menu_layout_id">
