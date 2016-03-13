@@ -56,6 +56,9 @@
     <string name="settings_sms_contact_list">Check and Delete a Contact</string>
     <string name="settings_summary_sms_send_now">Send stored SMSs right now without waiting the minimum number.</string>
     <string name="settings_sms_send_now">Send Right Now</string>
+    <string name="settings_sms_send_cant">There is no stored SMS.</string>
+    <string name="settings_sms_send_success">The stored SMSs are sent.</string>
+    <string name="settings_sms_send_failed">Failed to send the stored SMSs.</string>
     <string name="number_api_count">Remained counts : </string>
     <string name="fatal_error">Cannot start this app due to a network problem. \nPlease check the network condition..</string>
     <string name="pad_1">1</string>
