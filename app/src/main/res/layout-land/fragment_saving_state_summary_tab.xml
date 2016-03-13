@@ -19,7 +19,7 @@
             android:paddingBottom="1dp"
             android:orientation="vertical" />
 
-        <kr.blogspot.charlie0301.widget.ItemListView
+        <com.blogspot.charlie0301.widget.ItemListView
             android:id="@+id/saving_list_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
