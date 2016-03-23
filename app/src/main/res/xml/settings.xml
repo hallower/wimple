@@ -39,7 +39,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry" >
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="pref_disableMemo"
             android:summary="@string/settings_summary_entry_disable_memo"
             android:title="@string/settings_entry_disable_memo" />
