@@ -1,19 +1,20 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "22.0.1"
-
+    compileSdkVersion 24
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.blogspot.charlie0301"
-        minSdkVersion 14
-        targetSdkVersion 18
+        minSdkVersion 19
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     packagingOptions {
@@ -26,14 +27,19 @@ android {
         exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyReader'
         exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter'
     }
+    productFlavors {
+    }
 }
 
 dependencies {
-    compile 'com.android.support:support-v13:22.2.0'
-    compile files('libs/achartengine-1.1.0.jar')
-    compile files('libs/jersey-client-1.17.1.jar')
-    compile files('libs/jersey-core-1.17.1.jar')
-    compile files('libs/jersey-json-1.17.1.jar')
-    compile files('libs/json-simple-1.1.1.jar')
-    compile files('libs/org.osgi.core-5.0.0.jar')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:preference-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
+    testCompile 'junit:junit:4.12'
+    compile 'com.sun.jersey:jersey-client:1.19.3'
+    compile 'ch.acra:acra:4.9.1'
 }

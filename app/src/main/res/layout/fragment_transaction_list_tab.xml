@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <com.blogspot.charlie0301.widget.ItemListView
+    <kr.blogspot.charlie0301.wimple.widget.ItemListView
         android:id="@+id/entry_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

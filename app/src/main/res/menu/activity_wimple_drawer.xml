@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/drawer_menu_transaction">
+        <menu>
+            <item
+                android:id="@+id/menu_transaction_insert"
+                android:icon="@drawable/transaction_insert"
+                android:title="@string/title_transaction_insert_fragment" />
+            <item
+                android:id="@+id/menu_transaction_list"
+                android:icon="@drawable/transaction_list"
+                android:title="@string/title_transaction_list_fragment" />
+        </menu>
+    </item>
+
+    <item android:title="@string/drawer_menu_financial_state">
+        <menu>
+            <item
+                android:id="@+id/menu_financial_overview"
+                android:icon="@drawable/financial_state"
+                android:title="@string/drawer_menu_financial_state" />
+            <item
+                android:id="@+id/menu_saving"
+                android:icon="@drawable/asset"
+                android:title="@string/title_saving" />
+            <item
+                android:id="@+id/menu_debt"
+                android:icon="@drawable/debt"
+                android:title="@string/title_debt" />
+        </menu>
+    </item>
+
+    <item android:title="@string/drawer_menu_income_expense">
+        <menu>
+            <item
+                android:id="@+id/menu_income_expense_overview"
+                android:icon="@drawable/income_expense"
+                android:title="@string/drawer_menu_income_expense" />
+            <item
+                android:id="@+id/menu_income"
+                android:icon="@drawable/income"
+                android:title="@string/title_income" />
+            <item
+                android:id="@+id/menu_expense"
+                android:icon="@drawable/expense"
+                android:title="@string/title_expense" />
+        </menu>
+    </item>
+
+
+    <item
+        android:id="@+id/menu_preference"
+        android:icon="@drawable/settings"
+        android:title="@string/drawer_menu_preference" />
+
+
+</menu>
