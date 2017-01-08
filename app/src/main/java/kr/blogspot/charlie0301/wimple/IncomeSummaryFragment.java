@@ -2,14 +2,18 @@ package kr.blogspot.charlie0301.wimple;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.model.Budget;
-import kr.blogspot.charlie0301.wimple.widget.DoughnutChartView;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.budgetstate.BudgetStateItemListAdapter;
 import android.support.v4.app.Fragment;
@@ -25,10 +29,12 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.github.mikephil.charting.charts.PieChart;
+
 public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 	//private final static String LOG_TAG = "IncomeSummaryFragment";
-	//private final static WimpleImpl wimple = WimpleImpl.getInstance();
+	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
 	private static View view = null;
 	private static Context context = null;
@@ -37,7 +43,6 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 	// GUI
 	private WeakReference<ItemListView> asList;
 	private WeakReference<BudgetStateItemListAdapter> asAdapter;
-	private DoughnutChartView cv;
 	private LinearLayout llChart;
 	
 
@@ -50,7 +55,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
 
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.saving_list_view));
 		asAdapter = new WeakReference<BudgetStateItemListAdapter>(new BudgetStateItemListAdapter(context));
 
@@ -59,6 +64,17 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 		registerForContextMenu(asList.get());
 
+		Calendar c = Calendar.getInstance ( );
+		c.setTime ( new Date() );
+		c.set(Calendar.DATE, 1);
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true);
+
+		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		if(true == isUsingBudgetInformation){
+			wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+			wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
+		}
 		
 		return view;
 	}
@@ -69,7 +85,6 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		asList = null;
 		asAdapter.clear();
 		asAdapter = null;
-		cv = null;
 		llChart = null;
 		
 		super.onDestroy();
@@ -139,25 +154,25 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 			}
 			asAdapter.get().notifyDataSetChanged();
 			
-			if(null == cv){
-				cv = new DoughnutChartView(context);
+			if(null == llChart){
 				llChart = (LinearLayout)view.findViewById(R.id.chart);	
 			}
 
-			double[] doubleValues = new double[values.size()];
-			for(int i = 0; i < doubleValues.length; i++){
-				doubleValues[i] = values.get(i).doubleValue();
-			}
-			String[] stringValues = new String[names.size()];
-			for(int i = 0; i < stringValues.length; i++){
-				stringValues[i] = names.get(i);
-			}
-			
-			setGraphicChart(doubleValues, stringValues);
+			if(0 < values.size()){
+				double[] doubleValues = new double[values.size()];
+				for(int i = 0; i < doubleValues.length; i++){
+					doubleValues[i] = values.get(i).doubleValue();
+				}
+				String[] stringValues = new String[names.size()];
+				for(int i = 0; i < stringValues.length; i++){
+					stringValues[i] = names.get(i);
+				}
 
-			llChart.removeAllViews();
-			llChart.addView(cv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+				PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues);
 
+				llChart.removeAllViews();
+				llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+			}
 		}
 		break;
 		
@@ -191,18 +206,5 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		// TODO Auto-generated method stub
 
 	}
-	private void setGraphicChart(double[] values, String[] names){
-
-		cv.setDataValues(values);
-		cv.setLegendValues(names);		
-		int[] colors = new int[values.length];
-		for(int i = 0; i < values.length; i++){
-			colors[i] = WidgetItem.predefinedColors[i%9];
-		}
-		cv.setBarColorValues(colors);
-		cv.setDisplayLabels(true);
-		cv.makeChart();
-	}
-
 
 }

@@ -56,7 +56,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	// Static reference
 
 	// by date limit
-	//private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
+	private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
 	private static boolean monthlyDisplay = true;
 	private static int monthlyDisplayItemsNumbers = 4;
 
@@ -382,9 +382,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				entryAdapter.get().addItem(list.get(i));
 			}
 
-			/*
-			 * by date limit
 			for(Item item : list){
+				Long temp = DateFormatUtils.getDifferenceDays(item.getDate());
 				if(monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.getDate())){
 					//Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 					continue;
@@ -392,7 +391,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				entryAdapter.get().addItem(item);
 				//Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
-			 */
+
 			entryAdapter.get().notifyDataSetChanged();
 		}
 		break;

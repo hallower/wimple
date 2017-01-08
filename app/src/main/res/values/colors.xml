@@ -18,6 +18,7 @@
     <color name="text_black">#000000</color>
     <color name="text_blue">#33B5E5</color>
     <color name="text_green">#00CC00</color>
+    <color name="text_yellow">#FF8000</color>
     <color name="text_red">#F64D4C</color>
     <color name="text_light_blue">#43BEEB</color>
     <color name="text_light_blue_trans">#7543BEEB</color>

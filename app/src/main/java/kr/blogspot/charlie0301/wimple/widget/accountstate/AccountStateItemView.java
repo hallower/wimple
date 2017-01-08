@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple.widget.accountstate;
 
 import kr.blogspot.charlie0301.wimple.R;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import android.content.Context;
 import android.graphics.Typeface;
@@ -9,6 +10,8 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.github.mikephil.charting.utils.Utils;
 
 public class AccountStateItemView extends LinearLayout {
 
@@ -28,7 +31,7 @@ public class AccountStateItemView extends LinearLayout {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_account_state, this, true);
 
-		llbackground = (LinearLayout)findViewById(R.id.as_backgroud);
+		llbackground = (LinearLayout)findViewById(R.id.as_background);
 		type = (TextView)findViewById(R.id.as_item_type);
 		title = (TextView)findViewById(R.id.as_item_title);
 		amount = (TextView)findViewById(R.id.as_item_amount);
@@ -48,7 +51,7 @@ public class AccountStateItemView extends LinearLayout {
 		setBackgroundAccountWidget(title, item.getCategory());
 
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+				LinearLayout.LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
 		if(item.getGroup()){
 			//type.setText(context.getResources().getString(R.string.title_group));
@@ -70,28 +73,29 @@ public class AccountStateItemView extends LinearLayout {
 		case 'a' :
 			type.setText(context.getResources().getString(R.string.title_saving));
 			type.setTextColor(context.getResources().getColor(R.color.text_blue));
-			tv.setBackgroundResource(R.drawable.input_color_box_3);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_blue));
+			//tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
 
 		case 'l' :
 			type.setText(context.getResources().getString(R.string.title_debt));
 			type.setTextColor(context.getResources().getColor(R.color.text_red));
-
-			tv.setBackgroundResource(R.drawable.input_color_box);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_red));
+			//tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
 		case 'i' :
 			type.setText(context.getResources().getString(R.string.title_income));
 			type.setTextColor(context.getResources().getColor(R.color.text_blue));
-
-			tv.setBackgroundResource(R.drawable.input_color_box_6);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_green));
+			//tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case 'e' :
 			type.setText(context.getResources().getString(R.string.title_expense));
 			type.setTextColor(context.getResources().getColor(R.color.text_red));
-
-			tv.setBackgroundResource(R.drawable.input_color_box_4);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_yellow));
+			//tv.setBackgroundResource(R.drawable.input_color_box_4);
 			break;
 
 		default :

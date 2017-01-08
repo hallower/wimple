@@ -3,6 +3,7 @@ package kr.blogspot.charlie0301.wimple;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,7 +21,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +54,10 @@ public class WimpleActivity extends AppCompatActivity
     private static final WimpleImpl wimple = WimpleImpl.getInstance();
     private static Handler mainHandler;
     public static Context context;
-	private Fragment currentFragment = null;
+
+	private View wimpleView;
+	private Fragment currentFragment;
+	private FloatingActionButton fab;
 
 	private TextView textLevel;
 	private ImageView profileIcon;
@@ -96,33 +104,24 @@ public class WimpleActivity extends AppCompatActivity
 	public static void sm(int cmd, int a1, int a2, Object msg){
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, a1, a2, msg));
 	}
-/*
-	@Override
-	protected void onPostResume() {
-		super.onPostResume();
 
-		context = getApplicationContext();
-		Log.i(LOG_TAG, "WimpleActivity - onResume!!!");
-		setupWimpleImpl();
-	}
-*/
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wimple);
 
         context = getApplicationContext();
+		wimpleView = findViewById(R.id.drawer_layout);
 
 		// GUI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+				replaceWimpleFragment(R.id.menu_transaction_insert);
             }
         });
 
@@ -140,21 +139,42 @@ public class WimpleActivity extends AppCompatActivity
 		setupHandler();
 		setupWimpleImpl();
 
-        if(null != findViewById(R.id.fragment_container))
-        {
-            if (savedInstanceState != null) {
-                return;
-            }
+		if(null != findViewById(R.id.fragment_container))
+		{
+			if (savedInstanceState != null)
+				return;
+			setDefaultFragment();
+		}
+	}
 
-			currentFragment = new TransactionInsertFragment();
-			currentFragment.setArguments(getIntent().getExtras());
-			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-			transaction.add(R.id.fragment_container, currentFragment);
-			transaction.commit();
-        }
-    }
+	private void hideVirtualKeyboard(){
+		EditText editText = (EditText) findViewById(R.id.insert_entry_title);
+		if(null != editText){
+			editText.setFocusable(false);
+			editText.setFocusableInTouchMode(true);
+		}
+		/*
+		getWindow().setSoftInputMode(
+				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+		);
+		*/
+		View view = this.getCurrentFocus();
+		if (view != null) {
+			InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+		}
+	}
+	private void setDefaultFragment() {
+		fab.setVisibility(View.INVISIBLE);
+		currentFragment = new TransactionInsertFragment();
+		((IWimpleFragment)currentFragment).setActivityInstance(this);
+		currentFragment.setArguments(getIntent().getExtras());
+		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		transaction.add(R.id.fragment_container, currentFragment);
+		transaction.commit();
+	}
 
-    @Override
+	@Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -166,23 +186,20 @@ public class WimpleActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.wimple, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_go_to_whooing) {
+			Intent i = new Intent(Intent.ACTION_VIEW);
+			i.setData(Uri.parse(whooingURL));
+			startActivity(i);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -201,8 +218,11 @@ public class WimpleActivity extends AppCompatActivity
     }
 
 	private boolean replaceWimpleFragment(int id) {
+		boolean isShouldBeShowFab = true;
 
+		hideVirtualKeyboard();
 		if (id == R.id.menu_transaction_insert) {
+			isShouldBeShowFab = false;
 			currentFragment = new TransactionInsertFragment();
 			//mDrawerList.setItemChecked(position, true);
 			//setTitle(mPlanetTitles[position]);
@@ -226,11 +246,18 @@ public class WimpleActivity extends AppCompatActivity
 			return false;
 		}
 
+		((IWimpleFragment)currentFragment).setActivityInstance(this);
 		currentFragment.setArguments(getIntent().getExtras());
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 		transaction.replace(R.id.fragment_container, currentFragment);
-		transaction.addToBackStack(null);
 		transaction.commit();
+
+		if(isShouldBeShowFab) {
+			fab.setVisibility(View.VISIBLE);
+		}else {
+			fab.setVisibility(View.INVISIBLE);
+		}
+
 		return true;
 	}
 
@@ -454,11 +481,15 @@ public class WimpleActivity extends AppCompatActivity
 				switch(command){
 
 					case CommandID.TOAST_LONG :
-						Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
+						//Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
+						Snackbar.make(wimpleView, obj.toString(), Snackbar.LENGTH_LONG)
+								.setAction("Action", null).show();
 						break;
 
 					case CommandID.TOAST_SHORT :
-						Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+						//Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+						Snackbar.make(wimpleView, obj.toString(), Snackbar.LENGTH_SHORT)
+								.setAction("Action", null).show();
 						break;
 
 					case CommandID.UPDATE_USER_INFO :

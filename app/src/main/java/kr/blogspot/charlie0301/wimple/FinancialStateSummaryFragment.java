@@ -1,19 +1,11 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.util.Collection;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
-import kr.blogspot.charlie0301.wimple.model.AccountState;
-import kr.blogspot.charlie0301.wimple.widget.DoughnutChartView;
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,6 +15,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.github.mikephil.charting.charts.PieChart;
+
+import java.util.Collection;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.model.AccountState;
 
 public class FinancialStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
@@ -36,7 +38,6 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	// GUI
 	//private WeakReference<ItemListView> asList;
 	//private WeakReference<AccountStateItemListAdapter> asAdapter;
-	private DoughnutChartView cv;
 	private LinearLayout llChart;
 	
 	private LinearLayout llUpdateNotice;
@@ -106,8 +107,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		asAdapter.clear();
 		asAdapter = null;
 		 */
-		
-		cv = null;
+
 		llChart = null;
 		tvSavingValue = null;
 		tvDebtValue = null;
@@ -184,9 +184,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 			}
 			//asAdapter.get().notifyDataSetChanged();
 
-			if(null == cv){
-				cv = new DoughnutChartView(context);
-				llChart = (LinearLayout)view.findViewById(R.id.chart);	
+			if(null == llChart){
+				llChart = (LinearLayout) view.findViewById(R.id.chart);
 			}
 
 			tvSavingValue.setText(DateFormatUtils.getNoPointDecimalFormat().format(saving));
@@ -201,42 +200,27 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 				tvSumValue.setTextColor(getResources().getColor(R.color.text_red));
 			}
 
-			setGraphicChart(new double[] {Math.abs(saving), Math.abs(debt)}, 
-					new String[] {getResources().getString(R.string.title_saving),
-					getResources().getString(R.string.title_debt)});
+			PieChart pcv = ChartUtils.makeChart(context,
+					new double[] {
+							Math.abs(saving),
+							Math.abs(debt)
+					},
+					new String[] {
+							getResources().getString(R.string.title_saving),
+							getResources().getString(R.string.title_debt)
+					});
 
 			llChart.removeAllViews();
-			llChart.addView(cv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
-
+			llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
 		}
 		break;
 		}
 	}
 	@Override
 	public void refreshView() {
-		// TODO Auto-generated method stub
-
 	}
+
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		// TODO Auto-generated method stub
-
 	}
-
-
-	private void setGraphicChart(double[] values, String[] names){
-
-		cv.setDataValues(values);
-		cv.setLegendValues(names);		
-		int[] colors = new int[values.length];
-		for(int i = 0; i < values.length; i++){
-			colors[i] = WidgetItem.predefinedColors[9-i];
-		}
-		cv.setBarColorValues(colors);
-		cv.setDisplayLabels(true);
-		cv.makeChart();
-
-	}
-
-
 }
