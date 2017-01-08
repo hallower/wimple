@@ -1,27 +1,31 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
-import kr.blogspot.charlie0301.wimple.model.AccountState;
-import kr.blogspot.charlie0301.wimple.widget.DoughnutChartView;
-import kr.blogspot.charlie0301.wimple.widget.ItemListView;
-import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.github.mikephil.charting.charts.PieChart;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
+import kr.blogspot.charlie0301.wimple.model.AccountState;
+import kr.blogspot.charlie0301.wimple.widget.ItemListView;
+import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
 
 public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
@@ -36,7 +40,6 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	// GUI
 	private WeakReference<ItemListView> asList;
 	private WeakReference<AccountStateItemListAdapter> asAdapter;
-	private DoughnutChartView cv;
 	private LinearLayout llChart;
 
 
@@ -58,6 +61,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		registerForContextMenu(asList.get());
 
+		WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
 	@Override
@@ -67,7 +71,6 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		asList = null;
 		asAdapter.clear();
 		asAdapter = null;
-		cv = null;
 		llChart = null;
 		
 		super.onDestroy();
@@ -133,8 +136,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 			}
 			asAdapter.get().notifyDataSetChanged();
 			
-			if(null == cv){
-				cv = new DoughnutChartView(context);
+			if(null == llChart){
 				llChart = (LinearLayout)view.findViewById(R.id.chart);	
 			}
 
@@ -146,11 +148,11 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 			for(int i = 0; i < stringValues.length; i++){
 				stringValues[i] = names.get(i);
 			}
-			
-			setGraphicChart(doubleValues, stringValues);
+
+			PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues);
 
 			llChart.removeAllViews();
-			llChart.addView(cv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+			llChart.addView(pcv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
 		
 		}
@@ -165,19 +167,6 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 		// TODO Auto-generated method stub
-	}
-
-	private void setGraphicChart(double[] values, String[] names){
-
-		cv.setDataValues(values);
-		cv.setLegendValues(names);		
-		int[] colors = new int[values.length];
-		for(int i = 0; i < values.length; i++){
-			colors[i] = WidgetItem.predefinedColors[i%9];
-		}
-		cv.setBarColorValues(colors);
-		cv.setDisplayLabels(true);
-		cv.makeChart();
 	}
 
 }

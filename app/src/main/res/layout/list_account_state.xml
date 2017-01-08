@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/as_backgroud"
+    android:id="@+id/as_background"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/input_box_round_2"
+    android:layout_height="30dp"
     android:orientation="horizontal"
-    android:paddingBottom="8dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="8dp" >
+    android:padding="8dp" >
 
     <TextView
         android:id="@+id/as_item_type"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
         android:layout_weight="0.1"
         android:gravity="center"
         android:padding="2dp"
-        android:layout_marginRight="6dp"
         android:text="자산"
         android:textColor="@color/text_blue"
         android:textSize="11sp" />
@@ -27,10 +21,8 @@
         android:id="@+id/as_item_title"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
         android:layout_weight="0.5"
         android:gravity="center"
-        android:paddingLeft="10dp"
         android:text="title"
         android:textColor="@color/text_white"
         android:textSize="18sp"
@@ -41,7 +33,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="0.4"
-        android:gravity="right|bottom"
+        android:gravity="end|center"
         android:text="amount"
         android:textColor="@color/text_black"
         android:textSize="16sp" />

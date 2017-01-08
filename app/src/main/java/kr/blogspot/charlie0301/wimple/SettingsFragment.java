@@ -57,9 +57,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 
 	ListPreference listSections;
 
+
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		super.onCreate(savedInstanceState);
 
 		context = WimpleActivity.context;
 		settings = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);

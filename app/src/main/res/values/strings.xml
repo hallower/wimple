@@ -10,7 +10,7 @@
     <string name="action_find_entry">검색</string>
     <string name="title_activity_web_view">후잉 서비스 로그인</string>
     <string name="program_exit">사용을 위해서는 로그인이 필요합니다. :)</string>
-    <string name="na"></string>
+    <string name="na">" "</string>
     <string name="loggin_auth">로그인 확인</string>
     <string name="loggin_success">로그인 완료</string>
     <string name="loggin_failed">로그인 실패</string>
@@ -149,4 +149,5 @@
     <string name="post_news_set_title">제목을 아래와 같이 변경하실래요?</string>
     <string name="post_news_title_imported">제목을 추출하였습니다.</string>
     <string name="post_news_wait_for_while">잠시만 기다려 주세요.</string>
+    <string name="no_items">내역이 없습니다. (^_^);</string>
 </resources>

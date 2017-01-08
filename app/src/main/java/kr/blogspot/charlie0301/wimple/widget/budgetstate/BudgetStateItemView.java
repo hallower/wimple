@@ -30,7 +30,7 @@ public class BudgetStateItemView extends LinearLayout {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_budget_state, this, true);
 
-		llbackground = (LinearLayout)findViewById(R.id.as_backgroud);
+		llbackground = (LinearLayout)findViewById(R.id.as_background);
 		budget = (TextView)findViewById(R.id.as_item_budget);
 		title = (TextView)findViewById(R.id.as_item_title);
 		percentage = (TextView)findViewById(R.id.as_item_percentage);
@@ -59,7 +59,7 @@ public class BudgetStateItemView extends LinearLayout {
 		setBackgroundAccountWidget(title, item.getCategory());
 
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+				LinearLayout.LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
 		if(item.getGroup()){
 			//type.setText(context.getResources().getString(R.string.title_group));
@@ -106,19 +106,23 @@ public class BudgetStateItemView extends LinearLayout {
 		switch(account.charAt(0)){
 
 		case 'a' :
-			tv.setBackgroundResource(R.drawable.input_color_box_3);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_blue));
+			//tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
 
 		case 'l' :
-			tv.setBackgroundResource(R.drawable.input_color_box);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_red));
+			//tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
 		case 'i' :
-			tv.setBackgroundResource(R.drawable.input_color_box_6);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_green));
+			//tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case 'e' :
-			tv.setBackgroundResource(R.drawable.input_color_box_4);
+			tv.setBackgroundColor(getResources().getColor(R.color.text_yellow));
+			//tv.setBackgroundResource(R.drawable.input_color_box_4);
 			break;
 
 		default :
