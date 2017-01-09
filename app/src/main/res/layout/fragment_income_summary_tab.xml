@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,17 +15,22 @@
         <LinearLayout
             android:id="@+id/chart"
             android:layout_width="match_parent"
-            android:layout_height="280dp"
+            android:layout_height="330dp"
             android:layout_gravity="center"
             android:gravity="center"
             android:paddingBottom="1dp"
-            android:orientation="vertical" />
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/no_items"/>
+            </LinearLayout>
 
-        <com.blogspot.charlie0301.widget.ItemListView
+        <kr.blogspot.charlie0301.wimple.widget.ItemListView
             android:id="@+id/saving_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:divider="@null"
             android:dividerHeight="0dp" />
     </LinearLayout>
 

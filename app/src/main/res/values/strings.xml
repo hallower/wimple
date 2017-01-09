@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Wimple</string>
 
-    <string name="app_name">wimple</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <string name="action_more">..</string>
     <string name="action_go_to_whooing">후잉 바로가기</string>
     <string name="action_find_entry">검색</string>
     <string name="title_activity_web_view">후잉 서비스 로그인</string>
     <string name="program_exit">사용을 위해서는 로그인이 필요합니다. :)</string>
-    <string name="na"></string>
+    <string name="na">" "</string>
     <string name="loggin_auth">로그인 확인</string>
     <string name="loggin_success">로그인 완료</string>
     <string name="loggin_failed">로그인 실패</string>
@@ -104,7 +107,6 @@
     <string name="entry_header_expenses">비용</string>
     <string name="entry_header_income_expense_status"> 현재 수익/지출 현황 </string>
     <string name="entry_header_budget_income_expense_status"> 예산대비 수익/지출 현황 </string>
-    <string name="currency"></string>
     <string name="title_saving">자산</string>
     <string name="title_debt">부채</string>
     <string name="title_income">수익</string>
@@ -147,4 +149,5 @@
     <string name="post_news_set_title">제목을 아래와 같이 변경하실래요?</string>
     <string name="post_news_title_imported">제목을 추출하였습니다.</string>
     <string name="post_news_wait_for_while">잠시만 기다려 주세요.</string>
+    <string name="no_items">표시할 그룹이나 항목이 없습니다. (^_^);</string>
 </resources>
