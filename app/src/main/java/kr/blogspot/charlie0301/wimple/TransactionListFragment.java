@@ -193,7 +193,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
 				Item item = (Item) entryAdapter.get().getItem(position);
 				//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
-				//WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item.getId());
+				WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item.getId());
 			}
 		});
 

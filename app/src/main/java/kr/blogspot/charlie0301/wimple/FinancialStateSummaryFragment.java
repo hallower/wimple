@@ -208,7 +208,8 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 					new String[] {
 							getResources().getString(R.string.title_saving),
 							getResources().getString(R.string.title_debt)
-					});
+					},
+					Math.abs(saving) > Math.abs(debt)? Math.abs(saving):Math.abs(debt));
 
 			llChart.removeAllViews();
 			llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));

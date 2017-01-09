@@ -38,11 +38,12 @@
                     android:layout_gravity="top|start"
                     android:layout_marginLeft="15dp"
                     android:layout_marginTop="18dp"
-                    android:background="@drawable/progress_p"
+                    android:background="@color/colorAccent"
                     android:padding="3dp"
                     android:scaleType="fitXY"
                     android:text="@string/entry_header_income_expense_status"
-                    android:textColor="@color/text_white" />
+                    android:textColor="@color/text_white"
+                    android:gravity="center"/>
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -53,13 +54,13 @@
 
                     <ImageView
                         android:id="@+id/ine_bar_income"
-                        android:layout_width="50dp"
                         android:layout_height="58dp"
                         android:layout_gravity="center_vertical|left"
                         android:layout_marginLeft="65dp"
                         android:contentDescription="@string/na"
                         android:scaleType="fitXY"
-                        android:src="@drawable/input_color_box_3" />
+                        android:src="@drawable/input_color_box_3"
+                        android:layout_width="60dp"/>
 
                     <TextView
                         android:id="@+id/ine_income_value"
@@ -96,13 +97,13 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_expense"
-                    android:layout_width="70dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
                     android:contentDescription="@string/na"
                     android:scaleType="fitXY"
-                    android:src="@drawable/input_color_box" />
+                    android:src="@drawable/input_color_box"
+                    android:layout_width="60dp"/>
 
                 <TextView
                     android:id="@+id/ine_expense_value"
@@ -172,11 +173,12 @@
                 android:layout_gravity="center|start"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/progress_p"
+                android:background="@color/colorAccent"
                 android:padding="3dp"
                 android:scaleType="fitXY"
                 android:text="@string/entry_header_budget_income_expense_status"
-                android:textColor="@color/text_white" />
+                android:textColor="@color/text_white"
+                android:gravity="center"/>
 
             <!-- 예산 대비 수익 -->
 
@@ -199,7 +201,7 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_current_income"
-                    android:layout_width="10dp"
+                    android:layout_width="60dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
@@ -253,13 +255,13 @@
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_current_expense"
-                    android:layout_width="10dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
                     android:contentDescription="@string/na"
                     android:scaleType="fitXY"
-                    android:src="@drawable/input_color_box" />
+                    android:src="@drawable/input_color_box"
+                    android:layout_width="60dp"/>
 
                 <TextView
                     android:id="@+id/ine_bar_budget_current_expense_percentage"
@@ -289,40 +291,36 @@
     </ScrollView>
 
     <!-- update notification 표시 -->
-
     <LinearLayout
         android:id="@+id/ine_update_notification"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="90dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_gravity="right"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="4dp"
         android:background="@drawable/input_box_round_2"
         android:orientation="horizontal"
-        android:paddingBottom="2dp"
-        android:paddingLeft="7dp"
-        android:paddingTop="4dp"
+        android:padding="10dp"
         android:visibility="gone" >
 
         <TextView
             android:id="@+id/ine_list_notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
+            android:layout_gravity="center"
+            android:layout_marginStart="10dp"
             android:text="@string/update_as_date"
             android:textColor="@color/text_blue" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_gravity="center_vertical"
             android:contentDescription="@string/na"
             android:gravity="center_vertical"
             android:src="@drawable/waiting" />
     </LinearLayout>
-
 </RelativeLayout>

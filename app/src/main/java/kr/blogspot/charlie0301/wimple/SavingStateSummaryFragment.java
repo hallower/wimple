@@ -140,16 +140,19 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 			}
 
 			if(0 < values.size()){
+				double maxValue = -99999999;
 				double[] doubleValues = new double[values.size()];
 				for(int i = 0; i < doubleValues.length; i++){
 					doubleValues[i] = values.get(i).doubleValue();
+					if(maxValue < doubleValues[i])
+						maxValue = doubleValues[i];
 				}
 				String[] stringValues = new String[names.size()];
 				for(int i = 0; i < stringValues.length; i++){
 					stringValues[i] = names.get(i);
 				}
 
-				PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues);
+				PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues, maxValue);
 
 				llChart.removeAllViews();
 				llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));

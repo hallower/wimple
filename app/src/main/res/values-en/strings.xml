@@ -150,5 +150,5 @@
     <string name="post_news_set_title">Would you like to change title like this?</string>
     <string name="post_news_title_imported">Title is detected</string>
     <string name="post_news_wait_for_while">Wait for a minute</string>
-    <string name="no_items">No items. (^_^);</string>
+    <string name="no_items">No items or grouped items. (^_^);</string>
 </resources>

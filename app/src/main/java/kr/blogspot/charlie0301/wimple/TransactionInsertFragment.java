@@ -174,6 +174,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		initWimple();
 
+		Bundle b = getArguments();
+		if(null != b) {
+			String res = b.getString("test",":(");
+		}
 		return view;
 	}
 
@@ -591,7 +595,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		setSubmitButton(toolMode);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void handleMessage(Message msg) {
 
 		int command = msg.what;

@@ -140,21 +140,24 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 				llChart = (LinearLayout)view.findViewById(R.id.chart);	
 			}
 
-			double[] doubleValues = new double[values.size()];
-			for(int i = 0; i < doubleValues.length; i++){
-				doubleValues[i] = values.get(i).doubleValue();
+			if(values.size()>0){
+				double maxValue = -99999999;
+				double[] doubleValues = new double[values.size()];
+				for(int i = 0; i < doubleValues.length; i++){
+					doubleValues[i] = values.get(i).doubleValue();
+					if(maxValue < doubleValues[i])
+						maxValue = doubleValues[i];
+				}
+				String[] stringValues = new String[names.size()];
+				for(int i = 0; i < stringValues.length; i++){
+					stringValues[i] = names.get(i);
+				}
+
+				PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues, maxValue);
+
+				llChart.removeAllViews();
+				llChart.addView(pcv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 			}
-			String[] stringValues = new String[names.size()];
-			for(int i = 0; i < stringValues.length; i++){
-				stringValues[i] = names.get(i);
-			}
-
-			PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues);
-
-			llChart.removeAllViews();
-			llChart.addView(pcv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-
-		
 		}
 		break;
 		}

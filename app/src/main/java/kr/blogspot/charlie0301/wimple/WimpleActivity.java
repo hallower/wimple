@@ -105,6 +105,10 @@ public class WimpleActivity extends AppCompatActivity
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, a1, a2, msg));
 	}
 
+	public static void smd(int cmd, Object msg, long ms){
+		mainHandler.sendMessageDelayed(Message.obtain(mainHandler, cmd, 1, 0, msg), ms);
+	}
+
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -218,6 +222,10 @@ public class WimpleActivity extends AppCompatActivity
     }
 
 	private boolean replaceWimpleFragment(int id) {
+		return replaceWimpleFragment(id, null);
+	}
+
+	private boolean replaceWimpleFragment(int id, Bundle bundle) {
 		boolean isShouldBeShowFab = true;
 
 		hideVirtualKeyboard();
@@ -247,7 +255,8 @@ public class WimpleActivity extends AppCompatActivity
 		}
 
 		((IWimpleFragment)currentFragment).setActivityInstance(this);
-		currentFragment.setArguments(getIntent().getExtras());
+		if(null != bundle)
+			currentFragment.setArguments(bundle);
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 		transaction.replace(R.id.fragment_container, currentFragment);
 		transaction.commit();
@@ -267,6 +276,8 @@ public class WimpleActivity extends AppCompatActivity
 
 		// Set Icon
 		profileIcon = (ImageView)findViewById(R.id.my_profile_icon);
+		if(null == profileIcon)
+			return;
 		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
 
 		// Set  Name
@@ -504,22 +515,15 @@ public class WimpleActivity extends AppCompatActivity
 						break;
 					}
 
-					case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
-					{
-						if(null != currentFragment &&
-								currentFragment instanceof IWimpleFragment)
-						{
-							IWimpleFragment wfg = (IWimpleFragment) currentFragment;
-							wfg.handleMessage(msg);
-						}
-						break;
-					}
-
 					// TransactionInsertFragment
 					case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
 
-						if(replaceWimpleFragment(R.id.menu_transaction_insert) &&
-								null != currentFragment &&
+						if(!(currentFragment instanceof TransactionInsertFragment)){
+							replaceWimpleFragment(R.id.menu_transaction_insert);
+							smd(msg.what, msg.obj, 500);
+						}
+
+						if(null != currentFragment &&
 								currentFragment instanceof IWimpleFragment)
 						{
 							IWimpleFragment wfg = (IWimpleFragment) currentFragment;
@@ -541,7 +545,7 @@ public class WimpleActivity extends AppCompatActivity
 					case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
 					case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
 					case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED :
-
+					case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
 					case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
 					case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED :
 
