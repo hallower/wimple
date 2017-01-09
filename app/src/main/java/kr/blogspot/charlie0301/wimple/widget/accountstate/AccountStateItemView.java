@@ -45,6 +45,10 @@ public class AccountStateItemView extends LinearLayout {
 
 	public void setData(AccountState item) {
 
+		if(null == item ||
+				null == title)
+			return;
+
 		title.setText(item.getAccountName());
 		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
 

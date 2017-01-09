@@ -149,5 +149,5 @@
     <string name="post_news_set_title">제목을 아래와 같이 변경하실래요?</string>
     <string name="post_news_title_imported">제목을 추출하였습니다.</string>
     <string name="post_news_wait_for_while">잠시만 기다려 주세요.</string>
-    <string name="no_items">내역이 없습니다. (^_^);</string>
+    <string name="no_items">표시할 그룹이나 항목이 없습니다. (^_^);</string>
 </resources>
