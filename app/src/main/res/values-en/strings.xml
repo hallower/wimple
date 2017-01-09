@@ -2,12 +2,16 @@
 <resources>
 
     <string name="app_name">wimple</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <string name="action_more">..</string>
     <string name="action_go_to_whooing">Whooing.com</string>
     <string name="action_find_entry">Find</string>
     <string name="title_activity_web_view">Login to Whooing</string>
     <string name="program_exit">It\'s required to login to Whooing if you\'d like to use this app. :)</string>
-    <string name="na"></string>
+    <string name="na">" "</string>
     <string name="loggin_auth">Confimed logged in</string>
     <string name="loggin_success">Login succeed</string>
     <string name="loggin_failed">Login is failed</string>
@@ -104,7 +108,6 @@
     <string name="entry_header_expenses">Expenses</string>
     <string name="entry_header_income_expense_status"> Profit/Loss Status </string>
     <string name="entry_header_budget_income_expense_status"> Budget vs Actual</string>
-    <string name="currency"></string>
     <string name="title_saving">Asset</string>
     <string name="title_debt">Liability</string>
     <string name="title_income">Income</string>
@@ -147,4 +150,5 @@
     <string name="post_news_set_title">Would you like to change title like this?</string>
     <string name="post_news_title_imported">Title is detected</string>
     <string name="post_news_wait_for_while">Wait for a minute</string>
+    <string name="no_items">No items or grouped items. (^_^);</string>
 </resources>

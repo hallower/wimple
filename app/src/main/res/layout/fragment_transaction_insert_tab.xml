@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,24 +16,24 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="35dp"
             android:layout_marginTop="2dp"
             android:orientation="horizontal"
             android:weightSum="1" >
 
             <RelativeLayout
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:layout_weight="0.4"
-                android:background="@drawable/input_box_dark"
+                android:background="@color/colorPrimary"
                 android:gravity="center" >
 
                 <ImageView
                     android:id="@+id/insert_yesterday"
-                    android:layout_width="wrap_content"
+                    android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
                     android:layout_gravity="center"
                     android:contentDescription="@string/na"
@@ -42,9 +44,9 @@
 
                 <ImageView
                     android:id="@+id/insert_tomorrow"
-                    android:layout_width="wrap_content"
+                    android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_gravity="center"
                     android:contentDescription="@string/na"
@@ -57,11 +59,9 @@
                     android:id="@+id/insert_date"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/insert_tomorrow"
+                    android:layout_toEndOf="@id/insert_yesterday"
                     android:layout_gravity="center"
-                    android:layout_toLeftOf="@id/insert_tomorrow"
-                    android:layout_toRightOf="@id/insert_yesterday"
                     android:gravity="center"
                     android:textColor="@color/text_white"
                     android:textSize="15sp" />
@@ -70,15 +70,15 @@
             <TextView
                 android:id="@+id/insert_amount"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_gravity="right|center_vertical"
+                android:layout_height="match_parent"
+                android:layout_gravity="end|center_vertical"
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp"
                 android:layout_weight="0.6"
-                android:background="@drawable/input_box_dark"
-                android:gravity="right|center_vertical"
+                android:background="@color/colorPrimaryDark"
+                android:gravity="end|center_vertical"
                 android:lines="1"
-                android:paddingLeft="8dp"
+                android:paddingStart="8dp"
                 android:paddingRight="8dp"
                 android:textColor="@color/text_white"
                 android:textScaleX="0.9"
@@ -109,12 +109,13 @@
                         android:id="@+id/insert_entry_title"
                         android:layout_width="fill_parent"
                         android:layout_height="32dp"
-                        android:layout_gravity="left|center_vertical"
-                        android:background="@drawable/input_box_dark"
-                        android:gravity="left|center_vertical"
+                        android:layout_gravity="start|center_vertical"
+                        android:background="@color/colorPrimaryDark"
+                        android:gravity="start|center_vertical"
                         android:hint="@string/insert_item_title"
                         android:inputType="text"
-                        android:paddingLeft="8dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
                         android:textColor="@color/text_light_blue"
                         android:textColorHint="@color/text_white"
                         android:textSize="17sp"
@@ -122,19 +123,17 @@
 
                     <ImageView
                         android:id="@+id/insert_title_clear"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="right|center_vertical"
+                        android:layout_height="28dp"
+                        android:layout_gravity="end|center_vertical"
                         android:contentDescription="@string/na"
-                        android:src="@drawable/close" />
+                        android:src="@drawable/close"
+                        android:layout_width="28dp"/>
                 </FrameLayout>
 
                 <ListView
                     android:id="@+id/insert_frequent_items"
                     android:layout_width="fill_parent"
-                    android:layout_height="150dp"
-                    android:background="@drawable/input_box_rect"
-                    android:padding="2dp" />
+                    android:layout_height="150dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -159,9 +158,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_7"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -172,9 +170,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_8"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -185,9 +182,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_9"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -198,9 +194,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_back"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -211,9 +206,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_clear"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -227,9 +221,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_4"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -240,9 +233,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_5"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -253,9 +245,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_6"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -266,9 +257,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_multiply"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -279,9 +269,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_divide"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -295,9 +284,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_1"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -308,9 +296,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_2"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -321,9 +308,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_3"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -334,9 +320,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_minus"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -347,9 +332,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_plus"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -363,9 +347,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_10"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -376,9 +359,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/gray_box"
+                            android:background="@drawable/button_dark"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_point"
                             android:textColor="@color/calc_number_btn"
                             android:textSize="20sp" />
@@ -389,9 +371,8 @@
                             android:layout_height="@dimen/calc_btn_height"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_100"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -403,9 +384,8 @@
                             android:layout_gravity="center"
                             android:layout_span="1"
                             android:layout_weight="2"
-                            android:background="@drawable/white_box"
+                            android:background="@drawable/button_white"
                             android:gravity="center"
-                            android:padding="3dp"
                             android:text="@string/pad_eq"
                             android:textColor="@color/calc_func_btn"
                             android:textSize="20sp" />
@@ -417,18 +397,17 @@
         <LinearLayout
             android:id="@+id/insert_memo_window"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="2dp" >
+            android:layout_height="20dp"
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:background="@drawable/input_box_dark"
+                android:background="@color/colorPrimary"
                 android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
+                android:paddingStart="8dp"
+                android:paddingRight="8dp"
                 android:text="@string/title_memo"
                 android:textColor="@color/text_white"
                 android:textSize="14sp" />
@@ -436,15 +415,18 @@
             <EditText
                 android:id="@+id/insert_memo"
                 android:layout_width="fill_parent"
-                android:layout_height="30dp"
-                android:background="@drawable/input_box_round_2"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
                 android:hint="@string/description_memo"
-                android:lines="1"
                 android:maxLength="40"
                 android:maxLines="1"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:textSize="12sp" />
+                android:textSize="14sp"
+                android:background="@android:color/transparent"
+                android:singleLine="true"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -478,13 +460,10 @@
                     android:id="@+id/insert_category_left_title"
                     android:layout_width="match_parent"
                     android:layout_height="32dp"
-                    android:background="@drawable/input_color_box_9"
-                    android:gravity="left|center_vertical"
-                    android:maxLines="1"
-                    android:paddingBottom="4dp"
-                    android:paddingLeft="8dp"
-                    android:paddingTop="4dp"
+                    android:background="@color/text_red"
+                    android:gravity="center"
                     android:text="@string/insert_left_accounts"
+                    android:padding="2dp"
                     android:textColor="@color/text_white"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -494,7 +473,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:background="@drawable/input_box_rect"
                     android:textSize="20sp" />
             </LinearLayout>
 
@@ -510,12 +488,9 @@
                     android:id="@+id/insert_category_right_title"
                     android:layout_width="match_parent"
                     android:layout_height="32dp"
-                    android:background="@drawable/input_color_box_3"
-                    android:gravity="right|center_vertical"
-                    android:maxLines="1"
-                    android:paddingBottom="4dp"
-                    android:paddingRight="8dp"
-                    android:paddingTop="4dp"
+                    android:background="@color/text_light_blue"
+                    android:gravity="center"
+                    android:padding="2dp"
                     android:text="@string/insert_right_accounts"
                     android:textColor="@color/text_white"
                     android:textSize="17sp"
@@ -526,7 +501,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:background="@drawable/input_box_rect"
                     android:textSize="20sp" />
             </LinearLayout>
         </LinearLayout>
@@ -547,7 +521,7 @@
     <LinearLayout
         android:id="@+id/ti_update_notification"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="90dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_gravity="right"
@@ -556,23 +530,21 @@
         android:layout_marginTop="4dp"
         android:background="@drawable/input_box_round_2"
         android:orientation="horizontal"
-        android:paddingBottom="2dp"
-        android:paddingLeft="7dp"
-        android:paddingTop="4dp"
-        android:visibility="visible" >
+        android:padding="10dp"
+        android:visibility="gone" >
 
         <TextView
             android:id="@+id/ti_list_notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
+            android:layout_gravity="center"
+            android:layout_marginStart="10dp"
             android:text="@string/insert_new_item"
             android:textColor="@color/text_blue" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_gravity="center_vertical"
             android:contentDescription="@string/na"
             android:gravity="center_vertical"
