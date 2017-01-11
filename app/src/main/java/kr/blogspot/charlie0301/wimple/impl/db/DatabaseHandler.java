@@ -27,7 +27,7 @@ public class DatabaseHandler{
 	private final String createSchema;    
 	private final String tableName;
 
-	private SparseArray<String> columns = new SparseArray<String>();
+	private SparseArray<String> columns = new SparseArray<>();
 
 	/*
 	 * PromiseDatabase
@@ -205,7 +205,7 @@ public class DatabaseHandler{
 	
 
 	public Collection<IDatabaseRecord> getDistinct(String sFieldName){
-		Collection<IDatabaseRecord> items = new ArrayList<IDatabaseRecord>();
+		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
 		SQLiteDatabase db = dbms.getReadableDatabase();
@@ -240,7 +240,7 @@ public class DatabaseHandler{
 	}
 
 	public Collection<IDatabaseRecord> getItems(){
-		Collection<IDatabaseRecord> items = new ArrayList<IDatabaseRecord>();
+		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
 		SQLiteDatabase db = dbms.getReadableDatabase();
@@ -278,7 +278,7 @@ public class DatabaseHandler{
 	}
 
 	public Collection<IDatabaseRecord> getItems(String pkFieldName, String value){
-		Collection<IDatabaseRecord> items = new ArrayList<IDatabaseRecord>();
+		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
 		SQLiteDatabase db = dbms.getReadableDatabase();
@@ -317,7 +317,7 @@ public class DatabaseHandler{
 	}
 		
 	public Collection<IDatabaseRecord> getItems(String sWhere){
-		Collection<IDatabaseRecord> items = new ArrayList<IDatabaseRecord>();
+		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
 		SQLiteDatabase db = dbms.getReadableDatabase();

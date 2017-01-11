@@ -30,7 +30,7 @@ public class Item implements IDatabaseRecord {
 	 */
 	private String dateValue;
 
-	public static final SparseArray<String> columns = new SparseArray<String>();    
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "id");
@@ -87,9 +87,12 @@ public class Item implements IDatabaseRecord {
 		 * Entry => entry_date
 		 */
 		try{
-			Long dateLong = 0L;
+			Long dateLong;
 
 			String dateString = item.optString("due_date");
+			if(dateString.length() == 0)
+				return;
+
 			this.dateValue = "9" + dateString;
 			int pos = dateString.indexOf(".");
 			if(pos > 0){
@@ -100,6 +103,7 @@ public class Item implements IDatabaseRecord {
 			dateLong = date.getTime();
 			setDate(dateLong);
 		} catch (Exception e) {
+			Log.e(LOG_TAG, "Date conversion failed !!!, " + item.optString("due_date"));
 		}
 
 	}
@@ -214,8 +218,8 @@ public class Item implements IDatabaseRecord {
 
 	@Override
 	public boolean setValues(SparseArray<String> values) {
-		int key = 0;
-		String value = "";
+		int key;
+		String value;
 
 		for(int i = 0; i < values.size() ; i++){
 			key = values.keyAt(i);
@@ -293,7 +297,7 @@ public class Item implements IDatabaseRecord {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		values.append(0, id);
 		values.append(1, date.toString());
@@ -316,7 +320,9 @@ public class Item implements IDatabaseRecord {
 		}
 
 		Item item = (Item)o;
-		return item.equals(item.item);
+		if(0 != item.getItem().compareTo(this.item))
+			return false;
+		return (0 == item.getDateValue().compareTo(this.dateValue));
 	}
 
 	public static class DateDescCompare implements Comparator<Item>{
@@ -336,15 +342,4 @@ public class Item implements IDatabaseRecord {
 		}
 
 	}
-	
-	/*
-	int compareTo(Object o){
-		if(false == (o instanceof Item)){
-			return -1;
-		}
-
-		Item item = (Item)o;
-		return item.compareTo(item.item);
-	}
-	 */
 }

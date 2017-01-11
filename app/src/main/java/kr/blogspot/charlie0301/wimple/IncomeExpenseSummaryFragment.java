@@ -36,7 +36,7 @@ import android.widget.TextView;
 
 public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFragment{
 
-	private final static String LOG_TAG = "IncomeExpenseSummaryFragment";
+	private final static String LOG_TAG = "IncomeExpenseSumFrag";
 
 	private final static WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
@@ -115,9 +115,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true);
 
 		if(false == isUsingBudgetInformation){
-			((TextView)view.findViewById(R.id.ine_budget_status_title)).setVisibility(View.GONE);
-			((FrameLayout)view.findViewById(R.id.ine_budget_status_income)).setVisibility(View.GONE);
-			((FrameLayout)view.findViewById(R.id.ine_budget_status_expense)).setVisibility(View.GONE);
+			view.findViewById(R.id.ine_budget_status_title).setVisibility(View.GONE);
+			view.findViewById(R.id.ine_budget_status_income).setVisibility(View.GONE);
+			view.findViewById(R.id.ine_budget_status_expense).setVisibility(View.GONE);
 
 		}
 

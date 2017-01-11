@@ -12,7 +12,7 @@ public class DatabaseRecordImpl implements IDatabaseRecord {
         super();
         this.primaryKeyValue = primaryKeyValue;
         this.columns = columns;
-        values = new SparseArray<String>();
+        values = new SparseArray<>();
     }
 
     public DatabaseRecordImpl setValue(int key, String value) {

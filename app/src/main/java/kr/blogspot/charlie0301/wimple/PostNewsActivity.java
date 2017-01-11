@@ -12,6 +12,7 @@ import java.util.Map;
 
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.RemoteContent;
 import kr.blogspot.charlie0301.wimple.model.Account;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.model.Budget;
@@ -19,13 +20,6 @@ import kr.blogspot.charlie0301.wimple.model.Entry;
 import kr.blogspot.charlie0301.wimple.model.Item;
 import kr.blogspot.charlie0301.wimple.model.Section;
 import kr.blogspot.charlie0301.wimple.model.UserInfo;
-
-/*
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-*/
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -72,43 +66,7 @@ public class PostNewsActivity extends Activity {
 				if(false == lcURL.startsWith("http")){
 					targetURL = url.substring(url.indexOf("http"));
 				}
-				
-				try {
-
-					/*
-					DefaultHttpClient client = new DefaultHttpClient();					
-					HttpGet httpGet = new HttpGet(targetURL);					
-					HttpResponse execute = client.execute(httpGet);
-					InputStream content = execute.getEntity().getContent();
-
-					Header[] headers = execute.getHeaders("Content-Type");
-					for(Header h:headers){
-						Log.d(LOG_TAG, h.getName() + ": " + h.getValue());
-
-						String characterset = h.getValue();
-						int pos = characterset.indexOf("charset=");
-						if(pos > 0){
-							charset = characterset.substring(pos + 8).toLowerCase(Locale.US);								
-							Log.d(LOG_TAG, "charset = " + charset);
-						}else{
-							charset = new String("euc-kr");
-						}
-					}
-
-					BufferedReader buffer = new BufferedReader(new InputStreamReader(content, charset));
-					String s = "";
-
-					while ((s = buffer.readLine()) != null) {
-						response += s;
-						if(response.contains("</title>") ||
-								response.contains("</TITLE>")){
-							break;
-						}
-					}
-					*/
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				response = RemoteContent.getInstance().getTitlePartOfPage(targetURL);
 			}
 			return response;
 		}

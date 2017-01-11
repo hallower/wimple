@@ -88,7 +88,7 @@ public class BudgetDBHandler {
 	 */
 
 	public Collection<Budget> getAllBudgets(boolean isIncome){
-		Collection<Budget> acts = new ArrayList<Budget>();
+		Collection<Budget> acts = new ArrayList<>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems("type", isIncome?"income":"expense");
 
 		for(IDatabaseRecord record : records){
