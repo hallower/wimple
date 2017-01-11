@@ -65,7 +65,6 @@ public class UserInfoDBHandler {
 			info.setValues(record.getValues());
 		}
 
-		//dbHandler.showAll();
 		return info;
 	}
 

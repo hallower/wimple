@@ -730,7 +730,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
 		{
-			// TODO : test for frequent items
 		}
 		break;
 

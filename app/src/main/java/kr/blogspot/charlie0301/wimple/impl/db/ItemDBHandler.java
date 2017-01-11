@@ -63,7 +63,7 @@ public class ItemDBHandler {
         }
         
         // TODO : use TCL
-        for(Item act : (Collection<Item>)data) {
+        for(Item act : data) {
             
             if(act instanceof IDatabaseRecord){
                 dbHandler.addItem(act);

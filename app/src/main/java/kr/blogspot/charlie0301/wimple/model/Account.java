@@ -28,7 +28,7 @@ public class Account implements IDatabaseRecord {
 	private Boolean payAccount;
 	private Integer seq;
 	
-	public static final SparseArray<String> columns = new SparseArray<String>();    
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "what");
@@ -192,8 +192,8 @@ public class Account implements IDatabaseRecord {
 	@Override
 	public boolean setValues(SparseArray<String> values) {
 
-		int key = 0;
-		String value = "";
+		int key;
+		String value;
 		
 		for(int i = 0; i < values.size() ; i++){
 			key = values.keyAt(i);
@@ -284,7 +284,7 @@ public class Account implements IDatabaseRecord {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		values.append(0, what);
 		values.append(1, id);
@@ -309,20 +309,8 @@ public class Account implements IDatabaseRecord {
 		}
 
 		Account item = (Account)o;
-		return id.equals(item.id);
+		return (0 == id.compareTo(item.id));
 	}
-
-	/*
-	int compareTo(Object o){
-		if(false == (o instanceof Item)){
-			return -1;
-		}
-
-		Item item = (Item)o;
-		return date.compareTo(item.date);
-	}
-	 */
-	
 
 	public static class DateDescCompare implements Comparator<Account>{
 

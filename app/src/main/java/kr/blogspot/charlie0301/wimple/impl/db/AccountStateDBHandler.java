@@ -55,7 +55,7 @@ public class AccountStateDBHandler {
 		}
 
 		// TODO : use TCL
-		for(AccountState act : (Collection<AccountState>)data) {
+		for(AccountState act : data) {
 
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
@@ -87,7 +87,7 @@ public class AccountStateDBHandler {
 	 */
 
 	public Collection<AccountState> getAllAccountStates(){
-		Collection<AccountState> acts = new ArrayList<AccountState>();
+		Collection<AccountState> acts = new ArrayList<>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){
