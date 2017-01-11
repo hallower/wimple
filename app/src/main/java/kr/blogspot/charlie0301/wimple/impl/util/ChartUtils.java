@@ -8,6 +8,8 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.utils.*;
+import com.github.mikephil.charting.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,20 +17,22 @@ import java.util.List;
 
 public class ChartUtils {
 
-	// TODO : refactoring
 	public static PieChart makeChart(Context context,
 									 double[] dataValues,
 									 String[] legendValues,
 									 double maxValue){
+		Utils.init(context);
 
-		List<PieEntry> entries = new ArrayList<>();
 		int cnt;
+		List<PieEntry> entries = new ArrayList<>();
 		float fMaxValue = Float.parseFloat(Double.valueOf(maxValue).toString());
-		for(cnt = 0;cnt<dataValues.length;cnt++)
-		{
+
+		for(cnt = 0;cnt<dataValues.length;cnt++){
 			float value = Float.parseFloat(Double.valueOf(dataValues[cnt]).toString());
-			if(value <= (fMaxValue * 0.01))
-				continue;
+			if(dataValues.length > 10 &&
+					value <= (fMaxValue * 0.01))
+					continue;
+
 			entries.add(new PieEntry(value, legendValues[cnt]));
 		}
 

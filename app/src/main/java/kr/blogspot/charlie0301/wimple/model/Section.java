@@ -23,7 +23,7 @@ public class Section implements IDatabaseRecord {
 	private Integer decimalPosition;
 	private String dateFormat;
 
-	public static final SparseArray<String> columns = new SparseArray<String>();    
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "id");
@@ -194,8 +194,8 @@ public class Section implements IDatabaseRecord {
 
 	@Override
 	public boolean setValues(SparseArray<String> values) {
-		int key = 0;
-		String value = "";
+		int key;
+		String value;
 
 		for(int i = 0; i < values.size() ; i++){
 			key = values.keyAt(i);
@@ -274,7 +274,7 @@ public class Section implements IDatabaseRecord {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		values.append(0, id);
 		values.append(1, title);

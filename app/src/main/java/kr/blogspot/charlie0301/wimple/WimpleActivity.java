@@ -56,6 +56,7 @@ public class WimpleActivity extends AppCompatActivity
     public static Context context;
 
 	private View wimpleView;
+	private int currentMenuID;
 	private Fragment currentFragment;
 	private FloatingActionButton fab;
 
@@ -107,6 +108,14 @@ public class WimpleActivity extends AppCompatActivity
 
 	public static void smd(int cmd, Object msg, long ms){
 		mainHandler.sendMessageDelayed(Message.obtain(mainHandler, cmd, 1, 0, msg), ms);
+	}
+
+	@Override
+	protected void onResume() {
+		context = getApplicationContext();
+		Log.i(LOG_TAG, "WimpleActivity - onResume!!!");
+		setupWimpleImpl();
+		super.onResume();
 	}
 
 	@Override
@@ -170,6 +179,7 @@ public class WimpleActivity extends AppCompatActivity
 	}
 	private void setDefaultFragment() {
 		fab.setVisibility(View.INVISIBLE);
+		currentMenuID = R.id.menu_transaction_insert;
 		currentFragment = new TransactionInsertFragment();
 		((IWimpleFragment)currentFragment).setActivityInstance(this);
 		currentFragment.setArguments(getIntent().getExtras());
@@ -229,6 +239,10 @@ public class WimpleActivity extends AppCompatActivity
 		boolean isShouldBeShowFab = true;
 
 		hideVirtualKeyboard();
+
+		if(currentMenuID == id)
+			return true;
+
 		if (id == R.id.menu_transaction_insert) {
 			isShouldBeShowFab = false;
 			currentFragment = new TransactionInsertFragment();
@@ -254,6 +268,8 @@ public class WimpleActivity extends AppCompatActivity
 			return false;
 		}
 
+		currentMenuID = id;
+
 		((IWimpleFragment)currentFragment).setActivityInstance(this);
 		if(null != bundle)
 			currentFragment.setArguments(bundle);
@@ -273,11 +289,14 @@ public class WimpleActivity extends AppCompatActivity
 
 	private void setMyInfoOnMenu(UserInfo info)
 	{
-
 		// Set Icon
 		profileIcon = (ImageView)findViewById(R.id.my_profile_icon);
 		if(null == profileIcon)
+		{
+			smd(CommandID.UPDATE_USER_INFO, info, 1000);
 			return;
+		}
+
 		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
 
 		// Set  Name

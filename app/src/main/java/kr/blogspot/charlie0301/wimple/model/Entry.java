@@ -143,7 +143,7 @@ public class Entry extends Item {
 			return false;
 		}
 
-		return getId().equals(((Entry)o).getId());
+		return (0 == getId().compareTo(((Entry)o).getId()));
 	}
 
 	@Override

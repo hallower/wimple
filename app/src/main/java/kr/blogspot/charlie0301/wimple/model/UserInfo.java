@@ -47,7 +47,7 @@ public class UserInfo implements IDatabaseRecord {
 	private Integer apiCountLevel;
 
 
-	public static final SparseArray<String> columns = new SparseArray<String>();
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "id");
@@ -152,8 +152,7 @@ public class UserInfo implements IDatabaseRecord {
 
 	@Override
 	public boolean setValues(SparseArray<String> values) {
-
-		int key = 0;
+		int key;
 
 		for(int i = 0; i < values.size(); i++){
 			key = values.keyAt(i);
@@ -222,7 +221,7 @@ public class UserInfo implements IDatabaseRecord {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		for(int i = 0 ; i < columns.size() ; i++){
 			values.append(i, getValue(i));

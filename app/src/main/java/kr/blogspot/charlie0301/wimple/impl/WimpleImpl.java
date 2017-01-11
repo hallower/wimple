@@ -1780,7 +1780,7 @@ public class WimpleImpl implements IWimpleImpl {
                                     while (iterTotalKey.hasNext()) {
                                         String totalKey = iterTotalKey.next();
 
-										Long totalValue = (Long) rows.get(totalKey);
+										Long totalValue = Long.parseLong("" + rows.get(totalKey));
 										String subname = totalKey.toString();
 
 										if(0 == subname.compareTo("budget")){
@@ -1802,7 +1802,7 @@ public class WimpleImpl implements IWimpleImpl {
 							}else if(0 == name.toString().compareTo("total_floating")){
 									 */
 								}else if(0 == name.toString().compareTo("accounts")){
-									JSONArray rows = (JSONArray) accountType.get(name);
+									JSONArray rows = accountType.getJSONArray(name);
 
 									for(int i = 0; i < rows.length(); i++){
 

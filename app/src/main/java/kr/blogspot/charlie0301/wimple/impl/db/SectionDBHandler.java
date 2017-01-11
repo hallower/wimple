@@ -60,7 +60,7 @@ public class SectionDBHandler {
 		}
 
 		// TODO : use TCL
-		for(Section act : (Collection<Section>)data) {
+		for(Section act : data) {
 
 			if(act instanceof IDatabaseRecord){
 				dbHandler.addItem(act);
@@ -92,7 +92,7 @@ public class SectionDBHandler {
 	 */
 
 	public Collection<Section> getAllSections(){
-		Collection<Section> acts = new ArrayList<Section>();
+		Collection<Section> acts = new ArrayList<>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){
@@ -104,7 +104,6 @@ public class SectionDBHandler {
 			acts.add(data);
 		}
 
-		//dbHandler.showAll();
 		return acts;
 	}
 

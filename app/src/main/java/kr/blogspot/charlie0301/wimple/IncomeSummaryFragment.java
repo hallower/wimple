@@ -130,9 +130,9 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_SHOW_GROUP, false);
 			
-			ArrayList<Double> values = new ArrayList<Double>();
-			ArrayList<String> names = new ArrayList<String>();
-			
+			ArrayList<Double> values = new ArrayList<>();
+			ArrayList<String> names = new ArrayList<>();
+
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
 				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
