@@ -5,13 +5,13 @@ import android.util.SparseArray;
 
 public interface IDatabaseRecord {
 
-    abstract public String getKeyValue();
+    String getKeyValue();
 
-    abstract public SparseArray<String> getColumns();
+    SparseArray<String> getColumns();
 
-    abstract public boolean setValues(SparseArray<String> values);
+    boolean setValues(SparseArray<String> values);
     
-    abstract public String getValue(int columnID);
+    String getValue(int columnID);
     
-    abstract public SparseArray<String> getValues();
+    SparseArray<String> getValues();
 }

@@ -3,12 +3,15 @@ package kr.blogspot.charlie0301.wimple.impl.util;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
 public class RemoteContent {
 
@@ -119,6 +122,10 @@ public class RemoteContent {
 		return comm.downloadUserPhoto(url, file);
 	}
 
+	public String getTitlePartOfPage(String url)
+	{
+		return comm.getPartialPageIncludingTitle(url);
+	}
 
 	private class ServerCommunication{
 
@@ -172,6 +179,63 @@ public class RemoteContent {
 			}
 			Log.d(LOG_TAG, "DOWNLOAD DONE  > " + url);
 			return true;
+		}
+
+		String getPartialPageIncludingTitle(String url) {
+
+			HttpURLConnection urlConnection = null;
+			StringBuffer response = new StringBuffer();
+
+			try{
+				urlConnection = (HttpURLConnection)((new URL(url)).openConnection());
+
+				urlConnection.setConnectTimeout(1000);
+				urlConnection.setUseCaches(false);
+
+				if(HttpURLConnection.HTTP_OK != urlConnection.getResponseCode())
+				{
+					Log.e(LOG_TAG, "Title Getting FAILED > with \n" + urlConnection.getResponseCode() + " ===> " + url);
+					return response.toString();
+				}
+
+				String charset = new String("euc-kr");
+				String contentType = urlConnection.getHeaderField("Content-Type");
+				if(0 < contentType.length()){
+					Log.d(LOG_TAG, "Content-Type = " + contentType);
+
+					int pos = contentType.indexOf("charset=");
+					if(0 < pos){
+						charset = contentType.substring(pos + 8).toLowerCase(Locale.US);
+						int endPos = charset.indexOf(";");
+						if(0 < endPos)
+							charset = charset.substring(0, endPos - 1);
+						Log.d(LOG_TAG, "charset = " + charset);
+					}
+				}
+
+				BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), charset));
+				String s;
+
+				while ((s = buffer.readLine()) != null) {
+					response.append(s);
+					if(response.toString().contains("</title>") ||
+							response.toString().contains("</TITLE>")){
+						break;
+					}
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				Log.e(LOG_TAG, "Title Getting  FAILED > " + url);
+				return response.toString();
+			} finally {
+				try{
+					if(null != urlConnection)
+						urlConnection.disconnect();
+				}catch(Exception ignored){
+				}
+			}
+			Log.d(LOG_TAG, "Title Getting  DONE  > " + url);
+			return response.toString();
 		}
 
 /*

@@ -4,6 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
@@ -359,6 +360,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		break;
 
 		case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED : {
+
 			if(false == booleanStatus){				
 				return;
 			}
@@ -383,8 +385,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			}
 
 			for(Item item : list){
-				Long temp = DateFormatUtils.getDifferenceDays(item.getDate());
-				if(monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.getDate())){
+				if(monthlyDisplayAllowingDays <= DateFormatUtils.getDifferenceDays(item.getDate())){
 					//Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 					continue;
 				}

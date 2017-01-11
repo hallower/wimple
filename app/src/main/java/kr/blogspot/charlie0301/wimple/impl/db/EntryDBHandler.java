@@ -115,7 +115,7 @@ public class EntryDBHandler {
 	}
 	
 	public Collection<Entry> getAllEntrys(){
-		Collection<Entry> acts = new ArrayList<Entry>();
+		Collection<Entry> acts = new ArrayList<>();
 		Collection<IDatabaseRecord> records = dbHandler.getItems();
 
 		for(IDatabaseRecord record : records){

@@ -21,7 +21,7 @@ public class Budget implements IDatabaseRecord {
 	private Double remains;
 	private String type;	// income, expense
 	
-	public static final SparseArray<String> columns = new SparseArray<String>();    
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "accountid");
@@ -136,8 +136,8 @@ public class Budget implements IDatabaseRecord {
 
 	@Override
 	public boolean setValues(SparseArray<String> values) {
-		int key = 0;
-		String value = "";
+		int key;
+		String value;
 
 		for(int i = 0; i < values.size() ; i++){
 			key = values.keyAt(i);
@@ -210,7 +210,7 @@ public class Budget implements IDatabaseRecord {
 		}
 
 		Budget item = (Budget)o;
-		return accountID.equals(item.accountID);
+		return (0 == accountID.compareTo(item.accountID));
 	}
 
 }
