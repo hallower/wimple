@@ -47,11 +47,14 @@ public class BudgetStateItemView extends LinearLayout {
 		setData(item, budget);
 	}
 
-	public void setData(AccountState item) {
-		setData(item, null);
+	public boolean setData(AccountState item) {
+		return setData(item, null);
 	}
 
-	public void setData(AccountState item, Budget budget) {
+	public boolean setData(AccountState item, Budget budget) {
+
+		if(null == title)
+			return false;
 
 		title.setText(item.getAccountName());
 		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
@@ -74,7 +77,7 @@ public class BudgetStateItemView extends LinearLayout {
 		llbackground.setLayoutParams(layoutParams);
 
 		if(null == budget){
-			return;
+			return true;
 		}
 
 		amount.setTextColor(getResources().getColor(R.color.text_black));
@@ -99,7 +102,7 @@ public class BudgetStateItemView extends LinearLayout {
 			this.budget.setText(getResources().getString(R.string.budget_nothing_budget));
 			this.percentage.setText(getResources().getString(R.string.budget_nothing_budget));
 		}
-
+		return true;
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){

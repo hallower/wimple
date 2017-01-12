@@ -399,7 +399,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED : {
 			if(booleanStatus){
-				Toast.makeText(context, getResources().getString(R.string.remove_entry_success), Toast.LENGTH_LONG).show();
+				//Toast.makeText(context, getResources().getString(R.string.remove_entry_success), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_success));
 
 				// TODO : efficient
 				entryAdapter.get().removeEntry((String)obj);
@@ -407,21 +408,24 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				wimple.getMonthlyItems(true);
 				//Log.d(LOG_TAG, "Delete entry - " + (String)obj);				
 			}else{
-				Toast.makeText(context, getResources().getString(R.string.remove_entry_failed), Toast.LENGTH_LONG).show();	
+				//Toast.makeText(context, getResources().getString(R.string.remove_entry_failed), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_failed));
 			}
 		}
 		break;
 
 		case CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED :{
 			if(booleanStatus){
-				Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_success), Toast.LENGTH_LONG).show();
+				//Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_success), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_success));
 
 				// TODO : efficient
 				entryAdapter.get().removeItem((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
 				//Log.d(LOG_TAG, "Delete monthly item - " + (String)obj);
 			}else{
-				Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_failed), Toast.LENGTH_LONG).show();	
+				//Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_failed), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_failed));
 			}
 		}
 		break;

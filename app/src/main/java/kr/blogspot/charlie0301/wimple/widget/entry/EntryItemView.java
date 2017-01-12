@@ -55,9 +55,12 @@ public class EntryItemView extends LinearLayout {
 	}
 
 
-	public void setData(Item item) {
+	public boolean setData(Item item) {
 
-		//date.setText(formatter.format(new Date(item.getDate())));				
+		if(null == date)
+			return false;
+
+		//date.setText(formatter.format(new Date(item.getDate())));
 		date.setText(DateFormatUtils.getGUIDateFormat().format(new Date(item.getDate())));
 		title.setText(item.getItem());
 		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
@@ -112,6 +115,7 @@ public class EntryItemView extends LinearLayout {
 		right.setText(WimpleImpl.getInstance().getAccountName(item.getRightAccountID()));
 		setBackgroundAccountWidget(right, item.getRightAccount());
 
+		return true;
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){
