@@ -7,6 +7,8 @@ import java.util.List;
 import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.model.Section;
+
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -108,6 +110,20 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 		});
 
 		updateContactList();
+
+		final Preference smsPostEnable = findPreference(KEY_SMS_POST_ENABLE);
+		smsPostEnable.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				if(newValue instanceof Boolean){
+					Boolean boolVal = (Boolean)newValue;
+					if(boolVal){
+						WimpleActivity.sm(CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS, Manifest.permission.RECEIVE_SMS);
+					}
+				}
+				return true;
+			}
+		});
 
 		final Preference pickContact = findPreference(KEY_SMS_PICK_CONTACT);
 		pickContact.setOnPreferenceClickListener(new OnPreferenceClickListener() {

@@ -68,7 +68,8 @@ public class AccountStateItemListAdapter extends BaseAdapter {
 		} else {
 
 			AccountStateItemView AccountStateItemView = (AccountStateItemView)convertView;
-			AccountStateItemView.setData(AccountState);
+			if(false == AccountStateItemView.setData(AccountState))
+				AccountStateItemView = new AccountStateItemView(mContext, AccountState);
 			return AccountStateItemView;
 		}
 	}

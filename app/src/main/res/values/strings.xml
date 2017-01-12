@@ -150,4 +150,7 @@
     <string name="post_news_title_imported">제목을 추출하였습니다.</string>
     <string name="post_news_wait_for_while">잠시만 기다려 주세요.</string>
     <string name="no_items">표시할 그룹이나 항목이 없습니다. (^_^);</string>
+    <string name="permission_sms_recv">은행/카드 문자 수신을 위해 필요 - 외부입력 사용 시 수신된 문자를 후잉으로 전달하기 위함입니다. 외부 입력 사용안하시면 허가 안하셔도 됩니다.</string>
+    <string name="permission_SMS_recv_deny">SMS 수신 권한을 거부 하셔서 외부 입력 기능은 사용할 수 없습니다. 사용하시려면 안드로이드 앱 설정에서 변경해주셔야 합니다.</string>
+    <string name="permission_SMS_recv_accept">이제 설정의 외부 입력 기능을 사용하실 수 있습니다.</string>
 </resources>
