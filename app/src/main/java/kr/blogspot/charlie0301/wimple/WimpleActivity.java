@@ -166,10 +166,7 @@ public class WimpleActivity extends AppCompatActivity
 	}
 
 	private void requestPermissions(String permission) {
-		int permissionStatus = ContextCompat.checkSelfPermission(this, permission);
-		if (PackageManager.PERMISSION_GRANTED != permissionStatus ||
-				PackageManager.PERMISSION_GRANTED != PackageManager.PERMISSION_GRANTED ) {
-
+		if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, permission)) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
 				Toast.makeText(this, R.string.permission_sms_recv, Toast.LENGTH_LONG).show();
 			} else {
@@ -185,7 +182,6 @@ public class WimpleActivity extends AppCompatActivity
 										   String permissions[], int[] grantResults) {
 		switch (requestCode) {
 			case CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS: {
-
 				if (grantResults.length > 0
 						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_accept));
