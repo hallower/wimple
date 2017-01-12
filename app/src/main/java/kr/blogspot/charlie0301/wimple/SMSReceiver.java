@@ -103,7 +103,7 @@ public class SMSReceiver extends BroadcastReceiver {
 
 					for (String number : targetNumbers) {
 
-						if (0 == number.compareTo(sender)) {
+						if (0 == number.replaceAll("\\s+","").compareTo(sender)) {
 							Date date = new Date(
 									currentMessage.getTimestampMillis());
 							String message = currentMessage

@@ -151,4 +151,7 @@
     <string name="post_news_title_imported">Title is detected</string>
     <string name="post_news_wait_for_while">Wait for a minute</string>
     <string name="no_items">No items or grouped items. (^_^);</string>
+    <string name="permission_sms_recv">To check received Bank/Credit Card usage SMSs, This permission is required. You can deny this if you dont use whooing SMS recoginze service.</string>
+    <string name="permission_SMS_recv_accept">You can send SMSs to Whooing to make a transaction record.</string>
+    <string name="permission_SMS_recv_deny">You can\'t use Whooing\'s SMS recoginzing service due to your deny for acquiring the SMS receiving permission</string>
 </resources>

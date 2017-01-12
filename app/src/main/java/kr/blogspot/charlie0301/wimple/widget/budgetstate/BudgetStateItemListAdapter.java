@@ -84,7 +84,8 @@ public class BudgetStateItemListAdapter extends BaseAdapter {
 		} else {
 
 			BudgetStateItemView BudgetStateItemView = (BudgetStateItemView)convertView;
-			BudgetStateItemView.setData(accountState, budget);
+			if(false == BudgetStateItemView.setData(accountState, budget))
+				BudgetStateItemView = new BudgetStateItemView(mContext, accountState, budget);
 			return BudgetStateItemView;
 		}
 	}

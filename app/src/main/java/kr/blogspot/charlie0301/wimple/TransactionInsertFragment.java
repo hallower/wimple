@@ -222,7 +222,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					if(false == res){
 						txtInsertMode.setEnabled(true);
-						Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+						//Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
 						tvNoticeMessage.setText(getResources().getString(R.string.modify_exist_item));
@@ -237,7 +238,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					if(false == res){
 						txtInsertMode.setEnabled(true);
-						Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+						//Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
 						tvNoticeMessage.setText(getResources().getString(R.string.insert_new_item));
@@ -537,16 +539,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(null == txtTitle.getText().toString() ||
 				txtTitle.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry title.");
-			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_title), 
-					Toast.LENGTH_SHORT).show();
+			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_title),Toast.LENGTH_SHORT).show();
+			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_title));
 			return false;
 		}
 
 		if(null == txtAmount.getText().toString() ||
 				txtAmount.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry amount.");
-			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
-					Toast.LENGTH_SHORT).show();
+			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), Toast.LENGTH_SHORT).show();
+			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_amount));
 			return false;
 		}
 
@@ -562,15 +564,15 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		if(false == this.leftAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "left side account is not selected!!!");
-			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_left_accounts), 
-					Toast.LENGTH_SHORT).show();
+			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_left_accounts), Toast.LENGTH_SHORT).show();
+			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_left_accounts));
 			return false;
 		}
 
 		if(false == this.rightAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "right side account is not selected!!!");
-			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_right_accounts), 
-					Toast.LENGTH_SHORT).show();
+			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_right_accounts), Toast.LENGTH_SHORT).show();
+			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_right_accounts));
 			return false;
 		}
 		return true;
@@ -758,12 +760,14 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
 			if(booleanStatus){
-				Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
+				//Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
+				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_success));
 				clearForms();
 				wimple.getLatestItems(true);
 				//mainActivity.moveTabOfPager(1);
 			}else{
-				Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+				//Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
 			}
 
 			txtInsertMode.setEnabled(true);
@@ -800,9 +804,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			setEntry(item);
 
 			if(CurrentToolMode.EDITING == toolMode){
-				Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();	
+				//Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.entry_modify_notice));
 			}else{
-				Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
+				//Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.month_item_modify_notice));
 			}			
 		}
 		break;
@@ -813,11 +819,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			//Entry entry = (Entry)obj;
 			if(booleanStatus){
-				Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
+				//Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
+				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.modify_success));
 				clearForms();
 				//mainActivity.moveTabOfPager(1);
 			}else{
-				Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+				//Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
+				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
 			}
 
 			txtInsertMode.setEnabled(true);
