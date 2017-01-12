@@ -154,13 +154,14 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 		Item item = items.get(position);
 
-		if (convertView == null) {
+		if (null == convertView) {
 
 			return new EntryItemView(mContext, item);
 		} else {
 
 			EntryItemView itemView = (EntryItemView)convertView;
-			itemView.setData(item);
+			if(false == itemView.setData(item))
+				itemView = new EntryItemView(mContext, item);
 			return itemView;
 		}
 	}

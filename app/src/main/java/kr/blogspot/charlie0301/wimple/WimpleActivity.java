@@ -1,8 +1,10 @@
 package kr.blogspot.charlie0301.wimple;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,8 +12,10 @@ import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -96,6 +100,7 @@ public class WimpleActivity extends AppCompatActivity
         public static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
         public static final int GET_BUDGET_RESPONSE_RECEIVED = CMD_BASE + 47;
         public static final int POST_PAYMENT_RESPONSE_RECEIVED = CMD_BASE + 49;
+		public static final int PERMISSIONS_REQUEST_RECEIVE_SMS = CMD_BASE + 51;
     }
 
 	public static void sm(int cmd, Object msg){
@@ -157,6 +162,38 @@ public class WimpleActivity extends AppCompatActivity
 			if (savedInstanceState != null)
 				return;
 			setDefaultFragment();
+		}
+	}
+
+	private void requestPermissions(String permission) {
+		int permissionStatus = ContextCompat.checkSelfPermission(this, permission);
+		if (PackageManager.PERMISSION_GRANTED != permissionStatus ||
+				PackageManager.PERMISSION_GRANTED != PackageManager.PERMISSION_GRANTED ) {
+
+			if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+				Toast.makeText(this, R.string.permission_sms_recv, Toast.LENGTH_LONG).show();
+			} else {
+				ActivityCompat.requestPermissions(this,
+						new String[]{permission},
+						CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS);
+			}
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+										   String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS: {
+
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_accept));
+				} else {
+					sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_deny));
+				}
+				return;
+			}
 		}
 	}
 
@@ -522,6 +559,10 @@ public class WimpleActivity extends AppCompatActivity
 								.setAction("Action", null).show();
 						break;
 
+					case CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS :
+						requestPermissions(obj.toString());
+						break;
+
 					case CommandID.UPDATE_USER_INFO :
 					{
 						setMyInfoOnMenu((UserInfo)obj);
@@ -539,7 +580,7 @@ public class WimpleActivity extends AppCompatActivity
 
 						if(!(currentFragment instanceof TransactionInsertFragment)){
 							replaceWimpleFragment(R.id.menu_transaction_insert);
-							smd(msg.what, msg.obj, 500);
+							smd(msg.what, msg.obj, 300);
 						}
 
 						if(null != currentFragment &&

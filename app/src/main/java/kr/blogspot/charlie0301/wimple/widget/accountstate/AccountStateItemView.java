@@ -43,11 +43,10 @@ public class AccountStateItemView extends LinearLayout {
 	}
 
 
-	public void setData(AccountState item) {
+	public boolean setData(AccountState item) {
 
-		if(null == item ||
-				null == title)
-			return;
+		if(null == title)
+			return false;
 
 		title.setText(item.getAccountName());
 		amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
@@ -69,6 +68,7 @@ public class AccountStateItemView extends LinearLayout {
 		}
 		llbackground.setLayoutParams(layoutParams);
 
+		return true;
 	}
 
 	public void setBackgroundAccountWidget(TextView tv, String account){
