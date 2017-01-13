@@ -59,7 +59,7 @@ public class AccountStateItemView extends LinearLayout {
 		if(item.getGroup()){
 			//type.setText(context.getResources().getString(R.string.title_group));
 			//type.setTextColor(context.getResources().getColor(R.color.text_black));
-			title.setBackgroundResource(R.drawable.progress_p);
+			title.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
 			amount.setTypeface(null,Typeface.BOLD);
 			layoutParams.setMargins(0, 0, 0, 0);
 		}else{
@@ -76,28 +76,28 @@ public class AccountStateItemView extends LinearLayout {
 
 		case 'a' :
 			type.setText(context.getResources().getString(R.string.title_saving));
-			type.setTextColor(context.getResources().getColor(R.color.text_blue));
+			type.setTextColor(getResources().getColor(R.color.text_blue));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_blue));
 			//tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
 
 		case 'l' :
 			type.setText(context.getResources().getString(R.string.title_debt));
-			type.setTextColor(context.getResources().getColor(R.color.text_red));
+			type.setTextColor(getResources().getColor(R.color.text_red));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_red));
 			//tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
 		case 'i' :
 			type.setText(context.getResources().getString(R.string.title_income));
-			type.setTextColor(context.getResources().getColor(R.color.text_blue));
+			type.setTextColor(getResources().getColor(R.color.text_blue));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_green));
 			//tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case 'e' :
 			type.setText(context.getResources().getString(R.string.title_expense));
-			type.setTextColor(context.getResources().getColor(R.color.text_red));
+			type.setTextColor(getResources().getColor(R.color.text_red));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_yellow));
 			//tv.setBackgroundResource(R.drawable.input_color_box_4);
 			break;

@@ -25,21 +25,21 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener;
 import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.Account;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
@@ -59,8 +59,8 @@ public class WimpleActivity extends AppCompatActivity
     private static Handler mainHandler;
     public static Context context;
 
-	private View wimpleView;
 	private int currentMenuID;
+	private DrawerLayout drawer;
 	private Fragment currentFragment;
 	private FloatingActionButton fab;
 
@@ -71,36 +71,36 @@ public class WimpleActivity extends AppCompatActivity
 
         private CommandID() {}
 
-        public static final int CMD_BASE = 10000;
+        static final int CMD_BASE = 10000;
 
-        public static final int EXIT = CMD_BASE + 1;
-        public static final int TOAST_LONG = CMD_BASE + 3;
-        public static final int TOAST_SHORT = CMD_BASE + 5;
-        public static final int FATAL_ERROR = CMD_BASE + 6;
-        public static final int GET_PIN = CMD_BASE + 7;
-        public static final int SHOW_STATUS = CMD_BASE + 8;
-        public static final int UPDATE_USER_INFO = CMD_BASE + 9;
-        public static final int GET_ALL_ACCOUNT_RECEIVED = CMD_BASE + 11;
-        public static final int WIMPLE_LOGGIN_SUCCESS = CMD_BASE + 13;
-        public static final int WIMPLE_LOGGIN_FAILED = CMD_BASE + 15;
-        public static final int WIMPLE_LOGGOUT = CMD_BASE + 17;
-        public static final int GET_ALL_SECTION_RECEIVED = CMD_BASE + 19;
-        public static final int GET_MAKE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 21;
-        public static final int GET_FREQUENT_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 23;
-        public static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
-        public static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
-        public static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
-        public static final int MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM = CMD_BASE + 31;
-        public static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
-        public static final int GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35;
-        public static final int WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37;
-        public static final int REMOVE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 39;
-        public static final int REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 41;
-        public static final int GET_FINANCIAL_STATE_RESPONSE_RECEIVED = CMD_BASE + 43;
-        public static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
-        public static final int GET_BUDGET_RESPONSE_RECEIVED = CMD_BASE + 47;
-        public static final int POST_PAYMENT_RESPONSE_RECEIVED = CMD_BASE + 49;
-		public static final int PERMISSIONS_REQUEST_RECEIVE_SMS = CMD_BASE + 51;
+        static final int EXIT = CMD_BASE + 1;
+        static final int TOAST_LONG = CMD_BASE + 3;
+        static final int TOAST_SHORT = CMD_BASE + 5;
+        static final int FATAL_ERROR = CMD_BASE + 6;
+        static final int GET_PIN = CMD_BASE + 7;
+        static final int SHOW_STATUS = CMD_BASE + 8;
+        static final int UPDATE_USER_INFO = CMD_BASE + 9;
+        static final int GET_ALL_ACCOUNT_RECEIVED = CMD_BASE + 11;
+        static final int WIMPLE_LOGGIN_SUCCESS = CMD_BASE + 13;
+        static final int WIMPLE_LOGGIN_FAILED = CMD_BASE + 15;
+        static final int WIMPLE_LOGGOUT = CMD_BASE + 17;
+        static final int GET_ALL_SECTION_RECEIVED = CMD_BASE + 19;
+        static final int GET_MAKE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 21;
+        static final int GET_FREQUENT_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 23;
+        static final int GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25;
+        static final int GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27;
+        static final int GET_ENTRIES_RECEIVED = CMD_BASE + 29;
+        static final int MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM = CMD_BASE + 31;
+        static final int GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33;
+        static final int GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35;
+        static final int WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37;
+        static final int REMOVE_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 39;
+        static final int REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 41;
+        static final int GET_FINANCIAL_STATE_RESPONSE_RECEIVED = CMD_BASE + 43;
+        static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
+        static final int GET_BUDGET_RESPONSE_RECEIVED = CMD_BASE + 47;
+        static final int POST_PAYMENT_RESPONSE_RECEIVED = CMD_BASE + 49;
+		static final int PERMISSIONS_REQUEST_RECEIVE_SMS = CMD_BASE + 51;
     }
 
 	public static void sm(int cmd, Object msg){
@@ -129,7 +129,6 @@ public class WimpleActivity extends AppCompatActivity
         setContentView(R.layout.activity_wimple);
 
         context = getApplicationContext();
-		wimpleView = findViewById(R.id.drawer_layout);
 
 		// GUI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -143,7 +142,7 @@ public class WimpleActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -169,6 +168,7 @@ public class WimpleActivity extends AppCompatActivity
 		if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, permission)) {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
 				Toast.makeText(this, R.string.permission_sms_recv, Toast.LENGTH_LONG).show();
+				// TODO : Should I request again?
 			} else {
 				ActivityCompat.requestPermissions(this,
 						new String[]{permission},
@@ -188,7 +188,6 @@ public class WimpleActivity extends AppCompatActivity
 				} else {
 					sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_deny));
 				}
-				return;
 			}
 		}
 	}
@@ -199,11 +198,6 @@ public class WimpleActivity extends AppCompatActivity
 			editText.setFocusable(false);
 			editText.setFocusableInTouchMode(true);
 		}
-		/*
-		getWindow().setSoftInputMode(
-				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-		);
-		*/
 		View view = this.getCurrentFocus();
 		if (view != null) {
 			InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -322,7 +316,6 @@ public class WimpleActivity extends AppCompatActivity
 
 	private void setMyInfoOnMenu(UserInfo info)
 	{
-		// Set Icon
 		profileIcon = (ImageView)findViewById(R.id.my_profile_icon);
 		if(null == profileIcon)
 		{
@@ -330,13 +323,14 @@ public class WimpleActivity extends AppCompatActivity
 			return;
 		}
 
+		TextView sectionTitle = (TextView)findViewById(R.id.section_title);
+		sectionTitle.setText(wimple.getDefaultSectionName());
+
 		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
 
-		// Set  Name
 		TextView name = (TextView)findViewById(R.id.my_profile_name);
 		name.setText(info.getName());
 
-		// temporary
 		textLevel = (TextView)findViewById(R.id.my_profile_level);
 
 		updateAPIRemaining();
@@ -359,18 +353,12 @@ public class WimpleActivity extends AppCompatActivity
 
 	private void updateAPIRemaining() {
 
-		if(null == textLevel){
+		if(null == textLevel)
 			return;
-		}
 
-		double totalLevel = wimple.getTotalAPICall();
 		int nLevel = wimple.getRemainedAPICall();
-
-		//Log.d(LOG_TAG, "updateAPIRemainning = " + nLevel + ", TotalLevel = " + totalLevel);
-
-		if(nLevel < 0){
+		if(nLevel < 0)
 			nLevel = 0;
-		}
 
 		textLevel.setText(getResources().getString(R.string.number_api_count) + " " + nLevel);
 	}
@@ -514,8 +502,8 @@ public class WimpleActivity extends AppCompatActivity
 
 		});
 
-		if(true == wimple.isAuthed() &&
-				true == wimple.isInitializedFinished()){
+		if(wimple.isAuthed() &&
+				wimple.isInitializedFinished()){
 			// Already Logged-in
 			Log.d(LOG_TAG, "wimpleactivity, logged in, default section existing");
 			wimple.getUserInfo(true);
@@ -544,14 +532,12 @@ public class WimpleActivity extends AppCompatActivity
 				switch(command){
 
 					case CommandID.TOAST_LONG :
-						//Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
-						Snackbar.make(wimpleView, obj.toString(), Snackbar.LENGTH_LONG)
+						Snackbar.make(drawer, obj.toString(), Snackbar.LENGTH_LONG)
 								.setAction("Action", null).show();
 						break;
 
 					case CommandID.TOAST_SHORT :
-						//Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-						Snackbar.make(wimpleView, obj.toString(), Snackbar.LENGTH_SHORT)
+						Snackbar.make(drawer, obj.toString(), Snackbar.LENGTH_SHORT)
 								.setAction("Action", null).show();
 						break;
 

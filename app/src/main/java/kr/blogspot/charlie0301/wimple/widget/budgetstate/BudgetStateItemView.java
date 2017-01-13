@@ -67,7 +67,7 @@ public class BudgetStateItemView extends LinearLayout {
 		if(item.getGroup()){
 			//type.setText(context.getResources().getString(R.string.title_group));
 			//type.setTextColor(context.getResources().getColor(R.color.text_black));
-			title.setBackgroundResource(R.drawable.progress_p);
+			title.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
 			amount.setTypeface(null,Typeface.BOLD);
 			layoutParams.setMargins(0, 0, 0, 0);
 		}else{
