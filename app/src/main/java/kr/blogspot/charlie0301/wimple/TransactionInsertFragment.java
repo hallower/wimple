@@ -121,6 +121,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	private void initWimple() {
 		Log.e(LOG_TAG, "initWimple()");
+
+		llInsertNotice.setVisibility(View.VISIBLE);
+		tvNoticeMessage.setText(getResources().getString(R.string.update_latest_items));
+
 		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()), false);
 		wimple.getLatestItems();
 	}
@@ -627,6 +631,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_ALL_ACCOUNT_RECEIVED :{
 
+			llInsertNotice.setVisibility(View.INVISIBLE);
 			if(false == booleanStatus){
 				return;
 			}
@@ -743,6 +748,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED :
 		{
+			llInsertNotice.setVisibility(View.INVISIBLE);
+
 			if(booleanStatus){
 				adapterLatestItems.clear();
 				adapterLatestItems.addAll((List<Item>) obj);

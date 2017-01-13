@@ -287,12 +287,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 					if(0 == newValue.toString().compareTo(listSections.getValue())){
 						return false;
 					}
-					Log.d(LOG_TAG, "new section id = " + newValue.toString() + ", prev = " + listSections.getValue());
+
+					int idx = listSections.findIndexOfValue(newValue.toString());
+					CharSequence entries[] = listSections.getEntries();
+					if(-1 == idx)
+						return false;
 
 					wimple.setDefaultSectionID(newValue.toString());
+					wimple.setDefaultSectionName(entries[idx].toString());
 					wimple.clearAllDBRecords();
 
 					settings.edit().putString("section_id", wimple.getDefaultSectionID()).commit();
+					settings.edit().putString("section_name", wimple.getDefaultSectionName()).commit();
 					Intent intent = new Intent(context, SplashScreenActivity.class);
 					startActivity(intent);
 					wimpleActivity.finish();
