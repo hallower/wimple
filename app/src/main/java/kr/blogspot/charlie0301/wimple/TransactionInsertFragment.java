@@ -199,11 +199,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				}
 
 				Double amount = getAmountValue();
+				/*
 				if(amount < 0){
 					txtInsertMode.setEnabled(true);
 					Log.e(LOG_TAG, "Amount parsing error : " + txtAmount.getText());
 					return;
-				}
+				}*/
 
 				if(toolMode == CurrentToolMode.EDITING){
 					toolMode = CurrentToolMode.INSERT;
