@@ -3,6 +3,7 @@
     android:id="@+id/as_background"
     android:layout_width="match_parent"
     android:layout_height="30dp"
+    android:background="@android:drawable/dialog_holo_light_frame"
     android:orientation="horizontal"
     android:padding="8dp" >
 
@@ -21,6 +22,8 @@
         android:id="@+id/as_item_title"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
         android:layout_weight="0.5"
         android:gravity="center"
         android:text="title"
@@ -34,6 +37,7 @@
         android:layout_height="match_parent"
         android:layout_weight="0.4"
         android:gravity="end|center"
+        android:paddingEnd="3dp"
         android:text="amount"
         android:textColor="@color/text_black"
         android:textSize="16sp" />

@@ -82,7 +82,8 @@ public class WimpleImpl implements IWimpleImpl {
 	private int countOfRemainedAPICall = -1;
 	private int countOfTotalAPICall = 1;
 	private String defaultSectionID;
-	private Hashtable<String, Semaphore> apiAvailableSemaphore = new Hashtable<String, Semaphore>();
+	private String defaultSectionName = "Default";
+	private Hashtable<String, Semaphore> apiAvailableSemaphore = new Hashtable<>();
 
 	private static IWimpleStatusListener statusListener = new IWimpleStatusListener(){
 
@@ -202,6 +203,13 @@ public class WimpleImpl implements IWimpleImpl {
 				null != saved_value){
 			defaultSectionID = saved_value;
 		}
+
+		saved_value = settings.getString("section_name","Default");
+		if((null == defaultSectionName ||
+				defaultSectionName.isEmpty()) &&
+				null != saved_value){
+			defaultSectionName = saved_value;
+		}
 		
 		if(null == uidbh){
 			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
@@ -262,6 +270,17 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public void setDefaultSectionID(String defaultSectionID) {
 		this.defaultSectionID = defaultSectionID;
+	}
+
+	public String getDefaultSectionName() {
+		return defaultSectionName + " " + context.getResources().getString(R.string.section);
+	}
+
+	public void setDefaultSectionName(String defaultSectionName) {
+		if(null == defaultSectionName ||
+				0 == defaultSectionName.length())
+			return;
+		this.defaultSectionName = defaultSectionName;
 	}
 
 	private static final String LOG_TAG = "Wimple";
@@ -617,12 +636,14 @@ public class WimpleImpl implements IWimpleImpl {
 		tokenSecret = "";
 		userID = "";
 		defaultSectionID = "";
+		defaultSectionName = "";
 
 		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
 		settings.edit().putString("token", "").commit();
 		settings.edit().putString("token_secret", "").commit(); 
 		settings.edit().putString("userid", "").commit();
 		settings.edit().putString("section_id", "").commit();
+		settings.edit().putString("section_name", "").commit();
 
 		this.isInitializedFinished = false;
 		this.isAuthed = false;
@@ -887,7 +908,9 @@ public class WimpleImpl implements IWimpleImpl {
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
+				defaultSectionName = ((Section)list.toArray()[0]).getTitle();
 				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
+				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).commit();
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 				return;
 			}
@@ -920,7 +943,9 @@ public class WimpleImpl implements IWimpleImpl {
 				sdbh.insert(section);
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
+				defaultSectionName = ((Section)list.toArray()[0]).getTitle();
 				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
+				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).commit();
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 

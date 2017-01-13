@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">wimple</string>
+    <string name="app_name">Wimple</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -117,7 +117,7 @@
     <string name="title_memo">Memo</string>
     <string name="description_memo">Write a memo for a transaction</string>
     <string name="title_activity_splash_screen">Wimple</string>
-    <string name="title_activity_wimple">wimple</string>
+    <string name="title_activity_wimple">Wimple</string>
     <string name="notice_need_auth">The authentication expiration. Please login again</string>
     <string name="notice_need_upgrade">Provided report browse counts are all used.(30 times per a day) It\'s time to consider for account upgrading.</string>
     <string name="title_activity_payment_notice">PaymentNoticeActivity</string>
@@ -154,4 +154,5 @@
     <string name="permission_sms_recv">To check received Bank/Credit Card usage SMSs, This permission is required. You can deny this if you dont use whooing SMS recoginze service.</string>
     <string name="permission_SMS_recv_accept">You can send SMSs to Whooing to make a transaction record.</string>
     <string name="permission_SMS_recv_deny">You can\'t use Whooing\'s SMS recoginzing service due to your deny for acquiring the SMS receiving permission</string>
+    <string name="section">Section</string>
 </resources>
