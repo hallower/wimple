@@ -163,7 +163,7 @@ public class DateFormatUtils {
 		thatDay.setTime(new Date(date));
 		Calendar today = Calendar.getInstance();
 
-		long diff = Math.abs(today.getTimeInMillis() - thatDay.getTimeInMillis());
+		long diff = thatDay.getTimeInMillis() - today.getTimeInMillis();
 		return (diff / (24 * 60 * 60 * 1000));
 	}
 

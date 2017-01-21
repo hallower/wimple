@@ -227,7 +227,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					if(false == res){
 						txtInsertMode.setEnabled(true);
-						//Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
@@ -243,7 +242,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 					if(false == res){
 						txtInsertMode.setEnabled(true);
-						//Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
 					}else{
 						llInsertNotice.setVisibility(View.VISIBLE);
@@ -544,7 +542,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(null == txtTitle.getText().toString() ||
 				txtTitle.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry title.");
-			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_title),Toast.LENGTH_SHORT).show();
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_title));
 			return false;
 		}
@@ -552,7 +549,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		if(null == txtAmount.getText().toString() ||
 				txtAmount.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry amount.");
-			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), Toast.LENGTH_SHORT).show();
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_amount));
 			return false;
 		}
@@ -569,14 +565,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		if(false == this.leftAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "left side account is not selected!!!");
-			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_left_accounts), Toast.LENGTH_SHORT).show();
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_left_accounts));
 			return false;
 		}
 
 		if(false == this.rightAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "right side account is not selected!!!");
-			//Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_right_accounts), Toast.LENGTH_SHORT).show();
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_right_accounts));
 			return false;
 		}
@@ -642,19 +636,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				return;
 			}
 
-			List<Account> assets = new ArrayList<Account>();
-			List<Account> liabilities = new ArrayList<Account>();
-			List<Account> capital = new ArrayList<Account>();
-			List<Account> income = new ArrayList<Account>();
-			List<Account> expenses = new ArrayList<Account>();
-			/*
-			 * 
-			 */
+			List<Account> assets = new ArrayList<>();
+			List<Account> liabilities = new ArrayList<>();
+			List<Account> capital = new ArrayList<>();
+			List<Account> income = new ArrayList<>();
+			List<Account> expenses = new ArrayList<>();
+
 			for(Account item : accountList){
 
-				if(0 == item.getType().compareTo("group")){
+				if(0 == item.getType().compareTo("group"))
 					continue;
-				}
 
 				switch(item.getWhat().charAt(0)){
 				case 'a' :	// assets
@@ -678,13 +669,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 
 			{
-				List<String> lHeader = new ArrayList<String>();
+				List<String> lHeader = new ArrayList<>();
 				lHeader.add(getResources().getString(R.string.entry_header_asset_p));
 				lHeader.add(getResources().getString(R.string.entry_header_debt_m));
 				lHeader.add(getResources().getString(R.string.entry_header_capital_m));
 				lHeader.add(getResources().getString(R.string.entry_header_expenses));
 
-				Map<String, List<Account>> lChild = new HashMap<String, List<Account>>();
+				Map<String, List<Account>> lChild = new HashMap<>();
 				lChild.put(lHeader.get(0), assets);
 				lChild.put(lHeader.get(1), liabilities);
 				lChild.put(lHeader.get(2), capital);
@@ -696,23 +687,21 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
 
-				if(false == selectedID.isEmpty()){
+				if(false == selectedID.isEmpty())
 					leftAccountListAdapter.setSelected(selectedID);
-				}
 
-				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++){
+				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++)
 					leftAccountListView.expandGroup(i);
-				}
 			}
 
 			{
-				List<String> rHeader = new ArrayList<String>();
+				List<String> rHeader = new ArrayList<>();
 				rHeader.add(getResources().getString(R.string.entry_header_asset_m));
 				rHeader.add(getResources().getString(R.string.entry_header_debt_p));
 				rHeader.add(getResources().getString(R.string.entry_header_capital_p));
 				rHeader.add(getResources().getString(R.string.entry_header_income));
 
-				Map<String, List<Account>> rChild = new HashMap<String, List<Account>>();
+				Map<String, List<Account>> rChild = new HashMap<>();
 				rChild.put(rHeader.get(0), assets);
 				rChild.put(rHeader.get(1), liabilities);
 				rChild.put(rHeader.get(2), capital);
@@ -724,25 +713,19 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
 
-				if(false == selectedID.isEmpty()){
+				if(false == selectedID.isEmpty())
 					rightAccountListAdapter.setSelected(selectedID);
-				}
 
-				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++){
+				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++)
 					rightAccountListView.expandGroup(i);
-				}
-			}			
-
+			}
 			break;			
 		}
 
 		case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
-		{
-		}
-		break;
-
 		case CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED :
-		{			
+		{
+			// do nothing
 		}
 		break;
 
@@ -768,13 +751,11 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
 			if(booleanStatus){
-				//Toast.makeText(context, getResources().getString(R.string.insert_success), Toast.LENGTH_SHORT).show();
 				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_success));
 				clearForms();
 				wimple.getLatestItems(true);
-				//mainActivity.moveTabOfPager(1);
+				wimple.getMonthlyItems(true);
 			}else{
-				//Toast.makeText(context, getResources().getString(R.string.insert_failed), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
 			}
 
@@ -784,39 +765,27 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
 
-			String itemID = obj.toString();
+			if(null == obj ||
+					false == (obj instanceof Item))
+				return;
 
 			// Modifying 
-			Item item = wimple.getEntry(itemID);
+			Item item = (Item)obj;
 
-			toolMode = CurrentToolMode.EDITING;
+			if(item.getId().isEmpty()){
+				toolMode = CurrentToolMode.MONTHLY_INSERT;
+			}else{
+				toolMode = CurrentToolMode.EDITING;
+			}
 			setSubmitButton(toolMode);
 
-			if(null == item){
-				// Add Monthly Item
-				item = wimple.getMonthlyItem(itemID);
-				toolMode = CurrentToolMode.MONTHLY_INSERT;
-				setSubmitButton(toolMode);
-			}			
-
-			if(null == item){
-				Toast.makeText(context, "oops", Toast.LENGTH_SHORT).show();
-				toolMode = CurrentToolMode.INSERT;
-				editingItem = null;
-				setSubmitButton(toolMode);
-				return;
-			}
-
 			editingItem = item;
-
 			setEntry(item);
 
 			if(CurrentToolMode.EDITING == toolMode){
-				//Toast.makeText(context, getResources().getString(R.string.entry_modify_notice), Toast.LENGTH_LONG).show();
-				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.entry_modify_notice));
+				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.entry_modify_notice));
 			}else{
-				//Toast.makeText(context, getResources().getString(R.string.month_item_modify_notice), Toast.LENGTH_LONG).show();
-				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.month_item_modify_notice));
+				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.month_item_modify_notice));
 			}			
 		}
 		break;
@@ -825,17 +794,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			llInsertNotice.setVisibility(View.INVISIBLE);
 
-			//Entry entry = (Entry)obj;
 			if(booleanStatus){
-				//Toast.makeText(context, getResources().getString(R.string.modify_success), Toast.LENGTH_SHORT).show();
 				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.modify_success));
 				clearForms();
-				//mainActivity.moveTabOfPager(1);
 			}else{
-				//Toast.makeText(context, getResources().getString(R.string.modify_failed), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
 			}
-
 			txtInsertMode.setEnabled(true);
 		}
 		break;
