@@ -85,7 +85,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	 * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
 	 */
 
-
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
@@ -193,8 +192,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			@Override
 			public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
 				Item item = (Item) entryAdapter.get().getItem(position);
-				//Toast.makeText(context, item.toString(), Toast.LENGTH_LONG).show();
-				WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item.getId());
+				WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item);
 			}
 		});
 
@@ -232,11 +230,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 					return false;
 				case MotionEvent.ACTION_CANCEL:
 				case MotionEvent.ACTION_UP:
-					//TOUCH COMPLETED
 					if(isSwipeDowned){
 						isSwipeDowned = false;
 						updateLatestItems(true);
-						//Toast.makeText(context, getResources().getString(R.string.update_latest_items), Toast.LENGTH_SHORT).show();
 					}
 					return false;
 				}
@@ -248,7 +244,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		// TODO : remove old data
 		wimple.getStoredEntries();
-
 		return view;
 	}
 
@@ -261,15 +256,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(false == isAdded())
 			return;
-		}
 
 		if(null == context){
 			context = WimpleActivity.context;
-			if(null == context){
+			if(null == context)
 				return;
-			}
 		}
 
 		switch(command){
@@ -294,13 +287,11 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			setShowingNotification(false,true);
 			try{				
-				if(false == booleanStatus){				
+				if(false == booleanStatus)
 					return;
-				}
 
-				if(null == entryAdapter.get()){
+				if(null == entryAdapter.get())
 					return;
-				}
 
 				Collection<Entry> list = (Collection<Entry>) obj;
 
@@ -312,9 +303,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				break;
 			}finally{
 				// TODO : I cant' find how to solve this issue.
-				if(available.availablePermits() < 1){
-					available.release();					
-				}
+				if(available.availablePermits() < 1)
+					available.release();
 			}
 		}
 
@@ -322,9 +312,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED : {	
 			String entryDate = (String)obj;
 
-			if(null == entryAdapter.get()){
+			if(null == entryAdapter.get())
 				return;
-			}
 
 			wimple.getAllEntries(DateFormatUtils.getServerDateString(entryDate), DateFormatUtils.getServerDateString(entryDate, -1), 0);
 			// by date limit
@@ -349,9 +338,9 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 				String lastDate = entry.getDateValue();
 
-				if(false == lastDate.isEmpty()){
+				if(false == lastDate.isEmpty())
 					lastDate = lastDate.substring(1);	
-				}
+
 				wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getServerDateString(lastDate, -1), 0);
 				// by date limit
 				//wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);				
@@ -361,17 +350,14 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED : {
 
-			if(false == booleanStatus){				
+			if(false == booleanStatus)
 				return;
-			}
 
-			if(null == entryAdapter.get()){
+			if(null == entryAdapter.get())
 				return;
-			}
 
-			if(false == monthlyDisplay){
+			if(false == monthlyDisplay)
 				return;
-			}
 
 			entryAdapter.get().removeAllMonthlyItem();
 
@@ -380,17 +366,17 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			int counts = (monthlyDisplayItemsNumbers > list.size())?list.size():monthlyDisplayItemsNumbers;
 
-			for(int i=0; i <  counts; i++){
-				entryAdapter.get().addItem(list.get(i));
-			}
-
 			for(Item item : list){
-				if(monthlyDisplayAllowingDays <= DateFormatUtils.getDifferenceDays(item.getDate())){
-					//Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
-					continue;
+				if(counts <= 0)
+					break;
+
+				if(monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.getDate())){
+					Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+					break;
 				}
+				counts -= 1;
 				entryAdapter.get().addItem(item);
-				//Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
+				Log.d(LOG_TAG, "Adding Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 			}
 
 			entryAdapter.get().notifyDataSetChanged();
@@ -399,16 +385,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED : {
 			if(booleanStatus){
-				//Toast.makeText(context, getResources().getString(R.string.remove_entry_success), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_success));
 
 				// TODO : efficient
 				entryAdapter.get().removeEntry((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
 				wimple.getMonthlyItems(true);
-				//Log.d(LOG_TAG, "Delete entry - " + (String)obj);				
 			}else{
-				//Toast.makeText(context, getResources().getString(R.string.remove_entry_failed), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_failed));
 			}
 		}
@@ -416,15 +399,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED :{
 			if(booleanStatus){
-				//Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_success), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_success));
 
 				// TODO : efficient
 				entryAdapter.get().removeItem((String)obj);
 				entryAdapter.get().notifyDataSetChanged();
-				//Log.d(LOG_TAG, "Delete monthly item - " + (String)obj);
 			}else{
-				//Toast.makeText(context, getResources().getString(R.string.remove_monthly_item_failed), Toast.LENGTH_LONG).show();
 				WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_failed));
 			}
 		}
@@ -437,9 +417,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	public void onDetach() {
 
 		context = null;
-
-		//WidgetItem.recycleRecursive(view);
-
 		view = null;
 		super.onDetach();
 	}
@@ -525,6 +502,5 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		monthlyDisplay = sharedPref.getBoolean(SettingsFragment.KEY_MONTHLY_ITEM_DISPLAY, true);
 		String pref = sharedPref.getString(SettingsFragment.KEY_MONTHLY_ITEM_COUNT, "5");
 		monthlyDisplayItemsNumbers = Integer.parseInt(pref);
-		//Toast.makeText(context, "" + syncConnPref, Toast.LENGTH_LONG).show();	
 	}
 }
