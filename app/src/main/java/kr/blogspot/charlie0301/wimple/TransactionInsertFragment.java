@@ -197,7 +197,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 				setAmountText(cal.eq());
 
-				if(false == validateForms()){
+				if(!validateForms()){
 					txtInsertMode.setEnabled(true);
 					return;
 				}
@@ -225,7 +225,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
-					if(false == res){
+					if(!res){
 						txtInsertMode.setEnabled(true);
 						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
 					}else{
@@ -240,7 +240,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
-					if(false == res){
+					if(!res){
 						txtInsertMode.setEnabled(true);
 						WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
 					}else{
@@ -563,13 +563,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 		 */
 
-		if(false == this.leftAccountListAdapter.isSelected()){
+		if(!this.leftAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "left side account is not selected!!!");
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_left_accounts));
 			return false;
 		}
 
-		if(false == this.rightAccountListAdapter.isSelected()){
+		if(!this.rightAccountListAdapter.isSelected()){
 			Log.e(LOG_TAG, "right side account is not selected!!!");
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_right_accounts));
 			return false;
@@ -603,7 +603,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 
@@ -626,7 +626,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		case CommandID.GET_ALL_ACCOUNT_RECEIVED :{
 
 			llInsertNotice.setVisibility(View.INVISIBLE);
-			if(false == booleanStatus){
+			if(!booleanStatus){
 				return;
 			}
 
@@ -687,7 +687,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				leftAccountListAdapter.setData(lHeader, lChild);
 				leftAccountListAdapter.notifyDataSetChanged();
 
-				if(false == selectedID.isEmpty())
+				if(!selectedID.isEmpty())
 					leftAccountListAdapter.setSelected(selectedID);
 
 				for(int i = 0; i < leftAccountListAdapter.getGroupCount() ; i++)
@@ -713,7 +713,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				rightAccountListAdapter.setData(rHeader, rChild);
 				rightAccountListAdapter.notifyDataSetChanged();	
 
-				if(false == selectedID.isEmpty())
+				if(!selectedID.isEmpty())
 					rightAccountListAdapter.setSelected(selectedID);
 
 				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++)
@@ -766,7 +766,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
 
 			if(null == obj ||
-					false == (obj instanceof Item))
+					!(obj instanceof Item))
 				return;
 
 			// Modifying 

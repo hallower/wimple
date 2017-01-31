@@ -76,7 +76,7 @@ public class BudgetDBHandler {
     	for(IDatabaseRecord record : records){
     		Budget data = new Budget();
 
-    		if(false == data.setValues(record.getValues())){
+    		if(!data.setValues(record.getValues())){
     			continue;
     		}
     		acts.add(data);
@@ -94,7 +94,7 @@ public class BudgetDBHandler {
 		for(IDatabaseRecord record : records){
 			Budget data = new Budget();
 			
-			if(false == data.setValues(record.getValues())){
+			if(!data.setValues(record.getValues())){
 				continue;
 			}
 			acts.add(data);

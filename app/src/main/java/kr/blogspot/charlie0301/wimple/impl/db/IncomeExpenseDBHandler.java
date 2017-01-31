@@ -75,7 +75,7 @@ public class IncomeExpenseDBHandler {
     	for(IDatabaseRecord record : records){
     		AccountState data = new AccountState();
 
-    		if(false == data.setValues(record.getValues())){
+    		if(!data.setValues(record.getValues())){
     			continue;
     		}
     		acts.add(data);
@@ -93,7 +93,7 @@ public class IncomeExpenseDBHandler {
 		for(IDatabaseRecord record : records){
 			AccountState data = new AccountState();
 
-			if(false == data.setValues(record.getValues())){
+			if(!data.setValues(record.getValues())){
 				continue;
 			}
 			acts.add(data);

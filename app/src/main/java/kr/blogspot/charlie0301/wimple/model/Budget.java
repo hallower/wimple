@@ -205,7 +205,7 @@ public class Budget implements IDatabaseRecord {
 	
 	@Override
 	public boolean equals(Object o) {
-		if(false == (o instanceof Budget)){
+		if(!(o instanceof Budget)){
 			return false;
 		}
 

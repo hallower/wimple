@@ -186,8 +186,8 @@ public class WimpleImpl implements IWimpleImpl {
 			tokenSecret = saved_value;
 		}
 
-		if(false == token.isEmpty() &&
-				false == tokenSecret.isEmpty()){
+		if(!token.isEmpty() &&
+				!tokenSecret.isEmpty()){
 			this.isAuthed = true;
 		}
 
@@ -298,7 +298,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	/*
 	 *  Login success = isAuthed(true) >> success getting section, account = isInitializedFinished(true)
-	 *  In case of isAuthed(true), token & tokenSecret & userID are all filled(false == isEmpty())
+	 *  In case of isAuthed(true), token & tokenSecret & userID are all filled(!isEmpty())
 	 */
 	private boolean isAuthed = false;
 	private boolean isInitializedFinished = false;
@@ -737,7 +737,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			String tokenSecret = list.get("token_secret");
 			if(null != tokenSecret &&
-					false == tokenSecret.isEmpty()){
+					!tokenSecret.isEmpty()){
 				isAuthed = true;	
 			}
 
@@ -747,7 +747,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllSections(Boolean forceUpdate){
 
-		if(false == isAuthed()){
+		if(!isAuthed()){
 			Log.e(LOG_TAG, "[getAllSections] Already authenticated.");
 			return false;
 		}
@@ -769,8 +769,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 			Collection<Section> list = new ArrayList<Section>();
 
-			if((false == forceUpdate) &&
-					(true == sdbh.hasData())){
+			if((!forceUpdate) &&
+					(sdbh.hasData())){
 				Log.d(LOG_TAG, "[All Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
 				sm(CommandID.CMD_GET_SECTIONS, 1, 0, list);
@@ -786,7 +786,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 
 			try {
-				if(false == json.get("code").toString().startsWith("2")){
+				if(!json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[All Sections] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_SECTIONS, 0, 0, list);
 					return;
@@ -817,8 +817,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getUserInfo(boolean forceUpdate){
 
-		if((false == forceUpdate) && 
-				(false == isAuthed())){
+		if((!forceUpdate) &&
+				(!isAuthed())){
 			Log.e(LOG_TAG, "[User Info] Already authenticated.");
 			return false;
 		}
@@ -841,8 +841,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 			UserInfo info = new UserInfo();
 
-			if((false == forceUpdate) &&
-					(true == uidbh.hasData())){
+			if((!forceUpdate) &&
+					(uidbh.hasData())){
 				Log.d(LOG_TAG, "[User Info] Providing User Information from Cache");
 				sm(CommandID.CMD_GET_USER_INFO, 1, 0, uidbh.get());
 				return;
@@ -858,7 +858,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try
 			{
-				if(false == json.getString("code").startsWith("2")){
+				if(!json.getString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[User Info] Error response - " + json.getString("message"));
 					sm(CommandID.CMD_GET_USER_INFO, 0, 0, null);
 					return;
@@ -881,7 +881,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getDefaultSections(Boolean forceUpdate){
 
-		if(false == isAuthed()){
+		if(!isAuthed()){
 			Log.e(LOG_TAG, "[Default Sections] No authentication.");
 			return false;
 		}
@@ -903,8 +903,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 			Collection<Section> list = new ArrayList<Section>();
 
-			if((false == forceUpdate) &&
-					(true == sdbh.hasData())){
+			if((!forceUpdate) &&
+					(sdbh.hasData())){
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Cache");
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
@@ -924,7 +924,7 @@ public class WimpleImpl implements IWimpleImpl {
 			}
 
 			try {
-				if(false == json.getString("code").startsWith("2")){
+				if(!json.getString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[Default Sections] Error response - " + json.getString("message"));
 					sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 0, 0, list);
 					return;
@@ -958,13 +958,13 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllAccounts(String dateFilter, boolean forceUpdate){
 
-		if((true == forceUpdate) &&
-				(false == isInitializedFinished())){
+		if((forceUpdate) &&
+				(!isInitializedFinished())){
 			Log.e(LOG_TAG, "[Account] Initialization is on progressing.");
 			return false;
 		}
 		/*
-		if(false == apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
+		if(!apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
 			return true;
 		}
 		 */
@@ -989,7 +989,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 
-				if((false == forceUpdate) &&
+				if((!forceUpdate) &&
 						adbh.hasData()){
 
 					Collection<Account> list = filterOutAccounts();
@@ -1017,7 +1017,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.get("code").toString().startsWith("2")){
+					if(	!json.get("code").toString().startsWith("2")){
 						Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 						return;
@@ -1092,7 +1092,7 @@ public class WimpleImpl implements IWimpleImpl {
 				try{
 					Date openDate = sdf.parse(open);
 
-					if(true == closed.startsWith("2999")){
+					if(closed.startsWith("2999")){
 
 						if(itemDate.getTime() >= openDate.getTime()){
 							list.add(item);
@@ -1130,12 +1130,12 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllEntries(String latestDate, String oldestDate){
 
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getAllEntries] Initialization is on progressing.");
 			return false;
 		}
 
-		if(false == apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
+		if(!apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
 			return true;
 		}
 
@@ -1144,12 +1144,12 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getAllEntries(String latestDate, String oldestDate, int count){
 
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getAllEntries] Initialization is on progressing.");
 			return false;
 		}
 
-		if(false == apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
+		if(!apiAvailableSemaphore.get("getAllEntries").tryAcquire()){
 			return true;
 		}
 
@@ -1159,7 +1159,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getLatestEntries(int count, boolean noDuplicate){
 
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getLatestEntries] Initialization is on progressing.");
 			return false;
 		}
@@ -1169,7 +1169,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean makeEntry(Long date, Account left, Account right, 
 			String title, Double amount, String memo){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[makeEntry] Initialization is on progressing.");
 			return false;
 		}
@@ -1179,7 +1179,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean modifyEntry(String entryID, String date, Account left, Account right, 
 			String title, Double amount, String memo){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[modifyEntry] Initialization is on progressing.");
 			return false;
 		}
@@ -1188,7 +1188,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean removeEntry(String entryID){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[removeEntry] Initialization is on progressing.");
 			return false;
 		}
@@ -1197,7 +1197,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean getFrequentItems(){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getFrequentItems] Initialization is on progressing.");
 			return false;
 		}
@@ -1207,7 +1207,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getLatestItems(){
 		/*
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getLatestItems] Initialization is on progressing.");
 			return false;
 		}
@@ -1218,8 +1218,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getLatestItems(boolean forceUpdate){
 
-		if((true == forceUpdate) &&
-				(false == isInitializedFinished())){
+		if((forceUpdate) &&
+				(!isInitializedFinished())){
 			Log.e(LOG_TAG, "[getLatestItems] Initialization is on progressing.");
 			return false;
 		}
@@ -1235,7 +1235,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getMonthlyItems(){
 		/*
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getMonthlyItems] Initialization is on progressing.");
 			return false;
 		}
@@ -1245,7 +1245,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean getMonthlyItems(boolean forceUpdate){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[getMonthlyItems] Initialization is on progressing.");
 			return false;
 		}
@@ -1254,7 +1254,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public boolean removeMonthlyItem(String itemID){
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			Log.e(LOG_TAG, "[removeMonthlyItem] Initialization is on progressing.");
 			return false;
 		}
@@ -1283,12 +1283,12 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getFinancialState(String date, boolean forceUpdate){
 		/*
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			return false;
 		}
 		 */
 
-		if(false == apiAvailableSemaphore.get("getFinancialState").tryAcquire()){
+		if(!apiAvailableSemaphore.get("getFinancialState").tryAcquire()){
 			return true;
 		}
 
@@ -1313,7 +1313,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 
-				if((false == forceUpdate) &&
+				if((!forceUpdate) &&
 						asdbh.hasData()){
 
 					Collection<AccountState> list = new ArrayList<AccountState>();
@@ -1335,7 +1335,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 				String path = "?section_id=" + sectionID;
 
-				if(false == date.isEmpty()){				
+				if(!date.isEmpty()){
 					try{
 						sdf.setLenient(false);
 						sdf.parse(date);
@@ -1355,7 +1355,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.get("code").toString().startsWith("2")){
+					if(	!json.get("code").toString().startsWith("2")){
 						Log.e(LOG_TAG, "[FState] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
 
@@ -1428,12 +1428,12 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getIncomeAndExpense(String startDate, String endDate, boolean forceUpdate){
 		/*
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			return false;
 		}
 		 */
 
-		if(false == apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()){
+		if(!apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()){
 			return true;
 		}
 
@@ -1462,7 +1462,7 @@ public class WimpleImpl implements IWimpleImpl {
 			try{
 
 
-				if((false == forceUpdate) &&
+				if((!forceUpdate) &&
 						iedbh.hasData()){
 
 					Collection<AccountState> list = new ArrayList<AccountState>();
@@ -1510,7 +1510,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.get("code").toString().startsWith("2")){
+					if(	!json.get("code").toString().startsWith("2")){
 						Log.e(LOG_TAG, "[InE] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
 
@@ -1618,17 +1618,17 @@ public class WimpleImpl implements IWimpleImpl {
 
 	public boolean getBudget(Boolean isIncome, String startDate, String endDate, boolean forceUpdate){
 		/*
-		if(false == isInitializedFinished()){
+		if(!isInitializedFinished()){
 			return false;
 		}
 		 */
 
 		if(isIncome){
-			if(false == apiAvailableSemaphore.get("getIncomeBudget").tryAcquire()){
+			if(!apiAvailableSemaphore.get("getIncomeBudget").tryAcquire()){
 				return true;
 			}	
 		}else{
-			if(false == apiAvailableSemaphore.get("getExpenseBudget").tryAcquire()){
+			if(!apiAvailableSemaphore.get("getExpenseBudget").tryAcquire()){
 				return true;
 			}
 		}
@@ -1659,7 +1659,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 
-				if((false == forceUpdate) &&
+				if((!forceUpdate) &&
 						bddbh.hasData()){
 
 					Collection<Budget> list = new ArrayList<Budget>();
@@ -1720,7 +1720,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.get("code").toString().startsWith("2")){
+					if(	!json.get("code").toString().startsWith("2")){
 						Log.e(LOG_TAG, "[Budget] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_GET_BUDGET, 0, isIncome?1:0, map);
 
@@ -1880,7 +1880,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		if(false == apiAvailableSemaphore.get("postNews").tryAcquire()){
+		if(!apiAvailableSemaphore.get("postNews").tryAcquire()){
 			return true;
 		}
 
@@ -1916,7 +1916,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.optString("code").startsWith("2")){
+					if(	!json.optString("code").startsWith("2")){
 						Log.e(LOG_TAG, "[PostNews] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_POST_NEWS, 0, 0, "");
 
@@ -1951,7 +1951,7 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 
-		if(false == apiAvailableSemaphore.get("postPayments").tryAcquire()){
+		if(!apiAvailableSemaphore.get("postPayments").tryAcquire()){
 			return true;
 		}
 
@@ -1988,7 +1988,7 @@ public class WimpleImpl implements IWimpleImpl {
 						return;
 					}
 
-					if(	false == json.optString("code").startsWith("2")){
+					if(	!json.optString("code").startsWith("2")){
 						Log.e(LOG_TAG, "[PostPayments] Error response - " + json.get("message").toString());
 						sm(CommandID.CMD_POST_PAYMENTS, 0, 0, "");
 
@@ -2080,7 +2080,7 @@ public class WimpleImpl implements IWimpleImpl {
 		File filePath = context.getFilesDir();
 		String storagePath = filePath.getAbsolutePath();
 
-		if(false == storagePath.endsWith("/")){
+		if(!storagePath.endsWith("/")){
 			storagePath += "/";
 		}
 

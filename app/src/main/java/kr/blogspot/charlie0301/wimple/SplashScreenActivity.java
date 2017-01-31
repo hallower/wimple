@@ -46,9 +46,9 @@ public class SplashScreenActivity extends Activity {
 
 	private static final String LOG_TAG = "SplashScreenActivity";
 
-	private static final WimpleImpl wimple = WimpleImpl.getInstance();
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
 	private static Handler mainHandler;
-	public static Context context;
+	public Context context;
 	private SharedPreferences settings;
 
 	// GUI
@@ -122,7 +122,7 @@ public class SplashScreenActivity extends Activity {
 
 		sm(CommandID.SHOW_STATUS, context.getResources().getString(R.string.loggin_auth));
 
-		if(true == wimple.getTempToken()){
+		if(wimple.getTempToken()){
 			// Already Logged-in
 			String savedSectionID = settings.getString("section_id",null);
 			if(null == savedSectionID ||
@@ -205,7 +205,7 @@ public class SplashScreenActivity extends Activity {
 			@Override
 			public void onGetAuthTempToken(boolean status, String tempToken) {
 
-				if(false == status){
+				if(!status){
 					exitApplication(context.getResources().getString(R.string.fatal_error)); 
 					return;
 				}
@@ -234,7 +234,7 @@ public class SplashScreenActivity extends Activity {
 				//String userID = result.get("user_id");
 
 				if(null == tokenSecret ||
-						true == tokenSecret.isEmpty()){
+						tokenSecret.isEmpty()){
 					Log.e(LOG_TAG, "Auth is failed.");
 					exitApplication(context.getResources().getString(R.string.fatal_error));
 					return;

@@ -250,7 +250,7 @@ public class WimpleActivity extends AppCompatActivity
         int id = item.getItemId();
 
 		// TODO : what will be happend?
-		if(false == replaceWimpleFragment(id))
+		if(!replaceWimpleFragment(id))
 			return false;
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

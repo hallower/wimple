@@ -304,7 +304,7 @@ public class Account implements IDatabaseRecord {
 
 	@Override
 	public boolean equals(Object o) {
-		if(false == (o instanceof Account)){
+		if(!(o instanceof Account)){
 			return false;
 		}
 

@@ -315,7 +315,7 @@ public class Item implements IDatabaseRecord {
 	
 	@Override
 	public boolean equals(Object o) {
-		if(false == (o instanceof Item)){
+		if(!(o instanceof Item)){
 			return false;
 		}
 

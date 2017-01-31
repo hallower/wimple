@@ -165,7 +165,7 @@ public class LocalFile {
 
 		{
 			File file = new File(path);
-			if(false == file.exists()){
+			if(!file.exists()){
 				return null;
 			}
 		}

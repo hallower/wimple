@@ -160,7 +160,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 		} else {
 
 			EntryItemView itemView = (EntryItemView)convertView;
-			if(false == itemView.setData(item))
+			if(!itemView.setData(item))
 				itemView = new EntryItemView(mContext, item);
 			return itemView;
 		}

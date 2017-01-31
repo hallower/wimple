@@ -57,7 +57,7 @@ public class ItemManager {
 			}
 
 			try{
-				if(false == json.get("code").toString().startsWith("2")){
+				if(!json.get("code").toString().startsWith("2")){
 					Log.e(LOG_TAG, "[Frequent Item] Error response - " + json.get("message").toString());
 					wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
 					return;
@@ -106,7 +106,7 @@ public class ItemManager {
 		@Override
 		public void run() {
 
-			if(false == forceUpdate &&
+			if(!forceUpdate &&
 					null != wimpl.getLatestItemDBHandler() &&
 					wimpl.getLatestItemDBHandler().hasData() ){
 				Log.d(LOG_TAG, "[Latest Item] Providing GetLatestItems from Cache!!!");
@@ -132,7 +132,7 @@ public class ItemManager {
 					return;
 				}
 
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.d(LOG_TAG, "[Latest Item] Failed - GetLatestItems from Server!!!" + json.get("message").toString());
 					wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
 					return;
@@ -182,7 +182,7 @@ public class ItemManager {
 		@Override
 		public void run() {
 
-			if(false == forceUpdate &&
+			if(!forceUpdate &&
 					null != wimpl.getMonthlyItemDBHandler() &&
 					wimpl.getMonthlyItemDBHandler().hasData() ){
 				Log.d(LOG_TAG, "[Monthly Item] Providing GetMonthlyItem from Cache!!!");
@@ -201,7 +201,7 @@ public class ItemManager {
 					return;
 				}
 
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[Monthly Item] Error response - " + json.get("message").toString());
 					wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 0, 0, list);
 					return;
@@ -214,7 +214,7 @@ public class ItemManager {
 				while (iterator.hasNext()) {
 					String type = iterator.next();
 
-					if(false == type.startsWith("slot")){
+					if(!type.startsWith("slot")){
 						continue;
 					}
 
@@ -264,7 +264,7 @@ public class ItemManager {
 			}
 
 			try{
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[DeleteMonthItem] Error response -  - " + json.get("message").toString());
 					wimpl.sm(CommandID.CMD_DELETE_MONTHLY_ITEMS, 0, 0, "");
 					return;

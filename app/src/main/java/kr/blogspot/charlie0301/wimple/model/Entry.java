@@ -139,7 +139,7 @@ public class Entry extends Item {
 	@Override
 	public boolean equals(Object o) {
 
-		if(false == (o instanceof Entry)){
+		if(!(o instanceof Entry)){
 			return false;
 		}
 

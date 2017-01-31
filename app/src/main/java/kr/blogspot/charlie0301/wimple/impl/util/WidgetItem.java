@@ -16,7 +16,7 @@ public class WidgetItem {
 			return;
 		}
 
-		if (true == recycle) {
+		if (recycle) {
 			Drawable drawable = iv.getDrawable();
 			if (drawable instanceof BitmapDrawable) {
 				Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
@@ -34,7 +34,7 @@ public class WidgetItem {
 			return;
 		}
 
-		if (true == recycle) {
+		if (recycle) {
 			Drawable drawable = iv.getDrawable();
 			if (drawable instanceof BitmapDrawable) {
 				Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();

@@ -123,7 +123,7 @@ public class RestAPIInvoker {
 			return list;
 		}
 		/*
-		if(false == object.get("code").toString().startsWith("2")){
+		if(!object.get("code").toString().startsWith("2")){
 			Log.e(LOG_TAG, "[invokeRESTAPIForMap] Error response - " + path + ", "+ object.get("message").toString());			
 			
 			int code = Integer.parseInt(object.get("code").toString());

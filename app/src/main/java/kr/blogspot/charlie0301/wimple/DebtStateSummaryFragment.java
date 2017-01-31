@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.github.mikephil.charting.charts.PieChart;
 
@@ -22,7 +21,6 @@ import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
@@ -31,10 +29,9 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 	//private final static String LOG_TAG = "TransactionInsertFragment";
 
-	//private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	//private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
+	private View view = null;
+	private Context context = null;
 
 
 	// GUI
@@ -42,6 +39,8 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	private WeakReference<AccountStateItemListAdapter> asAdapter;
 	private LinearLayout llChart;
 
+	// Data
+	private boolean firstUpdate;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,18 +48,19 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		context = WimpleActivity.context;		
 
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_debt_state_summary_tab, container, false);
+		view = inflater.inflate(R.layout.fragment_debt_state_summary_tab, container, false);
 
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.debt_list_view));
-		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
+		asList = new WeakReference<>((ItemListView) view.findViewById(R.id.debt_list_view));
+		asAdapter = new WeakReference<>(new AccountStateItemListAdapter(context));
 
 		asList.get().setAdapter(asAdapter.get());
 		asList.get().setLayoutParams(sessionParams);
 
 		registerForContextMenu(asList.get());
 
+		firstUpdate = true;
 		WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
@@ -76,13 +76,8 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		super.onDestroy();
 	}
 	@Override
-	public void onDetach() {
-		// TODO Auto-generated method stub
-		super.onDetach();
-	}
-	@Override
 	public void onResume() {
-		// TODO Auto-generated method stub
+
 		context = WimpleActivity.context;
 		super.onResume();
 	}
@@ -94,7 +89,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 		
@@ -109,21 +104,30 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
-			if(false == booleanStatus){
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+			if(firstUpdate) {
+				firstUpdate = false;
+				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+				if (autoRefresh) {
+					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+				}
+			}
+
+			if(!booleanStatus){
 				return;
 			}
 			
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false);
 			
-			ArrayList<Double> values = new ArrayList<Double>();
-			ArrayList<String> names = new ArrayList<String>();
+			ArrayList<Double> values = new ArrayList<>();
+			ArrayList<String> names = new ArrayList<>();
 			
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
 				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
 				//		" = " + as.getCategory() + ", " + as.getGroup());
-				if(false == as.getCategory().startsWith("li")){
+				if(!as.getCategory().startsWith("li")){
 					continue;
 				}
 				
@@ -144,7 +148,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 				double maxValue = -99999999;
 				double[] doubleValues = new double[values.size()];
 				for(int i = 0; i < doubleValues.length; i++){
-					doubleValues[i] = values.get(i).doubleValue();
+					doubleValues[i] = values.get(i);
 					if(maxValue < doubleValues[i])
 						maxValue = doubleValues[i];
 				}
@@ -164,12 +168,9 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	}
 	@Override
 	public void refreshView() {
-		// TODO Auto-generated method stub
-
 	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		// TODO Auto-generated method stub
 	}
 
 }

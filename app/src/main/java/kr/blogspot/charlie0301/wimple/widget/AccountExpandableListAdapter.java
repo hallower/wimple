@@ -223,7 +223,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	}
 
 	public Account getSelected(){
-		if(false == this.isSelected){
+		if(!this.isSelected){
 			return new Account();
 		}
 

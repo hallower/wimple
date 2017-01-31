@@ -50,7 +50,7 @@ public class RemoteContent {
 			return "";
 		}
 
-		if(false == url.startsWith("http://")){
+		if(!url.startsWith("http://")){
 			return "";
 		}
 		
@@ -69,7 +69,7 @@ public class RemoteContent {
 		assert context != null;
 		String localFilePath = "" + context.getExternalFilesDir(null) + "/" + convertedURL;
 
-		if(false == download(url, localFilePath, false)){
+		if(!download(url, localFilePath, false)){
 			return "";
 		}
 
@@ -79,13 +79,13 @@ public class RemoteContent {
 	// Synchronous API
 	public String upload(String url, String path){
 
-		if(false == url.startsWith("http://")){
+		if(!url.startsWith("http://")){
 			return "";
 		}
 		
 		File file = new File(path);
 
-		if(false == file.isFile()){
+		if(!file.isFile()){
 			return "";
 		}
 
@@ -98,8 +98,8 @@ public class RemoteContent {
 	// Synchronous API
 	public boolean download(String url, String path, boolean overwrite){
 
-		if(false == url.startsWith("http://") &&
-				false == url.startsWith("https://")){
+		if(!url.startsWith("http://") &&
+				!url.startsWith("https://")){
 			return false;
 		}
 
@@ -107,7 +107,7 @@ public class RemoteContent {
 		if(!overwrite && file.exists())
 			return true;
 
-		if(false == file.isFile()){
+		if(!file.isFile()){
 			try {
 				//noinspection ResultOfMethodCallIgnored
 				file.createNewFile();

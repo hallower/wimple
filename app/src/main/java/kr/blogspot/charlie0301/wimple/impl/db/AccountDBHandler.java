@@ -82,7 +82,7 @@ public class AccountDBHandler {
     	for(IDatabaseRecord record : records){
     		Account data = new Account();
 
-    		if(false == data.setValues(record.getValues())){
+    		if(!data.setValues(record.getValues())){
     			continue;
     		}
     		acts.add(data);
@@ -100,7 +100,7 @@ public class AccountDBHandler {
 		for(IDatabaseRecord record : records){
 			Account data = new Account();
 
-			if(false == data.setValues(record.getValues())){
+			if(!data.setValues(record.getValues())){
 				continue;
 			}
 			acts.add(data);
@@ -116,7 +116,7 @@ public class AccountDBHandler {
 			IDatabaseRecord record = dbHandler.getItem("id", accountID);
 			Account account = new Account();
 			
-			if(false == account.setValues(record.getValues())){
+			if(!account.setValues(record.getValues())){
 				return null;
 			}
 			

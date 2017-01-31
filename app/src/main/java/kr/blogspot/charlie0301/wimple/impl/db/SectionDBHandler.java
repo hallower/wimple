@@ -80,7 +80,7 @@ public class SectionDBHandler {
     	for(IDatabaseRecord record : records){
     		Section data = new Section();
 
-    		if(false == data.setValues(record.getValues())){
+    		if(!data.setValues(record.getValues())){
     			continue;
     		}
     		acts.add(data);
@@ -98,7 +98,7 @@ public class SectionDBHandler {
 		for(IDatabaseRecord record : records){
 			Section data = new Section();
 
-			if(false == data.setValues(record.getValues())){
+			if(!data.setValues(record.getValues())){
 				continue;
 			}
 			acts.add(data);

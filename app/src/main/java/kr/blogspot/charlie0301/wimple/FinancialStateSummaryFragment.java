@@ -11,9 +11,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.PieChart;
@@ -30,14 +28,11 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 
 	//private final static String LOG_TAG = "TransactionInsertFragment";
 
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	//private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
+	private View view = null;
+	private Context context = null;
 
 	// GUI
-	//private WeakReference<ItemListView> asList;
-	//private WeakReference<AccountStateItemListAdapter> asAdapter;
 	private LinearLayout llChart;
 	
 	private LinearLayout llUpdateNotice;
@@ -52,30 +47,9 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context;
 
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
-
-		/*
-		 *         <kr.blogspot.charlie0301.wimple.widget.ItemListView
-            android:id="@+id/as_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@null"
-            android:dividerHeight="0dp" />
-
-		 */
-		/*
-		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.as_list_view));
-		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
-
-		asList.get().setAdapter(asAdapter.get());
-		asList.get().setLayoutParams(sessionParams);
-
-		registerForContextMenu(asList.get());
-		 */
+		view = inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
 		
 		tvSumValue = (TextView)view.findViewById(R.id.as_sum_value);
 		tvSavingValue = (TextView)view.findViewById(R.id.as_saving_value);
@@ -84,10 +58,9 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		llUpdateNotice = (LinearLayout)view.findViewById(R.id.as_update_notification);
 		
 		firstUpdate = true;
-		
 		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		
-		((ImageView) view.findViewById(R.id.as_refresh)).setOnClickListener(new OnClickListener() {
+		view.findViewById(R.id.as_refresh).setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -117,7 +90,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	}
 	@Override
 	public void onDetach() {
-		// TODO Auto-generated method stub
+
 		super.onDetach();
 	}
 	@Override
@@ -134,7 +107,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 		
@@ -160,9 +133,9 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);	
 					llUpdateNotice.setVisibility(View.VISIBLE);
 				}
-			}			
-			
-			if(false == booleanStatus){
+			}
+
+			if(!booleanStatus){
 				return;
 			}
 			
@@ -172,15 +145,15 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
 
-				if(false == as.getGroup()){		
+				if(!as.getGroup()){
 					if(as.getCategory().startsWith("li")){
 						debt += as.getAmount();
 					}if(as.getCategory().startsWith("as")){
 						saving += as.getAmount();
 					}
-				}else{
+				}/*else{
 					//asAdapter.get().addAccountState(as);
-				}
+				}*/
 			}
 			//asAdapter.get().notifyDataSetChanged();
 
