@@ -50,7 +50,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		final SharedPreferences sms = context.getSharedPreferences(smsKey, 0);
 		
 		Boolean isNeedToRead = sharedPref.getBoolean(SettingsFragment.KEY_SMS_POST_ENABLE, false);
-		if(false == isNeedToRead){
+		if(!isNeedToRead){
 			return;
 		}
 		
@@ -65,7 +65,7 @@ public class SMSReceiver extends BroadcastReceiver {
 			}
 
 			setupWimpleImpl();
-			if (false == wimple.isAuthed()) {
+			if (!wimple.isAuthed()) {
 				Log.e(LOG_TAG, "Not loggined");
 				return;
 			}
@@ -129,7 +129,7 @@ public class SMSReceiver extends BroadcastReceiver {
 					}
 				}
 
-				if (false == totalPayments.isEmpty()) {
+				if (!totalPayments.isEmpty()) {
 
 					// Restore preferences
 					String storedSMS = sms.getString(smsBodyTag, "");
@@ -150,8 +150,8 @@ public class SMSReceiver extends BroadcastReceiver {
 
 					//Log.d(LOG_TAG, "posting body = " + storedSMS);
 
-					if (true == wimple.isAuthed()
-							&& true == wimple.isInitializedFinished()) {
+					if (wimple.isAuthed()
+							&& wimple.isInitializedFinished()) {
 						wimple.postPayments(storedSMS, senderNumber);
 						// TODO : error check, actually postPayment is asynchrnous function.
 						// so it can be check in the callback in the setupWimpleImpl().

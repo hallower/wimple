@@ -63,7 +63,7 @@ public class PostNewsActivity extends Activity {
 				
 				String lcURL = url.toLowerCase(Locale.US);
 				String targetURL = url;
-				if(false == lcURL.startsWith("http")){
+				if(!lcURL.startsWith("http")){
 					targetURL = url.substring(url.indexOf("http"));
 				}
 				response = RemoteContent.getInstance().getTitlePartOfPage(targetURL);
@@ -153,7 +153,7 @@ public class PostNewsActivity extends Activity {
 		setupWimpleImpl();
 
 		// Wimple login check
-		if(false == wimple.isAuthed()){
+		if(!wimple.isAuthed()){
 			Toast.makeText(context, getResources().getString(R.string.program_exit), Toast.LENGTH_SHORT).show();
 			finish();
 			return;
@@ -169,7 +169,7 @@ public class PostNewsActivity extends Activity {
 		task.execute(new String[] { url });
 
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-		if(true == clipboard.hasPrimaryClip()){
+		if(clipboard.hasPrimaryClip()){
 			//if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
 			ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
 			tvSubject.setText(item.getText());	

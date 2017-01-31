@@ -1,26 +1,12 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.ImageUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.Utils;
-import kr.blogspot.charlie0301.wimple.model.AccountState;
-import kr.blogspot.charlie0301.wimple.model.Budget;
-
-import android.media.Image;
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -34,14 +20,25 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.impl.util.ImageUtils;
+import kr.blogspot.charlie0301.wimple.model.AccountState;
+import kr.blogspot.charlie0301.wimple.model.Budget;
+
 public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFragment{
 
 	private final static String LOG_TAG = "IncomeExpenseSumFrag";
 
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
+	private Context context = null;
 
 	// GUI
 	//private WeakReference<ItemListView> asList;
@@ -70,28 +67,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 		context = WimpleActivity.context;		
 
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false);
-
-		/*
-		 *         <kr.blogspot.charlie0301.wimple.widget.ItemListView
-            android:id="@+id/as_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@null"
-            android:dividerHeight="0dp" />
-
-		 */
-		/*
-		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.ine_list_view));
-		asAdapter = new WeakReference<AccountStateItemListAdapter>(new AccountStateItemListAdapter(context));
-
-		asList.get().setAdapter(asAdapter.get());
-		asList.get().setLayoutParams(sessionParams);
-
-		registerForContextMenu(asList.get());
-		 */
+		View view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false);
 
 		ivIncomeBar = (ImageView)view.findViewById(R.id.ine_bar_income);
 		ivExpenseBar = (ImageView)view.findViewById(R.id.ine_bar_expense);
@@ -114,7 +90,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 		isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true);
 
-		if(false == isUsingBudgetInformation){
+		if(!isUsingBudgetInformation){
 			view.findViewById(R.id.ine_budget_status_title).setVisibility(View.GONE);
 			view.findViewById(R.id.ine_budget_status_income).setVisibility(View.GONE);
 			view.findViewById(R.id.ine_budget_status_expense).setVisibility(View.GONE);
@@ -126,13 +102,13 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		c.set(Calendar.DATE, 1);
 
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
-		if(true == isUsingBudgetInformation){
+		if(isUsingBudgetInformation){
 			wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 			wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);	
 		}
 
 
-		((ImageView) view.findViewById(R.id.ine_refresh)).setOnClickListener(new OnClickListener() {
+		view.findViewById(R.id.ine_refresh).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -141,7 +117,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				c.set(Calendar.DATE, 1);
 
 				wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
-				if(true == isUsingBudgetInformation){
+				if(isUsingBudgetInformation){
 					wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 					wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 				}
@@ -155,13 +131,6 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	@Override
 	public void onDestroy() {
 
-		/*
-		asList.clear();
-		asList = null;
-		asAdapter.clear();
-		asAdapter = null;
-		 */
-
 		ivIncomeBar = null;
 		ivExpenseBar = null;
 		tvIncomeValue = null;
@@ -171,11 +140,6 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		super.onDestroy();
 	}
 	@Override
-	public void onDetach() {
-		// TODO Auto-generated method stub
-		super.onDetach();
-	}
-	@Override
 	public void onResume() {
 		context = WimpleActivity.context;
 		Calendar c = Calendar.getInstance ( );
@@ -183,7 +147,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		c.set(Calendar.DATE, 1);
 
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
-		if(true == isUsingBudgetInformation){
+		if(isUsingBudgetInformation){
 			wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 			wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 		}
@@ -198,7 +162,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 		
@@ -232,9 +196,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 					llUpdateNotice.setVisibility(View.VISIBLE);
 				}
-			}			
+			}
 
-			if(false == booleanStatus){
+			if(!booleanStatus){
 				return;
 			}
 
@@ -244,7 +208,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
 
-				if(false == as.getGroup()){		
+				if(!as.getGroup()){
 					if(as.getCategory().startsWith("ex")){
 						expense += as.getAmount();
 					}if(as.getCategory().startsWith("in")){
@@ -313,20 +277,20 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		case CommandID.GET_BUDGET_RESPONSE_RECEIVED :
 		{
 
-			if(false == booleanStatus){
+			if(!booleanStatus){
 				return;
 			}
 
-			if(false == isUsingBudgetInformation){
+			if(!isUsingBudgetInformation){
 				return;
 			}
 
 			boolean isIncome = (msg.arg2==1)?true:false;
 
 			Map<String, Budget> map = (Map<String, Budget>)obj;
-			Budget budgetStatus = null;
-			Double current = 0.0;
-			Double budget = 0.0;
+			Budget budgetStatus;
+			Double current;
+			Double budget;
 
 			try{
 				budgetStatus = map.get(Budget.SUMMARYACCOUNTID);
@@ -439,13 +403,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	}
 	@Override
 	public void refreshView() {
-		// TODO Auto-generated method stub
-
 	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

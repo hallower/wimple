@@ -1,5 +1,19 @@
 package kr.blogspot.charlie0301.wimple;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Message;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
+
+import com.github.mikephil.charting.charts.PieChart;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,39 +22,25 @@ import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
-import android.support.v4.app.Fragment;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.Message;
-import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-
-import com.github.mikephil.charting.charts.PieChart;
 
 public class SavingStateSummaryFragment  extends Fragment implements IWimpleFragment{
 
 	//private final static String LOG_TAG = "TransactionInsertFragment";
-	//private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	//private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
 
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
+	private View view = null;
+	private Context context = null;
 
 	// GUI
 	private WeakReference<ItemListView> asList;
 	private WeakReference<AccountStateItemListAdapter> asAdapter;
 	private LinearLayout llChart;
-	
+
+	// Data
+	private boolean firstUpdate;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,6 +60,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 
 		registerForContextMenu(asList.get());
 
+		firstUpdate = true;
 		WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		return view;
 	}
@@ -76,12 +77,12 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	}
 	@Override
 	public void onDetach() {
-		// TODO Auto-generated method stub
+
 		super.onDetach();
 	}
 	@Override
 	public void onResume() {
-		// TODO Auto-generated method stub
+
 		context = WimpleActivity.context;
 		super.onResume();
 	}
@@ -93,7 +94,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 
@@ -101,7 +102,17 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 
 		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
 
-			if(false == booleanStatus){
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+			if(firstUpdate) {
+				firstUpdate = false;
+				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+				if (autoRefresh) {
+					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+				}
+			}
+
+			if(!booleanStatus){
 				return;
 			}
 
@@ -111,18 +122,17 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 					return;
 				}
 			}
-			
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
 			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false);
 			
-			ArrayList<Double> values = new ArrayList<Double>();
-			ArrayList<String> names = new ArrayList<String>();
-			
+			ArrayList<Double> values = new ArrayList<>();
+			ArrayList<String> names = new ArrayList<>();
+
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
 				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
 				//		" = " + as.getCategory() + ", " + as.getGroup());
-				if(false == as.getCategory().startsWith("as")){
+				if(!as.getCategory().startsWith("as")){
 					continue;
 				}
 				
@@ -163,13 +173,9 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	}
 	@Override
 	public void refreshView() {
-		// TODO Auto-generated method stub
-
 	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

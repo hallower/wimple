@@ -239,7 +239,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 

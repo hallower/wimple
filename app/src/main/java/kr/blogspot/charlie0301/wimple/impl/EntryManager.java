@@ -147,7 +147,7 @@ public class EntryManager {
 					return;
 				}
 
-				if (false == json.optString("code").startsWith("2")) {
+				if (!json.optString("code").startsWith("2")) {
 					Log.e(LOG_TAG, "[AllEntries] Error response - " + json.getString("message"));
 					wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
 
@@ -186,7 +186,7 @@ public class EntryManager {
 						Entry item = new Entry(row);
 						String balance = row.getString("total");
 						if (null != balance &&
-								false == balance.isEmpty()) {
+								!balance.isEmpty()) {
 							item.setBalance(balance);
 						}
 
@@ -241,7 +241,7 @@ public class EntryManager {
 					return;
 				}
 
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[LatestEntries] Error response - " + json.getString("message"));
 					wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
 
@@ -269,7 +269,7 @@ public class EntryManager {
 					Entry item = new Entry(row);
 					String balance = row.getString("total");
 					if(null != balance &&
-							false == balance.isEmpty()){
+							!balance.isEmpty()){
 						item.setBalance(balance);
 					}
 
@@ -335,7 +335,7 @@ public class EntryManager {
 			}
 
 			try {
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[PostEntry] Error response - " + json.getString("message"));
 					wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
 					return;
@@ -393,7 +393,7 @@ public class EntryManager {
 					);
 
 			String path = "section_id=" + sectionID + "&data_type=json" + pushingContent;
-			if(false == memo.isEmpty()){
+			if(!memo.isEmpty()){
 				path += "&memo=" + memo;
 			}
 
@@ -407,7 +407,7 @@ public class EntryManager {
 			}
 
 			try{
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[PutEntry] Error response -  - " + json.getString("message"));
 					wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, new Entry());
 					return;
@@ -450,7 +450,7 @@ public class EntryManager {
 			}
 
 			try {
-				if(false == json.optString("code").startsWith("2")){
+				if(!json.optString("code").startsWith("2")){
 					Log.e(LOG_TAG, "[DeleteEntry] Error response -  - " + json.get("message").toString());
 					wimpl.sm(CommandID.CMD_DELETE_ENTRY, 0, 0, "");
 					return;

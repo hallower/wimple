@@ -73,7 +73,7 @@ public class DateFormatUtils {
 	public static final String getServerDateString(String today){
 		Calendar cal = Calendar.getInstance();
 
-		if(false == today.isEmpty()){
+		if(!today.isEmpty()){
 			try{
 				String dateString = today;
 				int pos = dateString.indexOf(".");
@@ -94,7 +94,7 @@ public class DateFormatUtils {
 	public static final String getServerDateString(String today, int days){
 		Calendar cal = Calendar.getInstance();
 
-		if(false == today.isEmpty()){
+		if(!today.isEmpty()){
 			try{
 				String dateString = today;
 				int pos = dateString.indexOf(".");
@@ -139,7 +139,7 @@ public class DateFormatUtils {
 	public static final String getLastMonthDateString(String today){
 		Calendar cal = Calendar.getInstance();
 
-		if(false == today.isEmpty()){
+		if(!today.isEmpty()){
 			try{
 				String dateString = today;
 				int pos = dateString.indexOf(".");

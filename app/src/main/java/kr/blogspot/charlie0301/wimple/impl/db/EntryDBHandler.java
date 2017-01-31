@@ -90,7 +90,7 @@ public class EntryDBHandler {
     	for(IDatabaseRecord record : records){
     		Entry data = new Entry();
 
-    		if(false == data.setValues(record.getValues())){
+    		if(!data.setValues(record.getValues())){
     			continue;
     		}
     		acts.add(data);
@@ -121,7 +121,7 @@ public class EntryDBHandler {
 		for(IDatabaseRecord record : records){
 			Entry data = new Entry();
 
-			if(false == data.setValues(record.getValues())){
+			if(!data.setValues(record.getValues())){
 				continue;
 			}
 			acts.add(data);

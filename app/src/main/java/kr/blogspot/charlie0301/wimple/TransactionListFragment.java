@@ -149,8 +149,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", available permit=" + available.availablePermits());
 
 				if(percentage >= 70 &&
-						false == isAllOldActivityFechted &&
-						true == available.tryAcquire()){
+						!isAllOldActivityFechted &&
+						available.tryAcquire()){
 
 					Log.d(LOG_TAG, "Get More!!!, percentage=" + percentage);
 
@@ -161,12 +161,12 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 						Item entry = (Item) entryAdapter.get().getItem(entryAdapter.get().getCount() - 1);
 						String lastDate = entry.getDateValue();
 
-						if(false == lastDate.isEmpty()){
+						if(!lastDate.isEmpty()){
 							lastDate = lastDate.substring(1);	
 						}
 
 						//Log.d(LOG_TAG, "1 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
-						if(false == prevLastDate.isEmpty() &&
+						if(!prevLastDate.isEmpty() &&
 								0 == lastDate.compareTo(prevLastDate)){
 							countLastDateRequest += 1;
 						}
@@ -256,7 +256,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded())
+		if(!isAdded())
 			return;
 
 		if(null == context){
@@ -287,7 +287,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 			setShowingNotification(false,true);
 			try{				
-				if(false == booleanStatus)
+				if(!booleanStatus)
 					return;
 
 				if(null == entryAdapter.get())
@@ -338,7 +338,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 				String lastDate = entry.getDateValue();
 
-				if(false == lastDate.isEmpty())
+				if(!lastDate.isEmpty())
 					lastDate = lastDate.substring(1);	
 
 				wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getServerDateString(lastDate, -1), 0);
@@ -350,13 +350,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED : {
 
-			if(false == booleanStatus)
+			if(!booleanStatus)
 				return;
 
 			if(null == entryAdapter.get())
 				return;
 
-			if(false == monthlyDisplay)
+			if(!monthlyDisplay)
 				return;
 
 			entryAdapter.get().removeAllMonthlyItem();

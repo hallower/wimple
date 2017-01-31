@@ -219,7 +219,7 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 	}
 
 	public AccountState getSelected(){
-		if(false == this.isSelected){
+		if(!this.isSelected){
 			return null;
 		}
 

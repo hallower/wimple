@@ -212,7 +212,7 @@ public class AccountState implements IDatabaseRecord {
 	
 	@Override
 	public boolean equals(Object o) {
-		if(false == (o instanceof AccountState)){
+		if(!(o instanceof AccountState)){
 			return false;
 		}
 

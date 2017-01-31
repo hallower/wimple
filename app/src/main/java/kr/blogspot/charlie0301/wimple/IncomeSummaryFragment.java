@@ -34,17 +34,19 @@ import com.github.mikephil.charting.charts.PieChart;
 public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 	//private final static String LOG_TAG = "IncomeSummaryFragment";
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
-	//private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
+
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
+	private View view = null;
+	private Context context = null;
 
 
 	// GUI
 	private WeakReference<ItemListView> asList;
 	private WeakReference<BudgetStateItemListAdapter> asAdapter;
 	private LinearLayout llChart;
-	
+
+	// Data
+	private boolean firstUpdate;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,12 +54,12 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 		context = WimpleActivity.context;		
 
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
+		view = inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
 
 		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		asList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.saving_list_view));
-		asAdapter = new WeakReference<BudgetStateItemListAdapter>(new BudgetStateItemListAdapter(context));
+		asList = new WeakReference<>((ItemListView) view.findViewById(R.id.saving_list_view));
+		asAdapter = new WeakReference<>(new BudgetStateItemListAdapter(context));
 
 		asList.get().setAdapter(asAdapter.get());
 		asList.get().setLayoutParams(sessionParams);
@@ -70,8 +72,9 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 		boolean isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true);
 
+		firstUpdate = true;
 		wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
-		if(true == isUsingBudgetInformation){
+		if(isUsingBudgetInformation){
 			wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 			wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), false);
 		}
@@ -90,13 +93,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		super.onDestroy();
 	}
 	@Override
-	public void onDetach() {
-		// TODO Auto-generated method stub
-		super.onDetach();
-	}
-	@Override
 	public void onResume() {
-		// TODO Auto-generated method stub
 		context = WimpleActivity.context;
 		super.onResume();
 	}
@@ -108,7 +105,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		Object obj = msg.obj;
 
 		// if fragment is added or not to the activity
-		if(false == isAdded()){
+		if(!isAdded()){
 			return;
 		}
 		
@@ -123,11 +120,27 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 
 		case CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED :{
 
-			if(false == booleanStatus){
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+			if(firstUpdate) {
+				firstUpdate = false;
+				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true);
+				boolean isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true);
+				if (autoRefresh) {
+					Calendar c = Calendar.getInstance();
+					c.setTime(new Date());
+					c.set(Calendar.DATE, 1);
+					wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+					if (isUsingBudgetInformation) {
+						wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+						wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
+					}
+				}
+			}
+
+			if(!booleanStatus){
 				return;
 			}
 			
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_SHOW_GROUP, false);
 			
 			ArrayList<Double> values = new ArrayList<>();
@@ -137,7 +150,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 			for(AccountState as : accountStates){
 				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
 				//		" = " + as.getCategory() + ", " + as.getGroup());
-				if(false == as.getCategory().startsWith("in")){
+				if(!as.getCategory().startsWith("in")){
 					continue;
 				}
 				
@@ -181,13 +194,13 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		
 		case CommandID.GET_BUDGET_RESPONSE_RECEIVED :{
 
-			if(false == booleanStatus){
+			if(!booleanStatus){
 				return;
 			}
 
 			boolean isIncome = msg.arg2==1?true:false;
 			
-			if(false == isIncome){
+			if(!isIncome){
 				return;
 			}
 			
@@ -201,12 +214,12 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 	}
 	@Override
 	public void refreshView() {
-		// TODO Auto-generated method stub
+
 
 	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		// TODO Auto-generated method stub
+
 
 	}
 

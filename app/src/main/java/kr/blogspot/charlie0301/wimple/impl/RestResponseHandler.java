@@ -42,7 +42,7 @@ public class RestResponseHandler {
 			Log.e(LOG_TAG, "All free report are used!!!(402), Open the payment dialog!!!");
 
 			// TODO : remove backcall
-			if(false == PaymentNoticeActivity.noMore){
+			if(!PaymentNoticeActivity.noMore){
 				Intent intent = new Intent(context, PaymentNoticeActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				context.startActivity(intent);
