@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.github.mikephil.charting.charts.PieChart;
 
@@ -51,7 +50,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
 		view = inflater.inflate(R.layout.fragment_expense_summary_tab, container, false);
 
@@ -99,7 +98,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 	@Override
 	public void onResume() {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -115,7 +114,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 		}
 		
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -149,8 +148,8 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 			
 			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_SHOW_GROUP, false);
 			
-			ArrayList<Double> values = new ArrayList<Double>();
-			ArrayList<String> names = new ArrayList<String>();
+			ArrayList<Double> values = new ArrayList<>();
+			ArrayList<String> names = new ArrayList<>();
 			
 			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
 			for(AccountState as : accountStates){
@@ -180,7 +179,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 				double maxValue = -99999999;
 				double[] doubleValues = new double[values.size()];
 				for(int i = 0; i < doubleValues.length; i++){
-					doubleValues[i] = values.get(i).doubleValue();
+					doubleValues[i] = values.get(i);
 					if(maxValue < doubleValues[i])
 						maxValue = doubleValues[i];
 				}
@@ -218,10 +217,7 @@ public class ExpenseSummaryFragment  extends Fragment implements IWimpleFragment
 		
 		}
 	}
-	@Override
-	public void refreshView() {
 
-	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 

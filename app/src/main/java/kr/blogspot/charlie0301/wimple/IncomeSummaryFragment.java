@@ -11,7 +11,6 @@ import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.model.Budget;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
@@ -27,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.github.mikephil.charting.charts.PieChart;
 
@@ -52,7 +50,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
 		view = inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
 
@@ -94,7 +92,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 	}
 	@Override
 	public void onResume() {
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -110,7 +108,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		}
 		
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -175,7 +173,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 				double maxValue = -99999999;
 				double[] doubleValues = new double[values.size()];
 				for(int i = 0; i < doubleValues.length; i++){
-					doubleValues[i] = values.get(i).doubleValue();
+					doubleValues[i] = values.get(i);
 					if(maxValue < doubleValues[i])
 						maxValue = doubleValues[i];
 				}
@@ -198,7 +196,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 				return;
 			}
 
-			boolean isIncome = msg.arg2==1?true:false;
+			boolean isIncome = msg.arg2 == 1;
 			
 			if(!isIncome){
 				return;
@@ -212,11 +210,7 @@ public class IncomeSummaryFragment  extends Fragment implements IWimpleFragment{
 		
 		}
 	}
-	@Override
-	public void refreshView() {
 
-
-	}
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 

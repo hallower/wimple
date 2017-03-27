@@ -47,23 +47,18 @@ import android.widget.Toast;
 public class TransactionListFragment extends Fragment implements IWimpleFragment{
 
 	private final static String LOG_TAG = "TransactionFragment";
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
 
-	private static View view;
-	private static Context context;
-	private static SharedPreferences sharedPref;
+	private View view;
+	private Context context;
 
 	// Static reference
 
-	// by date limit
-	private static Long monthlyDisplayAllowingDays = 10L;	// 10 days
 	private static boolean monthlyDisplay = true;
 	private static int monthlyDisplayItemsNumbers = 4;
 
 
-	// GUI
-	private WeakReference<ItemListView> entryList;
 	private WeakReference<EntryItemListAdapter> entryAdapter;
 	private LinearLayout llNotification;
 	private TextView txtNotification;
@@ -87,7 +82,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 	@Override
 	public void onResume() {
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 
 		updateSettings();
 		// TODO : what is better? below line is duplicated running when activity restarting and after log in. 
@@ -110,7 +105,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		view = inflater.inflate(R.layout.fragment_transaction_list_tab, container, false);
 
 		llNotification = (LinearLayout)view.findViewById(R.id.entry_list_notification);
@@ -118,8 +113,8 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		FrameLayout.LayoutParams sessionParams = new FrameLayout.LayoutParams(
 				FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		entryList = new WeakReference<ItemListView>((ItemListView)view.findViewById(R.id.entry_list_view));
-		entryAdapter = new WeakReference<EntryItemListAdapter>(new EntryItemListAdapter(context));
+		WeakReference<ItemListView> entryList = new WeakReference<>((ItemListView) view.findViewById(R.id.entry_list_view));
+		entryAdapter = new WeakReference<>(new EntryItemListAdapter(context));
 
 		entryList.get().setAdapter(entryAdapter.get());
 		entryList.get().setLayoutParams(sessionParams);
@@ -139,11 +134,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				//Log.d(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + 
 				//		", totalItemcount=" + totalItemCount);
 
-				if(firstVisibleItem == 0){
-					isShowingFirstItem = true;
-				}else{
-					isShowingFirstItem = false;
-				}
+				isShowingFirstItem = firstVisibleItem == 0;
 
 				float percentage = (((float)firstVisibleItem + (float)visibleItemCount) / (float)totalItemCount ) * 100;
 				//Log.d(LOG_TAG, "Percentage=" + percentage + ", isAllOldActivityFechted=" + isAllOldActivityFechted + ", available permit=" + available.availablePermits());
@@ -260,7 +251,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 			return;
 
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context)
 				return;
 		}
@@ -370,6 +361,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 				if(counts <= 0)
 					break;
 
+				Long monthlyDisplayAllowingDays = 10L;
 				if(monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.getDate())){
 					Log.d(LOG_TAG, "Skip Monthly item - " + item.getItem() + ", " + (new Date(item.getDate())).toString());
 					break;
@@ -422,11 +414,6 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	}
 
 	@Override
-	public void refreshView() {
-
-	}
-
-	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 		//mainActivity = instance;
 	}
@@ -434,7 +421,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	public void setShowingNotification(boolean show, boolean isLatest){
 
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null != context){
 				if(isLatest){
 					txtNotification.setText(context.getResources().getString(R.string.update_latest_items));
@@ -497,7 +484,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 	}
 
 	private void updateSettings(){
-		sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
 		monthlyDisplay = sharedPref.getBoolean(SettingsFragment.KEY_MONTHLY_ITEM_DISPLAY, true);
 		String pref = sharedPref.getString(SettingsFragment.KEY_MONTHLY_ITEM_COUNT, "5");

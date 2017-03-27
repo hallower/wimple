@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.wimple;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -34,16 +35,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 
 	private final static int PICK_CONTACT_REQUEST = 1; 
 
-	private static Context context;
+	private Context context;
 
-	private static final WimpleImpl wimple = WimpleImpl.getInstance();
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
 
-	private static WimpleActivity wimpleActivity;
+	private WeakReference<WimpleActivity> wimpleActivity;
 
 	private SharedPreferences settings;
 
 	public static final String KEY_SMS_POST_ENABLE = "pref_smsPostEnable";
-	public static final String KEY_SMS_TARGET_PHONE_NUMBERS = "pref_smsTargetPhoneNumbers";
+	//public static final String KEY_SMS_TARGET_PHONE_NUMBERS = "pref_smsTargetPhoneNumbers";
 	public static final String KEY_SMS_PICK_CONTACT = "pref_smsPickContact";
 	public static final String KEY_SMS_CONTACT_LIST = "pref_smsContactList";
 	public static final String KEY_SMS_SEND_NOW = "pref_smsSendNow";
@@ -63,7 +64,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		settings = context.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
 		wimple.getAllSections(true);
 
@@ -83,6 +84,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 		final Preference logout = findPreference("preference_logout");
 		logout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				wimple.cleanAuth();
@@ -103,7 +105,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 				Intent intent = new Intent(context, SplashScreenActivity.class);
 				intent.putExtra("auth_again", "");
 				startActivity(intent);
-				wimpleActivity.finish();
+				wimpleActivity.get().finish();
 
 				return false;
 			}
@@ -160,7 +162,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 				
 				wimple.postPayments(storedSMS, "0000");
 				SharedPreferences.Editor editor = settings.edit();
-				editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).commit();
+				editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).apply();
 
 				return false;
 			}
@@ -223,7 +225,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 				if(storedTels.endsWith(",")){
 					storedTels = storedTels.substring(0, storedTels.length() - 1);
 				}
-				settings.edit().putString(SMSReceiver.smsTelTag, storedTels).commit();
+				settings.edit().putString(SMSReceiver.smsTelTag, storedTels).apply();
 
 				updateContactList();
 				return false;
@@ -244,7 +246,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 		}
 
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -297,11 +299,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 					wimple.setDefaultSectionName(entries[idx].toString());
 					wimple.clearAllDBRecords();
 
-					settings.edit().putString("section_id", wimple.getDefaultSectionID()).commit();
-					settings.edit().putString("section_name", wimple.getDefaultSectionName()).commit();
+					settings.edit().putString("section_id", wimple.getDefaultSectionID()).apply();
+					settings.edit().putString("section_name", wimple.getDefaultSectionName()).apply();
 					Intent intent = new Intent(context, SplashScreenActivity.class);
 					startActivity(intent);
-					wimpleActivity.finish();
+					wimpleActivity.get().finish();
 
 					return false;
 				}
@@ -323,12 +325,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 	}
 
 	@Override
-	public void refreshView() {
-	}
-
-	@Override
 	public void setActivityInstance(WimpleActivity instance) {
-		SettingsFragment.wimpleActivity = instance;
+		wimpleActivity = new WeakReference<>(instance);
 	}
 
 	@Override
@@ -342,6 +340,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 
 				Cursor cursor = context.getContentResolver()
 						.query(contactUri, projection, null, null, null);
+				if(cursor ==null)
+					return;
+
 				cursor.moveToFirst();
 
 				int column = cursor.getColumnIndex(Phone.NUMBER);
@@ -354,7 +355,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 					SharedPreferences settings = context.getSharedPreferences(SMSReceiver.smsKey, 0);
 					String storedTels = settings.getString(SMSReceiver.smsTelTag, "");
 
-					if(storedTels.indexOf(number) >= 0){
+					if(storedTels.contains(number)){
 						return;
 					}
 
@@ -364,7 +365,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
 					}else{
 						storedTels = storedTels + "," + number;	
 					}					
-					settings.edit().putString(SMSReceiver.smsTelTag, storedTels).commit();
+					settings.edit().putString(SMSReceiver.smsTelTag, storedTels).apply();
 
 					updateContactList();
 				}

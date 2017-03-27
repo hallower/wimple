@@ -17,7 +17,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -38,7 +37,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 	private final WimpleImpl wimple = WimpleImpl.getInstance();
 	//private WimpleActivity mainActivity = null;
-	private Context context = null;
+	private Context context;
 
 	// GUI
 	//private WeakReference<ItemListView> asList;
@@ -65,9 +64,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
-		View view = (RelativeLayout)inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false);
+		View view = inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false);
 
 		ivIncomeBar = (ImageView)view.findViewById(R.id.ine_bar_income);
 		ivExpenseBar = (ImageView)view.findViewById(R.id.ine_bar_expense);
@@ -141,7 +140,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 	}
 	@Override
 	public void onResume() {
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		Calendar c = Calendar.getInstance ( );
 		c.setTime ( new Date() );
 		c.set(Calendar.DATE, 1);
@@ -154,7 +153,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 		super.onResume();
 	}
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "deprecation"})
 	@Override
 	public void handleMessage(Message msg) {
 		int command = msg.what;
@@ -167,7 +166,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		}
 		
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -189,7 +188,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					c.setTime ( new Date() );
 					c.set(Calendar.DATE, 1);
 					wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
-					if(true == isUsingBudgetInformation){
+					if(isUsingBudgetInformation){
 						wimple.getBudget(true, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 						wimple.getBudget(false, DateFormatUtils.getServerDateString(c.getTimeInMillis()), DateFormatUtils.getServerDateString(""), true);
 					}
@@ -214,8 +213,6 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					}if(as.getCategory().startsWith("in")){
 						income += as.getAmount();
 					}
-				}else{
-					//asAdapter.get().addAccountState(as);
 				}
 			}
 			//asAdapter.get().notifyDataSetChanged();
@@ -244,26 +241,26 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 
 			if(income > expense)
 			{
-				Log.d(LOG_TAG, "expense / income = " + ((double)expense / (double)income));
+				Log.d(LOG_TAG, "expense / income = " + (expense / (double)income));
 
 				params = (FrameLayout.LayoutParams ) ivIncomeBar.getLayoutParams();
 				params.width = width;
 				ivIncomeBar.setLayoutParams(params);
 
-				width = (int)(width * ((double)expense / (double)income));
+				width = (int)(width * (expense / (double)income));
 
 				params = (FrameLayout.LayoutParams ) ivExpenseBar.getLayoutParams();
 				params.width = width;
 				ivExpenseBar.setLayoutParams(params);
 
 			}else{
-				Log.d(LOG_TAG, "income / expense = " + ((double)income/ (double)expense));
+				Log.d(LOG_TAG, "income / expense = " + (income / (double)expense));
 
 				params = (FrameLayout.LayoutParams ) ivExpenseBar.getLayoutParams();
 				params.width = width;
 				ivExpenseBar.setLayoutParams(params);
 
-				width = (int)(width * ((double)income / (double)expense));
+				width = (int)(width * (income / (double)expense));
 
 				params = (FrameLayout.LayoutParams ) ivIncomeBar.getLayoutParams();
 				params.width = width;
@@ -285,7 +282,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 				return;
 			}
 
-			boolean isIncome = (msg.arg2==1)?true:false;
+			boolean isIncome = (msg.arg2 == 1);
 
 			Map<String, Budget> map = (Map<String, Budget>)obj;
 			Budget budgetStatus;
@@ -307,7 +304,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 			current = budgetStatus.getCurrent();
 			budget = budgetStatus.getBudget();
 
-			Log.d(LOG_TAG, "current=" + current + ", buget=" + budget);
+			Log.d(LOG_TAG, "current=" + current + ", budget=" + budget);
 
 			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 			Display display = wm.getDefaultDisplay();
@@ -354,9 +351,9 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					ivExpenseBudgetBase.setLayoutParams(params);	
 				}
 
-				int percentage = (int)(((double)current / (double)budget)*100);
-				Log.d(LOG_TAG, "current / budget = " + (((double)current / (double)budget))*100);
-				width = (int)(width * (double)current / (double)budget);
+				int percentage = (int)((current / (double)budget)*100);
+				Log.d(LOG_TAG, "current / budget = " + ((current / (double)budget))*100);
+				width = (int)(width * current / budget);
 
 				if(isIncome){
 					params = (FrameLayout.LayoutParams ) ivIncomeBudgetCurrent.getLayoutParams();
@@ -381,8 +378,8 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 					ivExpenseBudgetCurrent.setLayoutParams(params);
 				}
 
-				Log.d(LOG_TAG, "current / budget = " + ((double)current/ (double)budget));
-				int percentage = (int)(((double)current/ (double)budget)*100);
+				Log.d(LOG_TAG, "current / budget = " + (current / (double)budget));
+				int percentage = (int)((current / (double)budget)*100);
 				//width = (int)(width * ((double)budget/ (double)current));
 
 				if(isIncome){
@@ -401,9 +398,7 @@ public class IncomeExpenseSummaryFragment  extends Fragment implements IWimpleFr
 		break;
 		}
 	}
-	@Override
-	public void refreshView() {
-	}
+
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 	}

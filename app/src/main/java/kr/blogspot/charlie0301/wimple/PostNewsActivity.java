@@ -1,8 +1,22 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.Html;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -21,36 +35,17 @@ import kr.blogspot.charlie0301.wimple.model.Item;
 import kr.blogspot.charlie0301.wimple.model.Section;
 import kr.blogspot.charlie0301.wimple.model.UserInfo;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.text.Html;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.TextView;
-import android.widget.Toast;
-
 public class PostNewsActivity extends Activity {
 
 	private static final String LOG_TAG = "PostNewsActivity";
 
-	private static final WimpleImpl wimple = WimpleImpl.getInstance();
-	public static Context context;
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
+	public Context context;
 	private static ProgressDialog dialog;
 	
 	private TextView tvSubject;
 	private TextView tvContent;
 	private TextView tvURL;
-
-	private String charset;
 
 	private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
 		@Override
@@ -94,7 +89,8 @@ public class PostNewsActivity extends Activity {
 			}
 
 			final String exportedTitle = result.substring(startPos + 1, endPos);
-			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());	
+			//noinspection deprecation
+			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
 		}
 	}
 
@@ -166,7 +162,7 @@ public class PostNewsActivity extends Activity {
 		tvURL.setText(url);
 
 		DownloadWebPageTask task = new DownloadWebPageTask();
-		task.execute(new String[] { url });
+		task.execute(url);
 
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		if(clipboard.hasPrimaryClip()){
@@ -176,14 +172,14 @@ public class PostNewsActivity extends Activity {
 			//}
 		}
 
-		((TextView)findViewById(R.id.post_news_do_post)).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.post_news_do_post).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 
-				String escapedSubject = "";
-				String escapedURL = "";
-				String escapedComment = "";
+				String escapedSubject;
+				String escapedURL;
+				String escapedComment;
 
 				try {
 					escapedSubject = URLEncoder.encode(tvSubject.getText().toString(), "UTF-8");

@@ -46,7 +46,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
 		view = inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
 
@@ -83,7 +83,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 	@Override
 	public void onResume() {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -117,7 +117,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 			}
 
 			if(null == context){
-				context = WimpleActivity.context;
+				context = WimpleActivity.context.get();
 				if(null == context){
 					return;
 				}
@@ -153,7 +153,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 				double maxValue = -99999999;
 				double[] doubleValues = new double[values.size()];
 				for(int i = 0; i < doubleValues.length; i++){
-					doubleValues[i] = values.get(i).doubleValue();
+					doubleValues[i] = values.get(i);
 					if(maxValue < doubleValues[i])
 						maxValue = doubleValues[i];
 				}
@@ -171,9 +171,7 @@ public class SavingStateSummaryFragment  extends Fragment implements IWimpleFrag
 		break;
 		}
 	}
-	@Override
-	public void refreshView() {
-	}
+
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 	}

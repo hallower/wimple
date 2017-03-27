@@ -37,13 +37,9 @@ public class ItemListView extends ListView {
 		this.selectionListener = listener;
 	}
 
-	public OnItemSelectionListener getOnDataSelectionListener() {
-		return selectionListener;
-	}
+	private class OnItemClickAdapter implements OnItemClickListener {
 
-	class OnItemClickAdapter implements OnItemClickListener {
-
-		public OnItemClickAdapter() {
+		OnItemClickAdapter() {
 
 		}
 
