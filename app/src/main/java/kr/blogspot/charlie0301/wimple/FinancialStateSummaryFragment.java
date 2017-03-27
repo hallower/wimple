@@ -47,7 +47,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 
 		view = inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
 		
@@ -95,11 +95,11 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 	}
 	@Override
 	public void onResume() {
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
 		super.onResume();
 	}
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "deprecation"})
 	@Override
 	public void handleMessage(Message msg) {
 		int command = msg.what;
@@ -112,7 +112,7 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		}
 		
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -189,9 +189,6 @@ public class FinancialStateSummaryFragment  extends Fragment implements IWimpleF
 		}
 		break;
 		}
-	}
-	@Override
-	public void refreshView() {
 	}
 
 	@Override

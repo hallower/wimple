@@ -46,7 +46,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
 		view = inflater.inflate(R.layout.fragment_debt_state_summary_tab, container, false);
 
@@ -78,7 +78,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 	@Override
 	public void onResume() {
 
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		super.onResume();
 	}
 	@SuppressWarnings("unchecked")
@@ -94,7 +94,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		}
 		
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -166,9 +166,7 @@ public class DebtStateSummaryFragment  extends Fragment implements IWimpleFragme
 		break;
 		}
 	}
-	@Override
-	public void refreshView() {
-	}
+
 	@Override
 	public void setActivityInstance(WimpleActivity instance) {
 	}

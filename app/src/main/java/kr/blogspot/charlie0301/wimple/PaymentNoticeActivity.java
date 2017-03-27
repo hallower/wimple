@@ -55,7 +55,7 @@ public class PaymentNoticeActivity extends Activity {
 			public void onClick(View v) {
 				PaymentNoticeActivity.noMore = true;
 				SharedPreferences settings = getApplicationContext().getSharedPreferences(SETTING_KEY, Context.MODE_PRIVATE);
-				settings.edit().putLong(NOMORE_TIME, Long.valueOf(Calendar.getInstance().getTimeInMillis())).commit(); 
+				settings.edit().putLong(NOMORE_TIME, Calendar.getInstance().getTimeInMillis()).apply();
 				
 				finish();
 			}

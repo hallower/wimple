@@ -1,29 +1,12 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
-import kr.blogspot.charlie0301.wimple.impl.util.Calculator;
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.model.Account;
-import kr.blogspot.charlie0301.wimple.model.Entry;
-import kr.blogspot.charlie0301.wimple.model.Item;
-import kr.blogspot.charlie0301.wimple.widget.AccountExpandableListAdapter;
-import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment;
-import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment.OnDateSetListener;
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -41,18 +24,34 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.Calculator;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.model.Account;
+import kr.blogspot.charlie0301.wimple.model.Entry;
+import kr.blogspot.charlie0301.wimple.model.Item;
+import kr.blogspot.charlie0301.wimple.widget.AccountExpandableListAdapter;
+import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment;
+import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment.OnDateSetListener;
 
 public class TransactionInsertFragment extends Fragment implements IWimpleFragment{
 
 	private final static String LOG_TAG = "TransactionInsertFrag";
 
-	private final static WimpleImpl wimple = WimpleImpl.getInstance();
+	private final WimpleImpl wimple = WimpleImpl.getInstance();
 	private WimpleActivity mainActivity = null;
-	private static View view = null;
-	private static Context context = null;
+	private View view = null;
+	private Context context = null;
 
 	private final static Calculator cal = new Calculator();
 	private static int[] padRIDs = null;
@@ -66,10 +65,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private ExpandableListView leftAccountListView;
 	private ExpandableListView rightAccountListView;
 
-	private TextView[] buttons;
 	private TextView txtAmount;
 	private EditText txtTitle;
-	private TextView txtItemDate; 
 	private TextView txtInsertMode;
 	private EditText txtMemo;
 
@@ -79,8 +76,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	// Data
 
-	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT };
-	private ListView listViewLatestItems;
+	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT }
+
 	private ArrayAdapter<Item> adapterLatestItems;
 	private Item editingItem = null;
 	private CurrentToolMode toolMode = CurrentToolMode.INSERT;
@@ -93,7 +90,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 	@Override
 	public void onResume() {
-		context = WimpleActivity.context;
+		context = WimpleActivity.context.get();
 		//initWimple();
 
 		super.onResume();
@@ -133,10 +130,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		context = WimpleActivity.context;		
+		context = WimpleActivity.context.get();
 
 		// Data 
-		view = (RelativeLayout)inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
+		view = inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
 		//synchronized(TransactionInsertFragment.class){
 		if(null == padRIDs)
 		{
@@ -157,7 +154,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 		boolean isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, false);
 		if(isNeedDisableMemo){
-			((LinearLayout)view.findViewById(R.id.insert_memo_window)).setVisibility(View.GONE);			
+			view.findViewById(R.id.insert_memo_window).setVisibility(View.GONE);
 		}
 
 		llInsertNotice = (LinearLayout)view.findViewById(R.id.ti_update_notification);
@@ -178,10 +175,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		initWimple();
 
-		Bundle b = getArguments();
-		if(null != b) {
-			String res = b.getString("test",":(");
-		}
 		return view;
 	}
 
@@ -281,9 +274,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void setupLatestItems() {
-		List<Item> latestItems = new ArrayList<Item>();
-		listViewLatestItems = (ListView) view.findViewById(R.id.insert_frequent_items);
-		adapterLatestItems = new ArrayAdapter<Item>(context, R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems);
+		List<Item> latestItems = new ArrayList<>();
+		ListView listViewLatestItems = (ListView) view.findViewById(R.id.insert_frequent_items);
+		adapterLatestItems = new ArrayAdapter<>(context, R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems);
 		listViewLatestItems.setAdapter(adapterLatestItems);
 		listViewLatestItems.setOnItemClickListener(new OnItemClickListener(){
 
@@ -308,7 +301,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void setupButtons() {
-		buttons = new TextView[padRIDs.length];
+		TextView[] buttons = new TextView[padRIDs.length];
 		for(int i = 0; i < padRIDs.length ; i++){
 			buttons[i] = (TextView) view.findViewById(padRIDs[i]);
 			buttons[i].setOnClickListener(new OnClickListener(){
@@ -321,7 +314,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					txtMemo.clearFocus();
 
 					if(null == context){
-						context = WimpleActivity.context;
+						context = WimpleActivity.context.get();
 						if(null != context){
 							((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
 									txtTitle.getWindowToken(), 0);
@@ -364,7 +357,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void setupDate() {
-		txtItemDate = (TextView) view.findViewById(R.id.insert_date);
+		TextView txtItemDate = (TextView) view.findViewById(R.id.insert_date);
 		datePicker = new DatePickerFragment();
 		datePicker.setTextViewWidget(txtItemDate);
 		datePicker.setOnDateSetListener(new OnDateSetListener(){
@@ -455,7 +448,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private Double getAmountValue(){
-		Double amount = 0.0; 
+		Double amount;
 		try{
 			amount = DateFormatUtils.getNumberFormat().parse(txtAmount.getText().toString()).doubleValue();
 		}catch(Exception e){
@@ -466,10 +459,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void selectLatestItem(int position) {
-		Item selected = null;
+		Item selected;
 
 		try{
 			selected = adapterLatestItems.getItem(position);
+			if(selected == null)
+				return;
 		}catch(Exception e){
 			e.printStackTrace();
 			Log.e(LOG_TAG, "Failed to select latest Item!!!, position=" + position);
@@ -539,22 +534,20 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private boolean validateForms() {
-		if(null == txtTitle.getText().toString() ||
-				txtTitle.getText().toString().isEmpty()){
+		if(txtTitle.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry title.");
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_title));
 			return false;
 		}
 
-		if(null == txtAmount.getText().toString() ||
-				txtAmount.getText().toString().isEmpty()){
+		if(txtAmount.getText().toString().isEmpty()){
 			Log.e(LOG_TAG, "Invalid entry amount.");
 			WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_amount));
 			return false;
 		}
 
-		Double amount = getAmountValue();
 		/*
+		Double amount = getAmountValue();
 		if(amount <= 0){
 			Log.e(LOG_TAG, "Invalid entry amount.");
 			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount), 
@@ -585,7 +578,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		datePicker.setDate(Calendar.getInstance().getTimeInMillis());
 
 		tvLeftAccountTitle.setText(getResources().getString(R.string.insert_left_accounts));
-		tvRightAccountTitle.setText(getResources().getString(R.string.insert_right_accounts));;
+		tvRightAccountTitle.setText(getResources().getString(R.string.insert_right_accounts));
 		leftAccountListAdapter.clearSelection();
 		rightAccountListAdapter.clearSelection();
 
@@ -608,7 +601,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		}
 
 		if(null == context){
-			context = WimpleActivity.context;
+			context = WimpleActivity.context.get();
 			if(null == context){
 				return;
 			}
@@ -847,11 +840,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		view = null;
 		super.onDetach();
-	}
-
-	@Override
-	public void refreshView() {
-
 	}
 
 	@Override

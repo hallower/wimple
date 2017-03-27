@@ -97,18 +97,6 @@ implements DatePickerDialog.OnDateSetListener {
 
 	public Long getSelectedDate(){
 		return this.current;    	
-	}	
-
-	public int getYear() {
-		return year;
-	}
-
-	public int getMonth() {
-		return month;
-	}
-
-	public int getDay() {
-		return day;
 	}
 
 	public boolean isDateChanged() {
@@ -116,7 +104,7 @@ implements DatePickerDialog.OnDateSetListener {
 	}
 	
 	public void setTextViewWidget(TextView tv){
-		this.tv = new WeakReference<TextView>(tv);	
+		this.tv = new WeakReference<>(tv);
 		setWidgetText(false);  
 	}
 
@@ -133,10 +121,5 @@ implements DatePickerDialog.OnDateSetListener {
 			}
 		}
 	}
-	public void setColorOfTextViewWidget(int color){
-		this.tv.get().setBackgroundColor(color);
-	}
-	public void setDrawableOfTextViewWidget(int resID){
-		this.tv.get().setBackgroundResource(resID);
-	}
+
 }

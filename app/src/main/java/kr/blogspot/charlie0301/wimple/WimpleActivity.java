@@ -31,6 +31,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -55,9 +56,9 @@ public class WimpleActivity extends AppCompatActivity
     private static final String LOG_TAG = "WimpleActivity";
     private static final String whooingURL = "https://whooing.com";
 
-    private static final WimpleImpl wimple = WimpleImpl.getInstance();
+    private static final WeakReference<WimpleImpl> wimple = new WeakReference<>(WimpleImpl.getInstance());
     private static Handler mainHandler;
-    public static Context context;
+    public static WeakReference<Context> context;
 
 	private int currentMenuID;
 	private DrawerLayout drawer;
@@ -117,7 +118,7 @@ public class WimpleActivity extends AppCompatActivity
 
 	@Override
 	protected void onResume() {
-		context = getApplicationContext();
+		context = new WeakReference<>(getApplicationContext());
 		Log.i(LOG_TAG, "WimpleActivity - onResume!!!");
 		setupWimpleImpl();
 		super.onResume();
@@ -128,7 +129,7 @@ public class WimpleActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wimple);
 
-        context = getApplicationContext();
+        context = new WeakReference<>(getApplicationContext());
 
 		// GUI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -138,7 +139,11 @@ public class WimpleActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-				replaceWimpleFragment(R.id.menu_transaction_insert);
+				if(currentMenuID != R.id.menu_transaction_insert){
+					replaceWimpleFragment(R.id.menu_transaction_insert);
+				}else{
+					replaceWimpleFragment(R.id.menu_transaction_list);
+				}
             }
         });
 
@@ -205,7 +210,7 @@ public class WimpleActivity extends AppCompatActivity
 		}
 	}
 	private void setDefaultFragment() {
-		fab.setVisibility(View.INVISIBLE);
+		fab.setImageResource(R.drawable.ic_fab_list);
 		currentMenuID = R.id.menu_transaction_insert;
 		currentFragment = new TransactionInsertFragment();
 		((IWimpleFragment)currentFragment).setActivityInstance(this);
@@ -263,7 +268,7 @@ public class WimpleActivity extends AppCompatActivity
 	}
 
 	private boolean replaceWimpleFragment(int id, Bundle bundle) {
-		boolean isShouldBeShowFab = true;
+		boolean isNeedAddFab = true;
 
 		hideVirtualKeyboard();
 
@@ -271,7 +276,7 @@ public class WimpleActivity extends AppCompatActivity
 			return true;
 
 		if (id == R.id.menu_transaction_insert) {
-			isShouldBeShowFab = false;
+			isNeedAddFab = false;
 			currentFragment = new TransactionInsertFragment();
 			//mDrawerList.setItemChecked(position, true);
 			//setTitle(mPlanetTitles[position]);
@@ -304,10 +309,10 @@ public class WimpleActivity extends AppCompatActivity
 		transaction.replace(R.id.fragment_container, currentFragment);
 		transaction.commit();
 
-		if(isShouldBeShowFab) {
-			fab.setVisibility(View.VISIBLE);
+		if(isNeedAddFab) {
+			fab.setImageResource(R.drawable.ic_fab_add);
 		}else {
-			fab.setVisibility(View.INVISIBLE);
+			fab.setImageResource(R.drawable.ic_fab_list);
 		}
 
 		return true;
@@ -324,9 +329,9 @@ public class WimpleActivity extends AppCompatActivity
 		}
 
 		TextView sectionTitle = (TextView)findViewById(R.id.section_title);
-		sectionTitle.setText(wimple.getDefaultSectionName());
+		sectionTitle.setText(wimple.get().getDefaultSectionName());
 
-		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
+		WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.get().getProfilePicture(), false);
 
 		TextView name = (TextView)findViewById(R.id.my_profile_name);
 		name.setText(info.getName());
@@ -356,7 +361,7 @@ public class WimpleActivity extends AppCompatActivity
 		if(null == textLevel)
 			return;
 
-		int nLevel = wimple.getRemainedAPICall();
+		int nLevel = wimple.get().getRemainedAPICall();
 		if(nLevel < 0)
 			nLevel = 0;
 
@@ -364,8 +369,8 @@ public class WimpleActivity extends AppCompatActivity
 	}
 
 	private void setupWimpleImpl() {
-		wimple.setApplicationContext(context);
-		wimple.setStatusListener(new IWimpleStatusListener(){
+		wimple.get().setApplicationContext(context.get());
+		wimple.get().setStatusListener(new IWimpleStatusListener(){
 
 			@Override
 			public void onLoggedIn(boolean status) {
@@ -395,7 +400,7 @@ public class WimpleActivity extends AppCompatActivity
 			}
 
 		});
-		wimple.setResponseListener(new IWimpleResponseListener(){
+		wimple.get().setResponseListener(new IWimpleResponseListener(){
 
 			@Override
 			public void onGetAuthTempToken(boolean status, String tempToken) {
@@ -412,7 +417,7 @@ public class WimpleActivity extends AppCompatActivity
 					Log.i(LOG_TAG, info.toString());
 					sm(CommandID.UPDATE_USER_INFO, 1, 0, info);
 				}else{
-					Toast.makeText(context, "Login FaileD!!!!", Toast.LENGTH_LONG).show();
+					Toast.makeText(context.get(), "Login FaileD!!!!", Toast.LENGTH_LONG).show();
 				}
 			}
 
@@ -502,17 +507,17 @@ public class WimpleActivity extends AppCompatActivity
 
 		});
 
-		if(wimple.isAuthed() &&
-				wimple.isInitializedFinished()){
+		if(wimple.get().isAuthed() &&
+				wimple.get().isInitializedFinished()){
 			// Already Logged-in
 			Log.d(LOG_TAG, "wimpleactivity, logged in, default section existing");
-			wimple.getUserInfo(true);
+			wimple.get().getUserInfo(true);
 		}else{
 			// not initialized or not Logged-in
 			Log.d(LOG_TAG, "wimpleactivity, not initialzed or not logged in");
-			Intent intent = new Intent(context, SplashScreenActivity.class);
+			Intent intent = new Intent(context.get(), SplashScreenActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-			context.startActivity(intent);
+			context.get().startActivity(intent);
 		}
 	}
 
@@ -553,7 +558,7 @@ public class WimpleActivity extends AppCompatActivity
 
 					case CommandID.WIMPLE_PROFILE_PICTURE_UPDATED :
 					{
-						WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.getProfilePicture(), false);
+						WidgetItem.replaceBitmapOfImageView(profileIcon, wimple.get().getProfilePicture(), false);
 						break;
 					}
 
@@ -576,7 +581,7 @@ public class WimpleActivity extends AppCompatActivity
 
 					// to all
 					case CommandID.WIMPLE_LOGGIN_SUCCESS :
-						wimple.getMonthlyItems();
+						wimple.get().getMonthlyItems();
 						// No break;
 
 					case CommandID.WIMPLE_LOGGIN_FAILED :

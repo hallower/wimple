@@ -1,22 +1,5 @@
 package kr.blogspot.charlie0301.wimple;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Map;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
-import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener;
-import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener;
-import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.model.Account;
-import kr.blogspot.charlie0301.wimple.model.AccountState;
-import kr.blogspot.charlie0301.wimple.model.Budget;
-import kr.blogspot.charlie0301.wimple.model.Entry;
-import kr.blogspot.charlie0301.wimple.model.Item;
-import kr.blogspot.charlie0301.wimple.model.Section;
-import kr.blogspot.charlie0301.wimple.model.UserInfo;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -24,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.http.SslError;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -42,6 +24,24 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Map;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener;
+import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener;
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
+import kr.blogspot.charlie0301.wimple.model.Account;
+import kr.blogspot.charlie0301.wimple.model.AccountState;
+import kr.blogspot.charlie0301.wimple.model.Budget;
+import kr.blogspot.charlie0301.wimple.model.Entry;
+import kr.blogspot.charlie0301.wimple.model.Item;
+import kr.blogspot.charlie0301.wimple.model.Section;
+import kr.blogspot.charlie0301.wimple.model.UserInfo;
+
 public class SplashScreenActivity extends Activity {
 
 	private static final String LOG_TAG = "SplashScreenActivity";
@@ -54,7 +54,7 @@ public class SplashScreenActivity extends Activity {
 	// GUI
 	private TextView txtStatus;
 
-	// WebView for Loggin
+	// WebView for Login
 	private static final String target_url="https://whooing.com/app_auth/authorize";
 	private static final String target_url_prefix="whooing.com";
 
@@ -69,12 +69,7 @@ public class SplashScreenActivity extends Activity {
 
 	public static void sm(int cmd, Object msg){
 		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, 1, 0, msg));    
-	}    
-
-	public static void sm(int cmd, int a1, int a2, Object msg){
-		mainHandler.sendMessage(Message.obtain(mainHandler, cmd, a1, a2, msg));    
 	}
-
 	
 	
 	@Override
@@ -144,9 +139,6 @@ public class SplashScreenActivity extends Activity {
 		mContainer = (FrameLayout) findViewById(R.id.webview_frame);
 		WebSettings webSettings = mWebview.getSettings();
 		webSettings.setJavaScriptEnabled(true);
-		if (Build.VERSION.SDK_INT <= 18) {
-			webSettings.setSavePassword(false);
-		}
 		webSettings.setAppCacheEnabled(true);
 		webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
 		webSettings.setSupportMultipleWindows(true);
@@ -464,12 +456,7 @@ public class SplashScreenActivity extends Activity {
 
 					mWebview.setVisibility(View.INVISIBLE);
 
-					if(null != pin){
-						wimple.getAccessToken(storedTempToken, pin);
-					}else{
-						// Exit					
-						exitApplication(context.getResources().getString(R.string.program_exit));
-					}
+					wimple.getAccessToken(storedTempToken, pin);
 					return true;
 				}
 
@@ -504,7 +491,7 @@ public class SplashScreenActivity extends Activity {
 		}
 	}
 
-	class UriChromeClient extends WebChromeClient {
+	private class UriChromeClient extends WebChromeClient {
 
 		@SuppressLint("SetJavaScriptEnabled")
 		@SuppressWarnings("deprecation")
