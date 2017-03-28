@@ -16,7 +16,7 @@ public class AccountStateItemListAdapter extends BaseAdapter {
 	//private static final String LOG_TAG = "AccountStateListAdapter";
 	private Context mContext;
 
-	private List<AccountState> items = new ArrayList<AccountState>();
+	private List<AccountState> items = new ArrayList<>();
 	public AccountStateItemListAdapter(Context context) {
 		mContext = context;
 	}
@@ -41,10 +41,6 @@ public class AccountStateItemListAdapter extends BaseAdapter {
 		sort();
 	}
 
-	
-	public void setListAccountStates(List<AccountState> lit) {
-		items = lit;
-	}
 
 	public int getCount() {
 		return items.size();
@@ -79,7 +75,7 @@ public class AccountStateItemListAdapter extends BaseAdapter {
 	}
 
 
-	public void sort(){
+	private void sort(){
 		Collections.sort(items, new AccountState.DateAscCompare());
 	}
 }

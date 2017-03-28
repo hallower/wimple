@@ -16,7 +16,7 @@ import android.util.SparseArray;
  * DatabaseHandler
  * The class provides content managing interfaces of the SQLite Database
  */
-public class DatabaseHandler{
+class DatabaseHandler{
 
 	private static final String LOG_TAG = "DatabaseHandler";	
 
@@ -35,7 +35,7 @@ public class DatabaseHandler{
 	 */
 	private class PromiseDatabase extends SQLiteOpenHelper{
 
-		public PromiseDatabase(Context context, String name, int version) {
+		PromiseDatabase(Context context, String name, int version) {
 			super(context, name, null, version);
 		}
 
@@ -68,7 +68,7 @@ public class DatabaseHandler{
 		}
 	}
 
-	public DatabaseHandler(Context context, String createSchema, String tableName) {
+	DatabaseHandler(Context context, String createSchema, String tableName) {
 		dbms = new PromiseDatabase(context, SQLQueries.dbName, SQLQueries.DB_VERSION);
 		this.createSchema = createSchema;
 		this.tableName = tableName;
@@ -167,7 +167,7 @@ public class DatabaseHandler{
 
 		try {
 			int res = 0;
-			res = db.updateWithOnConflict(tableName, v, keys.get(0).toString() + " = '" + item.getValue(0) + "'", null , SQLiteDatabase.CONFLICT_IGNORE);
+			res = db.updateWithOnConflict(tableName, v, keys.get(0) + " = '" + item.getValue(0) + "'", null , SQLiteDatabase.CONFLICT_IGNORE);
 			Log.d(LOG_TAG, "" + res + " items are updated!!! - updateItem");
 		} catch(SQLException e){
 			//e.printStackTrace();
@@ -175,7 +175,6 @@ public class DatabaseHandler{
 		} catch(Exception e){
 			e.printStackTrace();
 			return false;
-		} finally {
 		}
 
 		//showAll();
@@ -196,7 +195,6 @@ public class DatabaseHandler{
 		} catch(Exception e){
 			e.printStackTrace();
 			return false;
-		} finally {
 		}
 
 		//showAll();
@@ -239,7 +237,7 @@ public class DatabaseHandler{
 		return items;        
 	}
 
-	public Collection<IDatabaseRecord> getItems(){
+	Collection<IDatabaseRecord> getItems(){
 		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
@@ -249,9 +247,6 @@ public class DatabaseHandler{
 		} catch(SQLException e){
 			if(e.getMessage().contains("no such table")){
 				db.execSQL(createSchema);
-				if(cursor != null){
-					cursor.close();
-				}
 				return items;
 			}
 		}
@@ -277,7 +272,7 @@ public class DatabaseHandler{
 		return items;        
 	}
 
-	public Collection<IDatabaseRecord> getItems(String pkFieldName, String value){
+	Collection<IDatabaseRecord> getItems(String pkFieldName, String value){
 		Collection<IDatabaseRecord> items = new ArrayList<>();
 
 		Cursor cursor = null;
@@ -383,7 +378,7 @@ public class DatabaseHandler{
 		return record;
 	}
 
-	public int getCountAll() {
+	int getCountAll() {
 		String countQuery = SQLQueries.countAll + tableName;
 		SQLiteDatabase db = dbms.getReadableDatabase();
 		Cursor cursor = db.rawQuery(countQuery, null);
@@ -401,7 +396,7 @@ public class DatabaseHandler{
 		return count;
 	}
 
-	public int getCount(String pkFieldName, String value) {
+	int getCount(String pkFieldName, String value) {
 		String countQuery = String.format(SQLQueries.countSome, tableName, pkFieldName);
 		SQLiteDatabase db = dbms.getReadableDatabase();
 		Cursor cursor = db.rawQuery(countQuery, new String[] {value} );
@@ -421,22 +416,20 @@ public class DatabaseHandler{
 		return result;
 	}
 
-	public synchronized void deleteAll(){
+	synchronized void deleteAll(){
 		SQLiteDatabase db = dbms.getWritableDatabase();
 
 		try{
 			db.delete(tableName, null, null);
 		} catch(Exception e){
 			// to nothing
-		} finally{
-			//db.close();   
 		}
 	}
 
 	public synchronized int delete(String pkFieldName, String value){
 		String countQuery = String.format(SQLQueries.deleteSome, tableName, pkFieldName);
 		SQLiteDatabase db = dbms.getWritableDatabase();
-		Cursor cursor = null;
+		Cursor cursor;
 		int count = 0;
 		
 		try{
@@ -455,7 +448,7 @@ public class DatabaseHandler{
 	public synchronized int delete(String where){
 		String countQuery = String.format(SQLQueries.deleteSomeWithWhereStatement, tableName, where);
 		SQLiteDatabase db = dbms.getWritableDatabase();
-		Cursor cursor = null;
+		Cursor cursor;
 		int count = 0;
 		
 		try{
@@ -478,7 +471,7 @@ public class DatabaseHandler{
 		ContentValues v = new ContentValues();
 		SparseArray<String> keys = item.getColumns();
 
-		int key = 0;
+		int key;
 		for(int cnt = 0; cnt < keys.size() ; cnt++){
 			key = keys.keyAt(cnt);
 			// Because of finding problem, below util inserting ' + value + '
@@ -495,7 +488,7 @@ public class DatabaseHandler{
 	 * for Debugging
 	 */
 
-	public void showAll(){
+	void showAll(){
 
 		if(!DEBUGALLDATAS)
 		{
@@ -509,39 +502,33 @@ public class DatabaseHandler{
 		Log.d(LOG_TAG, ">> ALL DATAS");
 		Log.d(LOG_TAG, "----------------------------------------------------------------------------------------");
 
-		Cursor cursor = null; 
-
-		try{
-			SQLiteDatabase db = dbms.getReadableDatabase();
-			cursor = db.rawQuery(SQLQueries.findAll + tableName, null);
-
-			if(cursor.moveToFirst()) {
+		SQLiteDatabase db = dbms.getReadableDatabase();
+		try (Cursor cursor = db.rawQuery(SQLQueries.findAll + tableName, null)) {
+			if (cursor.moveToFirst()) {
 				do {
 					int end = cursor.getColumnCount();
 
-					for(int cnt = 0 ; cnt < end ; cnt++){
+					for (int cnt = 0; cnt < end; cnt++) {
 
-						if(first){
-							columnName += cursor.getColumnName(cnt) + "\t\t";    
-						}                    
+						if (first) {
+							columnName += cursor.getColumnName(cnt) + "\t\t";
+						}
 						columnValue += cursor.getString(cnt) + "\t";
 					}
 
-					if(first){
+					if (first) {
 						Log.d(LOG_TAG, columnName);
 						Log.d(LOG_TAG, "----------------------------------------------------------------------------------------");
 						first = false;
 					}
 
-					Log.d(LOG_TAG, columnValue);   
+					Log.d(LOG_TAG, columnValue);
 					columnValue = "";
 
-				} while(cursor.moveToNext());
+				} while (cursor.moveToNext());
 			}
-		} catch(Exception e){
+		} catch (Exception e) {
 			// do nothing
-		} finally {
-			cursor.close();
 		}
 
 	}

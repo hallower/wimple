@@ -1,6 +1,7 @@
 package kr.blogspot.charlie0301.wimple.impl;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,9 +54,8 @@ public class WimpleImpl implements IWimpleImpl {
 
 	private static final WimpleImpl INSTANCE = new WimpleImpl();
 
-	private static Context context = null;
-	private final HandlerThread dispatchHandlerThread;
-	private final MainHandler mainHandler;   
+	private static WeakReference<Context> context;
+	private final MainHandler mainHandler;
 
 	// subsystems
 	private final EntryManager em = new EntryManager(this);
@@ -141,9 +141,9 @@ public class WimpleImpl implements IWimpleImpl {
 		public void onPostPaymentsResponseReceived(boolean status) { }
 	};
 
-	protected WimpleImpl(){ 
+	protected WimpleImpl(){
 
-		dispatchHandlerThread = new HandlerThread("Dispatching");
+		HandlerThread dispatchHandlerThread = new HandlerThread("Dispatching");
 		dispatchHandlerThread.start();
 		mainHandler = new MainHandler(dispatchHandlerThread.getLooper());
 		rai = new RestAPIInvoker(this);
@@ -169,7 +169,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public void setApplicationContext(Context context){
-		WimpleImpl.context = context;
+		WimpleImpl.context = new WeakReference<>(context);
 		rrh.setApplicationContext(context);
 
 		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
@@ -205,46 +205,44 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		saved_value = settings.getString("section_name","Default");
-		if((null == defaultSectionName ||
-				defaultSectionName.isEmpty()) &&
-				null != saved_value){
+		if(null == defaultSectionName || defaultSectionName.isEmpty()){
 			defaultSectionName = saved_value;
 		}
 		
 		if(null == uidbh){
-			uidbh = new UserInfoDBHandler(WimpleImpl.context);    
+			uidbh = new UserInfoDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == adbh){
-			adbh = new AccountDBHandler(WimpleImpl.context);    
+			adbh = new AccountDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == lidbh){
-			lidbh = new ItemDBHandler(WimpleImpl.context, "frequentitems");    
+			lidbh = new ItemDBHandler(WimpleImpl.context.get(), "frequentitems");
 		}
 
 		if(null == sdbh){
-			sdbh = new SectionDBHandler(WimpleImpl.context);
+			sdbh = new SectionDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == edbh){
-			edbh = new EntryDBHandler(WimpleImpl.context);
+			edbh = new EntryDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == midbh){
-			midbh = new ItemDBHandler(WimpleImpl.context, "monthlyitems");
+			midbh = new ItemDBHandler(WimpleImpl.context.get(), "monthlyitems");
 		}	
 
 		if(null == asdbh){
-			asdbh = new AccountStateDBHandler(WimpleImpl.context);
+			asdbh = new AccountStateDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == iedbh){
-			iedbh = new IncomeExpenseDBHandler(WimpleImpl.context);
+			iedbh = new IncomeExpenseDBHandler(WimpleImpl.context.get());
 		}
 
 		if(null == bddbh){
-			bddbh = new BudgetDBHandler(WimpleImpl.context);
+			bddbh = new BudgetDBHandler(WimpleImpl.context.get());
 		}
 	}
 
@@ -273,7 +271,7 @@ public class WimpleImpl implements IWimpleImpl {
 	}
 
 	public String getDefaultSectionName() {
-		return defaultSectionName + " " + context.getResources().getString(R.string.section);
+		return defaultSectionName + " " + context.get().getResources().getString(R.string.section);
 	}
 
 	public void setDefaultSectionName(String defaultSectionName) {
@@ -303,38 +301,38 @@ public class WimpleImpl implements IWimpleImpl {
 	private boolean isAuthed = false;
 	private boolean isInitializedFinished = false;
 
-	public static final class Path {
+	static final class Path {
 
-		public static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
-		public static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
-		public static final String AUTH_ACCESS_TOKEN 		= "app_auth/access_token";
+		static final String AUTH_REQUEST_TOKEN 	= "app_auth/request_token";
+		static final String AUTH_AUTHORIZE 		= "app_auth/authorize";
+		static final String AUTH_ACCESS_TOKEN 		= "app_auth/access_token";
 
-		public static final String USER_INFO				= "api/user.json";
+		static final String USER_INFO				= "api/user.json";
 
-		public static final String SECTIONS_ALL			= "api/sections.json";
-		public static final String SECTIONS_DEFAULT		= "api/sections/default.json";
+		static final String SECTIONS_ALL			= "api/sections.json";
+		static final String SECTIONS_DEFAULT		= "api/sections/default.json";
 
-		public static final String ACCOUNT_ALL			= "api/accounts.json_array";
+		static final String ACCOUNT_ALL			= "api/accounts.json_array";
 
-		public static final String ENTRIES_ALL			= "api/entries.json_array";
-		public static final String ENTRIES_LATEST			= "api/entries/latest.json_array";	
-		public static final String ENTRIES_MODIFY			= "api/entries/";
-		public static final String ENTRIES_REMOVE			= ENTRIES_MODIFY;
-		public static final String POST_PAYMENT				= "api/entries/outside.json";
-		public static final String REPORT_FAILED_PAYMENT	= "api/entries/outside_report.json";
+		static final String ENTRIES_ALL			= "api/entries.json_array";
+		static final String ENTRIES_LATEST			= "api/entries/latest.json_array";
+		static final String ENTRIES_MODIFY			= "api/entries/";
+		static final String ENTRIES_REMOVE			= ENTRIES_MODIFY;
+		static final String POST_PAYMENT				= "api/entries/outside.json";
+		static final String REPORT_FAILED_PAYMENT	= "api/entries/outside_report.json";
 
-		public static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
-		public static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
-		public static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
-		public static final String ITEM_MONTHLY_REMOVE		= "api/monthly_items/slot1/";
+		static final String ITEM_FREQUENT			= "api/frequent_items.json_array";
+		static final String ITEM_LATEST			= "api/entries/latest_items.json_array";
+		static final String ITEM_MONTHLY			= "api/monthly_items.json_array";
+		static final String ITEM_MONTHLY_REMOVE		= "api/monthly_items/slot1/";
 
-		public static final String FINANCIAL_STATE			= "api/bs.json_array";
+		static final String FINANCIAL_STATE			= "api/bs.json_array";
 
-		public static final String INCOME_AND_EXPENSE		= "api/pl.json_array";
-		public static final String BUDGET_INCOME			= "api/budget/income.json_array";
-		public static final String BUDGET_EXPENSES			= "api/budget/expenses.json_array";
+		static final String INCOME_AND_EXPENSE		= "api/pl.json_array";
+		static final String BUDGET_INCOME			= "api/budget/income.json_array";
+		static final String BUDGET_EXPENSES			= "api/budget/expenses.json_array";
 
-		public static final String MONEYNEWS				= "api/bbs/moneynews.json";
+		static final String MONEYNEWS				= "api/bbs/moneynews.json";
 
 	};
 
@@ -408,33 +406,33 @@ public class WimpleImpl implements IWimpleImpl {
 
 		private CommandID() {}
 
-		public static final int CMD_BASE = 1000;
+		static final int CMD_BASE = 1000;
 
-		public static final int CMD_AUTHENTICATION_SUCCEED = CMD_BASE + 1;
-		public static final int CMD_AUTHENTICATION_FAILED = CMD_BASE + 3;
-		public static final int CMD_GET_TEMP_TOKEN = CMD_BASE + 5;
-		public static final int CMD_GET_ACCESS_TOKEN = CMD_BASE + 7;
+		static final int CMD_AUTHENTICATION_SUCCEED = CMD_BASE + 1;
+		static final int CMD_AUTHENTICATION_FAILED = CMD_BASE + 3;
+		static final int CMD_GET_TEMP_TOKEN = CMD_BASE + 5;
+		static final int CMD_GET_ACCESS_TOKEN = CMD_BASE + 7;
 
-		public static final int CMD_GET_USER_INFO = CMD_BASE + 9;
+		static final int CMD_GET_USER_INFO = CMD_BASE + 9;
 
-		public static final int CMD_GET_SECTIONS = CMD_BASE + 11;
-		public static final int CMD_GET_SECTIONS_DEFAULT = CMD_BASE + 13;
-		public static final int CMD_GET_ACCOUNT_ALL = CMD_BASE + 15;
-		public static final int CMD_GET_ENTRIES = CMD_BASE + 17;
-		public static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 19;
-		public static final int CMD_POST_ENTRY = CMD_BASE + 21;		
-		public static final int CMD_GET_FRQUENT_ITEMS = CMD_BASE + 23;		
-		public static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
-		public static final int CMD_PUT_ENTRY = CMD_BASE + 27;		
-		public static final int CMD_GET_MONTHLY_ITEMS = CMD_BASE + 29;		
-		public static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
-		public static final int CMD_DELETE_ENTRY = CMD_BASE + 33;
-		public static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;		
-		public static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;
-		public static final int CMD_GET_INCOME_AND_EXPENSE = CMD_BASE + 39;
-		public static final int CMD_GET_BUDGET = CMD_BASE + 41;
-		public static final int CMD_POST_NEWS = CMD_BASE + 43;
-		public static final int CMD_POST_PAYMENTS = CMD_BASE + 45;
+		static final int CMD_GET_SECTIONS = CMD_BASE + 11;
+		static final int CMD_GET_SECTIONS_DEFAULT = CMD_BASE + 13;
+		static final int CMD_GET_ACCOUNT_ALL = CMD_BASE + 15;
+		static final int CMD_GET_ENTRIES = CMD_BASE + 17;
+		static final int CMD_GET_LATEST_ENTRIES = CMD_BASE + 19;
+		static final int CMD_POST_ENTRY = CMD_BASE + 21;
+		static final int CMD_GET_FRQUENT_ITEMS = CMD_BASE + 23;
+		static final int CMD_GET_LATEST_ITEMS = CMD_BASE + 25;
+		static final int CMD_PUT_ENTRY = CMD_BASE + 27;
+		static final int CMD_GET_MONTHLY_ITEMS = CMD_BASE + 29;
+		static final int CMD_PROFILE_PICTURE_UPDATED = CMD_BASE + 31;
+		static final int CMD_DELETE_ENTRY = CMD_BASE + 33;
+		static final int CMD_DELETE_MONTHLY_ITEMS = CMD_BASE + 35;
+		static final int CMD_GET_FINANCIAL_STATE = CMD_BASE + 37;
+		static final int CMD_GET_INCOME_AND_EXPENSE = CMD_BASE + 39;
+		static final int CMD_GET_BUDGET = CMD_BASE + 41;
+		static final int CMD_POST_NEWS = CMD_BASE + 43;
+		static final int CMD_POST_PAYMENTS = CMD_BASE + 45;
 	}
 
 
@@ -449,7 +447,7 @@ public class WimpleImpl implements IWimpleImpl {
 	private class MainHandler extends Handler {
 
 		@SuppressLint("HandlerLeak")
-		public MainHandler(Looper looper){
+		MainHandler(Looper looper){
 			super(looper);
 		}
 
@@ -480,20 +478,23 @@ public class WimpleImpl implements IWimpleImpl {
 			{
 				Map<String, String> list = (Map<String, String>) obj;
 
+				if (list == null) {
+					return;
+				}
 				token = list.get("token");
 				tokenSecret = list.get("token_secret");
 				userID = list.get("user_id");
 
 				// TODO : Have to store userID
-				if(null == context){
+				if(null == context.get()){
 					Log.e(LOG_TAG, "Application Context is not set!!!");
 					//throw new Exception("Application Context is not set!!!");
 				}
 
-				SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
-				settings.edit().putString("token", token).commit();
-				settings.edit().putString("token_secret", tokenSecret).commit(); 
-				settings.edit().putString("userid", userID).commit(); 
+				SharedPreferences settings = context.get().getSharedPreferences(settingsKey, context.get().MODE_PRIVATE);
+				settings.edit().putString("token", token).apply();
+				settings.edit().putString("token_secret", tokenSecret).apply();
+				settings.edit().putString("userid", userID).apply();
 
 				if(booleanStatus){
 					Log.d(LOG_TAG, "CMD_GET_ACCESS_TOKEN is succeed!!!");
@@ -638,12 +639,12 @@ public class WimpleImpl implements IWimpleImpl {
 		defaultSectionID = "";
 		defaultSectionName = "";
 
-		SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
-		settings.edit().putString("token", "").commit();
-		settings.edit().putString("token_secret", "").commit(); 
-		settings.edit().putString("userid", "").commit();
-		settings.edit().putString("section_id", "").commit();
-		settings.edit().putString("section_name", "").commit();
+		SharedPreferences settings = context.get().getSharedPreferences(settingsKey, context.get().MODE_PRIVATE);
+		settings.edit().putString("token", "").apply();
+		settings.edit().putString("token_secret", "").apply();
+		settings.edit().putString("userid", "").apply();
+		settings.edit().putString("section_id", "").apply();
+		settings.edit().putString("section_name", "").apply();
 
 		this.isInitializedFinished = false;
 		this.isAuthed = false;
@@ -711,12 +712,12 @@ public class WimpleImpl implements IWimpleImpl {
 		return true;
 	}
 
-	public class GetAccessTokenTaskThread extends Thread {
+	private class GetAccessTokenTaskThread extends Thread {
 
 		private final String token;
 		private final String pin;
 
-		public GetAccessTokenTaskThread(String token, String pin) {
+		GetAccessTokenTaskThread(String token, String pin) {
 			super();
 			this.token = token;
 			this.pin = pin;
@@ -767,7 +768,7 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			Collection<Section> list = new ArrayList<Section>();
+			Collection<Section> list = new ArrayList<>();
 
 			if((!forceUpdate) &&
 					(sdbh.hasData())){
@@ -901,7 +902,7 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
-			Collection<Section> list = new ArrayList<Section>();
+			Collection<Section> list = new ArrayList<>();
 
 			if((!forceUpdate) &&
 					(sdbh.hasData())){
@@ -909,8 +910,8 @@ public class WimpleImpl implements IWimpleImpl {
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
 				defaultSectionName = ((Section)list.toArray()[0]).getTitle();
-				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
-				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).commit();
+				context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
+				context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).apply();
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 				return;
 			}
@@ -944,8 +945,8 @@ public class WimpleImpl implements IWimpleImpl {
 				list = sdbh.getAllSections();
 				defaultSectionID = ((Section)list.toArray()[0]).getId();
 				defaultSectionName = ((Section)list.toArray()[0]).getTitle();
-				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
-				context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).commit();
+				context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).apply();
+				context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).apply();
 				Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
 				sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 
@@ -987,96 +988,91 @@ public class WimpleImpl implements IWimpleImpl {
 		@Override
 		public void run() {
 
+			if((!forceUpdate) &&
+					adbh.hasData()){
+
+				Collection<Account> list = filterOutAccounts();
+				Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
+				return;
+			}
+
+			Collection<Account> list = new ArrayList<>();
+
+			if(null == sectionID ||
+					sectionID.isEmpty()){
+				Log.e(LOG_TAG, "[Account] Initialization is on progressing !!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				return;
+			}
+
+			String path = "?section_id=" + sectionID;
+
 			try{
-
-				if((!forceUpdate) &&
-						adbh.hasData()){
-
-					Collection<Account> list = filterOutAccounts();
-					Log.d(LOG_TAG, "[Account] Providing FILTERRED GetAllAccountsTaskThread from Cache!!!");
-					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, list);
-					return;
-				}
-
-				Collection<Account> list = new ArrayList<Account>();
-
-				if(null == sectionID ||
-						sectionID.isEmpty()){
-					Log.e(LOG_TAG, "[Account] Initialization is on progressing !!!");
+				JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
+				if(null == json){
+					Log.e(LOG_TAG, "[Account] Error response - null returned");
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
 
-				String path = "?section_id=" + sectionID;
-
-				try{
-					JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
-					if(null == json){
-						Log.e(LOG_TAG, "[Account] Error response - null returned");
-						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-						return;
-					}
-
-					if(	!json.get("code").toString().startsWith("2")){
-						Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
-						sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
-						return;
-					}
-
-					setRemainedAPICall(json.getString("rest_of_api"));
-					JSONObject results = json.getJSONObject("results");
-					int seq = 1;
-
-                    Iterator<String> iterator = results.keys();
-                    while (iterator.hasNext()) {
-                        String type = iterator.next();
-
-						JSONArray accountType = results.getJSONArray(type);
-
-						for(int i = 0; i < accountType.length(); i++){
-
-							JSONObject account = accountType.getJSONObject(i);
-
-							Account newlyAccount = new Account(type.toString(), account);
-							newlyAccount.setSeq(seq++);
-							//Log.e(LOG_TAG, "---" + newlyAccount.toString());
-							list.add(newlyAccount);
-						}
-					}
-				} catch(Exception e){
-					Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
-					e.printStackTrace();
+				if(	!json.get("code").toString().startsWith("2")){
+					Log.e(LOG_TAG, "[Account] Error response - " + json.get("message").toString());
 					sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
 					return;
 				}
 
-				if(adbh.getAllAccounts().size() != list.size())
-				{
-					Log.e(LOG_TAG, "[Account] account is add/removed!!!");					
-					adbh.clean();
-				}			
-				adbh.insert(list);
+				setRemainedAPICall(json.getString("rest_of_api"));
+				JSONObject results = json.getJSONObject("results");
+				int seq = 1;
 
-				{
-					Collection<Account> filtredList = filterOutAccounts();
-					Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
-					sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, filtredList);	
+Iterator<String> iterator = results.keys();
+while (iterator.hasNext()) {
+String type = iterator.next();
+
+					JSONArray accountType = results.getJSONArray(type);
+
+					for(int i = 0; i < accountType.length(); i++){
+
+						JSONObject account = accountType.getJSONObject(i);
+
+						Account newlyAccount = new Account(type, account);
+						newlyAccount.setSeq(seq++);
+						//Log.e(LOG_TAG, "---" + newlyAccount.toString());
+						list.add(newlyAccount);
+					}
 				}
+			} catch(Exception e){
+				Log.e(LOG_TAG, "[Account] Failed - GetAllAccountsTaskThread!!!");
+				e.printStackTrace();
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
+				return;
+			}
 
-			}finally{
-				//apiAvailableSemaphore.get("getAllAccounts").release();
-			}		
+			if(adbh.getAllAccounts().size() != list.size())
+			{
+				Log.e(LOG_TAG, "[Account] account is add/removed!!!");
+				adbh.clean();
+			}
+			adbh.insert(list);
+
+			{
+				Collection<Account> filtredList = filterOutAccounts();
+				Log.d(LOG_TAG, "[Account] Providing GetAllAccountsTaskThread from Server!!!");
+				sm(CommandID.CMD_GET_ACCOUNT_ALL, 1, 0, filtredList);
+			}
+
 		}
 
 		private Collection<Account> filterOutAccounts() {
 
 			Collection<Account> accountList = adbh.getAllAccounts();
-			Collection<Account> list = new ArrayList<Account>();
+			Collection<Account> list = new ArrayList<>();
 
 			for(Account item : accountList){
 				String open = item.getOpenedDate();
 				String closed = item.getClosedDate();
-				Date itemDate = null;
+				Date itemDate;
 
 				try{
 					sdf.setLenient(false);
@@ -1111,7 +1107,7 @@ public class WimpleImpl implements IWimpleImpl {
 					Log.d(LOG_TAG, "[Account] Filtering failed !!! with item=" + item.getTitle() + ", open=" + open + ", close=" + closed);
 					list.add(item);
 					continue;
-				}					
+				}
 
 			}
 			return list;
@@ -1316,7 +1312,7 @@ public class WimpleImpl implements IWimpleImpl {
 				if((!forceUpdate) &&
 						asdbh.hasData()){
 
-					Collection<AccountState> list = new ArrayList<AccountState>();
+					Collection<AccountState> list;
 					list = asdbh.getAllAccountStates();
 
 					Log.d(LOG_TAG, "[FState] Providing FILTERRED GetFinancialStateTaskThread from Cache!!!");
@@ -1324,7 +1320,7 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
-				Collection<AccountState> list = new ArrayList<AccountState>();
+				Collection<AccountState> list = new ArrayList<>();
 
 				if(null == sectionID ||
 						sectionID.isEmpty()){
@@ -1371,19 +1367,18 @@ public class WimpleImpl implements IWimpleImpl {
                         String type = iterator.next();
 
 						JSONObject accountType  = results.getJSONObject(type);
-						String category = type.toString();
 
-                        Iterator<String> iterName = accountType.keys();
+						Iterator<String> iterName = accountType.keys();
                         while (iterName.hasNext()) {
                             String name = iterName.next();
 
-							if(0 == name.toString().compareTo("accounts")){
+							if(0 == name.compareTo("accounts")){
 								JSONArray rows = accountType.getJSONArray(name);
 
 								for(int i = 0; i < rows.length(); i++){
 
 									JSONObject row = rows.getJSONObject(i);
-									AccountState as = new AccountState(row, category);
+									AccountState as = new AccountState(row, type);
 
 									Account account = adbh.getAccountName(as.getAccountID());
 									if(null == account){
@@ -1465,7 +1460,7 @@ public class WimpleImpl implements IWimpleImpl {
 				if((!forceUpdate) &&
 						iedbh.hasData()){
 
-					Collection<AccountState> list = new ArrayList<AccountState>();
+					Collection<AccountState> list;
 					list = iedbh.getAllAccountStates();
 
 					Log.d(LOG_TAG, "[InE] Providing FILTERRED GetIncomeAndExpenseTaskThread from Cache!!!");
@@ -1473,7 +1468,7 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
-				Collection<AccountState> list = new ArrayList<AccountState>();
+				Collection<AccountState> list = new ArrayList<>();
 
 				if(null == sectionID ||
 						sectionID.isEmpty()){
@@ -1550,9 +1545,8 @@ public class WimpleImpl implements IWimpleImpl {
                         String type = iterator.next();
 
 						JSONObject accountType  = results.getJSONObject(type);
-						String category = type.toString();
 
-                        Iterator<String> iterName = accountType.keys();
+						Iterator<String> iterName = accountType.keys();
                         while (iterName.hasNext()) {
                             String name = iterName.next();
 
@@ -1565,13 +1559,13 @@ public class WimpleImpl implements IWimpleImpl {
 							}else if(0 == name.toString().compareTo("total_floating")){
 
 							}else*/
-							if(0 == name.toString().compareTo("accounts")){
+							if(0 == name.compareTo("accounts")){
 								JSONArray rows = accountType.getJSONArray(name);
 
 								for(int i = 0; i < rows.length(); i++){
 
 									JSONObject row = rows.getJSONObject(i);
-									AccountState as = new AccountState(row, category);
+									AccountState as = new AccountState(row, type);
 
 									Account account = adbh.getAccountName(as.getAccountID());
 									if(null == account){
@@ -1662,10 +1656,10 @@ public class WimpleImpl implements IWimpleImpl {
 				if((!forceUpdate) &&
 						bddbh.hasData()){
 
-					Collection<Budget> list = new ArrayList<Budget>();
+					Collection<Budget> list;
 					list = bddbh.getAllBudgets(isIncome);
 
-					Map<String, Budget> map = new HashMap<String, Budget>();
+					Map<String, Budget> map = new HashMap<>();
 
 					for(Budget budget : list){
 						map.put(budget.getAccountID(), budget);
@@ -1675,7 +1669,7 @@ public class WimpleImpl implements IWimpleImpl {
 					return;
 				}
 
-				Map<String, Budget> map = new HashMap<String, Budget>();
+				Map<String, Budget> map = new HashMap<>();
 
 				if(null == sectionID ||
 						sectionID.isEmpty()){
@@ -1783,7 +1777,7 @@ public class WimpleImpl implements IWimpleImpl {
                     while (iterator.hasNext()) {
                         String type = iterator.next();
 
-						if(0 == type.toString().compareTo("aggregate"))
+						if(0 == type.compareTo("aggregate"))
 						{
 
 							JSONObject accountType  = results.getJSONObject(type);
@@ -1793,7 +1787,7 @@ public class WimpleImpl implements IWimpleImpl {
                             while (iterName.hasNext()) {
                                 String name = iterName.next();
 
-								if(0 == name.toString().compareTo("total")){
+								if(0 == name.compareTo("total")){
 
 									JSONObject rows = accountType.getJSONObject(name);
 
@@ -1806,13 +1800,12 @@ public class WimpleImpl implements IWimpleImpl {
                                         String totalKey = iterTotalKey.next();
 
 										Long totalValue = Long.parseLong("" + rows.get(totalKey));
-										String subname = totalKey.toString();
 
-										if(0 == subname.compareTo("budget")){
+										if(0 == totalKey.compareTo("budget")){
 											budget = totalValue;
-										}else if(0 == subname.compareTo("money")){
+										}else if(0 == totalKey.compareTo("money")){
 											money = totalValue;
-										}else if(0 == subname.compareTo("remains")){
+										}else if(0 == totalKey.compareTo("remains")){
 											remains = totalValue;	
 										}
 									}
@@ -1826,7 +1819,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 							}else if(0 == name.toString().compareTo("total_floating")){
 									 */
-								}else if(0 == name.toString().compareTo("accounts")){
+								}else if(0 == name.compareTo("accounts")){
 									JSONArray rows = accountType.getJSONArray(name);
 
 									for(int i = 0; i < rows.length(); i++){
@@ -1903,7 +1896,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 			try{
 
-				String postingContent = "";
+				String postingContent;
 				String formatNewsPost = "subject=%s&contents=%s";
 
 				postingContent = String.format(formatNewsPost, TextUtils.htmlEncode(subject), TextUtils.htmlEncode(contents));
@@ -2063,7 +2056,7 @@ public class WimpleImpl implements IWimpleImpl {
 		return midbh;
 	}
 
-	public String getProfilePath(){
+	private String getProfilePath(){
 
 		String filename = this.userID;
 		if(filename.contains("@")){
@@ -2071,20 +2064,20 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 
 		/*
-		String packageName = context.getPackageName();
+		String packageName = context.get().getPackageName();
 		File externalPath = Environment.getExternalStorageDirectory();		
 
 		String storagePath = externalPath.getAbsolutePath() +
                 "/Android/data/" + packageName + "/files";
 		 */
-		File filePath = context.getFilesDir();
+		File filePath = context.get().getFilesDir();
 		String storagePath = filePath.getAbsolutePath();
 
 		if(!storagePath.endsWith("/")){
 			storagePath += "/";
 		}
 
-		return new String( storagePath + filename + ".bin");
+		return storagePath + filename + ".bin";
 	}
 
 	public Bitmap getProfilePicture(){
@@ -2106,7 +2099,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 		private final String url;
 
-		public ProfileDownloadTaskThread(String url) {
+		ProfileDownloadTaskThread(String url) {
 			this.url = url;
 		}
 

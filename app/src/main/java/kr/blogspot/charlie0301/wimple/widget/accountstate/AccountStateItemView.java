@@ -2,7 +2,6 @@ package kr.blogspot.charlie0301.wimple.widget.accountstate;
 
 import kr.blogspot.charlie0301.wimple.R;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
-import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import android.content.Context;
 import android.graphics.Typeface;
@@ -11,13 +10,12 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.utils.Utils;
-
+@SuppressWarnings("deprecation")
 public class AccountStateItemView extends LinearLayout {
 
 	private final Context context;
 
-	private LinearLayout llbackground = null;
+	private LinearLayout llBackground = null;
 	private TextView type = null;
 	private TextView title = null;
 	private TextView amount = null;
@@ -31,7 +29,7 @@ public class AccountStateItemView extends LinearLayout {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_account_state, this, true);
 
-		llbackground = (LinearLayout)findViewById(R.id.as_background);
+		llBackground = (LinearLayout)findViewById(R.id.as_background);
 		type = (TextView)findViewById(R.id.as_item_type);
 		title = (TextView)findViewById(R.id.as_item_title);
 		amount = (TextView)findViewById(R.id.as_item_amount);
@@ -66,7 +64,7 @@ public class AccountStateItemView extends LinearLayout {
 			amount.setTypeface(null,Typeface.NORMAL);
 			layoutParams.setMargins(50, 0, 0, 0);
 		}
-		llbackground.setLayoutParams(layoutParams);
+		llBackground.setLayoutParams(layoutParams);
 
 		return true;
 	}

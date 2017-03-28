@@ -1,12 +1,11 @@
 package kr.blogspot.charlie0301.wimple.model;
 
-import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.util.Log;
 import android.util.SparseArray;
+
+import org.json.JSONObject;
+
+import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
 
 public class UserInfo implements IDatabaseRecord {
 
@@ -63,8 +62,8 @@ public class UserInfo implements IDatabaseRecord {
 		super();
 	}
 
-	public UserInfo(String id, String name, Long joinDate,
-			String userImgURL, Integer mileage, Integer level) {
+	private UserInfo(String id, String name, Long joinDate,
+					 String userImgURL, Integer mileage, Integer level) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -130,11 +129,11 @@ public class UserInfo implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n-[UserInfo : " + id + " ]------------------------------");
-		sb.append("\n   name = " + name);
-		sb.append("\n   join since = " + joinDate);
-		sb.append("\n   userImgUrl = " + userImgURL);
-		sb.append("\n   mileage = " + mileage);
+		sb.append("\n-[UserInfo : ").append(id).append(" ]------------------------------");
+		sb.append("\n   name = ").append(name);
+		sb.append("\n   join since = ").append(joinDate);
+		sb.append("\n   userImgUrl = ").append(userImgURL);
+		sb.append("\n   mileage = ").append(mileage);
 		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();

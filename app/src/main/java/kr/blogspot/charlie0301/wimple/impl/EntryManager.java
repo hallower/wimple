@@ -19,39 +19,18 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-public class EntryManager {
+class EntryManager {
 
 	private static final String LOG_TAG = "EntryManager";
 
-	private final IWimpleImpl wimpl;	
+	private final IWimpleImpl wimpl;
 
-	private final String formatEntryPost = "[{" +
-			"\"entry_date\" : %s," +
-			"\"l_account\" : \"%s\"," +
-			"\"l_account_id\" : \"%s\"," +
-			"\"r_account\" : \"%s\"," +
-			"\"r_account_id\" : \"%s\"," +
-			"\"item\" : \"%s\"," +
-			"\"money\" : %f," +
-			"\"memo\" : \"%s\"" +
-			"}]";
-
-	private final String formatEntryPut = "" +
-			"&entry_date=%s" +			
-			"&l_account=%s" +
-			"&l_account_id=%s" +
-			"&r_account=%s" +
-			"&r_account_id=%s" +
-			"&item=%s" +
-			"&money=%f" +
-			"";
-
-	public EntryManager(IWimpleImpl wimpl) {
+	EntryManager(IWimpleImpl wimpl) {
 		super();
 		this.wimpl = wimpl;
 	}
 
-	public boolean getStoredEntries(){
+	boolean getStoredEntries(){
 
 		if(null == wimpl.getEntryDBHandler()){
 			return false;
@@ -73,40 +52,40 @@ public class EntryManager {
 		return true;
 	}
 
-	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate){
+	boolean getAllEntries(String sectionID, String latestDate, String oldestDate){
 
 		new GetAllEntriesTaskThread(sectionID, latestDate, oldestDate, 0).start();		
 		return true;
 	}
 
-	public boolean getAllEntries(String sectionID, String latestDate, String oldestDate, int count){
+	boolean getAllEntries(String sectionID, String latestDate, String oldestDate, int count){
 
 		new GetAllEntriesTaskThread(sectionID, latestDate, oldestDate, count).start();		
 		return true;
 	}
 
 
-	public boolean getLatestEntries(String sectionID, int count, boolean noDuplicate){
+	boolean getLatestEntries(String sectionID, int count, boolean noDuplicate){
 
 		new GetLatestEntriesTaskThread(sectionID, count).start();		
 		return true;
 	}
 
-	public boolean makeEntry(String sectionID, Long date, Account left, Account right, 
-			String title, Double amount, String memo){
+	boolean makeEntry(String sectionID, Long date, Account left, Account right,
+					  String title, Double amount, String memo){
 
 		new PostEntryTaskThread(sectionID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
 
-	public boolean modifyEntry(String sectionID, String entryID, String date, Account left, Account right, 
-			String title, Double amount, String memo){
+	boolean modifyEntry(String sectionID, String entryID, String date, Account left, Account right,
+						String title, Double amount, String memo){
 
 		new PutEntryTaskThread(sectionID, entryID, date, left, right, title, amount, memo).start();		
 		return true;
 	}
 	
-	public boolean removeEntry(String sectionID, String entryID){
+	boolean removeEntry(String sectionID, String entryID){
 
 		new DeleteEntryTaskThread(sectionID, entryID).start();		
 		return true;
@@ -131,7 +110,7 @@ public class EntryManager {
 
 			try {
 
-				Collection<Entry> list = new ArrayList<Entry>();
+				Collection<Entry> list = new ArrayList<>();
 				String path = "?section_id=" + sectionID + "&start_date=" + oldestDate + "&end_date=" + latestDate;
 
 				if (0 > count) {
@@ -226,7 +205,7 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			Collection<Entry> list = new ArrayList<Entry>();
+			Collection<Entry> list = new ArrayList<>();
 			String path = "?section_id=" + sectionID;
 
 			if(0 > count){
@@ -311,7 +290,17 @@ public class EntryManager {
 		@Override
 		public void run() {
 
-			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(), 
+			String formatEntryPost = "[{" +
+					"\"entry_date\" : %s," +
+					"\"l_account\" : \"%s\"," +
+					"\"l_account_id\" : \"%s\"," +
+					"\"r_account\" : \"%s\"," +
+					"\"r_account_id\" : \"%s\"," +
+					"\"item\" : \"%s\"," +
+					"\"money\" : %f," +
+					"\"memo\" : \"%s\"" +
+					"}]";
+			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
 					formatEntryPost, 
 					DateFormatUtils.getServerDateFormat().format(new Date(date)), 
 					left.getWhat(),
@@ -381,6 +370,15 @@ public class EntryManager {
 		@Override
 		public void run() {
 
+			String formatEntryPut = "" +
+					"&entry_date=%s" +
+					"&l_account=%s" +
+					"&l_account_id=%s" +
+					"&r_account=%s" +
+					"&r_account_id=%s" +
+					"&item=%s" +
+					"&money=%f" +
+					"";
 			String pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
 					formatEntryPut,
 					date, 

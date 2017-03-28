@@ -1,14 +1,13 @@
 package kr.blogspot.charlie0301.wimple.model;
 
+import android.util.Log;
+import android.util.SparseArray;
+
+import org.json.JSONObject;
+
 import java.util.Comparator;
 
 import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.util.Log;
-import android.util.SparseArray;
 
 public class Account implements IDatabaseRecord {
 
@@ -160,14 +159,14 @@ public class Account implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n-[Account : " + what + " - " + id + " (" + type + ") ]------------------------------");
-		sb.append("\n   type = " + type);
-		sb.append("\n   title = " + title);
-		sb.append("\n   description = " + description);
-		sb.append("\n   openedDate = " + openedDate);
-		sb.append("\n   closedDate = " + closedDate);
-		sb.append("\n   category = " + category);
-		sb.append("\n   seq = " + seq);
+		sb.append("\n-[Account : ").append(what).append(" - ").append(id).append(" (").append(type).append(") ]------------------------------");
+		sb.append("\n   type = ").append(type);
+		sb.append("\n   title = ").append(title);
+		sb.append("\n   description = ").append(description);
+		sb.append("\n   openedDate = ").append(openedDate);
+		sb.append("\n   closedDate = ").append(closedDate);
+		sb.append("\n   category = ").append(category);
+		sb.append("\n   seq = ").append(seq);
 		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();

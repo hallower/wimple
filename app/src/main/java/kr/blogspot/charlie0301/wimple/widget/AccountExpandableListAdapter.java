@@ -16,13 +16,14 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
+@SuppressWarnings("deprecation")
 public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 	private Context context;
 	private static final String LOG_TAG = "ExpandableListAdapter";
 
 	private List<String> listDataHeader; // header titles
 	// child data in format of header title, child title
-	private Map<String, List<Account>> listDataChild = new HashMap<String, List<Account>>();
+	private Map<String, List<Account>> listDataChild = new HashMap<>();
 
 	private boolean isSelected = false;
 	private int selectedGroupPosition = -1;
@@ -30,14 +31,6 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 
 	public AccountExpandableListAdapter(Context context) {
 		this.context = context;
-	}
-	
-	public AccountExpandableListAdapter(Context context, List<String> listDataHeader,
-			Map<String, List<Account>> listChildData) {
-		this(context);
-		this.listDataHeader = listDataHeader;
-		this.listDataChild = listChildData;
-		sort();
 	}
 
 	public void setData(List<String> listDataHeader,
@@ -76,9 +69,9 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 		final String childText = ((Account) getChild(groupPosition, childPosition)).getTitle().replaceAll("\\r\\n|\\r|\\n", "");
 
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this.context
+			LayoutInflater inflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = infalInflater.inflate(R.layout.exp_list_item, null);
+			convertView = inflater.inflate(R.layout.exp_list_item, null);
 		}
 
 		TextView txtListChild = (TextView) convertView
@@ -131,9 +124,9 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter{
 			View convertView, ViewGroup parent) {
 		String headerTitle = (String) getGroup(groupPosition);
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this.context
+			LayoutInflater inflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = infalInflater.inflate(R.layout.exp_list_group, null);
+			convertView = inflater.inflate(R.layout.exp_list_group, null);
 		}
 
 		TextView lblListHeader = (TextView) convertView

@@ -232,7 +232,7 @@ public class Item implements IDatabaseRecord {
 			case 1 :
 				try{
 					this.date = Long.parseLong(value);
-				}catch (Exception e) {
+				}catch (Exception ignored) {
 				}
 				break;
 			case 2 :

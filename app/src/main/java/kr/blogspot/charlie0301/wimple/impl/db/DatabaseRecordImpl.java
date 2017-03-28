@@ -2,20 +2,20 @@ package kr.blogspot.charlie0301.wimple.impl.db;
 
 import android.util.SparseArray;
 
-public class DatabaseRecordImpl implements IDatabaseRecord {
+class DatabaseRecordImpl implements IDatabaseRecord {
 
     private final String primaryKeyValue;
     private final SparseArray<String> columns;
     private SparseArray<String> values;    
 
-    public DatabaseRecordImpl(String primaryKeyValue, SparseArray<String> columns) {
+    DatabaseRecordImpl(String primaryKeyValue, SparseArray<String> columns) {
         super();
         this.primaryKeyValue = primaryKeyValue;
         this.columns = columns;
         values = new SparseArray<>();
     }
 
-    public DatabaseRecordImpl setValue(int key, String value) {
+    DatabaseRecordImpl setValue(int key, String value) {
         if(null == value){
             value = "";
         }

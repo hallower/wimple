@@ -9,47 +9,47 @@ import kr.blogspot.charlie0301.wimple.impl.db.ItemDBHandler;
 import org.json.JSONObject;
 
 
-public interface IWimpleImpl {
+interface IWimpleImpl {
 
 	// subsystem
-	public Semaphore getApiAvailableSemaphore(String key);
+	Semaphore getApiAvailableSemaphore(String key);
 	
-	public ItemDBHandler getLatestItemDBHandler();
-	public EntryDBHandler getEntryDBHandler();
-	public ItemDBHandler getMonthlyItemDBHandler();
+	ItemDBHandler getLatestItemDBHandler();
+	EntryDBHandler getEntryDBHandler();
+	ItemDBHandler getMonthlyItemDBHandler();
 	
 	// getter
 	
-	public abstract String getServicehost();
+	String getServicehost();
 	
-	public abstract String getAppid();
+	String getAppid();
 
-	public abstract String getVo42iw5me4vxz();
+	String getVo42iw5me4vxz();
 
-	public abstract String getToken();
+	String getToken();
 
-	public abstract String getTokenSecret();
+	String getTokenSecret();
 
-	public abstract String getUserID();
+	String getUserID();
 	
-	public abstract Integer getSequence();
+	Integer getSequence();
 
-	public abstract Boolean isAuthed();
+	Boolean isAuthed();
 	
-	public abstract Integer getRemainedAPICall();
+	Integer getRemainedAPICall();
 	
-	public abstract Integer getTotalAPICall();
+	Integer getTotalAPICall();
 	
-	public abstract void setRemainedAPICall(String count);
+	void setRemainedAPICall(String count);
 	
 	
-	public void sm(int cmd, Object msg);
+	void sm(int cmd, Object msg);
 
-	public void sm(int cmd, int a1, int a2, Object msg);
+	void sm(int cmd, int a1, int a2, Object msg);
 	
 	
 	
-	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params);
+	JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params);
 	
-	public void handleRESTErrorResponse(int code);
+	void handleRESTErrorResponse(int code);
 }

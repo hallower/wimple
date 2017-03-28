@@ -36,7 +36,7 @@ public class SectionDBHandler {
 	}
 
 	public boolean insert(Section data) {
-		if(data instanceof IDatabaseRecord){
+		if(data != null){
 			return dbHandler.addItem(data);
 		}
 		//dbHandler.showAll();
@@ -53,7 +53,6 @@ public class SectionDBHandler {
 	}
 
 	public boolean insert(Collection<Section> data) {
-		boolean res = false;
 
 		if(data==null || data.isEmpty()){
 			return false;
@@ -62,12 +61,12 @@ public class SectionDBHandler {
 		// TODO : use TCL
 		for(Section act : data) {
 
-			if(act instanceof IDatabaseRecord){
+			if(act != null){
 				dbHandler.addItem(act);
 			}
 		}
 		//dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	/*

@@ -1,12 +1,11 @@
 package kr.blogspot.charlie0301.wimple.model;
 
-import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.util.Log;
 import android.util.SparseArray;
+
+import org.json.JSONObject;
+
+import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
 
 public class Section implements IDatabaseRecord {
 
@@ -167,16 +166,16 @@ public class Section implements IDatabaseRecord {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n-[Section : " + id + " ]------------------------------");
-		sb.append("\n   title = " + title);
-		sb.append("\n   description = " + description);
-		sb.append("\n   openedDate = " + currency);
-		sb.append("\n   closedDate = " + isolation);
-		sb.append("\n   category = " + asset);
-		sb.append("\n   category = " + debt);
-		sb.append("\n   category = " + skinID);
-		sb.append("\n   category = " + decimalPosition);
-		sb.append("\n   category = " + dateFormat);
+		sb.append("\n-[Section : ").append(id).append(" ]------------------------------");
+		sb.append("\n   title = ").append(title);
+		sb.append("\n   description = ").append(description);
+		sb.append("\n   openedDate = ").append(currency);
+		sb.append("\n   closedDate = ").append(isolation);
+		sb.append("\n   category = ").append(asset);
+		sb.append("\n   category = ").append(debt);
+		sb.append("\n   category = ").append(skinID);
+		sb.append("\n   category = ").append(decimalPosition);
+		sb.append("\n   category = ").append(dateFormat);
 		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();

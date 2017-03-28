@@ -6,16 +6,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-public class RestResponseHandler {
+class RestResponseHandler {
 
 	public static final String LOG_TAG = "RestResponseHandler";
 	public Context context;
 
-	public RestResponseHandler() {
+	RestResponseHandler() {
 		super();
 	}
 
-	public void setApplicationContext(Context context){
+	void setApplicationContext(Context context){
 		this.context = context;
 	}
 
@@ -29,7 +29,7 @@ public class RestResponseHandler {
 	 * 405	인증토큰이 만료되거나 잘못 되었을 때.	 =>  언제든지 사용자가 후잉에서 인증토큰의 권한을 취소할 수 있으므로 항상 이 값을 확인하여 재인증을 요구하는 구조여야 함.
 	 * 500	서버측에서 발생한 에러. 잠시 후 다시 시도하면 됨.
 	 */
-	public void handleRestResponse(int code){
+	void handleRestResponse(int code){
 
 		if(null == context){
 			Log.e(LOG_TAG, "RestResponseHandler is not initialized!!!");

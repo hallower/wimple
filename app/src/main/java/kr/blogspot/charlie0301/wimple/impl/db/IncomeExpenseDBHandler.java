@@ -31,7 +31,7 @@ public class IncomeExpenseDBHandler {
 	}
 
 	public boolean insert(AccountState data) {
-		if(data instanceof IDatabaseRecord){
+		if(data != null){
 			return dbHandler.addItem(data);
 		}
 		//dbHandler.showAll();
@@ -48,7 +48,6 @@ public class IncomeExpenseDBHandler {
 	}
 
 	public boolean insert(Collection<AccountState> data) {
-		boolean res = false;
 
 		if(data==null || data.isEmpty()){
 			return false;
@@ -57,12 +56,12 @@ public class IncomeExpenseDBHandler {
 		// TODO : use TCL
 		for(AccountState act : data) {
 
-			if(act instanceof IDatabaseRecord){
+			if(act != null){
 				dbHandler.addItem(act);
 			}
 		}
 		dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	/*
