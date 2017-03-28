@@ -19,8 +19,8 @@ public class BudgetStateItemListAdapter extends BaseAdapter {
 	//private static final String LOG_TAG = "BudgetStateItemListAdapter";
 	private Context mContext;
 
-	private List<AccountState> items = new ArrayList<AccountState>();
-	private Map<String, Budget> budgets = new HashMap<String, Budget>();
+	private List<AccountState> items = new ArrayList<>();
+	private Map<String, Budget> budgets = new HashMap<>();
 	
 	public BudgetStateItemListAdapter(Context context) {
 		mContext = context;
@@ -46,11 +46,7 @@ public class BudgetStateItemListAdapter extends BaseAdapter {
 		sort();
 	}
 
-	
-	public void setListAccountStates(List<AccountState> lit) {
-		items = lit;
-	}
-	
+
 	public void setBudgets(Map<String, Budget> budgets) {
 		this.budgets = budgets;
 	}
@@ -71,7 +67,7 @@ public class BudgetStateItemListAdapter extends BaseAdapter {
 
 		AccountState accountState = items.get(position);
 		
-		Budget budget = null;
+		Budget budget;
 		
 		try{
 			budget = budgets.get(accountState.getAccountID());	
@@ -95,7 +91,7 @@ public class BudgetStateItemListAdapter extends BaseAdapter {
 	}
 
 
-	public void sort(){
+	private void sort(){
 		Collections.sort(items, new AccountState.DateAscCompare());
 	}
 }

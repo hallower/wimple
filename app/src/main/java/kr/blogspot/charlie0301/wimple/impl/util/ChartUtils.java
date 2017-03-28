@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple.impl.util;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -25,15 +26,13 @@ public class ChartUtils {
 
 		int cnt;
 		List<PieEntry> entries = new ArrayList<>();
-		float fMaxValue = Float.parseFloat(Double.valueOf(maxValue).toString());
 
 		for(cnt = 0;cnt<dataValues.length;cnt++){
-			float value = Float.parseFloat(Double.valueOf(dataValues[cnt]).toString());
-			if(dataValues.length > 10 &&
-					value <= (fMaxValue * 0.01))
+			if(dataValues[cnt] <= maxValue * 0.1)
 					continue;
 
-			entries.add(new PieEntry(value, legendValues[cnt]));
+			Log.d("csk", dataValues[cnt] + ", " + legendValues[cnt] + ", " + maxValue * 0.03);
+			entries.add(new PieEntry(Float.parseFloat(Double.valueOf(dataValues[cnt]).toString()), legendValues[cnt]));
 		}
 
 		int[] barColorValues = new int[cnt];

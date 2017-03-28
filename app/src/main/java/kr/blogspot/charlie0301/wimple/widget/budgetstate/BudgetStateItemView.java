@@ -13,9 +13,7 @@ import android.widget.TextView;
 
 public class BudgetStateItemView extends LinearLayout {
 
-	private final Context context;
-
-	private LinearLayout llbackground = null;
+	private LinearLayout llBackground = null;
 	private TextView budget = null;
 	private TextView title = null;
 	private TextView percentage = null;
@@ -23,23 +21,17 @@ public class BudgetStateItemView extends LinearLayout {
 
 	public BudgetStateItemView(Context context){
 		super(context);
-		this.context = context;	
 
 		// Layout Inflation
-		LayoutInflater inflater = (LayoutInflater)this.context
+		LayoutInflater inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		inflater.inflate(R.layout.list_budget_state, this, true);
 
-		llbackground = (LinearLayout)findViewById(R.id.as_background);
+		llBackground = (LinearLayout)findViewById(R.id.as_background);
 		budget = (TextView)findViewById(R.id.as_item_budget);
 		title = (TextView)findViewById(R.id.as_item_title);
 		percentage = (TextView)findViewById(R.id.as_item_percentage);
 		amount = (TextView)findViewById(R.id.as_item_amount);
-	}
-
-	public BudgetStateItemView(Context context, AccountState item) {
-		this(context);
-		setData(item);
 	}
 
 	public BudgetStateItemView(Context context, AccountState item, Budget budget) {
@@ -51,6 +43,7 @@ public class BudgetStateItemView extends LinearLayout {
 		return setData(item, null);
 	}
 
+	@SuppressWarnings("deprecation")
 	public boolean setData(AccountState item, Budget budget) {
 
 		if(null == title)
@@ -74,7 +67,7 @@ public class BudgetStateItemView extends LinearLayout {
 			amount.setTypeface(null,Typeface.NORMAL);
 			layoutParams.setMargins(50, 0, 0, 0);
 		}
-		llbackground.setLayoutParams(layoutParams);
+		llBackground.setLayoutParams(layoutParams);
 
 		if(null == budget){
 			return true;
@@ -105,6 +98,7 @@ public class BudgetStateItemView extends LinearLayout {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void setBackgroundAccountWidget(TextView tv, String account){
 		switch(account.charAt(0)){
 

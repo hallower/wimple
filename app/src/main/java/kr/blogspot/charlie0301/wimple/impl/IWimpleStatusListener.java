@@ -3,14 +3,14 @@ package kr.blogspot.charlie0301.wimple.impl;
 
 public interface IWimpleStatusListener {
 	
-	public void onLoggedIn(boolean status);
+	void onLoggedIn(boolean status);
 	
-	public void onLoggedOut();
+	void onLoggedOut();
 	
-	public void onProfilePictureUpdated();
+	void onProfilePictureUpdated();
 	
-	public void onNetworkConnectionEstablished();
+	void onNetworkConnectionEstablished();
 	
-	public void onNetworkConnectionLost();
+	void onNetworkConnectionLost();
 	
 }

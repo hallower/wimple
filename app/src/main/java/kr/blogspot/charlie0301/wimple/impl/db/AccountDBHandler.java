@@ -38,7 +38,7 @@ public class AccountDBHandler {
 	}
 
 	public boolean insert(Account data) {
-		if(data instanceof IDatabaseRecord){
+		if(data != null){
 			return dbHandler.addItem(data);
 		}
 		//dbHandler.showAll();
@@ -55,7 +55,6 @@ public class AccountDBHandler {
 	}
 
 	public boolean insert(Collection<Account> data) {
-		boolean res = false;
 
 		if(data==null || data.isEmpty()){
 			return false;
@@ -64,12 +63,12 @@ public class AccountDBHandler {
 		// TODO : use TCL
 		for(Account act : data) {
 
-			if(act instanceof IDatabaseRecord){
+			if(act != null){
 				dbHandler.addItem(act);
 			}
 		}
 		//dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	/*

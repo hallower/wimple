@@ -15,7 +15,7 @@
         <LinearLayout
             android:id="@+id/chart"
             android:layout_width="match_parent"
-            android:layout_height="330dp"
+            android:layout_height="280dp"
             android:layout_gravity="center"
             android:gravity="center"
             android:paddingBottom="1dp"
@@ -31,6 +31,7 @@
             android:id="@+id/saving_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:divider="@null"
             android:dividerHeight="0dp" />
     </LinearLayout>
 

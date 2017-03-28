@@ -27,7 +27,7 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 	private int selectedGroupPosition = -1;
 	private int selectedChildPosition = -1;
 
-	public AccountStateExpandableListAdapter(Context context) {
+	private AccountStateExpandableListAdapter(Context context) {
 		this.context = context;
 	}
 	
@@ -84,9 +84,9 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 		final String childText = ((AccountState) getChild(groupPosition, childPosition)).getAccountName().replaceAll("\\r\\n|\\r|\\n", "");
 
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this.context
+			LayoutInflater inflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = infalInflater.inflate(R.layout.exp_list_item, null);
+			convertView = inflater.inflate(R.layout.exp_list_item, null);
 		}
 
 		TextView txtListChild = (TextView) convertView
@@ -139,9 +139,9 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 			View convertView, ViewGroup parent) {
 		String headerTitle = (String) getGroup(groupPosition);
 		if (convertView == null) {
-			LayoutInflater infalInflater = (LayoutInflater) this.context
+			LayoutInflater inflater = (LayoutInflater) this.context
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = infalInflater.inflate(R.layout.exp_list_group, null);
+			convertView = inflater.inflate(R.layout.exp_list_group, null);
 		}
 
 		TextView lblListHeader = (TextView) convertView
@@ -218,7 +218,7 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 		return selectedChildPosition;
 	}
 
-	public AccountState getSelected(){
+	private AccountState getSelected(){
 		if(!this.isSelected){
 			return null;
 		}

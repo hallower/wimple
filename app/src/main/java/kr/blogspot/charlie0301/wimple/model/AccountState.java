@@ -198,7 +198,7 @@ public class AccountState implements IDatabaseRecord {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		values.append(0, accountID);
 		values.append(1, accountName);

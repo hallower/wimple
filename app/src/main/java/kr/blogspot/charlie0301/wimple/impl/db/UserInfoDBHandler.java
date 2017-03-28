@@ -45,12 +45,10 @@ public class UserInfoDBHandler {
 	}
 
 	public boolean cleanAndInsert(UserInfo userinfo) {
-		boolean res = false;
-
 		dbHandler.deleteAll();
 		dbHandler.addItem(userinfo);
 		dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	public UserInfo get(){

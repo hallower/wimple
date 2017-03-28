@@ -31,7 +31,7 @@ public class BudgetDBHandler {
 	}
 
 	public boolean insert(Budget data) {
-		if(data instanceof IDatabaseRecord){
+		if(data != null){
 			return dbHandler.addItem(data);
 		}
 		//dbHandler.showAll();
@@ -48,7 +48,6 @@ public class BudgetDBHandler {
 	}
 
 	public boolean insert(Map<String, Budget> data) {
-		boolean res = false;
 
 		if(data==null || data.isEmpty()){
 			return false;
@@ -58,12 +57,12 @@ public class BudgetDBHandler {
 		for(String key : data.keySet()) {
 
 			Budget act = data.get(key);
-			if(act instanceof IDatabaseRecord){
+			if(act != null){
 				dbHandler.addItem(act);
 			}
 		}
 		dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	/*

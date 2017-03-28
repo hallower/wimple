@@ -15,21 +15,21 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-public class ItemManager {
+class ItemManager {
 
 	private static final String LOG_TAG = "ItemManager";
 	
 	private final IWimpleImpl wimpl;
 	
 
-	public ItemManager(IWimpleImpl wimpl) {
+	ItemManager(IWimpleImpl wimpl) {
 		super();
 		this.wimpl = wimpl;
 	}
 
 	
 	
-	public boolean getFrequentItems(String sectionID){
+	boolean getFrequentItems(String sectionID){
 
 		new GetFrequentItemsTaskThread(sectionID).start();		
 		return true;
@@ -46,7 +46,7 @@ public class ItemManager {
 		@Override
 		public void run() {
 
-			Collection<Item> list = new ArrayList<Item>();
+			Collection<Item> list = new ArrayList<>();
 			String path = "?section_id=" + sectionID;
 
 			JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
@@ -87,7 +87,7 @@ public class ItemManager {
 	}
 
 	
-	public boolean getLatestItems(String sectionID, boolean forceUpdate){
+	boolean getLatestItems(String sectionID, boolean forceUpdate){
 
 		new GetLatestItemsTaskThread(sectionID, forceUpdate).start();		
 		return true;
@@ -114,7 +114,7 @@ public class ItemManager {
 				return;
 			}
 			
-			Collection<Item> list = new ArrayList<Item>();
+			Collection<Item> list = new ArrayList<>();
 			if(null == sectionID ||
 					sectionID.isEmpty()){
 				Log.e(LOG_TAG, "[Latest Item] Failed - invalid sectionID !!!");
@@ -156,14 +156,13 @@ public class ItemManager {
 			}catch (JSONException e){
 				Log.e(LOG_TAG, "[Latest Item] Failed - invalid sectionID !!!");
 				wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
-				return;
 			}
 		}			
 
 	}
 
 	
-	public boolean getMonthlyItems(String sectionID, boolean forceUpdate){
+	boolean getMonthlyItems(String sectionID, boolean forceUpdate){
 
 		new GetMonthlyItemsTaskThread(sectionID, forceUpdate).start();		
 		return true;
@@ -191,7 +190,7 @@ public class ItemManager {
 			}
 
 			try{
-				ArrayList<Item> list = new ArrayList<Item>();
+				ArrayList<Item> list = new ArrayList<>();
 				String path = "?section_id=" + sectionID;
 
 				JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_MONTHLY + path, "");
@@ -237,7 +236,7 @@ public class ItemManager {
 	}
 
 	
-	public boolean removeMonthlyItem(String sectionID, String itemID){
+	boolean removeMonthlyItem(String sectionID, String itemID){
 
 		new DeleteMonthlyItemTaskThread(sectionID, itemID).start();		
 		return true;

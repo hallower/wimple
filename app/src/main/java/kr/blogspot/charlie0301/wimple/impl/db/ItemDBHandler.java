@@ -35,7 +35,7 @@ public class ItemDBHandler {
     }
 
     public boolean insert(Item data) {
-        if(data instanceof IDatabaseRecord){
+        if(data != null){
             return dbHandler.addItem(data);
         }
         //dbHandler.showAll();
@@ -56,8 +56,7 @@ public class ItemDBHandler {
 	}
     
     public boolean insert(Collection<Item> data) {
-        boolean res = false;
-      
+
         if(data==null || data.isEmpty()){
             return false;
         }
@@ -65,12 +64,12 @@ public class ItemDBHandler {
         // TODO : use TCL
         for(Item act : data) {
             
-            if(act instanceof IDatabaseRecord){
+            if(act != null){
                 dbHandler.addItem(act);
             }
         }
         //dbHandler.showAll();
-        return res;
+        return true;
     }
 
     public Item getItem(String id){
@@ -88,7 +87,7 @@ public class ItemDBHandler {
     
     
     public Collection<Item> getAllItems(){
-    	Collection<Item> acts = new ArrayList<Item>();
+    	Collection<Item> acts = new ArrayList<>();
     	Collection<IDatabaseRecord> records = dbHandler.getItems();
 
     	for(IDatabaseRecord record : records){

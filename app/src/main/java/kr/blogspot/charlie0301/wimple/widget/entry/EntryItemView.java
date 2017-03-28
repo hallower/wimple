@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+@SuppressWarnings("deprecation")
 public class EntryItemView extends LinearLayout {
 
 	private static final String LOG_TAG = "EntryItemView";

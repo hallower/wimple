@@ -17,7 +17,7 @@ public class Entry extends Item {
 	private String memo;
 	private String appID;
 
-	public static final SparseArray<String> columns = new SparseArray<String>();    
+	public static final SparseArray<String> columns = new SparseArray<>();
 
 	static {
 		columns.append(0, "id");
@@ -73,7 +73,7 @@ public class Entry extends Item {
 			this.appID = entry.getString("app_id");
 
 
-			Long dateLong = 0L;
+			Long dateLong;
 
 			String dateString = entry.get("entry_date").toString();
 			setDateValue("7"+dateString);
@@ -119,17 +119,17 @@ public class Entry extends Item {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\n-[Section : " + getId() + " ]------------------------------");
-		sb.append("\n   date = " + getDate());
-		sb.append("\n   dateValue = " + getDateValue());
-		sb.append("\n   leftAccount = " + getLeftAccount());
-		sb.append("\n   leftAccountID = " + getLeftAccountID());
-		sb.append("\n   rightAccount = " + getRightAccount());
-		sb.append("\n   rightAccountID = " + getRightAccountID());
-		sb.append("\n   amount = " + getAmount());
-		sb.append("\n   balance = " + balance);
-		sb.append("\n   memo = " + memo);
-		sb.append("\n   appID = " + appID);
+		sb.append("\n-[Section : ").append(getId()).append(" ]------------------------------");
+		sb.append("\n   date = ").append(getDate());
+		sb.append("\n   dateValue = ").append(getDateValue());
+		sb.append("\n   leftAccount = ").append(getLeftAccount());
+		sb.append("\n   leftAccountID = ").append(getLeftAccountID());
+		sb.append("\n   rightAccount = ").append(getRightAccount());
+		sb.append("\n   rightAccountID = ").append(getRightAccountID());
+		sb.append("\n   amount = ").append(getAmount());
+		sb.append("\n   balance = ").append(balance);
+		sb.append("\n   memo = ").append(memo);
+		sb.append("\n   appID = ").append(appID);
 		sb.append("\n---------------------------------------------------------------------");
 
 		return sb.toString();
@@ -153,8 +153,8 @@ public class Entry extends Item {
 
 	@Override
 	public boolean setValues(SparseArray<String> values) {
-		int key = 0;
-		String value = "";
+		int key;
+		String value;
 
 		for(int i = 0; i < values.size() ; i++){
 			key = values.keyAt(i);
@@ -242,7 +242,7 @@ public class Entry extends Item {
 
 	@Override
 	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<String>();
+		SparseArray<String> values = new SparseArray<>();
 
 		values.append(0, getId());
 		values.append(1, getDate().toString());

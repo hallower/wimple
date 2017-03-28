@@ -18,7 +18,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 	private static final String LOG_TAG = "EntryItemListAdapter";
 	private Context mContext;
 
-	private List<Item> items = new ArrayList<Item>();
+	private List<Item> items = new ArrayList<>();
 	public EntryItemListAdapter(Context context) {
 		mContext = context;
 	}
@@ -171,7 +171,7 @@ public class EntryItemListAdapter extends BaseAdapter {
 	}
 
 
-	public void sortByDate(){
+	private void sortByDate(){
 		Collections.sort(items, new DateDescCompare());
 	}
 

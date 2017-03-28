@@ -1,23 +1,7 @@
 package kr.blogspot.charlie0301.wimple.impl;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import android.util.Log;
 
-//import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
-//import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
-import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
-import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
-import kr.blogspot.charlie0301.wimple.impl.util.Utils;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -25,35 +9,40 @@ import com.sun.jersey.spi.service.ServiceFinder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
-import android.util.Log;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import javax.net.ssl.SSLContext;
+import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
+import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
+import kr.blogspot.charlie0301.wimple.impl.util.Utils;
 
-import static kr.blogspot.charlie0301.wimple.impl.util.Utils.getStringFromInputStream;
+//import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
+//import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
 
 
-public class RestAPIInvoker {
+class RestAPIInvoker {
 
 	private static final String LOG_TAG = "RestAPIInvoker";
 	private final IWimpleImpl wimple;
-	public enum HTTP_METHOD { GET, POST, PUT, DELETE }
+	enum HTTP_METHOD { GET, POST, PUT, DELETE }
 
 	private static final boolean isNeedToPrintResult = true;
 	
-	public RestAPIInvoker(IWimpleImpl wimpleImpl){
+	RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;
 	}
 	
-	public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){
+	JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params){
 
 		Client client = null;
 		WebResource webResource;
 		JSONObject object = null;
 
 		try{
-			ServiceFinder.setIteratorProvider(new AndroidServiceIteratorProvider<Object>());
+			ServiceFinder.setIteratorProvider(new AndroidServiceIteratorProvider<>());
 
 			Log.d(LOG_TAG, "Invoke REST API, " + method.toString() + " , Path=" + path);
 			client = SSLClientHelper.createClient();
@@ -88,7 +77,7 @@ public class RestAPIInvoker {
 			
 			if(RestAPIInvoker.isNeedToPrintResult){
 				Log.d(LOG_TAG, "result -------------------------------------------------");
-				Log.d(LOG_TAG, output.toString());
+				Log.d(LOG_TAG, output);
 				Log.d(LOG_TAG, "result -------------------------------------------------");	
 			}
 
@@ -114,9 +103,9 @@ public class RestAPIInvoker {
 		return object;
 	}
 
-	public Map<String, String> invokeRESTAPIForMap(String path, String params){
+	Map<String, String> invokeRESTAPIForMap(String path, String params){
 
-		Map<String, String> list = new HashMap<String, String>();
+		Map<String, String> list = new HashMap<>();
 		JSONObject object = invokeRESTAPI(HTTP_METHOD.POST, path, params);
 
 		if(null == object){
@@ -140,7 +129,7 @@ public class RestAPIInvoker {
 
 				list.put(key, value);
 				if(RestAPIInvoker.isNeedToPrintResult){
-					Log.e(LOG_TAG, "key=" + key.toString() + ", value=" + value);
+					Log.e(LOG_TAG, "key=" + key + ", value=" + value);
 				}
 			}
 		}catch (JSONException e){

@@ -2,10 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/as_background"
     android:layout_width="match_parent"
-    android:layout_height="30dp"
-    android:background="@android:drawable/dialog_holo_light_frame"
+    android:layout_height="24dp"
     android:orientation="horizontal"
-    android:padding="8dp" >
+    android:padding="4dp" >
 
     <TextView
         android:id="@+id/as_item_type"

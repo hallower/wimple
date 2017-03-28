@@ -38,7 +38,7 @@ public class EntryDBHandler {
 	}
 
 	public boolean insert(Entry data) {
-		if(data instanceof IDatabaseRecord){
+		if(data != null){
 			return dbHandler.addItem(data);
 		}
 		dbHandler.showAll();
@@ -63,21 +63,20 @@ public class EntryDBHandler {
 	}
 	
 	public boolean insert(Collection<Entry> data) {
-		boolean res = false;
 
 		if(data==null || data.isEmpty()){
 			return false;
 		}
 
 		// TODO : use TCL
-		for(Entry act : (Collection<Entry>)data) {
+		for(Entry act : data) {
 
-			if(act instanceof IDatabaseRecord){
+			if(act != null){
 				dbHandler.addItem(act);
 			}
 		}
 		//dbHandler.showAll();
-		return res;
+		return true;
 	}
 
 	/*
