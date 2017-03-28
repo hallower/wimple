@@ -7,8 +7,8 @@ android {
         applicationId "com.blogspot.charlie0301"
         minSdkVersion 19
         targetSdkVersion 24
-        versionCode 30
-        versionName "1.0.30"
+        versionCode 31
+        versionName "1.0.31"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
