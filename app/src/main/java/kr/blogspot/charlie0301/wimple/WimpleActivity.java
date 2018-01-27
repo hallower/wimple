@@ -126,10 +126,9 @@ public class WimpleActivity extends AppCompatActivity
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+		context = new WeakReference<>(getApplicationContext());
+		super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wimple);
-
-        context = new WeakReference<>(getApplicationContext());
 
 		// GUI
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
