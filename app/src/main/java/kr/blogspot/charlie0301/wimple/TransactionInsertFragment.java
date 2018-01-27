@@ -491,10 +491,14 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			txtMemo.setText(entryItem.getMemo());	
 		}
         setAmount(entry.getAmount());
-		//datePicker.setDate(entry.getDate());
-        Calendar today = Calendar.getInstance();
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        datePicker.setDate(today.getTimeInMillis());
+
+		if(toolMode == CurrentToolMode.EDITING){
+			datePicker.setDate(entry.getDate());
+		}else {
+			Calendar today = Calendar.getInstance();
+			today.set(Calendar.HOUR_OF_DAY, 0);
+			datePicker.setDate(today.getTimeInMillis());
+		}
 
 		selectCategory(entry);
 	}
