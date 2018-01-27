@@ -3,6 +3,11 @@ package kr.blogspot.charlie0301.wimple.impl.util;
 
 public class Calculator {
 
+	public interface CalculatorResultListener
+	{
+		void OnResultUpdate(double amount);
+	}
+
 	//private static final String LOG_TAG = "Calculator";
 
 	private enum OPERATOR { NONE, PLUS, MIN, MUL, DIV };
@@ -10,6 +15,7 @@ public class Calculator {
 	private OPERATOR op = OPERATOR.NONE;
 	private Double left = 0.0;
 	private Double right = 0.0;
+	private CalculatorResultListener listener;
 
 	private static final int NUMBER_SIZE = 20;
 	private int[] numbers = new int[NUMBER_SIZE];
@@ -19,6 +25,7 @@ public class Calculator {
 	private boolean isPointInserting = false;
 
 	public Calculator(){
+		listener = null;
 		init();
 	}
 
@@ -83,6 +90,7 @@ public class Calculator {
 			}
 		}
 
+		listener.OnResultUpdate(res);
 		return res;
 	}
 
@@ -202,11 +210,18 @@ public class Calculator {
 		}
 		return getStackedValue();
 	}
-	
+
 	public Double setValue(Double value){
 		resetPointInserting();
 		init();
 		left = value;
-		return getStackedValue();
+		listener.OnResultUpdate(value);
+		return value;
+	}
+
+	public void setListener(CalculatorResultListener listener)
+	{
+		this.listener = listener;
+		listener.OnResultUpdate(left);
 	}
 }
