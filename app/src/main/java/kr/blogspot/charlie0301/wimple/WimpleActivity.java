@@ -54,7 +54,7 @@ public class WimpleActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String LOG_TAG = "WimpleActivity";
-    private static final String whooingURL = "https://whooing.com";
+    private static final String whooingURL = "https://new.whooing.com";
 
     private static final WeakReference<WimpleImpl> wimple = new WeakReference<>(WimpleImpl.getInstance());
     private static Handler mainHandler;

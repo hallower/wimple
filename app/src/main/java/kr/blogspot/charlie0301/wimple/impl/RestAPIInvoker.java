@@ -19,17 +19,13 @@ import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
 import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
 import kr.blogspot.charlie0301.wimple.impl.util.Utils;
 
-//import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider;
-//import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper;
-
-
 class RestAPIInvoker {
 
 	private static final String LOG_TAG = "RestAPIInvoker";
 	private final IWimpleImpl wimple;
 	enum HTTP_METHOD { GET, POST, PUT, DELETE }
 
-	private static final boolean isNeedToPrintResult = true;
+	private static final boolean isNeedToPrintResult = false;
 	
 	RestAPIInvoker(IWimpleImpl wimpleImpl){
 		this.wimple = wimpleImpl;
