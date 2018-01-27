@@ -91,7 +91,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	@Override
 	public void onResume() {
 		context = WimpleActivity.context.get();
-		//initWimple();
+		initWimple();
 
 		super.onResume();
 	}
@@ -173,7 +173,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		setAmountText(0.0);
 
-		initWimple();
+		//initWimple();
+
 
 		return view;
 	}
@@ -728,11 +729,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			if(booleanStatus){
 				adapterLatestItems.clear();
+                adapterLatestItems.getFilter().filter("");
 				adapterLatestItems.addAll((List<Item>) obj);
-				// Do not sort this items, because they doesn't have date value!!!
-				//adapterLatestItems.sort(new Item.DateDescCompare());
 				adapterLatestItems.notifyDataSetChanged();
-			}	
+			}
 		}
 		break;
 
