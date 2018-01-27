@@ -23,21 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <Fragment
-            android:name="kr.blogspot.charlie0301.wimple.TransactionInsertFragment"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_transaction_insert_fragment"
-            android:windowSoftInputMode="adjustResize" >
-        </Fragment>
-        <Fragment
-            android:name="kr.blogspot.charlie0301.wimple.TransactionListFragment"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_transaction_list_fragment" >
-        </Fragment>
-        <Fragment
-            android:name="kr.blogspot.charlie0301.wimple.SettingsFragment"
-            android:label="@string/title_settings_fragment" >
-        </Fragment>
 		<activity
             android:name="kr.blogspot.charlie0301.wimple.WimpleActivity"
             android:configChanges="orientation|screenSize"
