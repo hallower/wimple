@@ -10,10 +10,12 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -75,7 +77,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private TextView tvNoticeMessage;
 
 	// Data
-
 	private enum CurrentToolMode { INSERT, EDITING, MONTHLY_INSERT }
 
 	private ArrayAdapter<Item> adapterLatestItems;
@@ -94,26 +95,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		initWimple();
 
 		super.onResume();
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
-	@Override
-	public void onStop() {
-		super.onStop();
 	}
 
 	private void initWimple() {
@@ -171,16 +152,36 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		setupButtons();
 
-		setAmountText(0.0);
+		cal.setListener(new Calculator.CalculatorResultListener() {
+            @Override
+            public void OnResultUpdate(double amount) {
+                Log.e(LOG_TAG, "txt set : " + amount);
+                txtAmount.setText(DateFormatUtils.getDecimalFormat().format(amount));
+            }
+        });
 
 		//initWimple();
-
 
 		return view;
 	}
 
 	private void setupTitlenSubmit() {
 		txtAmount = (TextView) view.findViewById(R.id.insert_amount);
+		txtAmount.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                switch (id) {
+                    case EditorInfo.IME_ACTION_DONE:
+                        setAmount(textView.getText().toString());
+
+                        final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+
+                        return true;
+                }
+                return false;
+            }
+        });
 		txtInsertMode  = (TextView) view.findViewById(R.id.btn_submit);
 		txtInsertMode.setOnClickListener(new OnClickListener() {
 
@@ -189,7 +190,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 				txtInsertMode.setEnabled(false);
 
-				setAmountText(cal.eq());
+				txtAmount.setText(cal.eq().toString());
 
 				if(!validateForms()){
 					txtInsertMode.setEnabled(true);
@@ -250,10 +251,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		txtTitle = (EditText) view.findViewById(R.id.insert_entry_title);
 		txtTitle.addTextChangedListener(new TextWatcher() {
-
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				String changed = s.toString();
+				String changed = s.toString().trim();
 				if(changed.contains("(") &&
 						changed.indexOf("(") > 0){
 					changed = changed.substring(0, changed.indexOf("(") - 1);
@@ -263,15 +263,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 
 			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 			}
 
 			@Override
 			public void afterTextChanged(Editable s) {
 			}
 		});
-
 	}
 
 	private void setupLatestItems() {
@@ -285,8 +283,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				selectLatestItem(position);
-				final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 			}
 
 		});
@@ -314,14 +310,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					txtTitle.clearFocus();
 					txtMemo.clearFocus();
 
-					if(null == context){
-						context = WimpleActivity.context.get();
-						if(null != context){
-							((InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-									txtTitle.getWindowToken(), 0);
-						}
-					}
-
 					//double right = Double.parseDouble(amount.getText().toString());
 					double result = 0.0;
 					switch(v.getId())
@@ -348,9 +336,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					case R.id.insert_pad_eq : result = cal.eq(); break;
 					case R.id.insert_pad_clear : result = cal.clear(); break;
 					case R.id.insert_pad_back : result = cal.shiftBack(); break;
-
 					}
-					setAmountText(result);
 				}
 
 			});
@@ -443,10 +429,16 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(datePicker.getSelectedDate()), false);
 	}
 
-	private void setAmountText(Double amount){
-		//cal.setValue(selected.getAmount());
-		txtAmount.setText(DateFormatUtils.getDecimalFormat().format(amount));
-	}
+    private void setAmount(String amount){
+	    double amountValue;
+	    amountValue = Double.parseDouble(amount.replace(",",""));
+        Log.e(LOG_TAG, "setAmount : " + amountValue);
+        cal.setValue(amountValue);
+    }
+
+    private void setAmount(Double amount){
+        cal.setValue(amount);
+    }
 
 	private Double getAmountValue(){
 		Double amount;
@@ -485,8 +477,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			txtTitle.setText(selected.getItem() + inlineMemo);
 			txtTitle.setSelection(txtTitle.getText().length());
 		}
-		//cal.setValue(selected.getAmount());
-		//setAmountText(selected.getAmount());
+		setAmount(selected.getAmount());
 
 		selectCategory(selected);
 	}
@@ -497,8 +488,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			Entry entryItem = (Entry) entry;
 			txtMemo.setText(entryItem.getMemo());	
 		}
-		cal.setValue(entry.getAmount());
-		setAmountText(entry.getAmount());
+        setAmount(entry.getAmount());
 		datePicker.setDate(entry.getDate());
 
 		selectCategory(entry);
@@ -574,8 +564,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	private void clearForms(){
 		txtTitle.setText("");
 		txtMemo.setText("");
-		setAmountText(0.0);
-		cal.setValue(0.0);
+        setAmount(0.0);
 		datePicker.setDate(Calendar.getInstance().getTimeInMillis());
 
 		tvLeftAccountTitle.setText(getResources().getString(R.string.insert_left_accounts));

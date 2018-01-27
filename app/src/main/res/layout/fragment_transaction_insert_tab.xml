@@ -67,7 +67,7 @@
                     android:textSize="15sp" />
             </RelativeLayout>
 
-            <TextView
+            <EditText
                 android:id="@+id/insert_amount"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -82,6 +82,8 @@
                 android:textColor="@color/text_white"
                 android:textScaleX="0.9"
                 android:textSize="23sp"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionDone"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -95,14 +97,14 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="0.4"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <FrameLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center" >
+                    android:layout_gravity="center">
 
                     <EditText
                         android:id="@+id/insert_entry_title"
@@ -113,8 +115,8 @@
                         android:gravity="start|center_vertical"
                         android:hint="@string/insert_item_title"
                         android:inputType="text"
-                        android:paddingStart="8dp"
                         android:paddingEnd="8dp"
+                        android:paddingStart="8dp"
                         android:textColor="@color/text_light_blue"
                         android:textColorHint="@color/text_white"
                         android:textSize="17sp"
@@ -122,17 +124,17 @@
 
                     <ImageView
                         android:id="@+id/insert_title_clear"
+                        android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_gravity="end|center_vertical"
                         android:contentDescription="@string/na"
-                        android:src="@drawable/close"
-                        android:layout_width="28dp"/>
+                        android:src="@drawable/close" />
                 </FrameLayout>
 
                 <ListView
                     android:id="@+id/insert_frequent_items"
                     android:layout_width="fill_parent"
-                    android:layout_height="150dp"/>
+                    android:layout_height="150dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -508,12 +510,12 @@
             android:id="@+id/btn_submit"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:minHeight="40dp"
+            android:minHeight="80dp"
             android:layout_weight="0.13"
             android:gravity="center"
             android:text="@string/mode_entry_insert"
             android:textColor="@color/text_white"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
     </LinearLayout>
 
