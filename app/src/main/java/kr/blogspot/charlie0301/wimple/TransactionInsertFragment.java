@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,7 +157,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		cal.setListener(new Calculator.CalculatorResultListener() {
             @Override
             public void OnResultUpdate(double amount) {
-                Log.e(LOG_TAG, "txt set : " + amount);
                 txtAmount.setText(DateFormatUtils.getDecimalFormat().format(amount));
             }
         });
@@ -434,7 +435,6 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
     private void setAmount(String amount){
 	    double amountValue;
 	    amountValue = Double.parseDouble(amount.replace(",",""));
-        Log.e(LOG_TAG, "setAmount : " + amountValue);
         cal.setValue(amountValue);
     }
 
@@ -491,7 +491,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			txtMemo.setText(entryItem.getMemo());	
 		}
         setAmount(entry.getAmount());
-		datePicker.setDate(entry.getDate());
+		//datePicker.setDate(entry.getDate());
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        datePicker.setDate(today.getTimeInMillis());
 
 		selectCategory(entry);
 	}
