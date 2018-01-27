@@ -359,7 +359,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 			@Override
 			public void onClick(View v) {
-				datePicker.show(mainActivity.getFragmentManager(), "itemDate");
+			    if(mainActivity != null){
+                    datePicker.show(mainActivity.getFragmentManager(), "itemDate");
+                }
 			}
 		});
 		setupItemDate(Calendar.getInstance().getTimeInMillis());
