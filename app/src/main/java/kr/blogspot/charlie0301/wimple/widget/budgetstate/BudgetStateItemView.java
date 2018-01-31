@@ -65,7 +65,7 @@ public class BudgetStateItemView extends LinearLayout {
 			layoutParams.setMargins(0, 0, 0, 0);
 		}else{
 			amount.setTypeface(null,Typeface.NORMAL);
-			layoutParams.setMargins(50, 0, 0, 0);
+			layoutParams.setMargins(30, 0, 0, 0);
 		}
 		llBackground.setLayoutParams(layoutParams);
 
