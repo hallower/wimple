@@ -301,12 +301,17 @@ public class WimpleActivity extends AppCompatActivity
 
 		currentMenuID = id;
 
-		((IWimpleFragment)currentFragment).setActivityInstance(this);
-		if(null != bundle)
-			currentFragment.setArguments(bundle);
-		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.fragment_container, currentFragment);
-		transaction.commit();
+		try{
+			((IWimpleFragment)currentFragment).setActivityInstance(this);
+			if(null != bundle)
+				currentFragment.setArguments(bundle);
+			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+			transaction.replace(R.id.fragment_container, currentFragment);
+			transaction.commit();
+		}catch(Exception e){
+			Log.e(LOG_TAG, "replaceWimpleFragment: " + e.getMessage());
+			return false;
+		}
 
 		if(isNeedAddFab) {
 			fab.setImageResource(R.drawable.ic_fab_add);
