@@ -16,7 +16,6 @@ public class AccountStateItemView extends LinearLayout {
 	private final Context context;
 
 	private LinearLayout llBackground = null;
-	private TextView type = null;
 	private TextView title = null;
 	private TextView amount = null;
 
@@ -30,7 +29,6 @@ public class AccountStateItemView extends LinearLayout {
 		inflater.inflate(R.layout.list_account_state, this, true);
 
 		llBackground = (LinearLayout)findViewById(R.id.as_background);
-		type = (TextView)findViewById(R.id.as_item_type);
 		title = (TextView)findViewById(R.id.as_item_title);
 		amount = (TextView)findViewById(R.id.as_item_amount);
 	}
@@ -62,7 +60,7 @@ public class AccountStateItemView extends LinearLayout {
 			layoutParams.setMargins(0, 0, 0, 0);
 		}else{
 			amount.setTypeface(null,Typeface.NORMAL);
-			layoutParams.setMargins(50, 0, 0, 0);
+			layoutParams.setMargins(30, 0, 0, 0);
 		}
 		llBackground.setLayoutParams(layoutParams);
 
@@ -73,35 +71,26 @@ public class AccountStateItemView extends LinearLayout {
 		switch(account.charAt(0)){
 
 		case 'a' :
-			type.setText(context.getResources().getString(R.string.title_saving));
-			type.setTextColor(getResources().getColor(R.color.text_blue));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_blue));
 			//tv.setBackgroundResource(R.drawable.input_color_box_3);
 			break;
 
 		case 'l' :
-			type.setText(context.getResources().getString(R.string.title_debt));
-			type.setTextColor(getResources().getColor(R.color.text_red));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_red));
 			//tv.setBackgroundResource(R.drawable.input_color_box);
 			break;
 
 		case 'i' :
-			type.setText(context.getResources().getString(R.string.title_income));
-			type.setTextColor(getResources().getColor(R.color.text_blue));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_green));
 			//tv.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case 'e' :
-			type.setText(context.getResources().getString(R.string.title_expense));
-			type.setTextColor(getResources().getColor(R.color.text_red));
 			tv.setBackgroundColor(getResources().getColor(R.color.text_yellow));
 			//tv.setBackgroundResource(R.drawable.input_color_box_4);
 			break;
 
 		default :
-			type.setText(context.getResources().getString(R.string.title_adjust));
 			tv.setBackgroundResource(R.drawable.progress_n);
 			break;	
 
@@ -111,7 +100,6 @@ public class AccountStateItemView extends LinearLayout {
 	}
 
 	public void clear(){
-		type = null;
 		title = null;
 		amount = null;
 	}

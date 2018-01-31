@@ -2,20 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/as_background"
     android:layout_width="match_parent"
-    android:layout_height="24dp"
-    android:orientation="horizontal"
-    android:padding="4dp" >
-
-    <TextView
-        android:id="@+id/as_item_type"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.1"
-        android:gravity="center"
-        android:padding="2dp"
-        android:text="자산"
-        android:textColor="@color/text_blue"
-        android:textSize="11sp" />
+    android:layout_height="40dp"
+    android:paddingTop="4dp"
+    android:orientation="horizontal">
 
     <TextView
         android:id="@+id/as_item_title"
@@ -27,18 +16,17 @@
         android:gravity="center"
         android:text="title"
         android:textColor="@color/text_white"
-        android:textSize="18sp"
+        android:textSize="13sp"
         android:textScaleX="0.9"/>
 
     <TextView
         android:id="@+id/as_item_amount"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="0.4"
+        android:layout_weight="0.5"
         android:gravity="end|center"
-        android:paddingEnd="3dp"
         android:text="amount"
         android:textColor="@color/text_black"
-        android:textSize="16sp" />
+        android:textSize="13sp" />
 
 </LinearLayout>
