@@ -115,7 +115,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		context = WimpleActivity.context.get();
 
-		// Data 
+		// Data
 		view = inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
 		//synchronized(TransactionInsertFragment.class){
 		if(null == padRIDs)
@@ -127,7 +127,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			for(int cnt = 0; cnt < len ; cnt++){
 				padRIDs[cnt] = ar.getResourceId(cnt, 0);
 			}
-			ar.recycle();        
+			ar.recycle();
 		}
 		//}
 
@@ -217,8 +217,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					}
 					 */
 
-					boolean res = wimple.modifyEntry(editingItem.getId(), DateFormatUtils.getServerDateString(datePicker.getSelectedDate()), 
-							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
+					boolean res = wimple.modifyEntry(editingItem.getId(), DateFormatUtils.getServerDateString(datePicker.getSelectedDate()),
+							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(),
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(!res){
@@ -232,8 +232,8 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					editingItem = null;
 
 				}else{
-					boolean res = wimple.makeEntry(datePicker.getSelectedDate(), 
-							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(), 
+					boolean res = wimple.makeEntry(datePicker.getSelectedDate(),
+							leftAccountListAdapter.getSelected(), rightAccountListAdapter.getSelected(),
 							txtTitle.getText().toString(), amount, txtMemo.getText().toString());
 
 					if(!res){
@@ -311,32 +311,30 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					txtTitle.clearFocus();
 					txtMemo.clearFocus();
 
-					//double right = Double.parseDouble(amount.getText().toString());
-					double result = 0.0;
 					switch(v.getId())
 					{
 
 					// I don't know why numbersRIDS[] is not suitable for this.
-					case R.id.insert_pad_10 : result = cal.zero(); break;
-					case R.id.insert_pad_1 : result = cal.shift(1); break;
-					case R.id.insert_pad_2 : result = cal.shift(2); break;
-					case R.id.insert_pad_3 : result = cal.shift(3); break;
-					case R.id.insert_pad_4 : result = cal.shift(4); break;
-					case R.id.insert_pad_5 : result = cal.shift(5); break;
-					case R.id.insert_pad_6 : result = cal.shift(6); break;
-					case R.id.insert_pad_7 : result = cal.shift(7); break;
-					case R.id.insert_pad_8 : result = cal.shift(8); break;
-					case R.id.insert_pad_9 : result = cal.shift(9); break;
-					case R.id.insert_pad_100 : result = cal.zeroTwice(); break;
+					case R.id.insert_pad_10 : cal.zero(); break;
+					case R.id.insert_pad_1 : cal.shift(1); break;
+					case R.id.insert_pad_2 : cal.shift(2); break;
+					case R.id.insert_pad_3 : cal.shift(3); break;
+					case R.id.insert_pad_4 : cal.shift(4); break;
+					case R.id.insert_pad_5 : cal.shift(5); break;
+					case R.id.insert_pad_6 : cal.shift(6); break;
+					case R.id.insert_pad_7 : cal.shift(7); break;
+					case R.id.insert_pad_8 : cal.shift(8); break;
+					case R.id.insert_pad_9 : cal.shift(9); break;
+					case R.id.insert_pad_100 : cal.zeroTwice(); break;
 
-					case R.id.insert_pad_point : result = cal.point(); break;
-					case R.id.insert_pad_plus : result = cal.plus(); break;
-					case R.id.insert_pad_minus : result = cal.minus(); break;
-					case R.id.insert_pad_multiply : result = cal.multiply(); break;
-					case R.id.insert_pad_divide : result = cal.divide(); break;
-					case R.id.insert_pad_eq : result = cal.eq(); break;
-					case R.id.insert_pad_clear : result = cal.clear(); break;
-					case R.id.insert_pad_back : result = cal.shiftBack(); break;
+					case R.id.insert_pad_point : cal.point(); break;
+					case R.id.insert_pad_plus : cal.plus(); break;
+					case R.id.insert_pad_minus : cal.minus(); break;
+					case R.id.insert_pad_multiply : cal.multiply(); break;
+					case R.id.insert_pad_divide : cal.divide(); break;
+					case R.id.insert_pad_eq : cal.eq(); break;
+					case R.id.insert_pad_clear : cal.clear(); break;
+					case R.id.insert_pad_back : cal.shiftBack(); break;
 					}
 				}
 
@@ -351,7 +349,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		datePicker.setOnDateSetListener(new OnDateSetListener(){
 
 			@Override
-			public void onDateSet(Long date) {				
+			public void onDateSet(Long date) {
 				setupItemDate(date);
 			}
 
@@ -390,7 +388,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 	}
 
 	private void setupAccountLists() {
-		tvLeftAccountTitle = (TextView) view.findViewById(R.id.insert_category_left_title);		
+		tvLeftAccountTitle = (TextView) view.findViewById(R.id.insert_category_left_title);
 		tvLeftAccountTitle.getBackground().setAlpha(128);
 
 		leftAccountListAdapter = new AccountExpandableListAdapter(context);
@@ -488,7 +486,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		txtTitle.setText(entry.getItem());
 		if(entry instanceof Entry){
 			Entry entryItem = (Entry) entry;
-			txtMemo.setText(entryItem.getMemo());	
+			txtMemo.setText(entryItem.getMemo());
 		}
         setAmount(entry.getAmount());
 
@@ -703,7 +701,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 				rightAccountListAdapter.clear();
 				rightAccountListAdapter.setData(rHeader, rChild);
-				rightAccountListAdapter.notifyDataSetChanged();	
+				rightAccountListAdapter.notifyDataSetChanged();
 
 				if(!selectedID.isEmpty())
 					rightAccountListAdapter.setSelected(selectedID);
@@ -711,7 +709,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				for(int i = 0; i < rightAccountListAdapter.getGroupCount() ; i++)
 					rightAccountListView.expandGroup(i);
 			}
-			break;			
+			break;
 		}
 
 		case CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED :
@@ -735,7 +733,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 		break;
 
 		case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED :
-		{	
+		{
 			String entryDate = (String)obj;
 
 			llInsertNotice.setVisibility(View.INVISIBLE);
@@ -751,7 +749,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 			}
 
 			txtInsertMode.setEnabled(true);
-		}	
+		}
 		break;
 
 		case CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM : {
@@ -760,7 +758,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 					!(obj instanceof Item))
 				return;
 
-			// Modifying 
+			// Modifying
 			Item item = (Item)obj;
 
 			if(item.getId().isEmpty()){
@@ -777,7 +775,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.entry_modify_notice));
 			}else{
 				WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.month_item_modify_notice));
-			}			
+			}
 		}
 		break;
 
@@ -804,12 +802,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
 		case INSERT :
 			txtInsertMode.setText(getResources().getString(R.string.mode_entry_insert));
-			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);	
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_2);
 			break;
 
 		case EDITING :
 			txtInsertMode.setText(getResources().getString(R.string.mode_entry_modify));
-			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_6);	
+			txtInsertMode.setBackgroundResource(R.drawable.input_color_box_6);
 			break;
 
 		case MONTHLY_INSERT :
