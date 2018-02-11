@@ -78,7 +78,7 @@
     <string name="pad_point">.</string>
     <string name="pad_clear">C</string>
     <string name="pad_multiply">*</string>
-    <string name="pad_divide">%</string>
+    <string name="pad_divide">÷</string>
     <string name="pad_minus">-</string>
     <string name="pad_plus">+</string>
     <string name="pad_eq">=</string>
