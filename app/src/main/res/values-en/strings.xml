@@ -54,6 +54,7 @@
     <string name="settings_summary_sms_post_enable">Send tranasction SMSs to the temporary storage for the batch processing</string>
     <string name="settings_sms_post_enable">Send Transaction SMSs</string>
     <string name="settings_sms_max_store_number">The minimum number of SMSs to be sent</string>
+    <string name="settings_summary_sms_max_store_number">Stored SMS will be send to Whooing if a number of stored SMSs is matched with this.</string>
     <string name="settings_entry_sms_max_store_number">Choose Minimum Number of SMS Sending</string>
     <string name="settings_summary_sms_pick_contact">Select transaction SMS\'s contact for sending.</string>
     <string name="settings_sms_pick_contact">Select a Contact</string>

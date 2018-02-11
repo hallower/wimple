@@ -32,6 +32,7 @@
         <ListPreference
             android:defaultValue="5"
             android:dialogTitle="@string/settings_sms_max_store_number"
+            android:summary="@string/settings_summary_sms_max_store_number"
             android:entries="@array/monthly_item_count"
             android:entryValues="@array/monthly_item_count"
             android:key="pref_smsMaxStoreNumber"
