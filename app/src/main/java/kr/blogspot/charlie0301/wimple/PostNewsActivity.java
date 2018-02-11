@@ -37,249 +37,267 @@ import kr.blogspot.charlie0301.wimple.model.UserInfo;
 
 public class PostNewsActivity extends Activity {
 
-	private static final String LOG_TAG = "PostNewsActivity";
+    private static final String LOG_TAG = "PostNewsActivity";
 
-	private final WimpleImpl wimple = WimpleImpl.getInstance();
-	public Context context;
-	private static ProgressDialog dialog;
-	
-	private TextView tvSubject;
-	private TextView tvContent;
-	private TextView tvURL;
+    private final WimpleImpl wimple = WimpleImpl.getInstance();
+    public Context context;
+    private static ProgressDialog dialog;
 
-	private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
-		@Override
-		protected String doInBackground(String... urls) {
-			String response = "";
+    private TextView tvSubject;
+    private TextView tvContent;
+    private TextView tvURL;
 
-			for (String url : urls) {			
-				
-				Log.d(LOG_TAG, "submitted url is " + url);
-				
-				String lcURL = url.toLowerCase(Locale.US);
-				String targetURL = url;
-				if(!lcURL.startsWith("http")){
-					targetURL = url.substring(url.indexOf("http"));
-				}
-				response = RemoteContent.getInstance().getTitlePartOfPage(targetURL);
-			}
-			return response;
-		}
+    private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+            String response = "";
 
-		@Override
-		protected void onPostExecute(String result) {
-			//Log.d(LOG_TAG, "charset = " + charset + ", " + result);
+            for (String url : urls) {
 
-			int startPos = result.indexOf("<title");
-			if(startPos < 0){
-				startPos = result.indexOf("<TITLE");
-			}
-			startPos = result.indexOf( ">", startPos + 1);
+                Log.d(LOG_TAG, "submitted url is " + url);
 
-			int endPos = result.indexOf("</title>");
-			if(endPos < 0){
-				endPos = result.indexOf("</TITLE>");
-			}
+                String lcURL = url.toLowerCase(Locale.US);
+                String targetURL = url;
+                if (!lcURL.startsWith("http")) {
+                    targetURL = url.substring(url.indexOf("http"));
+                }
+                response = RemoteContent.getInstance().getTitlePartOfPage(targetURL);
+            }
+            return response;
+        }
 
-			if(startPos < 0 ||
-					endPos < 0 ||
-					endPos > result.length()){
-				Log.d(LOG_TAG, "Invalid web page!!!, Cant get title");
-				return;
-			}
+        @Override
+        protected void onPostExecute(String result) {
+            //Log.d(LOG_TAG, "charset = " + charset + ", " + result);
 
-			final String exportedTitle = result.substring(startPos + 1, endPos);
-			//noinspection deprecation
-			showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
-		}
-	}
+            int startPos = result.indexOf("<title");
+            if (startPos < 0) {
+                startPos = result.indexOf("<TITLE");
+            }
+            startPos = result.indexOf(">", startPos + 1);
 
-	void showTitleSelectionWindow(final String exportedTitle){
-		AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
-		alt_bld.setMessage(getResources().getString(R.string.post_news_set_title) + 
-				"\n\n\"" + exportedTitle + "\"").setCancelable(
-				false).setPositiveButton("Yes",
-						new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						tvSubject.setText(exportedTitle);
-					}
-				}).setNegativeButton("No",
-						new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {							
-						dialog.cancel();
-					}
-				});
+            int endPos = result.indexOf("</title>");
+            if (endPos < 0) {
+                endPos = result.indexOf("</TITLE>");
+            }
 
-		AlertDialog alert = alt_bld.create();
-		alert.setTitle(getResources().getString(R.string.post_news_title_imported));
-		//alert.setIcon(R.drawable.icon);
-		alert.show();			
-	}
+            if (startPos < 0 ||
+                    endPos < 0 ||
+                    endPos > result.length()) {
+                Log.d(LOG_TAG, "Invalid web page!!!, Cant get title");
+                return;
+            }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_post_news);
+            final String exportedTitle = result.substring(startPos + 1, endPos);
+            //noinspection deprecation
+            showTitleSelectionWindow(Html.fromHtml(exportedTitle).toString());
+        }
+    }
 
-		context = getApplicationContext();
+    void showTitleSelectionWindow(final String exportedTitle) {
+        AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
+        alt_bld.setMessage(getResources().getString(R.string.post_news_set_title) +
+                "\n\n\"" + exportedTitle + "\"").setCancelable(
+                false).setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        tvSubject.setText(exportedTitle);
+                    }
+                }).setNegativeButton("No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
 
-		// intent check
+        AlertDialog alert = alt_bld.create();
+        alert.setTitle(getResources().getString(R.string.post_news_title_imported));
+        //alert.setIcon(R.drawable.icon);
+        alert.show();
+    }
 
-		String url = "";
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_post_news);
 
-		// double check if app is restarted forcedly
-		Intent intent= getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();	
+        context = getApplicationContext();
 
-		if (Intent.ACTION_SEND.equals(action) && type != null) {
-			if (type.startsWith("text/") ||
-					type.startsWith("plain/")) {
-				url = intent.getStringExtra(Intent.EXTRA_TEXT);	
-			}
-		}
+        // intent check
 
-		if(null == url ||
-				url.isEmpty()){
-			Toast.makeText(context, getResources().getString(R.string.post_invalid_news_share_method), Toast.LENGTH_SHORT).show();
-			finish();
-			return;
-		}
+        String url = "";
 
-		setupWimpleImpl();
+        // double check if app is restarted forcedly
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
 
-		// Wimple login check
-		if(!wimple.isAuthed()){
-			Toast.makeText(context, getResources().getString(R.string.program_exit), Toast.LENGTH_SHORT).show();
-			finish();
-			return;
-		}		
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if (type.startsWith("text/") ||
+                    type.startsWith("plain/")) {
+                url = intent.getStringExtra(Intent.EXTRA_TEXT);
+            }
+        }
 
-		// Widget
-		tvSubject = (TextView)findViewById(R.id.post_news_subject);
-		tvContent = (TextView)findViewById(R.id.post_news_content);		
-		tvURL = (TextView)findViewById(R.id.post_news_url);
-		tvURL.setText(url);
+        if (null == url ||
+                url.isEmpty()) {
+            Toast.makeText(context, getResources().getString(R.string.post_invalid_news_share_method), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-		DownloadWebPageTask task = new DownloadWebPageTask();
-		task.execute(url);
+        setupWimpleImpl();
 
-		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-		if(clipboard.hasPrimaryClip()){
-			//if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
-			ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-			tvSubject.setText(item.getText());	
-			//}
-		}
+        // Wimple login check
+        if (!wimple.isAuthed()) {
+            Toast.makeText(context, getResources().getString(R.string.program_exit), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-		findViewById(R.id.post_news_do_post).setOnClickListener(new OnClickListener() {
+        // Widget
+        tvSubject = (TextView) findViewById(R.id.post_news_subject);
+        tvContent = (TextView) findViewById(R.id.post_news_content);
+        tvURL = (TextView) findViewById(R.id.post_news_url);
+        tvURL.setText(url);
 
-			@Override
-			public void onClick(View v) {
+        DownloadWebPageTask task = new DownloadWebPageTask();
+        task.execute(url);
 
-				String escapedSubject;
-				String escapedURL;
-				String escapedComment;
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard.hasPrimaryClip()) {
+            //if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
+            ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+            tvSubject.setText(item.getText());
+            //}
+        }
 
-				try {
-					escapedSubject = URLEncoder.encode(tvSubject.getText().toString(), "UTF-8");
-					escapedURL = URLEncoder.encode(tvURL.getText().toString(), "UTF-8");
-					escapedComment = URLEncoder.encode(tvContent.getText().toString(), "UTF-8");
-				} catch (UnsupportedEncodingException e) {					
-					Toast.makeText(context, getResources().getString(R.string.post_invalid_news_url), Toast.LENGTH_SHORT).show();
-					finish();
-					return;
-				}
+        findViewById(R.id.post_news_do_post).setOnClickListener(new OnClickListener() {
 
-				String newsContents = escapedURL;
-				newsContents += " %0A%0A";
-				newsContents += escapedComment;
-				newsContents += " %0A%0A";
-				newsContents += " posted by Wimple (https://whooing.com/zS2h)";
+            @Override
+            public void onClick(View v) {
 
-				dialog = ProgressDialog.show(PostNewsActivity.this,"",
-						context.getResources().getText(R.string.post_news_wait_for_while),true);
-				
-				wimple.postNews(escapedSubject, newsContents);
-			}
-		});	
+                String escapedSubject;
+                String escapedURL;
+                String escapedComment;
 
-	}
+                try {
+                    escapedSubject = URLEncoder.encode(tvSubject.getText().toString(), "UTF-8");
+                    escapedURL = URLEncoder.encode(tvURL.getText().toString(), "UTF-8");
+                    escapedComment = URLEncoder.encode(tvContent.getText().toString(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    Toast.makeText(context, getResources().getString(R.string.post_invalid_news_url), Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
 
-	private void setupWimpleImpl() {
-		wimple.setApplicationContext(context);
+                String newsContents = escapedURL;
+                newsContents += " %0A%0A";
+                newsContents += escapedComment;
+                newsContents += " %0A%0A";
+                newsContents += " posted by Wimple (https://whooing.com/zS2h)";
 
-		wimple.setResponseListener(new IWimpleResponseListener(){
+                dialog = ProgressDialog.show(PostNewsActivity.this, "",
+                        context.getResources().getText(R.string.post_news_wait_for_while), true);
 
-			@Override
-			public void onGetAuthTempToken(boolean status, String tempToken) {}
+                wimple.postNews(escapedSubject, newsContents);
+            }
+        });
 
-			@Override
-			public void onGetAuthAccessToken(boolean status,
-					Map<String, String> result) {	}
+    }
 
-			@Override
-			public void onGetUserInfoResponseReceived(boolean status, UserInfo info) {	}
+    private void setupWimpleImpl() {
+        wimple.setApplicationContext(context);
 
-			@Override
-			public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {	}
+        wimple.setResponseListener(new IWimpleResponseListener() {
 
-			@Override
-			public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {	}
+            @Override
+            public void onGetAuthTempToken(boolean status, String tempToken) {
+            }
 
-			@Override
-			public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {	}
+            @Override
+            public void onGetAuthAccessToken(boolean status,
+                                             Map<String, String> result) {
+            }
 
-			@Override
-			public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {	}
+            @Override
+            public void onGetUserInfoResponseReceived(boolean status, UserInfo info) {
+            }
 
-			@Override
-			public void onMakeEntryResponseReceived(boolean status, String entryDate) {	}
+            @Override
+            public void onGetAllSectionResponseReceived(boolean status, Collection<Section> list) {
+            }
 
-			@Override
-			public void onGetFrequentItemsResponseReceived(boolean status,	Collection<Item> list) {	}
+            @Override
+            public void onGetAllAccountResponseReceived(boolean status, Collection<Account> list) {
+            }
 
-			@Override
-			public void onGetLatestItemsResponseReceived(boolean status,	Collection<Item> list) {	}
+            @Override
+            public void onGetEntriesResponseReceived(boolean status, Collection<Entry> list) {
+            }
 
-			@Override
-			public void onModifyEntryResponseReceived(boolean status, Entry entry) {	}
+            @Override
+            public void onGetLatestEntriesResponseReceived(boolean status, Collection<Entry> list) {
+            }
 
-			@Override
-			public void onGetMonthlyItemsResponseReceived(boolean status,	ArrayList<Item> list) {	}
+            @Override
+            public void onMakeEntryResponseReceived(boolean status, String entryDate) {
+            }
 
-			@Override
-			public void onRemoveEntryResponseReceived(boolean status, String id) {	}
+            @Override
+            public void onGetFrequentItemsResponseReceived(boolean status, Collection<Item> list) {
+            }
 
-			@Override
-			public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {	}
+            @Override
+            public void onGetLatestItemsResponseReceived(boolean status, Collection<Item> list) {
+            }
 
-			@Override
-			public void onGetFinancialStateResponseReceived(boolean status,	Collection<AccountState> list) {	}
+            @Override
+            public void onModifyEntryResponseReceived(boolean status, Entry entry) {
+            }
 
-			@Override
-			public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) {		}
+            @Override
+            public void onGetMonthlyItemsResponseReceived(boolean status, ArrayList<Item> list) {
+            }
 
-			@Override
-			public void onGetBudgetResponseReceived(boolean status, boolean isIncome,	Map<String, Budget> list) {		}
+            @Override
+            public void onRemoveEntryResponseReceived(boolean status, String id) {
+            }
 
-			@Override
-			public void onPostNewsResponseReceived(boolean status, String id) {
-				dialog.dismiss();
-				dialog = null;
-				
-				if(status){
-					Toast.makeText(context, getResources().getString(R.string.post_news_succeed), Toast.LENGTH_SHORT).show();
-				}else{
-					Toast.makeText(context, getResources().getString(R.string.post_news_failed), Toast.LENGTH_SHORT).show();					
-				}
-				finish();
-			}
+            @Override
+            public void onRemoveMonthlyItemResponseReceived(boolean status, String id) {
+            }
 
-			@Override
-			public void onPostPaymentsResponseReceived(boolean status) { }
+            @Override
+            public void onGetFinancialStateResponseReceived(boolean status, Collection<AccountState> list) {
+            }
 
-		});
-	}
+            @Override
+            public void onGetIncomeAndExpenseResponseReceived(boolean status, Collection<AccountState> list) {
+            }
+
+            @Override
+            public void onGetBudgetResponseReceived(boolean status, boolean isIncome, Map<String, Budget> list) {
+            }
+
+            @Override
+            public void onPostNewsResponseReceived(boolean status, String id) {
+                dialog.dismiss();
+                dialog = null;
+
+                if (status) {
+                    Toast.makeText(context, getResources().getString(R.string.post_news_succeed), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, getResources().getString(R.string.post_news_failed), Toast.LENGTH_SHORT).show();
+                }
+                finish();
+            }
+
+            @Override
+            public void onPostPaymentsResponseReceived(boolean status) {
+            }
+
+        });
+    }
 
 }

@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/chart"
@@ -19,12 +19,13 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:paddingBottom="1dp"
-            android:orientation="vertical" >
+            android:orientation="vertical">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/no_items"/>
+                android:text="@string/no_items" />
         </LinearLayout>
 
         <kr.blogspot.charlie0301.wimple.widget.ItemListView
@@ -34,7 +35,7 @@
             android:paddingLeft="16dp"
             android:paddingEnd="16dp"
             android:divider="@null"
-            android:dividerHeight="0dp"/>
+            android:dividerHeight="0dp" />
     </LinearLayout>
 
 </RelativeLayout>

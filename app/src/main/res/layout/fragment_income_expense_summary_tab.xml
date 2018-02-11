@@ -9,16 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" >
+        android:layout_centerHorizontal="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content">
 
                 <!-- refrech button -->
 
@@ -43,12 +43,12 @@
                     android:scaleType="fitXY"
                     android:text="@string/entry_header_income_expense_status"
                     android:textColor="@color/text_white"
-                    android:gravity="center"/>
+                    android:gravity="center" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="58dp" >
+                    android:layout_marginTop="58dp">
 
                     <!-- Incomes -->
 
@@ -60,7 +60,7 @@
                         android:contentDescription="@string/na"
                         android:scaleType="fitXY"
                         android:src="@drawable/input_color_box_3"
-                        android:layout_width="60dp"/>
+                        android:layout_width="60dp" />
 
                     <TextView
                         android:id="@+id/ine_income_value"
@@ -91,7 +91,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" >
+                android:layout_marginTop="12dp">
 
                 <!-- Expenses -->
 
@@ -103,7 +103,7 @@
                     android:contentDescription="@string/na"
                     android:scaleType="fitXY"
                     android:src="@drawable/input_color_box"
-                    android:layout_width="60dp"/>
+                    android:layout_width="60dp" />
 
                 <TextView
                     android:id="@+id/ine_expense_value"
@@ -142,7 +142,7 @@
                 android:paddingBottom="8dp"
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
-                android:paddingTop="6dp" >
+                android:paddingTop="6dp">
 
                 <ImageView
                     android:layout_width="24dp"
@@ -178,7 +178,7 @@
                 android:scaleType="fitXY"
                 android:text="@string/entry_header_budget_income_expense_status"
                 android:textColor="@color/text_white"
-                android:gravity="center"/>
+                android:gravity="center" />
 
             <!-- 예산 대비 수익 -->
 
@@ -187,7 +187,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
-                android:layout_marginTop="20dp" >
+                android:layout_marginTop="20dp">
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_base_income"
@@ -241,7 +241,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
-                android:layout_marginTop="10dp" >
+                android:layout_marginTop="10dp">
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_base_expense"
@@ -261,7 +261,7 @@
                     android:contentDescription="@string/na"
                     android:scaleType="fitXY"
                     android:src="@drawable/input_color_box"
-                    android:layout_width="60dp"/>
+                    android:layout_width="60dp" />
 
                 <TextView
                     android:id="@+id/ine_bar_budget_current_expense_percentage"
@@ -304,7 +304,7 @@
         android:background="@drawable/input_box_round_2"
         android:orientation="horizontal"
         android:padding="10dp"
-        android:visibility="gone" >
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/ine_list_notification_text"

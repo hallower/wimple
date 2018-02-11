@@ -144,7 +144,7 @@
     <string name="title_activity_post_news">후잉으로 뉴스보내기</string>
     <string name="action_settings">Settings</string>
     <string name="post_invalid_news_share_method">잘못된 뉴스 공유 방법입니다.</string>
-    <string name="post_news_succeed">뉴스가 후잉에 성공적으로 등록되었습니다.</string>    
+    <string name="post_news_succeed">뉴스가 후잉에 성공적으로 등록되었습니다.</string>
     <string name="post_news_failed">후잉에 뉴스 등록이 실패하였습니다. 네트워크 상황과 나의 앱들에서 wimple 권한에서 BBS가 있는지 확인해 주세요.</string>
     <string name="post_invalid_news_url">잘못된 뉴스 주소 입니다. 포스팅이 어렵겠는데요.</string>
     <string name="post_news_set_title">제목을 아래와 같이 변경하실래요?</string>

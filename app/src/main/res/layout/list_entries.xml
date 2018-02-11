@@ -13,7 +13,7 @@
         android:layout_gravity="center_vertical"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:weightSum="1" >
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/entry_item_date"
@@ -52,7 +52,7 @@
         android:layout_marginTop="3dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:weightSum="1" >
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/entry_item_notyet"

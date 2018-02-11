@@ -26,154 +26,158 @@ import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
 
-public class SavingStateSummaryFragment  extends Fragment implements IWimpleFragment{
+public class SavingStateSummaryFragment extends Fragment implements IWimpleFragment {
 
-	//private final static String LOG_TAG = "TransactionInsertFragment";
+    //private final static String LOG_TAG = "TransactionInsertFragment";
 
-	private final WimpleImpl wimple = WimpleImpl.getInstance();
-	private View view = null;
-	private Context context = null;
+    private final WimpleImpl wimple = WimpleImpl.getInstance();
+    private View view = null;
+    private Context context = null;
 
-	// GUI
-	private WeakReference<ItemListView> asList;
-	private WeakReference<AccountStateItemListAdapter> asAdapter;
-	private LinearLayout llChart;
+    // GUI
+    private WeakReference<ItemListView> asList;
+    private WeakReference<AccountStateItemListAdapter> asAdapter;
+    private LinearLayout llChart;
 
-	// Data
-	private boolean firstUpdate;
+    // Data
+    private boolean firstUpdate;
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
-		context = WimpleActivity.context.get();
+        context = WimpleActivity.context.get();
 
-		view = inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
+        view = inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
 
-		LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		asList = new WeakReference<>((ItemListView) view.findViewById(R.id.saving_list_view));
-		asAdapter = new WeakReference<>(new AccountStateItemListAdapter(context));
+        LinearLayout.LayoutParams sessionParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        asList = new WeakReference<>((ItemListView) view.findViewById(R.id.saving_list_view));
+        asAdapter = new WeakReference<>(new AccountStateItemListAdapter(context));
 
-		asList.get().setAdapter(asAdapter.get());
-		asList.get().setLayoutParams(sessionParams);
+        asList.get().setAdapter(asAdapter.get());
+        asList.get().setLayoutParams(sessionParams);
 
-		registerForContextMenu(asList.get());
+        registerForContextMenu(asList.get());
 
-		firstUpdate = true;
-		WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false);
-		return view;
-	}
-	@Override
-	public void onDestroy() {
+        firstUpdate = true;
+        WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false);
+        return view;
+    }
 
-		asList.clear();
-		asList = null;
-		asAdapter.clear();
-		asAdapter = null;
-		llChart = null;
-		
-		super.onDestroy();
-	}
-	@Override
-	public void onDetach() {
+    @Override
+    public void onDestroy() {
 
-		super.onDetach();
-	}
-	@Override
-	public void onResume() {
+        asList.clear();
+        asList = null;
+        asAdapter.clear();
+        asAdapter = null;
+        llChart = null;
 
-		context = WimpleActivity.context.get();
-		super.onResume();
-	}
-	@SuppressWarnings("unchecked")
-	@Override
-	public void handleMessage(Message msg) {
-		int command = msg.what;
-		boolean booleanStatus = msg.arg1 == 1;
-		Object obj = msg.obj;
+        super.onDestroy();
+    }
 
-		// if fragment is added or not to the activity
-		if(!isAdded()){
-			return;
-		}
+    @Override
+    public void onDetach() {
 
-		switch(command){
+        super.onDetach();
+    }
 
-		case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED :{
+    @Override
+    public void onResume() {
 
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        context = WimpleActivity.context.get();
+        super.onResume();
+    }
 
-			if(firstUpdate) {
-				firstUpdate = false;
-				boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
-				if (autoRefresh) {
-					wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
-				}
-			}
+    @SuppressWarnings("unchecked")
+    @Override
+    public void handleMessage(Message msg) {
+        int command = msg.what;
+        boolean booleanStatus = msg.arg1 == 1;
+        Object obj = msg.obj;
 
-			if(!booleanStatus){
-				return;
-			}
+        // if fragment is added or not to the activity
+        if (!isAdded()) {
+            return;
+        }
 
-			if(null == context){
-				context = WimpleActivity.context.get();
-				if(null == context){
-					return;
-				}
-			}
+        switch (command) {
 
-			boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false);
-			
-			ArrayList<Double> values = new ArrayList<>();
-			ArrayList<String> names = new ArrayList<>();
+            case CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED: {
 
-			Collection<AccountState> accountStates = (Collection<AccountState>)obj;
-			for(AccountState as : accountStates){
-				//Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() + 
-				//		" = " + as.getCategory() + ", " + as.getGroup());
-				if(!as.getCategory().startsWith("as")){
-					continue;
-				}
-				
-				if(showGroup == as.getGroup() &&
-						as.getAmount() != 0){
-					values.add(as.getAmount());
-					names.add(as.getAccountName());	
-				}
-				asAdapter.get().addAccountState(as);
-			}
-			asAdapter.get().notifyDataSetChanged();
-			
-			if(null == llChart){
-				llChart = (LinearLayout)view.findViewById(R.id.chart);	
-			}
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
-			if(0 < values.size()){
-				double maxValue = -99999999;
-				double[] doubleValues = new double[values.size()];
-				for(int i = 0; i < doubleValues.length; i++){
-					doubleValues[i] = values.get(i);
-					if(maxValue < doubleValues[i])
-						maxValue = doubleValues[i];
-				}
-				String[] stringValues = new String[names.size()];
-				for(int i = 0; i < stringValues.length; i++){
-					stringValues[i] = names.get(i);
-				}
+                if (firstUpdate) {
+                    firstUpdate = false;
+                    boolean autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true);
+                    if (autoRefresh) {
+                        wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true);
+                    }
+                }
 
-				PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues, maxValue);
+                if (!booleanStatus) {
+                    return;
+                }
 
-				llChart.removeAllViews();
-				llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
-			}
-		}
-		break;
-		}
-	}
+                if (null == context) {
+                    context = WimpleActivity.context.get();
+                    if (null == context) {
+                        return;
+                    }
+                }
 
-	@Override
-	public void setActivityInstance(WimpleActivity instance) {
-	}
+                boolean showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false);
+
+                ArrayList<Double> values = new ArrayList<>();
+                ArrayList<String> names = new ArrayList<>();
+
+                Collection<AccountState> accountStates = (Collection<AccountState>) obj;
+                for (AccountState as : accountStates) {
+                    //Log.d(LOG_TAG, "[" + as.getAccountID() + "], " + as.getAccountName() +
+                    //		" = " + as.getCategory() + ", " + as.getGroup());
+                    if (!as.getCategory().startsWith("as")) {
+                        continue;
+                    }
+
+                    if (showGroup == as.getGroup() &&
+                            as.getAmount() != 0) {
+                        values.add(as.getAmount());
+                        names.add(as.getAccountName());
+                    }
+                    asAdapter.get().addAccountState(as);
+                }
+                asAdapter.get().notifyDataSetChanged();
+
+                if (null == llChart) {
+                    llChart = (LinearLayout) view.findViewById(R.id.chart);
+                }
+
+                if (0 < values.size()) {
+                    double maxValue = -99999999;
+                    double[] doubleValues = new double[values.size()];
+                    for (int i = 0; i < doubleValues.length; i++) {
+                        doubleValues[i] = values.get(i);
+                        if (maxValue < doubleValues[i])
+                            maxValue = doubleValues[i];
+                    }
+                    String[] stringValues = new String[names.size()];
+                    for (int i = 0; i < stringValues.length; i++) {
+                        stringValues[i] = names.get(i);
+                    }
+
+                    PieChart pcv = ChartUtils.makeChart(context, doubleValues, stringValues, maxValue);
+
+                    llChart.removeAllViews();
+                    llChart.addView(pcv, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                }
+            }
+            break;
+        }
+    }
+
+    @Override
+    public void setActivityInstance(WimpleActivity instance) {
+    }
 
 }
