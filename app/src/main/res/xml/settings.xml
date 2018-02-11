@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="@string/settings_general" >
+    <PreferenceCategory android:title="@string/settings_general">
         <Preference
             android:key="preference_logout"
             android:summary="@string/settings_summary_loggout"
@@ -11,7 +11,7 @@
             android:summary="@string/settings_summary_sections"
             android:title="@string/settings_sections" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/settings_sms" >
+    <PreferenceCategory android:title="@string/settings_sms">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_smsPostEnable"
@@ -38,13 +38,13 @@
             android:key="pref_smsMaxStoreNumber"
             android:title="@string/settings_entry_sms_max_store_number" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/settings_entry" >
+    <PreferenceCategory android:title="@string/settings_entry">
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_disableMemo"
             android:summary="@string/settings_summary_entry_disable_memo"
             android:title="@string/settings_entry_disable_memo" />
-        
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_monthlyItemDisplay"
@@ -59,7 +59,7 @@
             android:key="pref_monthlyItemCount"
             android:title="@string/settings_entry_monthly_display_count" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/drawer_menu_financial_state" >
+    <PreferenceCategory android:title="@string/drawer_menu_financial_state">
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_financialStateAutoRefresh"
@@ -71,7 +71,7 @@
             android:summary="@string/settings_summary_financial_state_show_group"
             android:title="@string/settings_financial_state_show_group" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/drawer_menu_income_expense" >
+    <PreferenceCategory android:title="@string/drawer_menu_income_expense">
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_incomeExpenseStateAutoRefresh"
@@ -82,12 +82,12 @@
             android:key="pref_incomeExpenseStateShowGroup"
             android:summary="@string/settings_summary_income_expense_state_show_group"
             android:title="@string/settings_income_expense_state_show_group" />
-        
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_incomeExpenseStateEnableBudget"
             android:summary="@string/settings_summary_income_expense_state_enable_budget"
             android:title="@string/settings_income_expense_state_enable_budget" />
     </PreferenceCategory>
-    
+
 </PreferenceScreen>

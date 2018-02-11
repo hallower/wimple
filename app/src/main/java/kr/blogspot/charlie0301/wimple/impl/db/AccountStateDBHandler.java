@@ -1,68 +1,69 @@
 package kr.blogspot.charlie0301.wimple.impl.db;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 import kr.blogspot.charlie0301.wimple.model.AccountState;
-import android.content.Context;
 
 public class AccountStateDBHandler {
 
-	private static String tableName = "accountstate";
-	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+    private static String tableName = "accountstate";
+    private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"accountid TEXT, " +
-			"accountname TEXT, " +
-			"category TEXT, " +
-			"amount TEXT, " +
-			"seq TEXT, " +
-			"group_ TEXT, " +
-			
-			"PRIMARY KEY (accountid)" +
-			") ";
+            "accountid TEXT, " +
+            "accountname TEXT, " +
+            "category TEXT, " +
+            "amount TEXT, " +
+            "seq TEXT, " +
+            "group_ TEXT, " +
 
-	private static DatabaseHandler dbHandler = null;
+            "PRIMARY KEY (accountid)" +
+            ") ";
 
-	public AccountStateDBHandler(Context context) {
-		super();
+    private static DatabaseHandler dbHandler = null;
 
-		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
-		dbHandler.setColumns(AccountState.columns);
-	}
+    public AccountStateDBHandler(Context context) {
+        super();
 
-	public boolean insert(AccountState data) {
-		if(data != null){
-			return dbHandler.addItem(data);
-		}
-		//dbHandler.showAll();
-		return false;
-	}
+        dbHandler = new DatabaseHandler(context, createSchema, tableName);
+        dbHandler.setColumns(AccountState.columns);
+    }
 
-	public boolean hasData() {
-		return dbHandler.getCountAll() > 0;
-	}
+    public boolean insert(AccountState data) {
+        if (data != null) {
+            return dbHandler.addItem(data);
+        }
+        //dbHandler.showAll();
+        return false;
+    }
 
-	public void clean(){
-		//dbHandler.delete("user_id", ee.getInstance().getProfileID());
-		dbHandler.deleteAll();
-	}
+    public boolean hasData() {
+        return dbHandler.getCountAll() > 0;
+    }
 
-	public boolean insert(Collection<AccountState> data) {
+    public void clean() {
+        //dbHandler.delete("user_id", ee.getInstance().getProfileID());
+        dbHandler.deleteAll();
+    }
 
-		if(data==null || data.isEmpty()){
-			return false;
-		}
+    public boolean insert(Collection<AccountState> data) {
 
-		// TODO : use TCL
-		for(AccountState act : data) {
+        if (data == null || data.isEmpty()) {
+            return false;
+        }
 
-			if(act != null){
-				dbHandler.addItem(act);
-			}
-		}
-		dbHandler.showAll();
-		return true;
-	}
+        // TODO : use TCL
+        for (AccountState act : data) {
+
+            if (act != null) {
+                dbHandler.addItem(act);
+            }
+        }
+        dbHandler.showAll();
+        return true;
+    }
 
 	/*
     private Collection<AccountState> get(String where){
@@ -85,26 +86,26 @@ public class AccountStateDBHandler {
     }
 	 */
 
-	public Collection<AccountState> getAllAccountStates(){
-		Collection<AccountState> acts = new ArrayList<>();
-		Collection<IDatabaseRecord> records = dbHandler.getItems();
+    public Collection<AccountState> getAllAccountStates() {
+        Collection<AccountState> acts = new ArrayList<>();
+        Collection<IDatabaseRecord> records = dbHandler.getItems();
 
-		for(IDatabaseRecord record : records){
-			AccountState data = new AccountState();
+        for (IDatabaseRecord record : records) {
+            AccountState data = new AccountState();
 
-			if(!data.setValues(record.getValues())){
-				continue;
-			}
-			acts.add(data);
-		}
+            if (!data.setValues(record.getValues())) {
+                continue;
+            }
+            acts.add(data);
+        }
 
-		//dbHandler.showAll();
-		return acts;
-	}
+        //dbHandler.showAll();
+        return acts;
+    }
 
 
-	public void print(){
-		dbHandler.showAll();
-	}
+    public void print() {
+        dbHandler.showAll();
+    }
 
 }

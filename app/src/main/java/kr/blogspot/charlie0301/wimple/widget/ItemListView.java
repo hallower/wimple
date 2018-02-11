@@ -1,4 +1,3 @@
-
 package kr.blogspot.charlie0301.wimple.widget;
 
 import android.content.Context;
@@ -10,47 +9,47 @@ import android.widget.ListView;
 
 public class ItemListView extends ListView {
 
-	private OnItemSelectionListener selectionListener;
+    private OnItemSelectionListener selectionListener;
 
-	public ItemListView(Context context) {
-		super(context);
+    public ItemListView(Context context) {
+        super(context);
 
-		init();
-	}
+        init();
+    }
 
-	public ItemListView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+    public ItemListView(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
-		init();
-	}
+        init();
+    }
 
-	private void init() {
-		setOnItemClickListener(new OnItemClickAdapter());
-	}
+    private void init() {
+        setOnItemClickListener(new OnItemClickAdapter());
+    }
 
-	public void setAdapter(BaseAdapter adapter) {
-		super.setAdapter(adapter);
-	}
+    public void setAdapter(BaseAdapter adapter) {
+        super.setAdapter(adapter);
+    }
 
 
-	public void setOnDataSelectionListener(OnItemSelectionListener listener) {
-		this.selectionListener = listener;
-	}
+    public void setOnDataSelectionListener(OnItemSelectionListener listener) {
+        this.selectionListener = listener;
+    }
 
-	private class OnItemClickAdapter implements OnItemClickListener {
+    private class OnItemClickAdapter implements OnItemClickListener {
 
-		OnItemClickAdapter() {
+        OnItemClickAdapter() {
 
-		}
+        }
 
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			if (selectionListener == null) {
-				return;
-			}
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            if (selectionListener == null) {
+                return;
+            }
 
-			selectionListener.onDataSelected(parent, view, position, id);
-		}
-	}
+            selectionListener.onDataSelected(parent, view, position, id);
+        }
+    }
 
 }

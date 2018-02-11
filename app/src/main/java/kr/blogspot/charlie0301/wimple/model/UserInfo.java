@@ -9,8 +9,8 @@ import kr.blogspot.charlie0301.wimple.impl.db.IDatabaseRecord;
 
 public class UserInfo implements IDatabaseRecord {
 
-	private static String LOG_TAG = "UserInfo";
-	/*
+    private static String LOG_TAG = "UserInfo";
+    /*
 	 *  [results] => Array
         (
             [user_id] => 20169
@@ -38,194 +38,194 @@ public class UserInfo implements IDatabaseRecord {
         )
 	 */
 
-	private String id;
-	private String name;
-	private Long joinDate;
-	private String userImgURL;
-	private Integer mileage;
-	private Integer apiCountLevel;
+    private String id;
+    private String name;
+    private Long joinDate;
+    private String userImgURL;
+    private Integer mileage;
+    private Integer apiCountLevel;
 
 
-	public static final SparseArray<String> columns = new SparseArray<>();
+    public static final SparseArray<String> columns = new SparseArray<>();
 
-	static {
-		columns.append(0, "id");
-		columns.append(1,  "name");
-		columns.append(2,  "join_date");
-		columns.append(3,  "profile_image_url");
-		columns.append(4,  "mileage");
-		columns.append(5,  "api_count_level");
-	}
+    static {
+        columns.append(0, "id");
+        columns.append(1, "name");
+        columns.append(2, "join_date");
+        columns.append(3, "profile_image_url");
+        columns.append(4, "mileage");
+        columns.append(5, "api_count_level");
+    }
 
 
-	public UserInfo(){
-		super();
-	}
+    public UserInfo() {
+        super();
+    }
 
-	private UserInfo(String id, String name, Long joinDate,
-					 String userImgURL, Integer mileage, Integer level) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.joinDate = joinDate;
-		this.userImgURL = userImgURL;
-		this.mileage = mileage;
-		this.apiCountLevel = level;
-	}
+    private UserInfo(String id, String name, Long joinDate,
+                     String userImgURL, Integer mileage, Integer level) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.joinDate = joinDate;
+        this.userImgURL = userImgURL;
+        this.mileage = mileage;
+        this.apiCountLevel = level;
+    }
 
-	public UserInfo(JSONObject json) {
-		this(json.optString("user_id"), json.optString("username"),
-				Long.valueOf(json.optString("created_timestamp")),
-				json.optString("image_url"),
-				Integer.valueOf(json.optString("mileage")),
-				Integer.valueOf(json.optString("level")));
-	}
+    public UserInfo(JSONObject json) {
+        this(json.optString("user_id"), json.optString("username"),
+                Long.valueOf(json.optString("created_timestamp")),
+                json.optString("image_url"),
+                Integer.valueOf(json.optString("mileage")),
+                Integer.valueOf(json.optString("level")));
+    }
 
-	public String getID() {
-		return id;
-	}
+    public String getID() {
+        return id;
+    }
 
-	public void setID(String id) {
-		this.id = id;
-	}
+    public void setID(String id) {
+        this.id = id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Long getJoinDate() {
-		return joinDate;
-	}
+    public Long getJoinDate() {
+        return joinDate;
+    }
 
-	public void setJoinDate(Long joinDate) {
-		this.joinDate = joinDate;
-	}
+    public void setJoinDate(Long joinDate) {
+        this.joinDate = joinDate;
+    }
 
-	public String getUserImgURL() {
-		return userImgURL;
-	}
+    public String getUserImgURL() {
+        return userImgURL;
+    }
 
-	public void setUserImgURL(String userImgURL) {
-		this.userImgURL = userImgURL;
-	}
+    public void setUserImgURL(String userImgURL) {
+        this.userImgURL = userImgURL;
+    }
 
-	public Integer getMileage() {
-		return mileage;
-	}
+    public Integer getMileage() {
+        return mileage;
+    }
 
-	public void setMileage(Integer mileage) {
-		this.mileage = mileage;
-	}
-	
-	public Integer getAPICountLevel(){
-		return apiCountLevel;
-	}
+    public void setMileage(Integer mileage) {
+        this.mileage = mileage;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
+    public Integer getAPICountLevel() {
+        return apiCountLevel;
+    }
 
-		sb.append("\n-[UserInfo : ").append(id).append(" ]------------------------------");
-		sb.append("\n   name = ").append(name);
-		sb.append("\n   join since = ").append(joinDate);
-		sb.append("\n   userImgUrl = ").append(userImgURL);
-		sb.append("\n   mileage = ").append(mileage);
-		sb.append("\n---------------------------------------------------------------------");
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
 
-		return sb.toString();
-	}
+        sb.append("\n-[UserInfo : ").append(id).append(" ]------------------------------");
+        sb.append("\n   name = ").append(name);
+        sb.append("\n   join since = ").append(joinDate);
+        sb.append("\n   userImgUrl = ").append(userImgURL);
+        sb.append("\n   mileage = ").append(mileage);
+        sb.append("\n---------------------------------------------------------------------");
 
-	@Override
-	public String getKeyValue() {
-		return id;
-	}
+        return sb.toString();
+    }
 
-	@Override
-	public SparseArray<String> getColumns() {
-		return columns;
-	}
+    @Override
+    public String getKeyValue() {
+        return id;
+    }
 
-	@Override
-	public boolean setValues(SparseArray<String> values) {
-		int key;
+    @Override
+    public SparseArray<String> getColumns() {
+        return columns;
+    }
 
-		for(int i = 0; i < values.size(); i++){
-			key = values.keyAt(i);
+    @Override
+    public boolean setValues(SparseArray<String> values) {
+        int key;
 
-			switch(key){
-			case 0 :
-				id = values.get(key);
-				break;
+        for (int i = 0; i < values.size(); i++) {
+            key = values.keyAt(i);
 
-			case 1 :
-				name = values.get(key);
-				break;
+            switch (key) {
+                case 0:
+                    id = values.get(key);
+                    break;
 
-			case 2 :
-				joinDate = Long.valueOf(values.get(key));
-				break;
+                case 1:
+                    name = values.get(key);
+                    break;
 
-			case 3 :
-				userImgURL = values.get(key);
-				break;
+                case 2:
+                    joinDate = Long.valueOf(values.get(key));
+                    break;
 
-			case 4 :
-				mileage = Integer.valueOf(values.get(key));
-				break;
+                case 3:
+                    userImgURL = values.get(key);
+                    break;
 
-			case 5 :
-				apiCountLevel = Integer.valueOf(values.get(key));
-				break;
-				
-			default :
-				Log.e(LOG_TAG, "UserInfo setValue got invalid index = " + key);
-				return false;
-			}
-		}
-		return true;
-	}
+                case 4:
+                    mileage = Integer.valueOf(values.get(key));
+                    break;
 
-	@Override
-	public String getValue(int columnID) {
+                case 5:
+                    apiCountLevel = Integer.valueOf(values.get(key));
+                    break;
 
-		switch(columnID){
-		case 0 :
-			return id;
+                default:
+                    Log.e(LOG_TAG, "UserInfo setValue got invalid index = " + key);
+                    return false;
+            }
+        }
+        return true;
+    }
 
-		case 1 :
-			return name;
+    @Override
+    public String getValue(int columnID) {
 
-		case 2 :
-			return joinDate.toString();
+        switch (columnID) {
+            case 0:
+                return id;
 
-		case 3 :
-			return userImgURL;
+            case 1:
+                return name;
 
-		case 4 :
-			return mileage.toString();
+            case 2:
+                return joinDate.toString();
 
-		case 5 :
-			return apiCountLevel.toString();
+            case 3:
+                return userImgURL;
 
-		default :
-			Log.e(LOG_TAG, "UserInfo getValue got invalid index = " + columnID);
-			break;		
-		}
-		return "";
-	}
+            case 4:
+                return mileage.toString();
 
-	@Override
-	public SparseArray<String> getValues() {
-		SparseArray<String> values = new SparseArray<>();
+            case 5:
+                return apiCountLevel.toString();
 
-		for(int i = 0 ; i < columns.size() ; i++){
-			values.append(i, getValue(i));
-		}
+            default:
+                Log.e(LOG_TAG, "UserInfo getValue got invalid index = " + columnID);
+                break;
+        }
+        return "";
+    }
 
-		return values;
-	}
+    @Override
+    public SparseArray<String> getValues() {
+        SparseArray<String> values = new SparseArray<>();
+
+        for (int i = 0; i < columns.size(); i++) {
+            values.append(i, getValue(i));
+        }
+
+        return values;
+    }
 }

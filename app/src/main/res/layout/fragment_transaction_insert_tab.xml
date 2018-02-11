@@ -12,14 +12,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/insert_up_window"
         android:layout_marginBottom="1dp"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="35dp"
             android:layout_marginTop="2dp"
             android:orientation="horizontal"
-            android:weightSum="1" >
+            android:weightSum="1">
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -27,7 +27,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="0.4"
                 android:background="@color/colorPrimary"
-                android:gravity="center" >
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/insert_yesterday"
@@ -93,7 +93,7 @@
             android:layout_marginTop="2dp"
             android:baselineAligned="false"
             android:orientation="horizontal"
-            android:weightSum="1" >
+            android:weightSum="1">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -142,14 +142,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="3dp"
                 android:layout_weight="0.6"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <TableLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:stretchColumns="1" >
+                    android:stretchColumns="1">
 
                     <TableRow>
 
@@ -427,7 +427,7 @@
                 android:maxLines="1"
                 android:textSize="14sp"
                 android:background="@android:color/transparent"
-                android:singleLine="true"/>
+                android:singleLine="true" />
         </LinearLayout>
     </LinearLayout>
 
@@ -438,7 +438,7 @@
         android:layout_marginBottom="5dp"
         android:layout_marginTop="2dp"
         android:orientation="vertical"
-        android:weightSum="1" >
+        android:weightSum="1">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -447,7 +447,7 @@
             android:layout_weight="0.87"
             android:baselineAligned="false"
             android:orientation="horizontal"
-            android:weightSum="1" >
+            android:weightSum="1">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -455,7 +455,7 @@
                 android:layout_gravity="top|center_horizontal"
                 android:layout_weight="0.5"
                 android:gravity="top|center_horizontal"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/insert_category_left_title"
@@ -483,7 +483,7 @@
                 android:layout_gravity="top|center_horizontal"
                 android:layout_weight="0.5"
                 android:gravity="top|center_horizontal"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/insert_category_right_title"
@@ -532,7 +532,7 @@
         android:background="@drawable/input_box_round_2"
         android:orientation="horizontal"
         android:padding="10dp"
-        android:visibility="gone" >
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/ti_list_notification_text"

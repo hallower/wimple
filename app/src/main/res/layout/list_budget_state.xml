@@ -39,7 +39,7 @@
         android:textScaleX="0.8"
         android:textColor="@color/text_black"
         android:textSize="13sp" />
-    
+
     <TextView
         android:id="@+id/as_item_budget"
         android:layout_width="0dp"

@@ -5,5 +5,5 @@
         android:id="@+id/action_go_to_whooing"
         android:orderInCategory="100"
         app:showAsAction="always"
-        android:title="@string/action_go_to_whooing"/>
+        android:title="@string/action_go_to_whooing" />
 </menu>

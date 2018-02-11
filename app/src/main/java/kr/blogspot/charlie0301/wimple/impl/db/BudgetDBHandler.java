@@ -1,69 +1,70 @@
 package kr.blogspot.charlie0301.wimple.impl.db;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
 import kr.blogspot.charlie0301.wimple.model.Budget;
-import android.content.Context;
 
 public class BudgetDBHandler {
-	
-	private static String tableName = "budget";
-	private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"accountid TEXT, " +
-			"budget TEXT, " +
-			"current TEXT, " +
-			"remains TEXT, " +
-			"type TEXT, " +
+    private static String tableName = "budget";
+    private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
-			"PRIMARY KEY (accountid, type)" +
-			") ";
+            "accountid TEXT, " +
+            "budget TEXT, " +
+            "current TEXT, " +
+            "remains TEXT, " +
+            "type TEXT, " +
 
-	private static DatabaseHandler dbHandler = null;
+            "PRIMARY KEY (accountid, type)" +
+            ") ";
 
-	public BudgetDBHandler(Context context) {
-		super();
+    private static DatabaseHandler dbHandler = null;
 
-		dbHandler = new DatabaseHandler(context, createSchema, tableName);        
-		dbHandler.setColumns(Budget.columns);
-	}
+    public BudgetDBHandler(Context context) {
+        super();
 
-	public boolean insert(Budget data) {
-		if(data != null){
-			return dbHandler.addItem(data);
-		}
-		//dbHandler.showAll();
-		return false;
-	}
+        dbHandler = new DatabaseHandler(context, createSchema, tableName);
+        dbHandler.setColumns(Budget.columns);
+    }
 
-	public boolean hasData() {
-		return dbHandler.getCountAll() > 0;
-	}
+    public boolean insert(Budget data) {
+        if (data != null) {
+            return dbHandler.addItem(data);
+        }
+        //dbHandler.showAll();
+        return false;
+    }
 
-	public void clean(){
-		//dbHandler.delete("user_id", ee.getInstance().getProfileID());
-		dbHandler.deleteAll();
-	}
+    public boolean hasData() {
+        return dbHandler.getCountAll() > 0;
+    }
 
-	public boolean insert(Map<String, Budget> data) {
+    public void clean() {
+        //dbHandler.delete("user_id", ee.getInstance().getProfileID());
+        dbHandler.deleteAll();
+    }
 
-		if(data==null || data.isEmpty()){
-			return false;
-		}
+    public boolean insert(Map<String, Budget> data) {
 
-		// TODO : use TCL
-		for(String key : data.keySet()) {
+        if (data == null || data.isEmpty()) {
+            return false;
+        }
 
-			Budget act = data.get(key);
-			if(act != null){
-				dbHandler.addItem(act);
-			}
-		}
-		dbHandler.showAll();
-		return true;
-	}
+        // TODO : use TCL
+        for (String key : data.keySet()) {
+
+            Budget act = data.get(key);
+            if (act != null) {
+                dbHandler.addItem(act);
+            }
+        }
+        dbHandler.showAll();
+        return true;
+    }
 
 	/*
     private Collection<Budget> get(String where){
@@ -86,26 +87,26 @@ public class BudgetDBHandler {
     }
 	 */
 
-	public Collection<Budget> getAllBudgets(boolean isIncome){
-		Collection<Budget> acts = new ArrayList<>();
-		Collection<IDatabaseRecord> records = dbHandler.getItems("type", isIncome?"income":"expense");
+    public Collection<Budget> getAllBudgets(boolean isIncome) {
+        Collection<Budget> acts = new ArrayList<>();
+        Collection<IDatabaseRecord> records = dbHandler.getItems("type", isIncome ? "income" : "expense");
 
-		for(IDatabaseRecord record : records){
-			Budget data = new Budget();
-			
-			if(!data.setValues(record.getValues())){
-				continue;
-			}
-			acts.add(data);
-		}
+        for (IDatabaseRecord record : records) {
+            Budget data = new Budget();
 
-		//dbHandler.showAll();
-		return acts;
-	}
+            if (!data.setValues(record.getValues())) {
+                continue;
+            }
+            acts.add(data);
+        }
+
+        //dbHandler.showAll();
+        return acts;
+    }
 
 
-	public void print(){
-		dbHandler.showAll();
-	}
+    public void print() {
+        dbHandler.showAll();
+    }
 
 }

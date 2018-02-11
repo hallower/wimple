@@ -1,12 +1,12 @@
 package kr.blogspot.charlie0301.wimple.impl.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import android.util.Log;
 
 import com.sun.jersey.spi.service.ServiceFinder.ServiceIteratorProvider;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T> {
 
@@ -16,21 +16,21 @@ public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T
     private static final HashMap<String, String[]> SERVICES = new HashMap<String, String[]>();
 
     private static final String[] com_sun_jersey_spi_HeaderDelegateProvider = {
-        "com.sun.jersey.core.impl.provider.header.MediaTypeProvider",
-        "com.sun.jersey.core.impl.provider.header.StringProvider"
+            "com.sun.jersey.core.impl.provider.header.MediaTypeProvider",
+            "com.sun.jersey.core.impl.provider.header.StringProvider"
     };
 
-    private static final String[] com_sun_jersey_spi_inject_InjectableProvider = { 
+    private static final String[] com_sun_jersey_spi_inject_InjectableProvider = {
     };
 
     private static final String[] javax_ws_rs_ext_MessageBodyReader = {
-        "com.sun.jersey.core.impl.provider.entity.StringProvider",
-        "com.sun.jersey.core.impl.provider.entity.ReaderProvider"
+            "com.sun.jersey.core.impl.provider.entity.StringProvider",
+            "com.sun.jersey.core.impl.provider.entity.ReaderProvider"
     };
 
     private static final String[] javax_ws_rs_ext_MessageBodyWriter = {
-        "com.sun.jersey.core.impl.provider.entity.StringProvider",
-        "com.sun.jersey.core.impl.provider.entity.ReaderProvider"
+            "com.sun.jersey.core.impl.provider.entity.StringProvider",
+            "com.sun.jersey.core.impl.provider.entity.ReaderProvider"
     };
 
     static {
@@ -53,8 +53,8 @@ public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T
     @SuppressWarnings("unchecked")
     @Override
     public Iterator<Class<T>> createClassIterator(Class<T> service,
-            String serviceName, ClassLoader loader,
-            boolean ignoreOnClassNotFound) {
+                                                  String serviceName, ClassLoader loader,
+                                                  boolean ignoreOnClassNotFound) {
 
         String[] classesNames = SERVICES.get(serviceName);
         int length = classesNames.length;
@@ -63,7 +63,7 @@ public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T
             try {
                 classes.add((Class<T>) Class.forName(classesNames[i]));
             } catch (ClassNotFoundException e) {
-                Log.v(TAG, MESSAGE,e);
+                Log.v(TAG, MESSAGE, e);
             }
         }
         return classes.iterator();
@@ -71,7 +71,7 @@ public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T
 
     @Override
     public Iterator<T> createIterator(Class<T> service, String serviceName,
-            ClassLoader loader, boolean ignoreOnClassNotFound) {
+                                      ClassLoader loader, boolean ignoreOnClassNotFound) {
 
         String[] classesNames = SERVICES.get(serviceName);
         int length = classesNames.length;
@@ -81,11 +81,11 @@ public class AndroidServiceIteratorProvider<T> extends ServiceIteratorProvider<T
                 classes.add(service.cast(Class.forName(classesNames[i])
                         .newInstance()));
             } catch (IllegalAccessException e) {
-                Log.v(TAG, MESSAGE,e);
+                Log.v(TAG, MESSAGE, e);
             } catch (InstantiationException e) {
-                Log.v(TAG, MESSAGE,e);
+                Log.v(TAG, MESSAGE, e);
             } catch (ClassNotFoundException e) {
-                Log.v(TAG, MESSAGE,e);
+                Log.v(TAG, MESSAGE, e);
             }
         }
 

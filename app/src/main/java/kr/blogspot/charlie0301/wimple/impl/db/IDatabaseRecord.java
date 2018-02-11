@@ -10,8 +10,8 @@ public interface IDatabaseRecord {
     SparseArray<String> getColumns();
 
     boolean setValues(SparseArray<String> values);
-    
+
     String getValue(int columnID);
-    
+
     SparseArray<String> getValues();
 }

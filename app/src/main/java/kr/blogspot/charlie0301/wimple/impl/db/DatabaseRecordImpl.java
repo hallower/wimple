@@ -6,7 +6,7 @@ class DatabaseRecordImpl implements IDatabaseRecord {
 
     private final String primaryKeyValue;
     private final SparseArray<String> columns;
-    private SparseArray<String> values;    
+    private SparseArray<String> values;
 
     DatabaseRecordImpl(String primaryKeyValue, SparseArray<String> columns) {
         super();
@@ -16,7 +16,7 @@ class DatabaseRecordImpl implements IDatabaseRecord {
     }
 
     DatabaseRecordImpl setValue(int key, String value) {
-        if(null == value){
+        if (null == value) {
             value = "";
         }
         this.values.put(key, value);
@@ -24,7 +24,7 @@ class DatabaseRecordImpl implements IDatabaseRecord {
     }
 
     @Override
-    public String getKeyValue() { 
+    public String getKeyValue() {
         return primaryKeyValue;
     }
 
@@ -45,7 +45,7 @@ class DatabaseRecordImpl implements IDatabaseRecord {
     public String getValue(int columnID) {
 
         String value = values.get(columnID);
-        if(null == value){
+        if (null == value) {
             return "";
         }
         return value;
