@@ -75,10 +75,20 @@ public class Calculator {
 
     private Double getStackedValue() {
         Double res = 0.0;
+        int minusMultiply = 1;
+        int startPos = 0;
+        int adjMul = 0;
+
+        if (numbers[0] == '-') {
+            minusMultiply = -1;
+            startPos = 1;
+            adjMul = -1;
+        }
 
         if (pointPosition >= 0) {
 
-            for (int idx = 0, mul = pointPosition; idx <= pointPosition; idx++, mul--) {
+            for (int idx = startPos, mul = pointPosition + adjMul; idx <= pointPosition; idx++, mul--) {
+
                 if (mul <= 0) {
                     res += numbers[idx];
                 } else {
@@ -92,7 +102,7 @@ public class Calculator {
 
         } else {
 
-            for (int idx = 0, mul = insertingPosition - 1; idx < insertingPosition && idx < NUMBER_SIZE; idx++, mul--) {
+            for (int idx = startPos, mul = insertingPosition - 1 + adjMul; idx < insertingPosition && idx < NUMBER_SIZE; idx++, mul--) {
                 if (mul == 0) {
                     res += numbers[idx];
                 } else {
@@ -101,7 +111,7 @@ public class Calculator {
             }
         }
 
-        return res;
+        return res * minusMultiply;
     }
 
     private void setStackedValue(Double number) {
@@ -118,9 +128,11 @@ public class Calculator {
                 if (value.charAt(idx) == '.') {
                     pointPosition = idx - 1;
                     insertingPosition -= 1;
-                    continue;
+                } else if (value.charAt(idx) == '-') {
+                    numbers[wPos++] = value.charAt(idx);
+                } else {
+                    numbers[wPos++] = value.charAt(idx) - '0';
                 }
-                numbers[wPos++] = value.charAt(idx) - '0';
             }
         }
     }
