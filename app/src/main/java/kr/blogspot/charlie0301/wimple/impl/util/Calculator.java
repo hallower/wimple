@@ -54,8 +54,13 @@ public class Calculator {
 
     public Double zero(int len) {
         Double ret;
-
-        ret = doShift(0, len);
+        if (op == OPERATOR.NONE &&
+                insertingPosition == 0) {
+            ret = left = 0.0;
+            resetStackedValue();
+        } else {
+            ret = doShift(0, len);
+        }
         listener.OnResultUpdate(ret);
         return ret;
     }
