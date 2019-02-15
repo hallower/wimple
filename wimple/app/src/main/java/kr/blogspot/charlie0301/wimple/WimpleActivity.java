@@ -99,7 +99,6 @@ public class WimpleActivity extends AppCompatActivity
         static final int GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED = CMD_BASE + 45;
         static final int GET_BUDGET_RESPONSE_RECEIVED = CMD_BASE + 47;
         static final int POST_PAYMENT_RESPONSE_RECEIVED = CMD_BASE + 49;
-        static final int PERMISSIONS_REQUEST_RECEIVE_SMS = CMD_BASE + 51;
     }
 
     public static void sm(int cmd, Object msg) {
@@ -162,34 +161,6 @@ public class WimpleActivity extends AppCompatActivity
             if (savedInstanceState != null)
                 return;
             setDefaultFragment();
-        }
-    }
-
-    private void requestPermissions(String permission) {
-        if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, permission)) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                Toast.makeText(this, R.string.permission_sms_recv, Toast.LENGTH_LONG).show();
-                // TODO : Should I request again?
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission},
-                        CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_accept));
-                } else {
-                    sm(CommandID.TOAST_LONG, getResources().getString(R.string.permission_SMS_recv_deny));
-                }
-            }
         }
     }
 
@@ -545,10 +516,6 @@ public class WimpleActivity extends AppCompatActivity
                     case CommandID.TOAST_SHORT:
                         Snackbar.make(drawer, obj.toString(), Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
-                        break;
-
-                    case CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS:
-                        requestPermissions(obj.toString());
                         break;
 
                     case CommandID.UPDATE_USER_INFO: {

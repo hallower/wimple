@@ -643,10 +643,6 @@ public class WimpleImpl implements IWimpleImpl {
                     responseListener.onPostNewsResponseReceived(booleanStatus, (String) obj);
                     break;
 
-                case CommandID.CMD_POST_PAYMENTS:
-                    responseListener.onPostPaymentsResponseReceived(booleanStatus);
-                    break;
-
                 default:
                     break;
 
