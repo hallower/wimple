@@ -1,0 +1,40 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.blogspot.charlie0301"
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode 35
+        versionName "1.0.35"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/jersey-module-version'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyReader'
+        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter'
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'com.android.support:preference-v7:24.2.1'
+    implementation 'com.android.support:design:24.2.1'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.sun.jersey:jersey-client:1.19.3'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
+}
