@@ -32,19 +32,10 @@ import kr.blogspot.charlie0301.wimple.model.Section;
 public class SettingsFragment extends PreferenceFragmentCompat implements IWimpleFragment {
 
     private final static String LOG_TAG = "SettingsFragment";
-
-    private final static int PICK_CONTACT_REQUEST = 1;
-
     private final WimpleImpl wimple = WimpleImpl.getInstance();
 
     private WeakReference<WimpleActivity> wimpleActivity;
 
-    public static final String KEY_SMS_POST_ENABLE = "pref_smsPostEnable";
-    //public static final String KEY_SMS_TARGET_PHONE_NUMBERS = "pref_smsTargetPhoneNumbers";
-    public static final String KEY_SMS_PICK_CONTACT = "pref_smsPickContact";
-    public static final String KEY_SMS_CONTACT_LIST = "pref_smsContactList";
-    public static final String KEY_SMS_SEND_NOW = "pref_smsSendNow";
-    public static final String KEY_SMS_MAX_STORE_NUMBER = "pref_smsMaxStoreNumber";
     public static final String KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount";
     public static final String KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay";
     public static final String KEY_FINANCIAL_STATE_AUTO_REFRESH = "pref_financialStateAutoRefresh";
@@ -103,126 +94,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
                 startActivity(intent);
                 wimpleActivity.get().finish();
 
-                return false;
-            }
-        });
-
-        updateContactList();
-
-        final Preference smsPostEnable = findPreference(KEY_SMS_POST_ENABLE);
-        smsPostEnable.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if (newValue instanceof Boolean) {
-                    Boolean boolVal = (Boolean) newValue;
-                    if (boolVal) {
-                        WimpleActivity.sm(CommandID.PERMISSIONS_REQUEST_RECEIVE_SMS, Manifest.permission.RECEIVE_SMS);
-                    }
-                }
-                return true;
-            }
-        });
-
-        final Preference pickContact = findPreference(KEY_SMS_PICK_CONTACT);
-        pickContact.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                Intent pickContactIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
-                pickContactIntent.setType(Phone.CONTENT_TYPE);
-                startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
-                return false;
-            }
-        });
-
-        final Preference sendNow = findPreference(KEY_SMS_SEND_NOW);
-        sendNow.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                final SharedPreferences smsKeySettings = WimpleActivity.context.get().getSharedPreferences(SMSReceiver.smsKey, 0);
-                final String storedSMS = smsKeySettings.getString(SMSReceiver.smsBodyTag, "");
-                int numberOfStoredSMSs = smsKeySettings.getInt(SMSReceiver.smsNumberTag, 0);
-
-                //Log.d(LOG_TAG, "sotredSMS = " + storedSMS);
-                Log.d(LOG_TAG, "numberofSMSs = " + numberOfStoredSMSs);
-
-                if (storedSMS.isEmpty() ||
-                        numberOfStoredSMSs <= 0) {
-                    Toast.makeText(WimpleActivity.context.get(), getResources().getString(R.string.settings_sms_send_cant), Toast.LENGTH_LONG).show();
-                    return false;
-                }
-
-                wimple.postPayments(storedSMS, "0000");
-                SharedPreferences.Editor editor = smsKeySettings.edit();
-                editor.putString(SMSReceiver.smsBodyTag, "").putInt(SMSReceiver.smsNumberTag, 0).apply();
-
-                return false;
-            }
-        });
-    }
-
-    private void updateContactList() {
-
-        final ListPreference contactList = (ListPreference) findPreference(KEY_SMS_CONTACT_LIST);
-        final SharedPreferences smsSettings = WimpleActivity.context.get().getSharedPreferences(SMSReceiver.smsKey, 0);
-        String storedTels = smsSettings.getString(SMSReceiver.smsTelTag, "");
-        storedTels = storedTels.trim();
-        contactList.setSummary(storedTels);
-
-        if (storedTels.isEmpty()) {
-            CharSequence entries[] = new String[1];
-            CharSequence entryValues[] = new String[1];
-            entries[0] = "------";
-            entryValues[0] = "------";
-            contactList.setEntries(entries);
-            contactList.setEntryValues(entryValues);
-
-            return;
-        }
-
-        List<String> list = Arrays.asList(storedTels.split("\\s*,\\s*"));
-        if (list.isEmpty()) {
-            Log.d(LOG_TAG, "contact list is empty!!!");
-            return;
-        }
-
-        CharSequence entries[] = new String[list.size()];
-        CharSequence entryValues[] = new String[list.size()];
-        int i = 0;
-
-        for (String contact : list) {
-            entries[i] = contact;
-            entryValues[i] = contact;
-            i++;
-        }
-        contactList.setEntries(entries);
-        contactList.setEntryValues(entryValues);
-        contactList.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.d(LOG_TAG, "new section id = " + newValue.toString());
-                SharedPreferences smsKeySettings = WimpleActivity.context.get().getSharedPreferences(SMSReceiver.smsKey, 0);
-                String storedTels = smsKeySettings.getString(SMSReceiver.smsTelTag, "");
-
-                if (storedTels.isEmpty()) {
-                    return false;
-                }
-                // TODO : make this efficiently,,, no time.
-                storedTels = storedTels.replace(newValue.toString(), "").trim();
-                storedTels = storedTels.replaceAll(",+", ",");
-                if (storedTels.startsWith(",")) {
-                    storedTels = storedTels.substring(1);
-                }
-                if (storedTels.endsWith(",")) {
-                    storedTels = storedTels.substring(0, storedTels.length() - 1);
-                }
-                smsKeySettings.edit().putString(SMSReceiver.smsTelTag, storedTels).apply();
-
-                updateContactList();
                 return false;
             }
         });
@@ -321,48 +192,5 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
     @Override
     public void setActivityInstance(WimpleActivity instance) {
         wimpleActivity = new WeakReference<>(instance);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (requestCode == PICK_CONTACT_REQUEST) {
-            if (resultCode == Activity.RESULT_OK) {
-
-                Uri contactUri = data.getData();
-                String[] projection = {Phone.NUMBER};
-
-                Cursor cursor = WimpleActivity.context.get().getContentResolver()
-                        .query(contactUri, projection, null, null, null);
-                if (cursor == null)
-                    return;
-
-                cursor.moveToFirst();
-
-                int column = cursor.getColumnIndex(Phone.NUMBER);
-                String number = cursor.getString(column);
-
-                if (null != number) {
-                    number = number.replace("-", "").trim();
-
-                    SharedPreferences smsKeySettings = WimpleActivity.context.get().getSharedPreferences(SMSReceiver.smsKey, 0);
-                    String storedTels = smsKeySettings.getString(SMSReceiver.smsTelTag, "");
-
-                    if (storedTels.contains(number)) {
-                        return;
-                    }
-
-                    if (storedTels.endsWith(",") ||
-                            storedTels.isEmpty()) {
-                        storedTels = storedTels + number;
-                    } else {
-                        storedTels = storedTels + "," + number;
-                    }
-                    smsKeySettings.edit().putString(SMSReceiver.smsTelTag, storedTels).apply();
-
-                    updateContactList();
-                }
-            }
-        }
     }
 }
