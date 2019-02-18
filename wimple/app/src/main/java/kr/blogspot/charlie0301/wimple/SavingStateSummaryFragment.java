@@ -18,13 +18,15 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter;
+
+import static kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class SavingStateSummaryFragment extends Fragment implements IWimpleFragment {
 
@@ -46,7 +48,7 @@ public class SavingStateSummaryFragment extends Fragment implements IWimpleFragm
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         view = inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false);
 
@@ -86,7 +88,7 @@ public class SavingStateSummaryFragment extends Fragment implements IWimpleFragm
     @Override
     public void onResume() {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         super.onResume();
     }
 
@@ -121,7 +123,7 @@ public class SavingStateSummaryFragment extends Fragment implements IWimpleFragm
                 }
 
                 if (null == context) {
-                    context = WimpleActivity.context.get();
+                    context = WimpleActivity.Companion.getContext().get();
                     if (null == context) {
                         return;
                     }

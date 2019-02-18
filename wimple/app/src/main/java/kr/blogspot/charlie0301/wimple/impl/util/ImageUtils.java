@@ -32,7 +32,7 @@ public class ImageUtils {
     }
 
     public static int getDPSize(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, WimpleActivity.context.get().getResources().getDisplayMetrics());
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, WimpleActivity.Companion.getContext().get().getResources().getDisplayMetrics());
     }
 
 }

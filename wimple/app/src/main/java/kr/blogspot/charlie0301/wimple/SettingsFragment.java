@@ -1,33 +1,26 @@
 package kr.blogspot.charlie0301.wimple;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.Preference.OnPreferenceChangeListener;
 import android.support.v7.preference.Preference.OnPreferenceClickListener;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.model.Section;
+
+import static kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements IWimpleFragment {
 
@@ -75,21 +68,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
                 wimple.cleanAuth();
                 wimple.clearAllDBRecords();
 
-                if (WimpleActivity.context.get() != null) {
-                    CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(WimpleActivity.context.get());
+                if (WimpleActivity.Companion.getContext().get() != null) {
+                    CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(WimpleActivity.Companion.getContext().get());
                     CookieManager cookieManager = CookieManager.getInstance();
                     cookieManager.setAcceptCookie(true);
                     cookieManager.removeSessionCookie();
                     cookieSyncManager.sync();
 
-                    WimpleActivity.context.get().deleteDatabase("webview.db");
-                    WimpleActivity.context.get().deleteDatabase("webviewCache.db");
+                    WimpleActivity.Companion.getContext().get().deleteDatabase("webview.db");
+                    WimpleActivity.Companion.getContext().get().deleteDatabase("webviewCache.db");
                 }
 
                 //System.runFinalizersOnExit(true);
                 //System.exit(0);
 
-                Intent intent = new Intent(WimpleActivity.context.get(), SplashScreenActivity.class);
+                Intent intent = new Intent(WimpleActivity.Companion.getContext().get(), SplashScreenActivity.class);
                 intent.putExtra("auth_again", "");
                 startActivity(intent);
                 wimpleActivity.get().finish();
@@ -111,13 +104,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
             return;
         }
 
-        if (null == WimpleActivity.context.get()) {
+        if (null == WimpleActivity.Companion.getContext().get()) {
             return;
         }
 
         switch (command) {
 
-            case CommandID.GET_ALL_SECTION_RECEIVED: {
+            case  CommandID.GET_ALL_SECTION_RECEIVED: {
 
                 Collection<Section> list = (Collection<Section>) obj;
                 if (null == list ||
@@ -162,13 +155,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
                         wimple.setDefaultSectionName(entries[idx].toString());
                         wimple.clearAllDBRecords();
 
-                        if (WimpleActivity.context != null) {
-                            SharedPreferences settings = WimpleActivity.context.get().getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
+                        if (WimpleActivity.Companion.getContext() != null) {
+                            SharedPreferences settings = WimpleActivity.Companion.getContext().get().getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE);
                             settings.edit().putString("section_id", wimple.getDefaultSectionID()).apply();
                             settings.edit().putString("section_name", wimple.getDefaultSectionName()).apply();
                         }
 
-                        Intent intent = new Intent(WimpleActivity.context.get(), SplashScreenActivity.class);
+                        Intent intent = new Intent(WimpleActivity.Companion.getContext().get(), SplashScreenActivity.class);
                         startActivity(intent);
                         wimpleActivity.get().finish();
 
@@ -178,11 +171,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IWimpl
                 break;
             }
 
-            case CommandID.POST_PAYMENT_RESPONSE_RECEIVED: {
+            case  CommandID.POST_PAYMENT_RESPONSE_RECEIVED: {
                 if (booleanStatus) {
-                    Toast.makeText(WimpleActivity.context.get(), getResources().getString(R.string.settings_sms_send_success), Toast.LENGTH_LONG).show();
+                    Toast.makeText(WimpleActivity.Companion.getContext().get(), getResources().getString(R.string.settings_sms_send_success), Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(WimpleActivity.context.get(), getResources().getString(R.string.settings_sms_send_failed), Toast.LENGTH_LONG).show();
+                    Toast.makeText(WimpleActivity.Companion.getContext().get(), getResources().getString(R.string.settings_sms_send_failed), Toast.LENGTH_LONG).show();
                 }
                 break;
             }

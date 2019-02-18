@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.Entry;
@@ -44,6 +43,8 @@ import kr.blogspot.charlie0301.wimple.model.Item.DateAscCompare;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.OnItemSelectionListener;
 import kr.blogspot.charlie0301.wimple.widget.entry.EntryItemListAdapter;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class TransactionListFragment extends Fragment implements IWimpleFragment {
 
@@ -83,7 +84,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
     @Override
     public void onResume() {
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         updateSettings();
         // TODO : what is better? below line is duplicated running when activity restarting and after log in.
@@ -106,7 +107,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         view = inflater.inflate(R.layout.fragment_transaction_list_tab, container, false);
 
         llNotification = (LinearLayout) view.findViewById(R.id.entry_list_notification);
@@ -184,7 +185,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             @Override
             public void onDataSelected(AdapterView<?> parent, View v, int position, long id) {
                 Item item = (Item) entryAdapter.get().getItem(position);
-                WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item);
+                WimpleActivity.Companion.sm( CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item);
             }
         });
 
@@ -251,15 +252,15 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             return;
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null == context)
                 return;
         }
 
         switch (command) {
         /*
-		case CommandID.CONNECTED :
-		case CommandID.UPDATE_FEEDS :
+		case  CommandID.CONNECTED :
+		case  CommandID.UPDATE_FEEDS :
 
 			//String sid = obj.toString();
 			getFeeds();
@@ -268,13 +269,13 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
 
 		 */
 
-            case CommandID.WIMPLE_LOGGIN_SUCCESS:
-            case CommandID.GET_ALL_SECTION_RECEIVED: {
+            case  CommandID.WIMPLE_LOGGIN_SUCCESS:
+            case  CommandID.GET_ALL_SECTION_RECEIVED: {
                 wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0);
                 break;
             }
 
-            case CommandID.GET_ENTRIES_RECEIVED: {
+            case  CommandID.GET_ENTRIES_RECEIVED: {
 
                 setShowingNotification(false, true);
                 try {
@@ -300,7 +301,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             }
 
 
-            case CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED: {
+            case  CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED: {
                 String entryDate = (String) obj;
 
                 if (null == entryAdapter.get())
@@ -319,7 +320,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             }
             break;
 
-            case CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED: {
+            case  CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED: {
 
                 Entry entry = (Entry) obj;
 
@@ -339,7 +340,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             }
             break;
 
-            case CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED: {
+            case  CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED: {
 
                 if (!booleanStatus)
                     return;
@@ -375,29 +376,29 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
             }
             break;
 
-            case CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED: {
+            case  CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED: {
                 if (booleanStatus) {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_success));
+                    WimpleActivity.Companion.sm( CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_success));
 
                     // TODO : efficient
                     entryAdapter.get().removeEntry((String) obj);
                     entryAdapter.get().notifyDataSetChanged();
                     wimple.getMonthlyItems(true);
                 } else {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_failed));
+                    WimpleActivity.Companion.sm( CommandID.TOAST_LONG, getResources().getString(R.string.remove_entry_failed));
                 }
             }
             break;
 
-            case CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED: {
+            case  CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED: {
                 if (booleanStatus) {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_success));
+                    WimpleActivity.Companion.sm( CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_success));
 
                     // TODO : efficient
                     entryAdapter.get().removeItem((String) obj);
                     entryAdapter.get().notifyDataSetChanged();
                 } else {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_failed));
+                    WimpleActivity.Companion.sm( CommandID.TOAST_LONG, getResources().getString(R.string.remove_monthly_item_failed));
                 }
             }
             break;
@@ -421,7 +422,7 @@ public class TransactionListFragment extends Fragment implements IWimpleFragment
     public void setShowingNotification(boolean show, boolean isLatest) {
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null != context) {
                 if (isLatest) {
                     txtNotification.setText(context.getResources().getString(R.string.update_latest_items));

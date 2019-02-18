@@ -1,10 +1,12 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.blogspot.charlie0301"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 35
         versionName "1.0.35"
@@ -37,4 +39,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.sun.jersey:jersey-client:1.19.3'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }

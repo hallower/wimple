@@ -24,12 +24,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.ImageUtils;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.model.Budget;
+
+import static kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFragment {
 
@@ -64,7 +66,7 @@ public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFra
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         View view = inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false);
 
@@ -142,7 +144,7 @@ public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFra
 
     @Override
     public void onResume() {
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         c.set(Calendar.DATE, 1);
@@ -169,7 +171,7 @@ public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFra
         }
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null == context) {
                 return;
             }
@@ -177,7 +179,7 @@ public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFra
 
         switch (command) {
 
-            case CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED: {
+            case  CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED: {
 
                 llUpdateNotice.setVisibility(View.GONE);
 
@@ -274,7 +276,7 @@ public class IncomeExpenseSummaryFragment extends Fragment implements IWimpleFra
             }
             break;
 
-            case CommandID.GET_BUDGET_RESPONSE_RECEIVED: {
+            case  CommandID.GET_BUDGET_RESPONSE_RECEIVED: {
 
                 if (!booleanStatus) {
                     return;

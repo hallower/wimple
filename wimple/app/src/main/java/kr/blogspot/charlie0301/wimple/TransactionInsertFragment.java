@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.Calculator;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
@@ -45,6 +45,9 @@ import kr.blogspot.charlie0301.wimple.model.Item;
 import kr.blogspot.charlie0301.wimple.widget.AccountExpandableListAdapter;
 import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment;
 import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment.OnDateSetListener;
+
+import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
+
 
 public class TransactionInsertFragment extends Fragment implements IWimpleFragment {
 
@@ -93,7 +96,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
     @Override
     public void onResume() {
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         initWimple();
 
         super.onResume();
@@ -113,7 +116,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         // Data
         view = inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false);
@@ -222,7 +225,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
                     if (!res) {
                         txtInsertMode.setEnabled(true);
-                        WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
+                        WimpleActivity.Companion.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
                     } else {
                         llInsertNotice.setVisibility(View.VISIBLE);
                         tvNoticeMessage.setText(getResources().getString(R.string.modify_exist_item));
@@ -237,7 +240,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
                     if (!res) {
                         txtInsertMode.setEnabled(true);
-                        WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
+                        WimpleActivity.Companion.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
                     } else {
                         llInsertNotice.setVisibility(View.VISIBLE);
                         tvNoticeMessage.setText(getResources().getString(R.string.insert_new_item));
@@ -570,13 +573,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
     private boolean validateForms() {
         if (txtTitle.getText().toString().isEmpty()) {
             Log.e(LOG_TAG, "Invalid entry title.");
-            WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_title));
+            WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_title));
             return false;
         }
 
         if (txtAmount.getText().toString().isEmpty()) {
             Log.e(LOG_TAG, "Invalid entry amount.");
-            WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_amount));
+            WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_amount));
             return false;
         }
 
@@ -592,13 +595,13 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
         if (!this.leftAccountListAdapter.isSelected()) {
             Log.e(LOG_TAG, "left side account is not selected!!!");
-            WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_left_accounts));
+            WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_left_accounts));
             return false;
         }
 
         if (!this.rightAccountListAdapter.isSelected()) {
             Log.e(LOG_TAG, "right side account is not selected!!!");
-            WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_right_accounts));
+            WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_invalid_right_accounts));
             return false;
         }
         return true;
@@ -634,7 +637,7 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
         }
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null == context) {
                 return;
             }
@@ -773,12 +776,12 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
 
                 Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=" + entryDate);
                 if (booleanStatus) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_success));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.insert_success));
                     clearForms();
                     wimple.getLatestItems(true);
                     wimple.getMonthlyItems(true);
                 } else {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_LONG, getResources().getString(R.string.insert_failed));
                 }
 
                 txtInsertMode.setEnabled(true);
@@ -805,9 +808,9 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
                 setEntry(item);
 
                 if (CurrentToolMode.EDITING == toolMode) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.entry_modify_notice));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.entry_modify_notice));
                 } else {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.month_item_modify_notice));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.month_item_modify_notice));
                 }
             }
             break;
@@ -817,10 +820,10 @@ public class TransactionInsertFragment extends Fragment implements IWimpleFragme
                 llInsertNotice.setVisibility(View.INVISIBLE);
 
                 if (booleanStatus) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.modify_success));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_SHORT, getResources().getString(R.string.modify_success));
                     clearForms();
                 } else {
-                    WimpleActivity.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
+                    WimpleActivity.Companion.sm(CommandID.TOAST_LONG, getResources().getString(R.string.modify_failed));
                 }
                 txtInsertMode.setEnabled(true);
             }

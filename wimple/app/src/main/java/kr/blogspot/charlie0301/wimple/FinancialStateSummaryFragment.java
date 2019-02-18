@@ -18,11 +18,12 @@ import com.github.mikephil.charting.charts.PieChart;
 
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
+
+import static kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class FinancialStateSummaryFragment extends Fragment implements IWimpleFragment {
 
@@ -47,7 +48,7 @@ public class FinancialStateSummaryFragment extends Fragment implements IWimpleFr
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         view = inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false);
 
@@ -98,7 +99,7 @@ public class FinancialStateSummaryFragment extends Fragment implements IWimpleFr
 
     @Override
     public void onResume() {
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false);
         super.onResume();
     }
@@ -116,7 +117,7 @@ public class FinancialStateSummaryFragment extends Fragment implements IWimpleFr
         }
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null == context) {
                 return;
             }

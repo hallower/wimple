@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import kr.blogspot.charlie0301.wimple.WimpleActivity.CommandID;
+
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl;
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
@@ -29,6 +29,8 @@ import kr.blogspot.charlie0301.wimple.model.AccountState;
 import kr.blogspot.charlie0301.wimple.model.Budget;
 import kr.blogspot.charlie0301.wimple.widget.ItemListView;
 import kr.blogspot.charlie0301.wimple.widget.budgetstate.BudgetStateItemListAdapter;
+
+import static kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID;
 
 public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
 
@@ -51,7 +53,7 @@ public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
 
         view = inflater.inflate(R.layout.fragment_income_summary_tab, container, false);
 
@@ -95,7 +97,7 @@ public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
 
     @Override
     public void onResume() {
-        context = WimpleActivity.context.get();
+        context = WimpleActivity.Companion.getContext().get();
         super.onResume();
     }
 
@@ -112,7 +114,7 @@ public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
         }
 
         if (null == context) {
-            context = WimpleActivity.context.get();
+            context = WimpleActivity.Companion.getContext().get();
             if (null == context) {
                 return;
             }
@@ -120,7 +122,7 @@ public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
 
         switch (command) {
 
-            case CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED: {
+            case  CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED: {
 
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
                 if (firstUpdate) {
@@ -194,7 +196,7 @@ public class IncomeSummaryFragment extends Fragment implements IWimpleFragment {
             }
             break;
 
-            case CommandID.GET_BUDGET_RESPONSE_RECEIVED: {
+            case  CommandID.GET_BUDGET_RESPONSE_RECEIVED: {
 
                 if (!booleanStatus) {
                     return;
