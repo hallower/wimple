@@ -30,6 +30,9 @@ android {
     }
     productFlavors {
     }
+    lintOptions {
+        lintConfig file("lint.xml")
+    }
 }
 
 dependencies {
