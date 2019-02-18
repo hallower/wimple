@@ -70,7 +70,7 @@ class SplashScreenActivity : Activity() {
         setupHandler()
         setupWimpleImpl()
 
-        sm( CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_auth))
+        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_auth))
 
         if (wimple.tempToken!!) {
             // Already Logged-in
@@ -113,17 +113,17 @@ class SplashScreenActivity : Activity() {
 
             override fun onLoggedIn(status: Boolean) {
                 if (status) {
-                    sm( CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_success))
-                    sm( CommandID.WIMPLE_LOGGIN_SUCCESS, "")
+                    sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_success))
+                    sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "")
                     refreshCache()
                 } else {
-                    sm( CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_failed))
-                    sm( CommandID.WIMPLE_LOGGIN_FAILED, "")
+                    sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_failed))
+                    sm(CommandID.WIMPLE_LOGGIN_FAILED, "")
                 }
             }
 
             override fun onLoggedOut() {
-                sm( CommandID.WIMPLE_LOGGOUT, "")
+                sm(CommandID.WIMPLE_LOGGOUT, "")
             }
 
             override fun onNetworkConnectionEstablished() {}
@@ -149,7 +149,7 @@ class SplashScreenActivity : Activity() {
                 }
 
                 storedTempToken = tempToken
-                sm( CommandID.GET_PIN, tempToken)
+                sm(CommandID.GET_PIN, tempToken)
             }
 
             override fun onGetAuthAccessToken(status: Boolean,
@@ -187,33 +187,33 @@ class SplashScreenActivity : Activity() {
             }
 
             override fun onGetAllSectionResponseReceived(status: Boolean, list: Collection<Section>) {
-                sm( CommandID.GET_ALL_SECTION_RECEIVED, list)
+                sm(CommandID.GET_ALL_SECTION_RECEIVED, list)
             }
 
             override fun onGetAllAccountResponseReceived(status: Boolean, list: Collection<Account>) {
-                sm( CommandID.GET_ALL_ACCOUNT_RECEIVED, list)
+                sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, list)
             }
 
             override fun onGetEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm( CommandID.GET_ENTRIES_RECEIVED, list)
+                sm(CommandID.GET_ENTRIES_RECEIVED, list)
             }
 
             override fun onGetLatestEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm( CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, status)
+                sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, status)
             }
 
             override fun onMakeEntryResponseReceived(status: Boolean, entryDate: String) {
-                sm( CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status)
+                sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, status)
             }
 
             override fun onGetFrequentItemsResponseReceived(status: Boolean,
                                                             list: Collection<Item>) {
-                sm( CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, list)
+                sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, list)
             }
 
             override fun onGetLatestItemsResponseReceived(status: Boolean,
                                                           list: Collection<Item>) {
-                sm( CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, list)
+                sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, list)
             }
 
             override fun onModifyEntryResponseReceived(status: Boolean, entry: Entry) {}
@@ -278,15 +278,15 @@ class SplashScreenActivity : Activity() {
 
                 when (command) {
 
-                     CommandID.TOAST_LONG -> Toast.makeText(applicationContext, obj.toString(), Toast.LENGTH_LONG).show()
+                    CommandID.TOAST_LONG -> Toast.makeText(applicationContext, obj.toString(), Toast.LENGTH_LONG).show()
 
-                     CommandID.TOAST_SHORT -> Toast.makeText(applicationContext, obj.toString(), Toast.LENGTH_SHORT).show()
+                    CommandID.TOAST_SHORT -> Toast.makeText(applicationContext, obj.toString(), Toast.LENGTH_SHORT).show()
 
-                     CommandID.FATAL_ERROR -> Toast.makeText(applicationContext, applicationContext.resources.getString(R.string.fatal_error), Toast.LENGTH_LONG).show()
+                    CommandID.FATAL_ERROR -> Toast.makeText(applicationContext, applicationContext.resources.getString(R.string.fatal_error), Toast.LENGTH_LONG).show()
 
-                     CommandID.SHOW_STATUS -> splash_status.text = obj as String
+                    CommandID.SHOW_STATUS -> splash_status.text = obj as String
 
-                     CommandID.GET_PIN -> {
+                    CommandID.GET_PIN -> {
                         /*
 					Intent intent = new Intent(context, WebViewActivity.class);
 					intent.putExtra("temp_token", obj.toString());
@@ -296,11 +296,11 @@ class SplashScreenActivity : Activity() {
                         webview.visibility = View.VISIBLE
                     }
 
-                     CommandID.GET_ALL_ACCOUNT_RECEIVED -> Log.d(LOG_TAG, "All Account Information received!")
+                    CommandID.GET_ALL_ACCOUNT_RECEIVED -> Log.d(LOG_TAG, "All Account Information received!")
 
-                     CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED -> Log.d(LOG_TAG, "Latest Items received")
+                    CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED -> Log.d(LOG_TAG, "Latest Items received")
 
-                     CommandID.GET_ALL_SECTION_RECEIVED -> finishedAuthentication()
+                    CommandID.GET_ALL_SECTION_RECEIVED -> finishedAuthentication()
 
                     else -> {
                         Log.d(LOG_TAG, "Invalid Command ID=$command")
@@ -314,19 +314,19 @@ class SplashScreenActivity : Activity() {
     }
 
     private fun finishedAuthentication() {
-        sm( CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_end))
+        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_end))
         val intent = Intent(applicationContext, WimpleActivity::class.java)
         startActivity(intent)
         finish()
     }
 
     private fun exitApplication(toastMessage: String) {
-        sm( CommandID.TOAST_LONG, toastMessage)
+        sm(CommandID.TOAST_LONG, toastMessage)
         finish()
     }
 
     private inner class UriWebViewClient : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView, webRequest:  WebResourceRequest): Boolean {
+        override fun shouldOverrideUrlLoading(view: WebView, webRequest: WebResourceRequest): Boolean {
             val url = webRequest.url.toString()
             val host = webRequest.url.host
             //Log.d(LOG_TAG, "URL=" + url);

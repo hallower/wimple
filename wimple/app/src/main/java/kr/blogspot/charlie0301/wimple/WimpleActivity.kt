@@ -91,12 +91,16 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setDefaultFragment() {
         fab.setImageResource(R.drawable.ic_fab_list)
         this.currentMenuID = R.id.menu_transaction_insert
-        this.currentFragment = TransactionInsertFragment()
-        (currentFragment as IWimpleFragment).setActivityInstance(this)
-        currentFragment!!.arguments = intent.extras
+
+        var insertFragment: TransactionInsertFragment = TransactionInsertFragment()
+        (insertFragment as IWimpleFragment).setActivityInstance(this)
+        insertFragment.arguments = intent.extras
+        this.currentFragment = insertFragment;
+
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.fragment_container, currentFragment)
+        transaction.add(R.id.fragment_container, insertFragment)
         transaction.commit()
+
     }
 
     override fun onBackPressed() {
@@ -176,7 +180,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 this.currentFragment!!.arguments = bundle
             }
             val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.fragment_container, this.currentFragment)
+            transaction.replace(R.id.fragment_container, this.currentFragment as Fragment)
             transaction.commit()
         } catch (e: Exception) {
             Log.e(LOG_TAG, "replaceWimpleFragment: " + e.message)
@@ -195,7 +199,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun setMyInfoOnMenu(info: UserInfo) {
         if (null == my_profile_icon) {
-            smd( CommandID.UPDATE_USER_INFO, info, 1000)
+            smd(CommandID.UPDATE_USER_INFO, info, 1000)
             return
         }
         section_title.text = WimpleImpl.getInstance().defaultSectionName
@@ -238,14 +242,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
             override fun onLoggedIn(status: Boolean) {
                 if (status) {
-                    sm( CommandID.WIMPLE_LOGGIN_SUCCESS, "")
+                    sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "")
                 } else {
-                    sm( CommandID.WIMPLE_LOGGIN_FAILED, "")
+                    sm(CommandID.WIMPLE_LOGGIN_FAILED, "")
                 }
             }
 
             override fun onLoggedOut() {
-                sm( CommandID.WIMPLE_LOGGOUT, "")
+                sm(CommandID.WIMPLE_LOGGOUT, "")
             }
 
             override fun onNetworkConnectionEstablished() {}
@@ -253,7 +257,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             override fun onNetworkConnectionLost() {}
 
             override fun onProfilePictureUpdated() {
-                sm( CommandID.WIMPLE_PROFILE_PICTURE_UPDATED, "")
+                sm(CommandID.WIMPLE_PROFILE_PICTURE_UPDATED, "")
             }
 
         })
@@ -268,78 +272,78 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             override fun onGetUserInfoResponseReceived(status: Boolean, info: UserInfo) {
                 if (status) {
                     Log.i(LOG_TAG, info.toString())
-                    sm( CommandID.UPDATE_USER_INFO, 1, 0, info)
+                    sm(CommandID.UPDATE_USER_INFO, 1, 0, info)
                 } else {
                     Toast.makeText(applicationContext, "Login Failed!!!!", Toast.LENGTH_LONG).show()
                 }
             }
 
             override fun onGetAllSectionResponseReceived(status: Boolean, list: Collection<Section>) {
-                sm( CommandID.GET_ALL_SECTION_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_ALL_SECTION_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetAllAccountResponseReceived(status: Boolean, list: Collection<Account>) {
-                sm( CommandID.GET_ALL_ACCOUNT_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm( CommandID.GET_ENTRIES_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_ENTRIES_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetLatestEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm( CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onMakeEntryResponseReceived(status: Boolean, entryDate: String) {
-                sm( CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entryDate)
+                sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entryDate)
             }
 
             override fun onGetFrequentItemsResponseReceived(status: Boolean,
                                                             list: Collection<Item>) {
-                sm( CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetLatestItemsResponseReceived(status: Boolean,
                                                           list: Collection<Item>) {
-                sm( CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onModifyEntryResponseReceived(status: Boolean, entry: Entry) {
-                sm( CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entry)
+                sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entry)
             }
 
             override fun onGetMonthlyItemsResponseReceived(status: Boolean,
                                                            list: ArrayList<Item>) {
-                sm( CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onRemoveEntryResponseReceived(status: Boolean, id: String) {
-                sm( CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
+                sm(CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
             }
 
             override fun onRemoveMonthlyItemResponseReceived(status: Boolean, id: String) {
-                sm( CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
+                sm(CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
             }
 
             override fun onGetFinancialStateResponseReceived(status: Boolean,
                                                              list: Collection<AccountState>) {
-                sm( CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetIncomeAndExpenseResponseReceived(status: Boolean,
                                                                list: Collection<AccountState>) {
-                sm( CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
+                sm(CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
             }
 
             override fun onGetBudgetResponseReceived(status: Boolean, isIncome: Boolean,
                                                      list: Map<String, Budget>) {
-                sm( CommandID.GET_BUDGET_RESPONSE_RECEIVED, if (status) 1 else 0, if (isIncome) 1 else 0, list)
+                sm(CommandID.GET_BUDGET_RESPONSE_RECEIVED, if (status) 1 else 0, if (isIncome) 1 else 0, list)
             }
 
             override fun onPostNewsResponseReceived(status: Boolean, id: String) {}
 
             override fun onPostPaymentsResponseReceived(status: Boolean) {
-                sm( CommandID.POST_PAYMENT_RESPONSE_RECEIVED, if (status) 1 else 0, 0, "")
+                sm(CommandID.POST_PAYMENT_RESPONSE_RECEIVED, if (status) 1 else 0, 0, "")
             }
 
         })
@@ -371,22 +375,22 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
                 when (command) {
 
-                     CommandID.TOAST_LONG -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_LONG)
+                    CommandID.TOAST_LONG -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show()
 
-                     CommandID.TOAST_SHORT -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_SHORT)
+                    CommandID.TOAST_SHORT -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show()
 
-                     CommandID.UPDATE_USER_INFO -> {
+                    CommandID.UPDATE_USER_INFO -> {
                         setMyInfoOnMenu(obj as UserInfo)
                     }
 
-                     CommandID.WIMPLE_PROFILE_PICTURE_UPDATED -> {
+                    CommandID.WIMPLE_PROFILE_PICTURE_UPDATED -> {
                         WidgetItem.replaceBitmapOfImageView(my_profile_icon, WimpleImpl.getInstance().profilePicture, false)
                     }
 
                     // TransactionInsertFragment
-                     CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM -> {
+                    CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM -> {
 
                         if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
@@ -400,12 +404,12 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     }
 
                     // to all
-                     CommandID.WIMPLE_LOGGIN_SUCCESS -> {
+                    CommandID.WIMPLE_LOGGIN_SUCCESS -> {
                         WimpleImpl.getInstance().monthlyItems
-                            if (null != this@WimpleActivity.currentFragment && this@WimpleActivity.currentFragment is IWimpleFragment) {
-                                val wfg = this@WimpleActivity.currentFragment as IWimpleFragment?
-                                wfg!!.handleMessage(msg)
-                            }
+                        if (null != this@WimpleActivity.currentFragment && this@WimpleActivity.currentFragment is IWimpleFragment) {
+                            val wfg = this@WimpleActivity.currentFragment as IWimpleFragment?
+                            wfg!!.handleMessage(msg)
+                        }
                     }
 /*
                      CommandID.WIMPLE_LOGGIN_FAILED,
