@@ -35,8 +35,6 @@ import java.util.*
 class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
-    //private var mainActivity: WimpleActivity? = null
-    //private var context: WeakReference<Context>? = null
 
     // Widget
     private var leftAccountListAdapter: AccountExpandableListAdapter? = null
@@ -133,6 +131,8 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         //initWimple();
     }
 
+
+
     private fun setupTitlenSubmit() {
 
         insert_amount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
@@ -149,9 +149,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
             false
         })
 
+
         btn_submit.setOnClickListener(OnClickListener {
             btn_submit.isEnabled = false
 
+            // To handle typed amount by IME
+            setAmount(insert_amount.text.toString())
             insert_amount.setText(cal.eq().toString())
 
             if (!validateForms()) {
@@ -587,6 +590,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                 if (booleanStatus) {
                     adapterLatestItems!!.clear()
                     adapterLatestItems!!.filter.filter("")
+                    @Suppress("UNCHECKED_CAST")
                     adapterLatestItems!!.addAll(obj as List<Item>)
                     adapterLatestItems!!.notifyDataSetChanged()
                 }
