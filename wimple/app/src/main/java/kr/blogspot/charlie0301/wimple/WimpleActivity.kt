@@ -397,7 +397,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                             smd(msg.what, msg.obj, 300)
                         }
 
-                        if (null != this@WimpleActivity.currentFragment && this@WimpleActivity.currentFragment is IWimpleFragment) {
+                        if (this@WimpleActivity.currentFragment is IWimpleFragment) {
                             val wfg = this@WimpleActivity.currentFragment as IWimpleFragment?
                             wfg!!.handleMessage(msg)
                         }
@@ -406,7 +406,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     // to all
                     CommandID.WIMPLE_LOGGIN_SUCCESS -> {
                         WimpleImpl.getInstance().monthlyItems
-                        if (null != this@WimpleActivity.currentFragment && this@WimpleActivity.currentFragment is IWimpleFragment) {
+                        if (this@WimpleActivity.currentFragment is IWimpleFragment) {
                             val wfg = this@WimpleActivity.currentFragment as IWimpleFragment?
                             wfg!!.handleMessage(msg)
                         }
@@ -430,7 +430,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     }
 */
                     else -> {
-                        if (null != this@WimpleActivity.currentFragment && this@WimpleActivity.currentFragment is IWimpleFragment) {
+                        if (this@WimpleActivity.currentFragment is IWimpleFragment) {
                             val wfg = this@WimpleActivity.currentFragment as IWimpleFragment?
                             wfg!!.handleMessage(msg)
                         }

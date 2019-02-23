@@ -338,7 +338,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
     }
 
     private fun setAmount(amount: String) {
-        if (amount == null || amount.isEmpty()) {
+        if (amount.isEmpty()) {
             cal.setValue(0.0);
         } else {
             var amountValue = java.lang.Double.parseDouble(amount.replace(",", ""))

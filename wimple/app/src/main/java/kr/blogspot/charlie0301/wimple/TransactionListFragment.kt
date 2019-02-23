@@ -136,7 +136,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
             }
         })
 
-        entry_list_view.setOnDataSelectionListener { parent, v, position, id ->
+        entry_list_view.setOnDataSelectionListener { parent, _, position, id ->
             val item = entryAdapter.getItem(position) as Item
             WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item)
         }
@@ -223,9 +223,6 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
                         if (!booleanStatus)
                             return
 
-                        if (null == entryAdapter)
-                            return
-
                         val list = obj as Collection<Entry>
 
                         for (item in list) {
@@ -245,9 +242,6 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
                 run {
                     val entryDate = obj as String
 
-                    if (null == entryAdapter)
-                        return
-
                     wimple.getAllEntries(DateFormatUtils.getServerDateString(entryDate), DateFormatUtils.getServerDateString(entryDate, -1), 0)
                     // by date limit
                     //wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getServerDateString(entryDate, -(int)(long)(monthlyDisplayAllowingDays)), 0);
@@ -264,8 +258,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
 
             CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED -> {
                 val entryDate = obj as String
-                if (null == entryAdapter)
-                    return
+
                 wimple.getAllEntries(DateFormatUtils.getServerDateString(entryDate), DateFormatUtils.getServerDateString(entryDate, -1), 0)
                 if (monthlyDisplay) {
                     if (booleanStatus) {
