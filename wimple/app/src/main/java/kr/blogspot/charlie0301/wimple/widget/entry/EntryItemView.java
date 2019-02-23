@@ -122,7 +122,7 @@ public class EntryItemView extends LinearLayout {
 
     public void setBackgroundAccountWidget(TextView tv, String account) {
 
-        if (account.length() < 1) {
+        if (account.isEmpty()) {
             Log.e(LOG_TAG, "fatal, account string is empty!!!");
             return;
         }

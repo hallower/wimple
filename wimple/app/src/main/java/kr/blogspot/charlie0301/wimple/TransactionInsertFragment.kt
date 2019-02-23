@@ -88,9 +88,6 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        // Data
-
         //synchronized(TransactionInsertFragment.class){
         if (padRIDs.isEmpty()) {
             val ar = context!!.resources.obtainTypedArray(R.array.number_buttons)
@@ -409,7 +406,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
             return false
         }
 
-        insert_category_right.requestFocusFromTouch()
+        //insert_category_right.requestFocusFromTouch()
         insert_category_left.setSelection(selectedLeftGroup)
         insert_category_left.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.selectedChildPosition, true)
         insert_category_left_title.text = (leftAccountListAdapter.getChild(selectedLeftGroup, leftAccountListAdapter.selectedChildPosition) as Account).title
@@ -423,7 +420,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
             return false
         }
 
-        insert_category_right.requestFocusFromTouch()
+        //insert_category_right.requestFocusFromTouch()
         insert_category_right.setSelection(selectedRightGroup)
         insert_category_right.setSelectedChild(selectedRightGroup, rightAccountListAdapter.selectedChildPosition, true)
         insert_category_right_title.text = (rightAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.selectedChildPosition) as Account).title
