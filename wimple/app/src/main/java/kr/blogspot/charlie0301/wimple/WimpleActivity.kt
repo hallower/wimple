@@ -33,7 +33,7 @@ import java.util.*
 class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var currentMenuID: Int = 0
-    private var currentFragment: Fragment? = null
+    private lateinit var currentFragment: Fragment
 
     override fun onResume() {
         context = WeakReference(applicationContext)
@@ -177,7 +177,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         try {
             (this.currentFragment as IWimpleFragment).setActivityInstance(this)
             if (null != bundle) {
-                this.currentFragment!!.arguments = bundle
+                this.currentFragment.arguments = bundle
             }
             val transaction = supportFragmentManager.beginTransaction()
             transaction.replace(R.id.fragment_container, this.currentFragment as Fragment)

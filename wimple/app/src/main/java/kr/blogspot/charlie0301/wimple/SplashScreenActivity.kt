@@ -29,7 +29,7 @@ import java.util.*
 class SplashScreenActivity : Activity() {
 
     private val wimple = WimpleImpl.getInstance()
-    private var settings: SharedPreferences? = null
+    private lateinit var settings: SharedPreferences
 
     private var storedTempToken: String = ""
     private var cacheRefreshed = false
@@ -74,7 +74,7 @@ class SplashScreenActivity : Activity() {
 
         if (wimple.tempToken!!) {
             // Already Logged-in
-            val savedSectionID = settings!!.getString("section_id", null)
+            val savedSectionID = settings.getString("section_id", null)
             if (null == savedSectionID || savedSectionID.isEmpty()) {
                 Log.d(LOG_TAG, "logged in - get default section")
                 wimple.getDefaultSections(true)
@@ -170,7 +170,7 @@ class SplashScreenActivity : Activity() {
 
                 //sm( CommandID.SHOW_STATUS, applicationContext.getResources().getString(R.string.loggin_user_info));
                 wimple.getUserInfo(true)
-                val savedSectionID = settings!!.getString("section_id", null)
+                val savedSectionID = settings.getString("section_id", null)
                 if (null == savedSectionID || savedSectionID.isEmpty()) {
                     Log.d(LOG_TAG, "not logged in - get default section")
                     wimple.getDefaultSections(false)
