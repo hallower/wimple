@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
@@ -73,8 +74,7 @@ public class WimpleImpl implements IWimpleImpl {
     private BudgetDBHandler bddbh = null;
 
     // static references
-    //private static final Locale locale = new Locale("ko", "KR");
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
     public static final String settingsKey = "wimple.auth";
 
     // Data
@@ -384,9 +384,9 @@ public class WimpleImpl implements IWimpleImpl {
     ;
 
 
-	/*
+    /*
      * These APIs are regarding Promise Library management
-	 */
+     */
 
     /**
      * Start using the Promise library
@@ -443,9 +443,9 @@ public class WimpleImpl implements IWimpleImpl {
         rrh.handleRestResponse(code);
     }
 
-	/*
-	 * Handler
-	 */
+    /*
+     * Handler
+     */
 
     public static final class CommandID {
 
@@ -653,14 +653,14 @@ public class WimpleImpl implements IWimpleImpl {
 
 
 
-	/*
-	 * Server APIs
-	 */
+    /*
+     * Server APIs
+     */
 
 
-	/*
-	 * Auth APIs
-	 */
+    /*
+     * Auth APIs
+     */
 
     public Boolean isAuthed() {
         return this.isAuthed;
@@ -1100,36 +1100,31 @@ public class WimpleImpl implements IWimpleImpl {
 
         }
 
-        private Collection<Account> filterOutAccounts() {
+        private synchronized Collection<Account> filterOutAccounts() {
 
             Collection<Account> accountList = adbh.getAllAccounts();
             Collection<Account> list = new ArrayList<>();
+            Date itemDate;
+
+            try {
+                sdf.setLenient(false);
+                itemDate = sdf.parse(dateFilter);
+            } catch (Exception e) {
+                Log.d(LOG_TAG, "[Account] Filtering failed !!! date fileter=" + dateFilter);
+                return accountList;
+            }
 
             for (Account item : accountList) {
                 String open = item.getOpenedDate();
                 String closed = item.getClosedDate();
-                Date itemDate;
-
-                try {
-                    sdf.setLenient(false);
-                    itemDate = sdf.parse(dateFilter);
-                } catch (Exception e) {
-                    //e.printStackTrace();
-                    Log.d(LOG_TAG, "[Account] Filtering failed !!! date fileter=" + dateFilter);
-                    list.add(item);
-                    continue;
-                }
 
                 try {
                     Date openDate = sdf.parse(open);
-
                     if (closed.startsWith("2999")) {
-
                         if (itemDate.getTime() >= openDate.getTime()) {
                             list.add(item);
                         }
                     } else {
-
                         Date closedDate = sdf.parse(closed);
                         if (itemDate.getTime() >= openDate.getTime() &&
                                 itemDate.getTime() <= closedDate.getTime()) {
@@ -1137,12 +1132,10 @@ public class WimpleImpl implements IWimpleImpl {
                         }
                     }
                 } catch (Exception e) {
-                    //e.printStackTrace();
                     Log.d(LOG_TAG, "[Account] Filtering failed !!! with item=" + item.getTitle() + ", open=" + open + ", close=" + closed);
                     list.add(item);
                     continue;
                 }
-
             }
             return list;
         }
