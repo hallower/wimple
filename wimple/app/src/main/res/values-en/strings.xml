@@ -156,4 +156,6 @@
     <string name="permission_SMS_recv_accept">You can send SMSs to Whooing to make a transaction record.</string>
     <string name="permission_SMS_recv_deny">You can\'t use Whooing\'s SMS recoginzing service due to your deny for acquiring the SMS receiving permission</string>
     <string name="section">Section</string>
+    <string name="entry_lastest_item_added">Latest items are updated.</string>
+    <string name="insert_acount_update_retry">Some accounts missing, update accounts inforamtion again</string>
 </resources>

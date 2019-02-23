@@ -37,12 +37,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
     private val wimple = WimpleImpl.getInstance()
 
     // Widget
-    private var leftAccountListAdapter: AccountExpandableListAdapter? = null
-    private var rightAccountListAdapter: AccountExpandableListAdapter? = null
+    private lateinit var leftAccountListAdapter: AccountExpandableListAdapter
+    private lateinit var rightAccountListAdapter: AccountExpandableListAdapter
 
     private var datePicker: DatePickerFragment = DatePickerFragment()
 
-    private var adapterLatestItems: ArrayAdapter<Item>? = null
+    private lateinit var adapterLatestItems: ArrayAdapter<Item>
     private var editingItem: Item? = null
     private var toolMode = CurrentToolMode.INSERT
 
@@ -94,7 +94,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         //synchronized(TransactionInsertFragment.class){
         if (padRIDs.isEmpty()) {
             val ar = context!!.resources.obtainTypedArray(R.array.number_buttons)
-            for (cnt in 0..(ar.length()-1)) padRIDs.add(ar.getResourceId(cnt, 0))
+            for (cnt in 0..(ar.length() - 1)) padRIDs.add(ar.getResourceId(cnt, 0))
             ar.recycle()
         }
         //}
@@ -130,7 +130,6 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
         //initWimple();
     }
-
 
 
     private fun setupTitlenSubmit() {
@@ -182,7 +181,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 					 */
 
                 val res = wimple.modifyEntry(editingItem!!.id, DateFormatUtils.getServerDateString(datePicker.selectedDate),
-                        leftAccountListAdapter!!.selected, rightAccountListAdapter!!.selected,
+                        leftAccountListAdapter.selected, rightAccountListAdapter.selected,
                         insert_entry_title.text.toString(), amount, insert_memo.text.toString())
                 if (!res) {
                     btn_submit!!.isEnabled = true
@@ -196,7 +195,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
             } else {
                 val res = wimple.makeEntry(datePicker.selectedDate,
-                        leftAccountListAdapter!!.selected, rightAccountListAdapter!!.selected,
+                        leftAccountListAdapter.selected, rightAccountListAdapter.selected,
                         insert_entry_title.text.toString(), amount, insert_memo.text.toString())
 
                 if (!res) {
@@ -217,7 +216,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                     changed = changed.substring(0, changed.indexOf("(") - 1)
                     changed = changed.trim { it <= ' ' }
                 }
-                adapterLatestItems!!.filter.filter(changed)
+                adapterLatestItems.filter.filter(changed)
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
@@ -298,9 +297,20 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         insert_category_left.setAdapter(leftAccountListAdapter)
 
         insert_category_left.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
-            leftAccountListAdapter!!.setSelected(groupPosition, childPosition, id)
-            insert_category_left_title.text = (leftAccountListAdapter!!.getChild(groupPosition, childPosition) as Account).title
+            leftAccountListAdapter.setSelected(groupPosition, childPosition, id)
+            insert_category_left_title.text = (leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
+        }
+        insert_category_left.addOnLayoutChangeListener { view: View, i: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int, i6: Int, i7: Int ->
+            for (idx in 0 until leftAccountListAdapter.groupCount)
+                insert_category_left.expandGroup(idx)
+
+            val selectedID = leftAccountListAdapter.selected.id
+            if (!selectedID.isEmpty()) {
+                if (!selectLeftCategory(selectedID)) {
+                    WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.insert_acount_update_retry))
+                }
+            }
         }
 
         insert_category_right_title.background.alpha = 128
@@ -308,9 +318,20 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         insert_category_right.setAdapter(rightAccountListAdapter)
 
         insert_category_right.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
-            rightAccountListAdapter!!.setSelected(groupPosition, childPosition, id)
-            insert_category_right_title.text = (rightAccountListAdapter!!.getChild(groupPosition, childPosition) as Account).title
+            rightAccountListAdapter.setSelected(groupPosition, childPosition, id)
+            insert_category_right_title.text = (rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
+        }
+        insert_category_right.addOnLayoutChangeListener { view: View, i: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int, i6: Int, i7: Int ->
+            for (idx in 0 until rightAccountListAdapter.groupCount)
+                insert_category_right.expandGroup(idx)
+
+            val selectedID = rightAccountListAdapter.selected.id
+            if (!selectedID.isEmpty()) {
+                if (!selectRightCategory(selectedID)) {
+                    WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.insert_acount_update_retry))
+                }
+            }
         }
     }
 
@@ -320,8 +341,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
     }
 
     private fun setAmount(amount: String) {
-        var amountValue = java.lang.Double.parseDouble(amount.replace(",", ""))
-        cal.setValue(amountValue)
+        if (amount == null || amount.isEmpty()) {
+            cal.setValue(0.0);
+        } else {
+            var amountValue = java.lang.Double.parseDouble(amount.replace(",", ""))
+            cal.setValue(amountValue)
+        }
     }
 
     private fun setAmount(amount: Double?) {
@@ -332,7 +357,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         val selected: Item?
 
         try {
-            selected = adapterLatestItems!!.getItem(position)
+            selected = adapterLatestItems.getItem(position)
             if (selected == null)
                 return
         } catch (e: Exception) {
@@ -377,34 +402,37 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         selectCategory(entry)
     }
 
+    private fun selectLeftCategory(leftAccountID: String): Boolean {
+        val selectedLeftGroup = leftAccountListAdapter.setSelected(leftAccountID)
+        if (selectedLeftGroup == -1) {
+            Log.e(LOG_TAG, "Can't select left category!!!, $leftAccountID")
+            return false
+        }
+
+        insert_category_right.requestFocusFromTouch()
+        insert_category_left.setSelection(selectedLeftGroup)
+        insert_category_left.setSelectedChild(selectedLeftGroup, leftAccountListAdapter.selectedChildPosition, true)
+        insert_category_left_title.text = (leftAccountListAdapter.getChild(selectedLeftGroup, leftAccountListAdapter.selectedChildPosition) as Account).title
+        return true
+    }
+
+    private fun selectRightCategory(rightAccountID: String): Boolean {
+        val selectedRightGroup = rightAccountListAdapter.setSelected(rightAccountID)
+        if (selectedRightGroup == -1) {
+            Log.e(LOG_TAG, "Can't select right category!!!, $rightAccountID")
+            return false
+        }
+
+        insert_category_right.requestFocusFromTouch()
+        insert_category_right.setSelection(selectedRightGroup)
+        insert_category_right.setSelectedChild(selectedRightGroup, rightAccountListAdapter.selectedChildPosition, true)
+        insert_category_right_title.text = (rightAccountListAdapter.getChild(selectedRightGroup, rightAccountListAdapter.selectedChildPosition) as Account).title
+        return true
+    }
+
     private fun selectCategory(entry: Item) {
-        val selectedLeftGroup = leftAccountListAdapter!!.setSelected(entry.leftAccountID)
-        if (selectedLeftGroup > -1) {
-
-            /*
-			for(int i = 0; i < leftAccountListView.getChildCount() ; i++){
-				leftAccountListView.collapseGroup(i);
-			}
-			leftAccountListView.expandGroup(selectedLeftGroup);
-			 */
-            insert_category_left.setSelection(selectedLeftGroup)
-            insert_category_left.setSelectedChild(selectedLeftGroup, leftAccountListAdapter!!.selectedChildPosition, true)
-            insert_category_left_title.text = (leftAccountListAdapter!!.getChild(selectedLeftGroup, leftAccountListAdapter!!.selectedChildPosition) as Account).title
-        }
-
-        val selectedRightGroup = rightAccountListAdapter!!.setSelected(entry.rightAccountID)
-        if (selectedRightGroup > -1) {
-
-            /*
-			for(int i = 0; i < rightAccountListView.getChildCount() ; i++){
-				rightAccountListView.collapseGroup(i);
-			}
-			rightAccountListView.expandGroup(selectedRightGroup);
-			 */
-            insert_category_right.setSelection(selectedRightGroup)
-            insert_category_right.setSelectedChild(selectedRightGroup, rightAccountListAdapter!!.selectedChildPosition, true)
-            insert_category_right_title.text = (rightAccountListAdapter!!.getChild(selectedRightGroup, rightAccountListAdapter!!.selectedChildPosition) as Account).title
-        }
+        selectLeftCategory(entry.leftAccountID)
+        selectRightCategory(entry.rightAccountID)
     }
 
     private fun validateForms(): Boolean {
@@ -430,13 +458,13 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 		}
 		 */
 
-        if (!this.leftAccountListAdapter!!.isSelected) {
+        if (!this.leftAccountListAdapter.isSelected) {
             Log.e(LOG_TAG, "left side account is not selected!!!")
             WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.insert_invalid_left_accounts))
             return false
         }
 
-        if (!this.rightAccountListAdapter!!.isSelected) {
+        if (!this.rightAccountListAdapter.isSelected) {
             Log.e(LOG_TAG, "right side account is not selected!!!")
             WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.insert_invalid_right_accounts))
             return false
@@ -452,8 +480,8 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
         insert_category_left_title.text = resources.getString(R.string.insert_left_accounts)
         insert_category_right_title.text = resources.getString(R.string.insert_right_accounts)
-        leftAccountListAdapter!!.clearSelection()
-        rightAccountListAdapter!!.clearSelection()
+        leftAccountListAdapter.clearSelection()
+        rightAccountListAdapter.clearSelection()
 
         if (CurrentToolMode.EDITING == toolMode) {
             editingItem = null
@@ -491,7 +519,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                 val accountList = arrayListOf<Account>()
                 if (obj is Collection<*>) {
                     for (given_item in obj) {
-                        if(given_item is Account){
+                        if (given_item is Account) {
                             accountList.add(given_item)
                         }
                     }
@@ -540,17 +568,17 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                     lChild[lHeader[2]] = capital
                     lChild[lHeader[3]] = expenses
 
-                    val selectedID = leftAccountListAdapter!!.selected.id
+                    leftAccountListAdapter.clear()
+                    leftAccountListAdapter.setData(lHeader, lChild)
+                    leftAccountListAdapter.notifyDataSetChanged()
 
-                    leftAccountListAdapter!!.clear()
-                    leftAccountListAdapter!!.setData(lHeader, lChild)
-                    leftAccountListAdapter!!.notifyDataSetChanged()
 
+                    for (idx in 0 until leftAccountListAdapter.groupCount)
+                        insert_category_left.expandGroup(idx)
+
+                    val selectedID = leftAccountListAdapter.selected.id
                     if (!selectedID.isEmpty())
-                        leftAccountListAdapter!!.setSelected(selectedID)
-
-                    for (i in 0 until leftAccountListAdapter!!.groupCount)
-                        insert_category_left.expandGroup(i)
+                        selectLeftCategory(selectedID)
                 }
 
                 run {
@@ -566,17 +594,16 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                     rChild[rHeader[2]] = capital
                     rChild[rHeader[3]] = income
 
-                    val selectedID = rightAccountListAdapter!!.selected.id
+                    rightAccountListAdapter.clear()
+                    rightAccountListAdapter.setData(rHeader, rChild)
+                    rightAccountListAdapter.notifyDataSetChanged()
 
-                    rightAccountListAdapter!!.clear()
-                    rightAccountListAdapter!!.setData(rHeader, rChild)
-                    rightAccountListAdapter!!.notifyDataSetChanged()
+                    for (idx in 0 until rightAccountListAdapter.groupCount)
+                        insert_category_right.expandGroup(idx)
 
+                    val selectedID = rightAccountListAdapter.selected.id
                     if (!selectedID.isEmpty())
-                        rightAccountListAdapter!!.setSelected(selectedID)
-
-                    for (i in 0 until rightAccountListAdapter!!.groupCount)
-                        insert_category_right.expandGroup(i)
+                        selectRightCategory(selectedID)
                 }
             }
 
@@ -588,11 +615,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
                 ti_update_notification.visibility = View.INVISIBLE
 
                 if (booleanStatus) {
-                    adapterLatestItems!!.clear()
-                    adapterLatestItems!!.filter.filter("")
+                    adapterLatestItems.clear()
+                    adapterLatestItems.filter.filter("")
                     @Suppress("UNCHECKED_CAST")
-                    adapterLatestItems!!.addAll(obj as List<Item>)
-                    adapterLatestItems!!.notifyDataSetChanged()
+                    adapterLatestItems.addAll(obj as List<Item>)
+                    adapterLatestItems.notifyDataSetChanged()
+                    //WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.entry_lastest_item_added))
                 }
             }
 

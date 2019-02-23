@@ -40,7 +40,11 @@ class RestAPIInvoker {
 
         try {
             ServiceFinder.setIteratorProvider(new AndroidServiceIteratorProvider<>());
+        } catch (Exception e) {
+            Log.i(LOG_TAG, "ServiceFinder.setIteratorProvider is already set");
+        }
 
+        try {
             Log.d(LOG_TAG, "Invoke REST API, " + method.toString() + " , Path=" + path);
             client = SSLClientHelper.createClient();
             webResource = client.resource(wimple.getServicehost() + path);

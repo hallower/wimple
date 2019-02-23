@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
@@ -74,8 +73,8 @@ public class WimpleImpl implements IWimpleImpl {
     private BudgetDBHandler bddbh = null;
 
     // static references
-    private static final Locale locale = new Locale("ko", "KR");
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
+    //private static final Locale locale = new Locale("ko", "KR");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     public static final String settingsKey = "wimple.auth";
 
     // Data
