@@ -131,7 +131,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
     private fun setupTitlenSubmit() {
 
-        insert_amount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        insert_amount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, _ ->
             when (id) {
                 EditorInfo.IME_ACTION_DONE -> {
                     setAmount(textView.text.toString())
@@ -226,7 +226,7 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         val latestItems = ArrayList<Item>()
         adapterLatestItems = ArrayAdapter(context!!, R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems)
         insert_frequent_items.adapter = adapterLatestItems
-        insert_frequent_items.onItemClickListener = OnItemClickListener { parent, view, position, id -> selectLatestItem(position) }
+        insert_frequent_items.onItemClickListener = OnItemClickListener { _, _, position, _ -> selectLatestItem(position) }
 
         insert_title_clear.setOnClickListener { clearForms() }
     }
@@ -293,12 +293,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         leftAccountListAdapter = AccountExpandableListAdapter(context)
         insert_category_left.setAdapter(leftAccountListAdapter)
 
-        insert_category_left.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
+        insert_category_left.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             leftAccountListAdapter.setSelected(groupPosition, childPosition, id)
             insert_category_left_title.text = (leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-        insert_category_left.addOnLayoutChangeListener { view: View, i: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int, i6: Int, i7: Int ->
+        insert_category_left.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
             for (idx in 0 until leftAccountListAdapter.groupCount)
                 insert_category_left.expandGroup(idx)
 
@@ -314,12 +314,12 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
         rightAccountListAdapter = AccountExpandableListAdapter(context)
         insert_category_right.setAdapter(rightAccountListAdapter)
 
-        insert_category_right.setOnChildClickListener { parent, v, groupPosition, childPosition, id ->
+        insert_category_right.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             rightAccountListAdapter.setSelected(groupPosition, childPosition, id)
             insert_category_right_title.text = (rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-        insert_category_right.addOnLayoutChangeListener { view: View, i: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int, i6: Int, i7: Int ->
+        insert_category_right.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
             for (idx in 0 until rightAccountListAdapter.groupCount)
                 insert_category_right.expandGroup(idx)
 

@@ -9,7 +9,6 @@ import android.support.v7.preference.Preference.OnPreferenceChangeListener
 import android.support.v7.preference.Preference.OnPreferenceClickListener
 import android.support.v7.preference.PreferenceFragmentCompat
 import android.webkit.CookieManager
-import android.webkit.CookieSyncManager
 import android.widget.Toast
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
@@ -45,11 +44,10 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             wimple.clearAllDBRecords()
 
             if (context != null) {
-                val cookieSyncManager = CookieSyncManager.createInstance(context)
                 val cookieManager = CookieManager.getInstance()
                 cookieManager.setAcceptCookie(true)
-                cookieManager.removeSessionCookie()
-                cookieSyncManager.sync()
+                cookieManager.removeAllCookies(null)
+                cookieManager.flush()
 
                 context!!.deleteDatabase("webview.db")
                 context!!.deleteDatabase("webviewCache.db")
@@ -85,7 +83,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
             CommandID.GET_ALL_SECTION_RECEIVED -> {
 
-                val list = obj as Collection<Section>
+                @Suppress("UNCHECKED_CAST") val list = obj as Collection<Section>
                 if (list.isEmpty()) {
                     return
                 }
@@ -105,7 +103,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 listSections.entries = entries
                 listSections.entryValues = entryValues
                 listSections.setValueIndex(idx)
-                listSections.onPreferenceChangeListener = OnPreferenceChangeListener { preference, newValue ->
+                listSections.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
                     if (0 == newValue.toString().compareTo(listSections.value)) {
                         return@OnPreferenceChangeListener false
                     }

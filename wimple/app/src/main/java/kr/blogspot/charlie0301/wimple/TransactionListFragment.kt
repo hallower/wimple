@@ -136,7 +136,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
             }
         })
 
-        entry_list_view.setOnDataSelectionListener { parent, _, position, id ->
+        entry_list_view.setOnDataSelectionListener { _, _, position, _ ->
             val item = entryAdapter.getItem(position) as Item
             WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item)
         }
@@ -147,7 +147,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
         display.getSize(size)
         maxHeight = size.y
 
-        entry_list_view.setOnTouchListener(OnTouchListener { v, event ->
+        entry_list_view.setOnTouchListener(OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     //TOUCH STARTED
@@ -223,7 +223,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
                         if (!booleanStatus)
                             return
 
-                        val list = obj as Collection<Entry>
+                        @Suppress("UNCHECKED_CAST") val list = obj as Collection<Entry>
 
                         for (item in list) {
                             entryAdapter.addItem(item)
@@ -277,9 +277,6 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
             CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED -> {
 
                 if (!booleanStatus)
-                    return
-
-                if (null == entryAdapter)
                     return
 
                 if (!monthlyDisplay)
