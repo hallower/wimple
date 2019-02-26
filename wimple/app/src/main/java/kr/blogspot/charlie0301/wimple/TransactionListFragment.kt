@@ -255,19 +255,6 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
                 }
             }
 
-
-            CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED -> {
-                val entryDate = obj as String
-
-                wimple.getAllEntries(DateFormatUtils.getServerDateString(entryDate), DateFormatUtils.getServerDateString(entryDate, -1), 0)
-                if (monthlyDisplay) {
-                    if (booleanStatus) {
-                        entryAdapter.removeSameDatedMonthlyItem(entryDate)
-                    }
-                    wimple.getMonthlyItems(true)
-                }
-            }
-
             CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED -> {
 
                 val entry = obj as Entry
@@ -300,7 +287,7 @@ class TransactionListFragment : Fragment(), IWimpleFragment {
 
                 entryAdapter.removeAllMonthlyItem()
 
-                val list = obj as ArrayList<Item>
+                @Suppress("UNCHECKED_CAST") val list = obj as ArrayList<Item>
                 Collections.sort(list, DateAscCompare())
 
                 var counts = if (monthlyDisplayItemsNumbers > list.size) list.size else monthlyDisplayItemsNumbers
