@@ -21,7 +21,8 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
     private var wimpleActivity: WeakReference<WimpleActivity>? = null
     internal lateinit var listSections: ListPreference
 
-    override fun onCreatePreferences(savedInstanceState: Bundle, rootKey: String) {
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
         wimple.getAllSections(true)
 

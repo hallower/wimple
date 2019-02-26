@@ -1,0 +1,134 @@
+package kr.blogspot.charlie0301.wimple
+
+import android.os.Bundle
+import android.os.Message
+import android.preference.PreferenceManager
+import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
+import android.widget.LinearLayout
+import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_finalcial_state_summary_tab.*
+import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
+import kr.blogspot.charlie0301.wimple.model.AccountState
+
+class FinancialStateSummaryFragment : Fragment(), IWimpleFragment {
+
+    private val wimple = WimpleImpl.getInstance()
+
+    // GUI
+    private var llUpdateNotice: LinearLayout? = null
+    private var tvSavingValue: TextView? = null
+    private var tvDebtValue: TextView? = null
+    private var tvSumValue: TextView? = null
+
+    // Data
+    private var firstUpdate: Boolean = false
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        this.firstUpdate = true
+        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false)
+
+        this.as_refresh.setOnClickListener {
+            this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
+            this.as_update_notification.visibility = View.VISIBLE
+        }
+    }
+
+    override fun onResume() {
+        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false)
+        super.onResume()
+    }
+
+    override fun handleMessage(msg: Message) {
+        val command = msg.what
+        val booleanStatus = msg.arg1 == 1
+        val obj = msg.obj
+
+        // if fragment is added or not to the activity
+        if (!this.isAdded) {
+            return
+        }
+
+        if (null == this.context) {
+            return
+        }
+
+        when (command) {
+
+            CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED -> {
+
+                this.as_update_notification.visibility = View.GONE
+
+                if (this.firstUpdate) {
+                    this.firstUpdate = false
+                    // To show previous data during new data dispatching without any GUI display delay.
+                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
+                    if (autoRefresh) {
+                        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
+                        this.as_update_notification.visibility = View.VISIBLE
+                    }
+                }
+
+                if (!booleanStatus) {
+                    return
+                }
+
+                var saving: Double = 0.0
+                var debt: Double = 0.0
+
+                @Suppress("UNCHECKED_CAST") val accountStates = obj as Collection<AccountState>
+                for (acs in accountStates) {
+
+                    if (!acs.group) {
+                        if (acs.category.startsWith("li")) {
+                            debt += acs.amount
+                        }
+                        if (acs.category.startsWith("as")) {
+                            saving += acs.amount
+                        }
+                    }/*else{
+					//asAdapter.get().addAccountState(as);
+				}*/
+                }
+                //asAdapter.get().notifyDataSetChanged();
+
+                this.as_saving_value.text = DateFormatUtils.getNoPointDecimalFormat().format(saving)
+                this.as_debt_value.text = DateFormatUtils.getNoPointDecimalFormat().format(-1 * debt)
+
+                val sum = saving - debt
+
+                this.as_sum_value.text = DateFormatUtils.getNoPointDecimalFormat().format(sum)
+                if (sum >= 0) {
+                    this.as_sum_value.setTextColor(ContextCompat.getColor(this.context!!, R.color.text_blue))
+                } else {
+                    this.as_sum_value.setTextColor(ContextCompat.getColor(this.context!!, R.color.text_red))
+                }
+
+                val pcv = ChartUtils.makeChart(this.context,
+                        doubleArrayOf(Math.abs(saving), Math.abs(debt)),
+                        arrayOf(this.resources.getString(R.string.title_saving), this.resources.getString(R.string.title_debt)),
+                        if (Math.abs(saving) > Math.abs(debt)) Math.abs(saving) else Math.abs(debt))
+
+                this.chart.removeAllViews()
+                this.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+            }
+        }
+    }
+
+    override fun setActivityInstance(instance: WimpleActivity) {}
+}
