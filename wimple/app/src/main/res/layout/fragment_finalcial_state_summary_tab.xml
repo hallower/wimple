@@ -69,8 +69,8 @@
                     android:text="..."
                     android:textAlignment="textEnd"
                     android:textScaleX="0.8"
-                    android:textSize="55sp"
-                    app:autoSizeMaxTextSize="55dp"
+                    android:textSize="56sp"
+                    app:autoSizeMaxTextSize="56dp"
                     app:autoSizeTextType="uniform" />
             </RelativeLayout>
 

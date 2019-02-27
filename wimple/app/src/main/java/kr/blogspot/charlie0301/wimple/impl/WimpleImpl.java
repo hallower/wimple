@@ -1362,10 +1362,10 @@ public class WimpleImpl implements IWimpleImpl {
                     try {
                         sdf.setLenient(false);
                         sdf.parse(date);
-
                         path += "&end_date=" + date;
                     } catch (Exception e) {
                         e.printStackTrace();
+                        path += "&end_date=" + date;
                     }
                 }
 
@@ -1510,6 +1510,7 @@ public class WimpleImpl implements IWimpleImpl {
                     path += "&start_date=" + startDate;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    path += "&start_date=" + startDate;
                 }
 
                 try {
@@ -1518,6 +1519,7 @@ public class WimpleImpl implements IWimpleImpl {
                     path += "&end_date=" + endDate;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    path += "&end_date=" + endDate;
                 }
 
                 try {
@@ -1708,6 +1710,7 @@ public class WimpleImpl implements IWimpleImpl {
                     path += "&start_date=" + startDate;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    path += "&start_date=" + startDate;
                 }
 
                 try {
@@ -1716,6 +1719,7 @@ public class WimpleImpl implements IWimpleImpl {
                     path += "&end_date=" + endDate;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    path += "&end_date=" + endDate;
                 }
 
                 try {
