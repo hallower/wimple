@@ -3,8 +3,8 @@ package kr.blogspot.charlie0301.wimple
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +18,7 @@ import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.AccountState
 
-class FinancialStateSummaryFragment : Fragment(), IWimpleFragment {
+class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
 

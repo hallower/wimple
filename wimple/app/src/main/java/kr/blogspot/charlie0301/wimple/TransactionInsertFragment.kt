@@ -5,8 +5,8 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -32,7 +32,7 @@ import kr.blogspot.charlie0301.wimple.widget.DatePickerFragment
 import java.util.*
 
 
-class TransactionInsertFragment : Fragment(), IWimpleFragment {
+class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
 

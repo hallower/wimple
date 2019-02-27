@@ -5,7 +5,7 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
@@ -27,7 +27,7 @@ import kr.blogspot.charlie0301.wimple.widget.entry.EntryItemListAdapter
 import java.util.*
 import java.util.concurrent.Semaphore
 
-class TransactionListFragment : Fragment(), IWimpleFragment {
+class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
     private val wimple = WimpleImpl.getInstance()
 
     private lateinit var entryAdapter: EntryItemListAdapter

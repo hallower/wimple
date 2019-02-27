@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
-import android.support.v7.preference.ListPreference
-import android.support.v7.preference.Preference.OnPreferenceChangeListener
-import android.support.v7.preference.Preference.OnPreferenceClickListener
-import android.support.v7.preference.PreferenceFragmentCompat
+import androidx.preference.ListPreference
+import androidx.preference.Preference.OnPreferenceChangeListener
+import androidx.preference.Preference.OnPreferenceClickListener
+import androidx.preference.PreferenceFragmentCompat
 import android.webkit.CookieManager
 import android.widget.Toast
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID

@@ -6,8 +6,8 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +23,7 @@ import kr.blogspot.charlie0301.wimple.model.AccountState
 import kr.blogspot.charlie0301.wimple.model.Budget
 import java.util.*
 
-class IncomeExpenseSummaryFragment : Fragment(), IWimpleFragment {
+class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
 

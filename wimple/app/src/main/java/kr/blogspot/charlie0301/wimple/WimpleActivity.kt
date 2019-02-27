@@ -7,12 +7,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
-import android.support.design.widget.NavigationView
-import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+import androidx.fragment.app.Fragment
+import androidx.core.view.GravityCompat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -32,7 +32,7 @@ import java.util.*
 class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var currentMenuID: Int = 0
-    private var currentFragment: Fragment ?= null
+    private var currentFragment: androidx.fragment.app.Fragment?= null
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
@@ -177,7 +177,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 this.currentFragment!!.arguments = bundle
             }
             val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.fragment_container, this.currentFragment as Fragment)
+            transaction.replace(R.id.fragment_container, this.currentFragment as androidx.fragment.app.Fragment)
             transaction.commit()
         } catch (e: Exception) {
             Log.e(LOG_TAG, "replaceWimpleFragment: " + e.message)

@@ -3,7 +3,7 @@ package kr.blogspot.charlie0301.wimple
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +17,7 @@ import kr.blogspot.charlie0301.wimple.model.AccountState
 import kr.blogspot.charlie0301.wimple.widget.accountstate.AccountStateItemListAdapter
 import java.util.*
 
-class DebtStateSummaryFragment : Fragment(), IWimpleFragment {
+class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     //private final static String LOG_TAG = "TransactionInsertFragment";
 
