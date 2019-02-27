@@ -270,7 +270,11 @@ class TransactionInsertFragment : Fragment(), IWimpleFragment {
 
     private fun setupDate() {
         datePicker.setTextViewWidget(insert_date)
-        datePicker.setOnDateSetListener { date -> setupItemDate(date) }
+        datePicker.setOnDateSetListener(object : DatePickerFragment.OnDateSetListener {
+            override fun onDateSet(date: Long?) {
+                setupItemDate(date)
+            }
+        })
         insert_date.setOnClickListener {
             @Suppress("DEPRECATION")
             datePicker.show((activity as AppCompatActivity).fragmentManager, "itemDate")
