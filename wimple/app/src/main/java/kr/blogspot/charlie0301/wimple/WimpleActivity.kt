@@ -27,7 +27,6 @@ import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem
 import kr.blogspot.charlie0301.wimple.model.*
-import java.lang.ref.WeakReference
 import java.util.*
 
 class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -36,14 +35,12 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private var currentFragment: Fragment ?= null
 
     override fun onResume() {
-        context = WeakReference(applicationContext)
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
         super.onResume()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        context = WeakReference(applicationContext)
         Log.i(LOG_TAG, "WimpleActivity - onCreate!!!")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wimple)
@@ -450,7 +447,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         private const val whooingURL = "https://new.whooing.com"
 
         private var mainHandler: Handler? = null
-        var context: WeakReference<Context>? = null
 
         object CommandID {
             private const val CMD_BASE = 10000

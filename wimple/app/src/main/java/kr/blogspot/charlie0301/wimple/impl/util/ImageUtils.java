@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.wimple.impl.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -7,8 +8,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.util.TypedValue;
-
-import kr.blogspot.charlie0301.wimple.WimpleActivity;
 
 public class ImageUtils {
 
@@ -31,8 +30,8 @@ public class ImageUtils {
         return output;
     }
 
-    public static int getDPSize(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, WimpleActivity.Companion.getContext().get().getResources().getDisplayMetrics());
+    public static int getDPSize(int dp, Context context) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 
 }
