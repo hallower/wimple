@@ -2,7 +2,7 @@ package kr.blogspot.charlie0301.wimple.widget
 
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.app.DialogFragment
+import android.content.res.Resources
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -14,9 +14,9 @@ import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener {
+class DatePickerFragment : androidx.fragment.app.DialogFragment(), DatePickerDialog.OnDateSetListener {
 
-    var selectedDate: Long? = null
+    var selectedDate: Long
         private set
     private var year: Int = 0
     private var month: Int = 0
@@ -26,7 +26,6 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
         private set
 
     private var tv: WeakReference<TextView>? = null
-
     private var listener: OnDateSetListener? = null
 
     interface OnDateSetListener {
@@ -38,7 +37,6 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
     }
 
     init {
-
         // Use the current date as the default date in the picker
         val c = Calendar.getInstance()
         selectedDate = c.timeInMillis
@@ -107,8 +105,7 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
     }
 
     companion object {
-
-        private val locale = Locale("ko", "KR")
+        private val locale = Resources.getSystem().configuration.locale
         private val sdf = SimpleDateFormat("MM-dd E", locale)
     }
 

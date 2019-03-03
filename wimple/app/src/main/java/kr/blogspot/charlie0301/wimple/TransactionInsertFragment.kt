@@ -5,8 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -276,8 +274,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             }
         })
         insert_date.setOnClickListener {
-            @Suppress("DEPRECATION")
-            datePicker.show((activity as AppCompatActivity).fragmentManager, "itemDate")
+            datePicker.show(fragmentManager, "itemDate")
         }
         setupItemDate(Calendar.getInstance().timeInMillis)
 
