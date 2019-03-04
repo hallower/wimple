@@ -279,12 +279,12 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         setupItemDate(Calendar.getInstance().timeInMillis)
 
         insert_yesterday.setOnClickListener {
-            val newDate = datePicker.selectedDate!! - 24 * 60 * 60 * 1000
+            val newDate = datePicker.selectedDate - 24 * 60 * 60 * 1000
             setupItemDate(newDate)
         }
 
         insert_tomorrow.setOnClickListener {
-            val newDate = datePicker.selectedDate!! + 24 * 60 * 60 * 1000
+            val newDate = datePicker.selectedDate + 24 * 60 * 60 * 1000
             setupItemDate(newDate)
         }
     }

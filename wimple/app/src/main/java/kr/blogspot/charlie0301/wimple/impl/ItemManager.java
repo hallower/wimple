@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTPMethod;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl.Path;
 import kr.blogspot.charlie0301.wimple.model.Item;
@@ -48,7 +48,7 @@ class ItemManager {
             Collection<Item> list = new ArrayList<>();
             String path = "?section_id=" + sectionID;
 
-            JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_FREQUENT + path, "");
+            JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ITEM_FREQUENT + path, "");
             if (null == json) {
                 Log.e(LOG_TAG, "[Frequent Item] Error response - null returned");
                 wimpl.sm(CommandID.CMD_GET_FRQUENT_ITEMS, 0, 0, list);
@@ -124,7 +124,7 @@ class ItemManager {
             try {
                 String path = "?section_id=" + sectionID;
 
-                JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_LATEST + path, "");
+                JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ITEM_LATEST + path, "");
                 if (null == json) {
                     Log.e(LOG_TAG, "[Latest Item] Error response - null returned");
                     wimpl.sm(CommandID.CMD_GET_LATEST_ITEMS, 0, 0, list);
@@ -192,7 +192,7 @@ class ItemManager {
                 ArrayList<Item> list = new ArrayList<>();
                 String path = "?section_id=" + sectionID;
 
-                JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ITEM_MONTHLY + path, "");
+                JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ITEM_MONTHLY + path, "");
                 if (null == json) {
                     Log.e(LOG_TAG, "[Monthly Item] Error response - null returned");
                     wimpl.sm(CommandID.CMD_GET_MONTHLY_ITEMS, 0, 0, list);
@@ -254,7 +254,7 @@ class ItemManager {
         @Override
         public void run() {
 
-            JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.DELETE, Path.ITEM_MONTHLY_REMOVE + itemID + "/" + sectionID + ".json_array", "");
+            JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.DELETE, Path.ITEM_MONTHLY_REMOVE + itemID + "/" + sectionID + ".json_array", "");
             if (null == json) {
                 Log.e(LOG_TAG, "[DeleteMonthItem] Error response - null returned");
                 wimpl.sm(CommandID.CMD_DELETE_MONTHLY_ITEMS, 0, 0, "");

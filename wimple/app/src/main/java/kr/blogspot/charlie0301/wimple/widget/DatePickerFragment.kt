@@ -45,7 +45,7 @@ class DatePickerFragment : androidx.fragment.app.DialogFragment(), DatePickerDia
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return DatePickerDialog(activity, this, year, month, day)
+        return DatePickerDialog(context, this, year, month, day)
     }
 
     override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {

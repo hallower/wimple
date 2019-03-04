@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 import java.util.concurrent.Semaphore;
 
-import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTPMethod;
 import kr.blogspot.charlie0301.wimple.impl.db.EntryDBHandler;
 import kr.blogspot.charlie0301.wimple.impl.db.ItemDBHandler;
 
@@ -40,8 +40,6 @@ interface IWimpleImpl {
 
     Integer getRemainedAPICall();
 
-    Integer getTotalAPICall();
-
     void setRemainedAPICall(String count);
 
 
@@ -50,7 +48,7 @@ interface IWimpleImpl {
     void sm(int cmd, int a1, int a2, Object msg);
 
 
-    JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params);
+    JSONObject invokeRESTAPI(HTTPMethod method, String path, String params);
 
     void handleRESTErrorResponse(int code);
 }

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import kr.blogspot.charlie0301.wimple.R;
-import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTPMethod;
 import kr.blogspot.charlie0301.wimple.impl.db.AccountDBHandler;
 import kr.blogspot.charlie0301.wimple.impl.db.AccountStateDBHandler;
 import kr.blogspot.charlie0301.wimple.impl.db.BudgetDBHandler;
@@ -435,7 +435,7 @@ public class WimpleImpl implements IWimpleImpl {
     /*
      * Utils
      */
-    public JSONObject invokeRESTAPI(HTTP_METHOD method, String path, String params) {
+    public JSONObject invokeRESTAPI(HTTPMethod method, String path, String params) {
         return rai.invokeRESTAPI(method, path, params);
     }
 
@@ -817,7 +817,7 @@ public class WimpleImpl implements IWimpleImpl {
                 return;
             }
 
-            JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_ALL, "");
+            JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.SECTIONS_ALL, "");
 
             if (null == json) {
                 Log.e(LOG_TAG, "[All Sections] Error response - null returned");
@@ -888,7 +888,7 @@ public class WimpleImpl implements IWimpleImpl {
                 return;
             }
 
-            JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.USER_INFO, "");
+            JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.USER_INFO, "");
 
             if (null == json) {
                 Log.e(LOG_TAG, "[User Info] Error response - null returned");
@@ -953,7 +953,7 @@ public class WimpleImpl implements IWimpleImpl {
                 return;
             }
 
-            JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.SECTIONS_DEFAULT, "");
+            JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.SECTIONS_DEFAULT, "");
 
             if (null == json) {
                 Log.e(LOG_TAG, "[Default Sections] Error response - null returned");
@@ -1046,7 +1046,7 @@ public class WimpleImpl implements IWimpleImpl {
             String path = "?section_id=" + sectionID;
 
             try {
-                JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.ACCOUNT_ALL + path, "");
+                JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.ACCOUNT_ALL + path, "");
                 if (null == json) {
                     Log.e(LOG_TAG, "[Account] Error response - null returned");
                     sm(CommandID.CMD_GET_ACCOUNT_ALL, 0, 0, list);
@@ -1370,7 +1370,7 @@ public class WimpleImpl implements IWimpleImpl {
                 }
 
                 try {
-                    JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.FINANCIAL_STATE + path, "");
+                    JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.FINANCIAL_STATE + path, "");
                     if (null == json) {
                         Log.e(LOG_TAG, "[FState] Error response - null returned");
                         sm(CommandID.CMD_GET_FINANCIAL_STATE, 0, 0, list);
@@ -1523,7 +1523,7 @@ public class WimpleImpl implements IWimpleImpl {
                 }
 
                 try {
-                    JSONObject json = invokeRESTAPI(HTTP_METHOD.GET, Path.INCOME_AND_EXPENSE + path, "");
+                    JSONObject json = invokeRESTAPI(HTTPMethod.GET, Path.INCOME_AND_EXPENSE + path, "");
                     if (null == json) {
                         Log.e(LOG_TAG, "[InE] Error response - null returned");
                         sm(CommandID.CMD_GET_INCOME_AND_EXPENSE, 0, 0, list);
@@ -1726,10 +1726,10 @@ public class WimpleImpl implements IWimpleImpl {
                     JSONObject json;
 
                     if (isIncome) {
-                        json = invokeRESTAPI(HTTP_METHOD.GET, Path.BUDGET_INCOME + path, "");
+                        json = invokeRESTAPI(HTTPMethod.GET, Path.BUDGET_INCOME + path, "");
 
                     } else {
-                        json = invokeRESTAPI(HTTP_METHOD.GET, Path.BUDGET_EXPENSES + path, "");
+                        json = invokeRESTAPI(HTTPMethod.GET, Path.BUDGET_EXPENSES + path, "");
 
                     }
                     if (null == json) {
@@ -1925,7 +1925,7 @@ public class WimpleImpl implements IWimpleImpl {
                 postingContent = String.format(formatNewsPost, TextUtils.htmlEncode(subject), TextUtils.htmlEncode(contents));
 
                 try {
-                    JSONObject json = invokeRESTAPI(HTTP_METHOD.POST, Path.MONEYNEWS, postingContent);
+                    JSONObject json = invokeRESTAPI(HTTPMethod.POST, Path.MONEYNEWS, postingContent);
                     if (null == json) {
                         Log.e(LOG_TAG, "[PostNews] Error response - null returned");
                         sm(CommandID.CMD_POST_NEWS, 0, 0, "");
@@ -1997,7 +1997,7 @@ public class WimpleImpl implements IWimpleImpl {
                 postingContent += TextUtils.htmlEncode(message);
 
                 try {
-                    JSONObject json = invokeRESTAPI(HTTP_METHOD.POST, Path.POST_PAYMENT, postingContent);
+                    JSONObject json = invokeRESTAPI(HTTPMethod.POST, Path.POST_PAYMENT, postingContent);
                     if (null == json) {
                         Log.e(LOG_TAG, "[PostPayments] Error response - null returned");
                         sm(CommandID.CMD_POST_PAYMENTS, 0, 0, "");
@@ -2011,7 +2011,7 @@ public class WimpleImpl implements IWimpleImpl {
                         int code = Integer.parseInt(json.get("code").toString());
                         if (400 == code) {
                             Log.e(LOG_TAG, "[PostPayments] Unrecognized message, reporting it!");
-                            invokeRESTAPI(HTTP_METHOD.POST, Path.REPORT_FAILED_PAYMENT, sender + "\n" + postingContent);
+                            invokeRESTAPI(HTTPMethod.POST, Path.REPORT_FAILED_PAYMENT, sender + "\n" + postingContent);
                         }
 						/*
 						// handleRESTErrorResponse can be show a dialog, so it should be avoided.
@@ -2041,11 +2041,6 @@ public class WimpleImpl implements IWimpleImpl {
     @Override
     public Integer getRemainedAPICall() {
         return countOfRemainedAPICall;
-    }
-
-    @Override
-    public Integer getTotalAPICall() {
-        return countOfTotalAPICall;
     }
 
     @Override

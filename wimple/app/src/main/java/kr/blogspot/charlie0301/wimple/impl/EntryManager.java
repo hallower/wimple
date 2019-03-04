@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTP_METHOD;
+import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTPMethod;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl.CommandID;
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl.Path;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
@@ -119,7 +119,7 @@ class EntryManager {
                     path += "&limit=40";
                 }
 
-                JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_ALL + path, "");
+                JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ENTRIES_ALL + path, "");
                 if (null == json) {
                     Log.e(LOG_TAG, "[AllEntries] Error response - null returned");
                     wimpl.sm(CommandID.CMD_GET_ENTRIES, 0, 0, list);
@@ -213,7 +213,7 @@ class EntryManager {
             }
 
             try {
-                JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.GET, Path.ENTRIES_LATEST + path, "");
+                JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ENTRIES_LATEST + path, "");
                 if (null == json) {
                     Log.e(LOG_TAG, "[LatestEntries] Error response - null returned");
                     wimpl.sm(CommandID.CMD_GET_LATEST_ENTRIES, 0, 0, list);
@@ -316,7 +316,7 @@ class EntryManager {
 
             //Log.d(LOG_TAG, path);
 
-            JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.POST, Path.ENTRIES_LATEST, path);
+            JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.POST, Path.ENTRIES_LATEST, path);
             if (null == json) {
                 Log.e(LOG_TAG, "[PostEntry] Error response - null returned");
                 wimpl.sm(CommandID.CMD_POST_ENTRY, 0, 0, "");
@@ -397,7 +397,7 @@ class EntryManager {
 
             //Log.d(LOG_TAG, path);
 
-            JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.PUT, Path.ENTRIES_MODIFY + entryID + ".json_array", path);
+            JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.PUT, Path.ENTRIES_MODIFY + entryID + ".json_array", path);
             if (null == json) {
                 Log.e(LOG_TAG, "[PutEntry] Error response - null returned");
                 wimpl.sm(CommandID.CMD_PUT_ENTRY, 0, 0, new Entry());
@@ -440,7 +440,7 @@ class EntryManager {
         @Override
         public void run() {
 
-            JSONObject json = wimpl.invokeRESTAPI(HTTP_METHOD.DELETE, Path.ENTRIES_REMOVE + entryID + ".json_array", "");
+            JSONObject json = wimpl.invokeRESTAPI(HTTPMethod.DELETE, Path.ENTRIES_REMOVE + entryID + ".json_array", "");
             if (null == json) {
                 Log.e(LOG_TAG, "[DeleteEntry] Error response - null returned");
                 wimpl.sm(CommandID.CMD_DELETE_ENTRY, 0, 0, "");
