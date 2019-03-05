@@ -1,5 +1,7 @@
 package kr.blogspot.charlie0301.wimple.impl.util;
 
+import android.content.res.Resources;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -8,8 +10,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class DateFormatUtils {
-
-    private static final Locale locale = new Locale("ko", "KR");
+    private static final Locale locale = Resources.getSystem().getConfiguration().locale;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
     private static final SimpleDateFormat sdfGUI = new SimpleDateFormat("yy-MM-dd E", locale);
     private static final SimpleDateFormat sdfDB = new SimpleDateFormat("yyyy-MM-dd", locale);

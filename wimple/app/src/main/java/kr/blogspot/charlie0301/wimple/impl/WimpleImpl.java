@@ -3,6 +3,7 @@ package kr.blogspot.charlie0301.wimple.impl;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -74,7 +75,8 @@ public class WimpleImpl implements IWimpleImpl {
     private BudgetDBHandler bddbh = null;
 
     // static references
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+    private static final Locale locale = Resources.getSystem().getConfiguration().locale;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", locale);
     public static final String settingsKey = "wimple.auth";
 
     // Data

@@ -105,6 +105,7 @@ class DatePickerFragment : androidx.fragment.app.DialogFragment(), DatePickerDia
     }
 
     companion object {
+        @Suppress("DEPRECATION")
         private val locale = Resources.getSystem().configuration.locale
         private val sdf = SimpleDateFormat("MM-dd E", locale)
     }
