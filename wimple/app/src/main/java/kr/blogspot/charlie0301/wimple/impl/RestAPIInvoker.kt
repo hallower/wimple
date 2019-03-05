@@ -44,7 +44,7 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
 
         var client: Client? = null
         val webResource: WebResource
-        var jsonObject: JSONObject? = null
+        lateinit var jsonObject: JSONObject
 
         try {
             ServiceFinder.setIteratorProvider(AndroidServiceIteratorProvider<Any>())
@@ -88,7 +88,7 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
         } catch (e: Exception) {
             Log.d(LOG_TAG, "REST Invocation is failed!!!")
             e.printStackTrace()
-            jsonObject = null
+            return null
         } finally {
             client?.destroy()
         }
