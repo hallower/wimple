@@ -7,17 +7,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
-import androidx.fragment.app.Fragment
-import androidx.core.view.GravityCompat
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_wimple.*
 import kotlinx.android.synthetic.main.app_bar_wimple.*
 import kotlinx.android.synthetic.main.fragment_transaction_insert_tab.*
@@ -390,11 +389,11 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     }
 
                     // TransactionInsertFragment
-                    CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM -> {
+                    CommandID.MODIFY_ENTRY, CommandID.ADD_MONTHLY_ITEM  -> {
 
                         if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
-                            smd(msg.what, msg.obj, 300)
+                            smd(msg.what, msg.obj, 500)
                         }
 
                         if (this@WimpleActivity.currentFragment is IWimpleFragment) {
@@ -468,7 +467,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             const val GET_LATEST_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 25
             const val GET_LATEST_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 27
             const val GET_ENTRIES_RECEIVED = CMD_BASE + 29
-            const val MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM = CMD_BASE + 31
+            const val MODIFY_ENTRY = CMD_BASE + 31
+            const val ADD_MONTHLY_ITEM = CMD_BASE + 32
             const val GET_MODIFY_ENTRY_RESPONSE_RECEIVED = CMD_BASE + 33
             const val GET_MONTHLY_ITEMS_RESPONSE_RECEIVED = CMD_BASE + 35
             const val WIMPLE_PROFILE_PICTURE_UPDATED = CMD_BASE + 37

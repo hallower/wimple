@@ -245,14 +245,10 @@ public class WimpleImpl implements IWimpleImpl {
         }
 
         saved_value = settings.getString("section_id", null);
-        if ((null == defaultSectionID ||
-                defaultSectionID.isEmpty()) &&
-                null != saved_value) {
+        if (null != saved_value) {
             defaultSectionID = saved_value;
-        }
 
-        saved_value = settings.getString("section_name", "Default");
-        if (null == defaultSectionName || defaultSectionName.isEmpty()) {
+            saved_value = settings.getString("section_name", "Default");
             defaultSectionName = saved_value;
         }
 

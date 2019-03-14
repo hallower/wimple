@@ -177,6 +177,7 @@ class SplashScreenActivity : Activity() {
                 } else {
                     Log.d(LOG_TAG, "not logged in - get all section, section id = $savedSectionID")
                     wimple.getAllSections(false)
+                    //wimple.getDefaultSections(false)
                 }
             }
 

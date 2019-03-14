@@ -647,28 +647,32 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 this.btn_submit!!.isEnabled = true
             }
 
-            CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM -> {
+            CommandID.MODIFY_ENTRY -> {
 
                 if (null == obj || obj !is Item)
                     return
 
-                // Modifying
-
-                this.toolMode = if (obj.id.isEmpty()) {
-                    CurrentToolMode.MONTHLY_INSERT
-                } else {
-                    CurrentToolMode.EDITING
-                }
+                this.toolMode = CurrentToolMode.EDITING
                 this.setSubmitButton(this.toolMode)
 
                 this.editingItem = obj
                 this.setEntry(obj)
 
-                if (CurrentToolMode.EDITING == this.toolMode) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.entry_modify_notice))
-                } else {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.month_item_modify_notice))
-                }
+                WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.entry_modify_notice))
+            }
+
+            CommandID.ADD_MONTHLY_ITEM -> {
+
+                if (null == obj || obj !is Item)
+                    return
+
+                CurrentToolMode.MONTHLY_INSERT
+                this.setSubmitButton(this.toolMode)
+
+                this.editingItem = obj
+                this.setEntry(obj)
+
+                WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.month_item_modify_notice))
             }
 
             CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED -> {

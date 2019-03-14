@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
+import android.webkit.CookieManager
+import android.widget.Toast
 import androidx.preference.ListPreference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
-import android.webkit.CookieManager
-import android.widget.Toast
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.model.Section
@@ -91,16 +91,16 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
                 val entries = arrayOfNulls<String>(list.size)
                 val entryValues = arrayOfNulls<String>(list.size)
-                var i = 0
                 var idx = 0
-                for (section in list) {
-                    entries[i] = section.title
+
+                list.forEachIndexed { index, section ->
+                    entries[index] = section.title
                     if (null != wimple.defaultSectionID && 0 == section.id.compareTo(wimple.defaultSectionID)) {
-                        idx = i
+                        idx = index
                     }
-                    entryValues[i] = section.id
-                    i++
+                    entryValues[index] = section.id
                 }
+
                 listSections.entries = entries
                 listSections.entryValues = entryValues
                 listSections.setValueIndex(idx)
@@ -109,13 +109,13 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                         return@OnPreferenceChangeListener false
                     }
 
-                    val _idx = listSections.findIndexOfValue(newValue.toString())
+                    val selectedIdx = listSections.findIndexOfValue(newValue.toString())
                     val _entries = listSections.entries
-                    if (-1 == _idx)
+                    if (-1 == selectedIdx)
                         return@OnPreferenceChangeListener false
 
                     wimple.defaultSectionID = newValue.toString()
-                    wimple.defaultSectionName = _entries[idx].toString()
+                    wimple.defaultSectionName = _entries[selectedIdx].toString()
                     wimple.clearAllDBRecords()
 
                     if (context != null) {

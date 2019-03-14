@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import kr.blogspot.charlie0301.wimple.model.Entry;
 import kr.blogspot.charlie0301.wimple.model.Item;
 import kr.blogspot.charlie0301.wimple.model.Item.DateDescCompare;
 
@@ -124,12 +125,9 @@ public class EntryItemListAdapter extends BaseAdapter {
 
             String itemDate = items.get(i).getDateValue();
 
-            if (itemDate.startsWith("9")) {
-                //Log.d(LOG_TAG, "Remove Monthly Item - id=" + items.get(i).getId() +
-                //		", name=" + items.get(i).getItem());
+            if (! (items.get(i) instanceof Entry)) {
                 items.remove(i);
                 i -= 1;
-                //return;
             }
         }
     }

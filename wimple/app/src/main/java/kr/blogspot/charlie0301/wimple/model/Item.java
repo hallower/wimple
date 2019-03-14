@@ -76,7 +76,7 @@ public class Item implements IDatabaseRecord {
 
 
     public Item(JSONObject item) {
-        this("", item.optString("l_account"), item.optString("l_account_id"),
+        this(item.optString("item_id"), item.optString("l_account"), item.optString("l_account_id"),
                 item.optString("r_account"), item.optString("r_account_id"),
                 item.optString("item"), Double.valueOf(item.optString("money")));
 

@@ -5,7 +5,6 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import android.util.Log
 import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
@@ -138,7 +137,11 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
         entry_list_view.setOnDataSelectionListener { _, _, position, _ ->
             val item = entryAdapter.getItem(position) as Item
-            WimpleActivity.sm(CommandID.MODIFY_ENTRY_OR_ADD_MONTHLY_ITEM, item)
+            if(item is Entry){
+                WimpleActivity.sm(CommandID.MODIFY_ENTRY, item)
+            }else{
+                WimpleActivity.sm(CommandID.ADD_MONTHLY_ITEM, item)
+            }
         }
 
         val wm = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -300,7 +303,12 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                     }
                     counts -= 1
                     entryAdapter.addItem(item)
-                    Log.d(LOG_TAG, "Adding Monthly item - " + item.item + ", " + Date(item.date!!).toString())
+                    Log.d(LOG_TAG, "Adding Monthly item - ${item.id} - ${item.item} ${Date(item.date!!)}")
+                    /*
+                    for(i in 0 until item.values.size()){
+                        Log.e(LOG_TAG, "${item.columns.get(i)} - ${item.getValue(i)}")
+                    }
+                    */
                 }
 
                 entryAdapter.notifyDataSetChanged()
@@ -379,7 +387,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
                 val selectedItem = entryAdapter.getItem(info.position) as Item
 
-                Log.d(LOG_TAG, "removing item pos=" + info.position + ", name=" + selectedItem.item)
+                Log.d(LOG_TAG, "removing item pos=${info.position}, name=${selectedItem.item}")
                 //mAdapter.remove(info.position);
 
                 // 9 : item, 7 : entry
