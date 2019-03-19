@@ -83,6 +83,11 @@ public class Entry extends Item {
             }
 
             Date date = DateFormatUtils.getServerDateFormat().parse(dateString);
+            String convertedDateString = DateFormatUtils.getServerDateFormat().format(date);
+            if (convertedDateString.compareTo(dateString) != 0) {
+                Log.e(LOG_TAG, "reconverted is not match " + dateString + " != " + convertedDateString);
+            }
+
             dateLong = date.getTime();
             setDate(dateLong);
 
