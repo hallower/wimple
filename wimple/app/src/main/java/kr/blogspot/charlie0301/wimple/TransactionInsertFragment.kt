@@ -105,7 +105,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         // To show previous data during new data dispatching without any GUI display delay.
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
-        val isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, false)
+        val isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, true)
         if (isNeedDisableMemo) {
             this.insert_memo_window.visibility = View.GONE
         }
