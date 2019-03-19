@@ -54,13 +54,13 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             when (rids.second) {
                 R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
                 R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
-                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.financial_state)
-                R.id.menu_saving -> fab.setImageResource(R.drawable.asset)
-                R.id.menu_debt -> fab.setImageResource(R.drawable.debt)
-                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.income_expense)
-                R.id.menu_income -> fab.setImageResource(R.drawable.income)
-                R.id.menu_expense -> fab.setImageResource(R.drawable.expense)
-                else -> fab.setImageResource(R.drawable.abc_ic_menu_cut_mtrl_alpha)
+                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
+                R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
+                R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
+                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
+                R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
+                R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
+                else -> fab.setImageResource(R.drawable.ic_fab_add)
             }
         }
 
