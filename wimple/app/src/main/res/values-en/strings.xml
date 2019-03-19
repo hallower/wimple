@@ -158,4 +158,6 @@
     <string name="section">Section</string>
     <string name="entry_lastest_item_added">Latest items are updated.</string>
     <string name="insert_acount_update_retry">Some accounts missing, update accounts inforamtion again</string>
+    <string name="settings_floating_button">Select Button Actions</string>
+    <string name="settings_summary_floating_button">Select pages will be displayed while pressing the Action Button</string>
 </resources>

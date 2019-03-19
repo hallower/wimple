@@ -7,6 +7,7 @@ import android.os.Message
 import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.preference.ListPreference
+import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
@@ -37,6 +38,36 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             listSections.entries = entries
             listSections.entryValues = entryValues
             listSections.setValueIndex(0)
+        }
+
+        var listPages = findPreference("preference_floating_button") as MultiSelectListPreference
+        run {
+            val entries = arrayOf<String>(
+                    resources.getString(R.string.title_transaction_insert_fragment),
+                    resources.getString(R.string.title_transaction_list_fragment),
+                    resources.getString(R.string.drawer_menu_financial_state),
+                    resources.getString(R.string.title_saving),
+                    resources.getString(R.string.title_debt),
+                    resources.getString(R.string.drawer_menu_income_expense),
+                    resources.getString(R.string.title_income),
+                    resources.getString(R.string.title_expense))
+            val entryValues: Array<String> = arrayOf(
+                    "1menu_transaction_insert",
+                    "2menu_transaction_list",
+                    "3menu_financial_overview",
+                    "4menu_saving",
+                    "5menu_debt",
+                    "6menu_income_expense_overview",
+                    "7menu_income",
+                    "8menu_expense")
+            listPages.entries = entries
+            listPages.entryValues = entryValues
+            /*
+            listPages.setOnPreferenceChangeListener { preference, newValue ->
+                Log.e(LOG_TAG, "newValue = ${newValue.toString()}")
+                true
+            }
+            */
         }
 
         val logout = findPreference("preference_logout")
@@ -158,5 +189,6 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         const val KEY_DISABLE_MEMO = "pref_disableMemo"
         const val KEY_INCOME_EXPENSE_ENABLE_BUDGET = "pref_incomeExpenseStateEnableBudget"
         const val KEY_INCOME_EXPENSE_SHOW_GROUP = "pref_incomeExpenseStateShowGroup"
+        const val KEY_FLOATING_BUTTON = "preference_floating_button"
     }
 }

@@ -13,6 +13,12 @@
             android:key="preference_sections"
             android:summary="@string/settings_summary_sections"
             android:title="@string/settings_sections" />
+        <MultiSelectListPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="@array/floating_button_default"
+            android:key="preference_floating_button"
+            android:summary="@string/settings_summary_floating_button"
+            android:title="@string/settings_floating_button" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry">
         <CheckBoxPreference

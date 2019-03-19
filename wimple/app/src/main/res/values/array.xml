@@ -26,4 +26,8 @@
         <item>10</item>
     </string-array>
 
+    <string-array name="floating_button_default">
+        <item>"1menu_transaction_insert"</item>
+        <item>"2menu_transaction_list"</item>
+    </string-array>
 </resources>

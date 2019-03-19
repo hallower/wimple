@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -31,7 +32,7 @@ import java.util.*
 class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var currentMenuID: Int = 0
-    private var currentFragment: androidx.fragment.app.Fragment?= null
+    private var currentFragment: androidx.fragment.app.Fragment? = null
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
@@ -48,10 +49,18 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         setSupportActionBar(toolbar)
 
         fab.setOnClickListener {
-            if (this.currentMenuID != R.id.menu_transaction_insert) {
-                replaceWimpleFragment(R.id.menu_transaction_insert)
-            } else {
-                replaceWimpleFragment(R.id.menu_transaction_list)
+            val rids = getNextFloatingButtonPage()
+            replaceWimpleFragment(rids.first)
+            when (rids.second) {
+                R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
+                R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
+                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.financial_state)
+                R.id.menu_saving -> fab.setImageResource(R.drawable.asset)
+                R.id.menu_debt -> fab.setImageResource(R.drawable.debt)
+                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.income_expense)
+                R.id.menu_income -> fab.setImageResource(R.drawable.income)
+                R.id.menu_expense -> fab.setImageResource(R.drawable.expense)
+                else -> fab.setImageResource(R.drawable.abc_ic_menu_cut_mtrl_alpha)
             }
         }
 
@@ -112,6 +121,43 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         return true
     }
 
+    fun getNextFloatingButtonPage(): Pair<Int, Int> {
+
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        val selected = sharedPref.getStringSet(SettingsFragment.KEY_FLOATING_BUTTON, null)
+        if (selected == null ||
+                selected.size == 0) {
+            Log.e(LOG_TAG, "Floating Button pages are not set!!!")
+            return when {
+                this.currentMenuID == R.id.menu_transaction_insert -> Pair(R.id.menu_transaction_list, R.id.menu_transaction_insert)
+                this.currentMenuID == R.id.menu_transaction_list -> Pair(R.id.menu_transaction_insert, R.id.menu_transaction_list)
+                else -> Pair(R.id.menu_transaction_insert, R.id.menu_transaction_list)
+            }
+        }
+
+        Log.d(LOG_TAG, "Selected = $selected")
+        Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
+
+        val sortedValues = selected.sortedBy { it }
+        for (idx in sortedValues.indices) {
+            if (resources.getResourceEntryName(this.currentMenuID) == sortedValues[idx].substring(1)) {
+                Log.d(LOG_TAG, "Current = ${sortedValues[idx].substring(1)}, " +
+                        "Move = ${sortedValues[(idx + 1) % sortedValues.size].substring(1)}, " +
+                        "Next = ${sortedValues[(idx + 2) % sortedValues.size].substring(1)}")
+                return Pair(resources.getIdentifier(sortedValues[(idx + 1) % sortedValues.size].substring(1), "id", packageName),
+                        resources.getIdentifier(sortedValues[(idx + 2) % sortedValues.size].substring(1), "id", packageName))
+            }
+        }
+
+        if (sortedValues.size == 1) {
+            return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
+                    resources.getIdentifier(sortedValues[0].substring(1), "id", packageName))
+        }
+
+        return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
+                resources.getIdentifier(sortedValues[1].substring(1), "id", packageName))
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
 
@@ -135,8 +181,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun replaceWimpleFragment(id: Int, bundle: Bundle? = null): Boolean {
-        var isNeedAddFab = true
-
         hideVirtualKeyboard()
 
         if (this.currentMenuID == id) {
@@ -144,7 +188,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
 
         if (id == R.id.menu_transaction_insert) {
-            isNeedAddFab = false
             this.currentFragment = TransactionInsertFragment()
             //mDrawerList.setItemChecked(position, true);
             //setTitle(mPlanetTitles[position]);
@@ -182,13 +225,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             Log.e(LOG_TAG, "replaceWimpleFragment: " + e.message)
             return false
         }
-
-        if (isNeedAddFab) {
-            fab!!.setImageResource(R.drawable.ic_fab_add)
-        } else {
-            fab!!.setImageResource(R.drawable.ic_fab_list)
-        }
-
         return true
     }
 
@@ -367,7 +403,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 val command = msg.what
                 val obj = msg.obj
 
-                if(this@WimpleActivity.currentFragment == null)
+                if (this@WimpleActivity.currentFragment == null)
                     return;
 
                 updateAPIRemaining()
@@ -389,7 +425,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     }
 
                     // TransactionInsertFragment
-                    CommandID.MODIFY_ENTRY, CommandID.ADD_MONTHLY_ITEM  -> {
+                    CommandID.MODIFY_ENTRY, CommandID.ADD_MONTHLY_ITEM -> {
 
                         if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
