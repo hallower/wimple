@@ -347,9 +347,8 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
     fun setShowingNotification(show: Boolean, isLatest: Boolean) {
 
-        if (null != context) {
+        if (null == context)
             return
-        }
 
         entry_list_notification_text.text = if (isLatest) {
             context!!.resources.getString(R.string.update_latest_items)
