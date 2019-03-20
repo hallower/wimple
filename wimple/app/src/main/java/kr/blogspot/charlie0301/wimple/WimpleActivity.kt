@@ -31,7 +31,7 @@ import java.util.*
 
 class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    private var currentMenuID: Int = 0
+    private var currentMenuID: Int = R.id.menu_transaction_insert
     private var currentFragment: androidx.fragment.app.Fragment? = null
 
     override fun onResume() {
@@ -48,21 +48,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // GUI
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener {
-            val rids = getNextFloatingButtonPage()
-            replaceWimpleFragment(rids.first)
-            when (rids.second) {
-                R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
-                R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
-                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
-                R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
-                R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
-                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
-                R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
-                R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
-                else -> fab.setImageResource(R.drawable.ic_fab_add)
-            }
-        }
+        setupFloatingButton()
 
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -83,6 +69,31 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
     }
 
+    private fun setupFloatingButton() {
+
+        fun setButtonImage(rid: Int) {
+            Log.d(LOG_TAG, "setButtonImage, $rid = ${resources.getResourceName(rid)}")
+            when (rid) {
+                R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
+                R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
+                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
+                R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
+                R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
+                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
+                R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
+                R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
+                else -> fab.setImageResource(R.drawable.ic_fab_add)
+            }
+        }
+
+        setButtonImage(getNextFloatingButtonPage().first)
+        fab.setOnClickListener {
+            val rids = getNextFloatingButtonPage()
+            replaceWimpleFragment(rids.first)
+            setButtonImage(rids.second)
+        }
+    }
+
     private fun hideVirtualKeyboard() {
         insert_entry_title.isFocusable = false
         insert_entry_title.isFocusableInTouchMode = true
@@ -94,7 +105,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun setDefaultFragment() {
-        fab.setImageResource(R.drawable.ic_fab_list)
         this.currentMenuID = R.id.menu_transaction_insert
 
         var insertFragment: TransactionInsertFragment = TransactionInsertFragment()
@@ -141,8 +151,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val sortedValues = selected.sortedBy { it }
         for (idx in sortedValues.indices) {
             if (resources.getResourceEntryName(this.currentMenuID) == sortedValues[idx].substring(1)) {
-                Log.d(LOG_TAG, "Current = ${sortedValues[idx].substring(1)}, " +
-                        "Move = ${sortedValues[(idx + 1) % sortedValues.size].substring(1)}, " +
+                Log.d(LOG_TAG, "Move = ${sortedValues[(idx + 1) % sortedValues.size].substring(1)}, " +
                         "Next = ${sortedValues[(idx + 2) % sortedValues.size].substring(1)}")
                 return Pair(resources.getIdentifier(sortedValues[(idx + 1) % sortedValues.size].substring(1), "id", packageName),
                         resources.getIdentifier(sortedValues[(idx + 2) % sortedValues.size].substring(1), "id", packageName))
@@ -150,10 +159,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
 
         if (sortedValues.size == 1) {
+            Log.d(LOG_TAG, "Move = ${sortedValues[0].substring(1)}, " +
+                    "Next = ${sortedValues[0].substring(1)}")
             return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
                     resources.getIdentifier(sortedValues[0].substring(1), "id", packageName))
         }
 
+        Log.d(LOG_TAG, "Move = ${sortedValues[0].substring(1)}, " +
+                "Next = ${sortedValues[1].substring(1)}")
         return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
                 resources.getIdentifier(sortedValues[1].substring(1), "id", packageName))
     }
