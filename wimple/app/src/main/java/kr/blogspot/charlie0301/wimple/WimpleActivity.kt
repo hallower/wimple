@@ -69,28 +69,27 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
     }
 
-    private fun setupFloatingButton() {
-
-        fun setButtonImage(rid: Int) {
-            Log.d(LOG_TAG, "setButtonImage, $rid = ${resources.getResourceName(rid)}")
-            when (rid) {
-                R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
-                R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
-                R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
-                R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
-                R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
-                R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
-                R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
-                R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
-                else -> fab.setImageResource(R.drawable.ic_fab_add)
-            }
+    private fun setFloatingButtonImage(rid: Int) {
+        Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
+        when (rid) {
+            R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
+            R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
+            R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
+            R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
+            R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
+            R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
+            R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
+            R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
+            else -> fab.setImageResource(R.drawable.ic_fab_add)
         }
+    }
 
-        setButtonImage(getNextFloatingButtonPage().first)
+    private fun setupFloatingButton() {
+        setFloatingButtonImage(getNextFloatingButtonPage().first)
         fab.setOnClickListener {
             val rids = getNextFloatingButtonPage()
             replaceWimpleFragment(rids.first)
-            setButtonImage(rids.second)
+            setFloatingButtonImage(rids.second)
         }
     }
 
@@ -225,6 +224,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
 
         this.currentMenuID = id
+
+        setFloatingButtonImage(getNextFloatingButtonPage().first)
 
         try {
             (this.currentFragment as IWimpleFragment).setActivityInstance(this)
