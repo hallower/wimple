@@ -342,13 +342,18 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun setAmount(amount: String) {
         if (amount.isEmpty()) {
             kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(0.0);
-        } else {
-            var amountValue = java.lang.Double.parseDouble(amount.replace(",", ""))
-            kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(amountValue)
+            return;
         }
+
+        var amountValue: Double = try {
+            java.lang.Double.parseDouble(amount.replace(",", ""))
+        }catch (e:Exception){
+            0.0
+        }
+        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(amountValue)
     }
 
-    private fun setAmount(amount: Double?) {
+    private fun setAmount(amount: Double) {
         kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(amount)
     }
 
