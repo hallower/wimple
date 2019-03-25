@@ -227,6 +227,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         setFloatingButtonImage(getNextFloatingButtonPage().first)
 
+
+        if(this.currentFragment!!.isAdded)
+            return true
+
         try {
             (this.currentFragment as IWimpleFragment).setActivityInstance(this)
             if (null != bundle) {
