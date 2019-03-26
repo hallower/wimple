@@ -106,10 +106,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setDefaultFragment() {
         this.currentMenuID = R.id.menu_transaction_insert
 
-        var insertFragment: TransactionInsertFragment = TransactionInsertFragment()
+        // TODO : make this configurable
+        var insertFragment = TransactionInsertFragment()
         (insertFragment as IWimpleFragment).setActivityInstance(this)
         insertFragment.arguments = intent.extras
         this.currentFragment = insertFragment;
+
+        if (this.currentFragment!!.isAdded)
+            return
 
         val transaction = supportFragmentManager.beginTransaction()
         transaction.add(R.id.fragment_container, insertFragment)
@@ -228,7 +232,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         setFloatingButtonImage(getNextFloatingButtonPage().first)
 
 
-        if(this.currentFragment!!.isAdded)
+        if (this.currentFragment!!.isAdded)
             return true
 
         try {
