@@ -70,7 +70,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun setFloatingButtonImage(rid: Int) {
-        Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
+        //Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
         when (rid) {
             R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
             R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
@@ -148,8 +148,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         }
 
-        Log.d(LOG_TAG, "Selected = $selected")
-        Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
+        //Log.d(LOG_TAG, "Selected = $selected")
+        //Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
 
         val sortedValues = selected.sortedBy { it }
         for (idx in sortedValues.indices) {

@@ -52,7 +52,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             try {
                 amount = DateFormatUtils.getNumberFormat().parse(this.insert_amount.text.toString()).toDouble()
             } catch (e: Exception) {
-                Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Amount parsing error : " + this.insert_amount.text)
+                Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Amount parsing error : " + this.insert_amount.text)
                 return -1.0
             }
 
@@ -76,7 +76,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun initWimple() {
-        Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "initWimple()")
+        Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "initWimple()")
 
         this.ti_update_notification.visibility = View.VISIBLE
         this.ti_list_notification_text.text = this.resources.getString(R.string.update_latest_items)
@@ -88,16 +88,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         //synchronized(TransactionInsertFragment.class){
-        if (kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.padRIDs.isEmpty()) {
+        if (kr.blogspot.charlie0301.wimple.TransactionInsertFragment.padRIDs.isEmpty()) {
             val ar = this.context!!.resources.obtainTypedArray(R.array.number_buttons)
-            for (cnt in 0..(ar.length() - 1)) kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.padRIDs.add(ar.getResourceId(cnt, 0))
+            for (cnt in 0..(ar.length() - 1)) kr.blogspot.charlie0301.wimple.TransactionInsertFragment.padRIDs.add(ar.getResourceId(cnt, 0))
             ar.recycle()
         }
         //}
 
-        var view = inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false)
-
-        return view
+        return inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -116,19 +114,19 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         this.setupAccountLists()
 
-        this.setupTitlenSubmit()
+        this.setupTitleAndSubmit()
 
         this.setupLatestItems()
 
         this.setupButtons()
 
-        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setListener { amount -> this.insert_amount.setText(DateFormatUtils.getDecimalFormat().format(amount)) }
+        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.setListener { amount -> this.insert_amount.setText(DateFormatUtils.getDecimalFormat().format(amount)) }
 
         //initWimple();
     }
 
 
-    private fun setupTitlenSubmit() {
+    private fun setupTitleAndSubmit() {
 
         this.insert_amount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, _ ->
             when (id) {
@@ -150,7 +148,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             // To handle typed amount by IME
             this.setAmount(this.insert_amount.text.toString())
-            this.insert_amount.setText(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.eq().toString())
+            this.insert_amount.setText(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.eq().toString())
 
             if (!this.validateForms()) {
                 this.btn_submit.isEnabled = true
@@ -231,10 +229,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun setupButtons() {
-        val buttons = arrayOfNulls<TextView>(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.padRIDs.size)
-        for (i in kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.padRIDs.indices) {
-            buttons[i] = this.view!!.findViewById<View>(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.padRIDs[i]) as TextView
-            buttons[i]!!.setOnClickListener(OnClickListener { v ->
+        val buttons = arrayOfNulls<TextView>(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.padRIDs.size)
+        for (i in kr.blogspot.charlie0301.wimple.TransactionInsertFragment.padRIDs.indices) {
+            buttons[i] = this.view!!.findViewById<View>(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.padRIDs[i]) as TextView
+            buttons[i]!!.setOnClickListener { v ->
                 // remove virtual keyboard
                 this.insert_entry_title.clearFocus()
                 this.insert_memo.clearFocus()
@@ -242,28 +240,28 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 when (v.id) {
 
                     // I don't know why numbersRIDS[] is not suitable for this.
-                    R.id.insert_pad_10 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.zero()
-                    R.id.insert_pad_1 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(1)
-                    R.id.insert_pad_2 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(2)
-                    R.id.insert_pad_3 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(3)
-                    R.id.insert_pad_4 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(4)
-                    R.id.insert_pad_5 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(5)
-                    R.id.insert_pad_6 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(6)
-                    R.id.insert_pad_7 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(7)
-                    R.id.insert_pad_8 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(8)
-                    R.id.insert_pad_9 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shift(9)
-                    R.id.insert_pad_100 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.zeroTwice()
+                    R.id.insert_pad_10 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.zero()
+                    R.id.insert_pad_1 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(1)
+                    R.id.insert_pad_2 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(2)
+                    R.id.insert_pad_3 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(3)
+                    R.id.insert_pad_4 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(4)
+                    R.id.insert_pad_5 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(5)
+                    R.id.insert_pad_6 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(6)
+                    R.id.insert_pad_7 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(7)
+                    R.id.insert_pad_8 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(8)
+                    R.id.insert_pad_9 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shift(9)
+                    R.id.insert_pad_100 -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.zeroTwice()
 
-                    R.id.insert_pad_point -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.point()
-                    R.id.insert_pad_plus -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.plus()
-                    R.id.insert_pad_minus -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.minus()
-                    R.id.insert_pad_multiply -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.multiply()
-                    R.id.insert_pad_divide -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.divide()
-                    R.id.insert_pad_eq -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.eq()
-                    R.id.insert_pad_clear -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.clear()
-                    R.id.insert_pad_back -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.shiftBack()
+                    R.id.insert_pad_point -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.point()
+                    R.id.insert_pad_plus -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.plus()
+                    R.id.insert_pad_minus -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.minus()
+                    R.id.insert_pad_multiply -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.multiply()
+                    R.id.insert_pad_divide -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.divide()
+                    R.id.insert_pad_eq -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.eq()
+                    R.id.insert_pad_clear -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.clear()
+                    R.id.insert_pad_back -> kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.shiftBack()
                 }
-            })
+            }
         }
     }
 
@@ -341,20 +339,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private fun setAmount(amount: String) {
         if (amount.isEmpty()) {
-            kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(0.0);
+            kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.setValue(0.0);
             return;
         }
 
-        var amountValue: Double = try {
+        val amountValue: Double = try {
             java.lang.Double.parseDouble(amount.replace(",", ""))
         }catch (e:Exception){
             0.0
         }
-        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(amountValue)
+        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.setValue(amountValue)
     }
 
     private fun setAmount(amount: Double) {
-        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.cal.setValue(amount)
+        kr.blogspot.charlie0301.wimple.TransactionInsertFragment.cal.setValue(amount)
     }
 
     private fun selectLatestItem(position: Int) {
@@ -363,7 +361,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             this.selected = this.adapterLatestItems.getItem(position)
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Failed to select latest Item!!!, position=$position")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Failed to select latest Item!!!, position=$position")
             return
         }
 
@@ -410,7 +408,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun selectLeftCategory(leftAccountID: String): Boolean {
         val selectedLeftGroup = this.leftAccountListAdapter.setSelected(leftAccountID)
         if (selectedLeftGroup == -1) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Can't select left category!!!, $leftAccountID")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Can't select left category!!!, $leftAccountID")
             return false
         }
 
@@ -424,7 +422,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun selectRightCategory(rightAccountID: String): Boolean {
         val selectedRightGroup = this.rightAccountListAdapter.setSelected(rightAccountID)
         if (selectedRightGroup == -1) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Can't select right category!!!, $rightAccountID")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Can't select right category!!!, $rightAccountID")
             return false
         }
 
@@ -442,13 +440,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private fun validateForms(): Boolean {
         if (this.insert_entry_title.text.toString().isEmpty()) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Invalid entry title.")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Invalid entry title.")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_title))
             return false
         }
 
         if (this.insert_amount!!.text.toString().isEmpty()) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Invalid entry amount.")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Invalid entry amount.")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_amount))
             return false
         }
@@ -464,13 +462,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 		 */
 
         if (!this.leftAccountListAdapter.isSelected) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "left side account is not selected!!!")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "left side account is not selected!!!")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_left_accounts))
             return false
         }
 
         if (!this.rightAccountListAdapter.isSelected) {
-            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "right side account is not selected!!!")
+            Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "right side account is not selected!!!")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_right_accounts))
             return false
         }
@@ -525,9 +523,9 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 val accountList = arrayListOf<Account>()
                 if (obj is Collection<*>) {
                     for (given_item in obj) {
-                        if (given_item is Account) {
-                            accountList.add(given_item)
-                        }
+                        //if (given_item is Account) {
+                            accountList.add(given_item as Account)
+                        //}
                     }
                 }
 
@@ -557,7 +555,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                         -> income.add(item)
                         'e'    // expenses
                         -> expenses.add(item)
-                        else -> Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "Invalid accout item !!!!")
+                        else -> Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "Invalid account item !!!!")
                     }
                 }
 
@@ -639,7 +637,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
                 this.ti_update_notification.visibility = View.INVISIBLE
 
-                Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.Companion.LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=$entryDate")
+                Log.e(kr.blogspot.charlie0301.wimple.TransactionInsertFragment.LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=$entryDate")
                 if (booleanStatus) {
                     WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_success))
                     this.clearForms()
