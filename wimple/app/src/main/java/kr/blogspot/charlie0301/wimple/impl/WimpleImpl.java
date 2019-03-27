@@ -1104,6 +1104,12 @@ public class WimpleImpl implements IWimpleImpl {
             Collection<Account> list = new ArrayList<>();
             Date itemDate;
 
+            /*
+            for (Account acc : accountList) {
+                Log.e(LOG_TAG, "Account = " + acc.getId() +", " + acc.getTitle());
+            }
+            */
+
             try {
                 sdf.setLenient(false);
                 itemDate = sdf.parse(dateFilter);

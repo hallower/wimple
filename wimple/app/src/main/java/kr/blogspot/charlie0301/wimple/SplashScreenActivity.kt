@@ -168,8 +168,8 @@ class SplashScreenActivity : Activity() {
                     return
                 }
 
-                //sm( CommandID.SHOW_STATUS, applicationContext.getResources().getString(R.string.loggin_user_info));
-                wimple.getUserInfo(true)
+                //sm( CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_user_info));
+
                 val savedSectionID = settings.getString("section_id", null)
                 if (null == savedSectionID || savedSectionID.isEmpty()) {
                     Log.d(LOG_TAG, "not logged in - get default section")

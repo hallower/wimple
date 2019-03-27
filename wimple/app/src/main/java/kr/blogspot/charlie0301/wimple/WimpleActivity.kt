@@ -36,7 +36,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
+
         setupWimpleImpl()
+
         super.onResume()
     }
 
@@ -58,9 +60,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         nav_view.itemIconTintList = null
         nav_view.setNavigationItemSelectedListener(this)
 
-        // Setup Wimple
         setupHandler()
-        setupWimpleImpl()
 
         if (null != findViewById(R.id.fragment_container)) {
             if (savedInstanceState != null)
@@ -451,7 +451,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
                         if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
-                            smd(msg.what, msg.obj, 500)
+                            smd(msg.what, msg.obj, 300)
                         }
 
                         if (this@WimpleActivity.currentFragment is IWimpleFragment) {
