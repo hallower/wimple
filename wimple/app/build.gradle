@@ -44,6 +44,7 @@ dependencies {
     implementation 'com.sun.jersey:jersey-client:1.19.3'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.biometric:biometric:1.0.1'
 }
 repositories {
     mavenCentral()

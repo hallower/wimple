@@ -160,4 +160,6 @@
     <string name="insert_acount_update_retry">Some accounts missing, update accounts inforamtion again</string>
     <string name="settings_floating_button">Select Button Actions</string>
     <string name="settings_summary_floating_button">Select pages will be displayed while pressing the Action Button</string>
+    <string name="settings_summary_entry_enable_biometric_sign_in">Enable Biometric Sign-in to use Wimple transaction submitting app. Be careful you could not use this app if you can not unlock by your biometrics</string>
+    <string name="settings_entry_enable_biometric_sign_in">Enable Biometric Sign-in</string>
 </resources>

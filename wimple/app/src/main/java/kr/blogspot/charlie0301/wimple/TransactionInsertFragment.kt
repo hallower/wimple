@@ -292,7 +292,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             }
         })
         this.insert_date.setOnClickListener {
-            this.datePicker.show(this.fragmentManager, "itemDate")
+            this.datePicker.show(this.fragmentManager!!, "itemDate")
         }
         this.setupItemDate(Calendar.getInstance().timeInMillis)
 

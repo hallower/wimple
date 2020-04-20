@@ -159,4 +159,6 @@
     <string name="insert_acount_update_retry">계좌 정보가 부정확하여 다시 업데이트 합니다.</string>
     <string name="settings_floating_button">액션 버튼 지정</string>
     <string name="settings_summary_floating_button">하단 버튼을 눌렀을 때 이동하는 페이지를 지정합니다.</string>
+    <string name="settings_summary_entry_enable_biometric_sign_in">생체 인증 로그인을 사용하기 위한 옵션입니다. 생체 인증 등록 후 인증을 통과하지 못하면 해당 app 사용이 불가하니 조심하세요.</string>
+    <string name="settings_entry_enable_biometric_sign_in">생체 인증 로그인을 사용합니다.</string>
 </resources>
