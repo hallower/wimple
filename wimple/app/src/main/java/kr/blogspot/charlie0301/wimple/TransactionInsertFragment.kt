@@ -214,19 +214,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                     changed = changed.trim { it <= ' ' }
                 }
 
-                if(changed.isEmpty()){
-                    resetLatestItems(latestItems)
-                    return
-                }
-
                 val foundItems:ArrayList<Item> = ArrayList()
                 for(item in latestItems){
                     if(KoreanWordSearch.matchString(item.item, s.toString())){
                         foundItems.add(item)
-                    }else{
-                        // for others, not using adapter.filter
-                        if(item.item.startsWith(s))
-                            foundItems.add(item)
                     }
                 }
 

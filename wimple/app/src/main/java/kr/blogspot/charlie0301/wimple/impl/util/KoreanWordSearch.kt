@@ -35,7 +35,7 @@ class KoreanWordSearch {
                         if (getInitialSound(value[i + t]) == search[t])
                             t++ else break
                     } else { // value is not Hangul initial sound
-                        if (value[i + t] == search[t])
+                        if (value[i + t].toLowerCase() == search[t].toLowerCase())
                             t++ else break
                     }
                 }
