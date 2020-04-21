@@ -11,11 +11,14 @@ import android.net.http.SslError
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
 import kotlinx.android.synthetic.main.activity_splash_screen.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
@@ -24,16 +27,18 @@ import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.*
 import java.util.*
+import java.util.concurrent.Executors
 
 
-class SplashScreenActivity : Activity() {
+class SplashScreenActivity : AppCompatActivity() {
 
     private val wimple = WimpleImpl.getInstance()
     private lateinit var settings: SharedPreferences
 
     private var storedTempToken: String = ""
     private var cacheRefreshed = false
-
+    private var isLogInProcessDone = false
+    private var isBiometricAuthDone = true
 
     override fun onResume() {
         settings = applicationContext.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE)
@@ -54,7 +59,7 @@ class SplashScreenActivity : Activity() {
 
         Log.i(LOG_TAG, "SplashScreen - onCreate!!!")
 
-        // double check if app is restarted forcely
+        // double check if app is restarted by force
         val intent = intent
         if (intent.hasExtra("auth_again")) {
             Log.e(LOG_TAG, "Need to do Auth again, clean auth!!!")
@@ -73,6 +78,43 @@ class SplashScreenActivity : Activity() {
         sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_auth))
 
         if (wimple.tempToken!!) {
+
+            // Check biometric authentication preference
+            val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            val isNeedBiometricAuthentication = sharedPref.getBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, false)
+            if (isNeedBiometricAuthentication) {
+                isBiometricAuthDone = false
+
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle(applicationContext.resources.getString(R.string.biometric_title))
+                            .setSubtitle(applicationContext.resources.getString(R.string.biometric_sign_in_description))
+                            .setNegativeButtonText(applicationContext.resources.getString(R.string.user_cancel))
+                            .build()
+                    val biometricPrompt = BiometricPrompt(this, Executors.newSingleThreadExecutor(),
+                            object : BiometricPrompt.AuthenticationCallback() {
+                                override fun onAuthenticationError(errorCode: Int,
+                                                                   errString: CharSequence) {
+                                    super.onAuthenticationError(errorCode, errString)
+                                    runOnUiThread {
+                                        // Exit
+                                        exitApplication("${applicationContext.resources.getString(R.string.need_biometric_authentication)} ( $errString )")
+                                    }
+                                }
+
+                                override fun onAuthenticationSucceeded(
+                                        result: BiometricPrompt.AuthenticationResult) {
+                                    super.onAuthenticationSucceeded(result)
+                                    // Move to main activity
+                                    if(isLogInProcessDone)
+                                        moveToMain()
+                                    isBiometricAuthDone = true
+                                }
+                            })
+
+                    biometricPrompt.authenticate(promptInfo)
+
+            }
+
             // Already Logged-in
             val savedSectionID = settings.getString("section_id", null)
             if (null == savedSectionID || savedSectionID.isEmpty()) {
@@ -246,11 +288,11 @@ class SplashScreenActivity : Activity() {
         })
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         if (requestCode == PIN_NUMBER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-                val tempToken = data.extras!!.getString("temp_token")
+                val tempToken = data?.extras!!.getString("temp_token")
                 val pin = data.extras!!.getString("pin")
 
                 if (null != tempToken && null != pin) {
@@ -314,11 +356,21 @@ class SplashScreenActivity : Activity() {
         }
     }
 
-    private fun finishedAuthentication() {
-        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_end))
+    private fun moveToMain() {
         val intent = Intent(applicationContext, WimpleActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun finishedAuthentication() {
+        isLogInProcessDone = true
+
+        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_end))
+        if(isBiometricAuthDone){
+            moveToMain()
+        }else{
+            sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_wait_for_authentication))
+        }
     }
 
     private fun exitApplication(toastMessage: String) {

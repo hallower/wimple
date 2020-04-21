@@ -16,6 +16,7 @@
     <string name="loggin_failed">로그인 실패</string>
     <string name="loggin_user_info">사용자 계정정보 획득</string>
     <string name="loggin_end">계정정보획득 완료</string>
+    <string name="loggin_wait_for_authentication">인증 완료 대기</string>
     <string name="drawer_open">사이드메뉴 열기</string>
     <string name="drawer_close">사이드메뉴 닫기</string>
     <string name="drawer_menu_transaction">거래</string>
@@ -161,4 +162,9 @@
     <string name="settings_summary_floating_button">하단 버튼을 눌렀을 때 이동하는 페이지를 지정합니다.</string>
     <string name="settings_summary_entry_enable_biometric_sign_in">생체 인증 로그인을 사용하기 위한 옵션입니다. 생체 인증 등록 후 인증을 통과하지 못하면 해당 app 사용이 불가하니 조심하세요.</string>
     <string name="settings_entry_enable_biometric_sign_in">생체 인증 로그인을 사용합니다.</string>
+    <string name="need_biometric_authentication">앱 사용을 위해 생체 인증이 필요합니다. 생체 인증 불가 사유 : </string>
+    <string name="biometric_title">Wimple 사용을 위한 생체 인증</string>
+    <string name="biometric_sign_in_description">생체 인증으로 로그인 하세요.</string>
+    <string name="biometric_option_description">생체 인증으로 옵션을 설정 하세요.</string>
+    <string name="user_cancel">취소</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
+import android.preference.PreferenceManager
 import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
@@ -86,6 +87,10 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
                 context!!.deleteDatabase("webview.db")
                 context!!.deleteDatabase("webviewCache.db")
+
+                // clear biometric option
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(context!!)
+                sharedPref.edit().putBoolean(KEY_BIOMETRIC_OPTION, false).apply()
             }
 
             //System.runFinalizersOnExit(true);
@@ -103,9 +108,9 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         biometricCheckBox.onPreferenceChangeListener = OnPreferenceChangeListener { preference, newValue ->
 
             val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Biometric login for Wimple")
-                    .setSubtitle("Log in using your biometric credential")
-                    .setNegativeButtonText("Cancel")
+                    .setTitle(resources.getString(R.string.biometric_title))
+                    .setSubtitle(resources.getString(R.string.biometric_option_description))
+                    .setNegativeButtonText(resources.getString(R.string.user_cancel))
                     .build()
             val toBe = newValue as Boolean
             val biometricPrompt = BiometricPrompt(this, Executors.newSingleThreadExecutor(),
@@ -226,5 +231,6 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         const val KEY_INCOME_EXPENSE_ENABLE_BUDGET = "pref_incomeExpenseStateEnableBudget"
         const val KEY_INCOME_EXPENSE_SHOW_GROUP = "pref_incomeExpenseStateShowGroup"
         const val KEY_FLOATING_BUTTON = "preference_floating_button"
+        const val KEY_BIOMETRIC_OPTION = "pref_enableBiometricSignIn"
     }
 }
