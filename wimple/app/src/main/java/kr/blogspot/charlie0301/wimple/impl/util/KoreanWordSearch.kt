@@ -20,7 +20,7 @@ class KoreanWordSearch {
             return INITIAL_SOUND[(c - HANGUL_BEGIN_UNICODE).toInt() / HANGUL_BASE_UNIT]
         }
 
-        private fun isHangul(c: Char): Boolean {
+        fun isHangul(c: Char): Boolean {
             return c.toInt() in HANGUL_BEGIN_UNICODE..HANGUL_LAST_UNICODE
         }
 

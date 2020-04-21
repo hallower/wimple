@@ -223,8 +223,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 for(item in latestItems){
                     if(KoreanWordSearch.matchString(item.item, s.toString())){
                         foundItems.add(item)
+                    }else{
+                        // for others, not using adapter.filter
+                        if(item.item.startsWith(s))
+                            foundItems.add(item)
                     }
                 }
+
                 if(foundItems.isEmpty()){
                     resetLatestItems(latestItems)
                 }else{
@@ -515,7 +520,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private fun resetLatestItems(items : ArrayList<Item>) {
         this.adapterLatestItems.clear()
-        //adapterLatestItems.filter.filter("")
+        //this.adapterLatestItems.filter.filter("")
         this.adapterLatestItems.addAll(items)
         this.adapterLatestItems.notifyDataSetChanged()
     }
