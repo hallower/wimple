@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
+import android.preference.PreferenceManager
 import android.webkit.CookieManager
 import android.widget.Toast
+import androidx.biometric.BiometricPrompt
+import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference.OnPreferenceChangeListener
@@ -15,12 +18,13 @@ import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.model.Section
 import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
 
 class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
     private val wimple = WimpleImpl.getInstance()
 
     private var wimpleActivity: WeakReference<WimpleActivity>? = null
-    internal lateinit var listSections: ListPreference
+    private lateinit var listSections: ListPreference
 
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -40,7 +44,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             listSections.setValueIndex(0)
         }
 
-        var listPages = findPreference("preference_floating_button") as MultiSelectListPreference
+        val listPages = findPreference("preference_floating_button") as MultiSelectListPreference
         run {
             val entries = arrayOf<String>(
                     resources.getString(R.string.title_transaction_insert_fragment),
@@ -83,6 +87,10 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
                 context!!.deleteDatabase("webview.db")
                 context!!.deleteDatabase("webviewCache.db")
+
+                // clear biometric option
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(context!!)
+                sharedPref.edit().putBoolean(KEY_BIOMETRIC_OPTION, false).apply()
             }
 
             //System.runFinalizersOnExit(true);
@@ -93,6 +101,39 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             startActivity(intent)
             activity!!.finish()
 
+            false
+        }
+
+        val biometricCheckBox = findPreference("pref_enableBiometricSignIn") as CheckBoxPreference
+        biometricCheckBox.onPreferenceChangeListener = OnPreferenceChangeListener { preference, newValue ->
+
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(resources.getString(R.string.biometric_title))
+                    .setSubtitle(resources.getString(R.string.biometric_option_description))
+                    .setNegativeButtonText(resources.getString(R.string.user_cancel))
+                    .build()
+            val toBe = newValue as Boolean
+            val biometricPrompt = BiometricPrompt(this, Executors.newSingleThreadExecutor(),
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationError(errorCode: Int,
+                                                           errString: CharSequence) {
+                            super.onAuthenticationError(errorCode, errString)
+                            activity?.runOnUiThread {
+                                Toast.makeText(activity?.applicationContext, errString, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onAuthenticationSucceeded(
+                                result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            activity?.runOnUiThread{
+                                (preference as CheckBoxPreference).isChecked = toBe
+                            }
+                        }
+
+                    })
+
+            biometricPrompt.authenticate(promptInfo)
             false
         }
     }
@@ -141,12 +182,12 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                     }
 
                     val selectedIdx = listSections.findIndexOfValue(newValue.toString())
-                    val _entries = listSections.entries
+                    val tmpEntries = listSections.entries
                     if (-1 == selectedIdx)
                         return@OnPreferenceChangeListener false
 
                     wimple.defaultSectionID = newValue.toString()
-                    wimple.defaultSectionName = _entries[selectedIdx].toString()
+                    wimple.defaultSectionName = tmpEntries[selectedIdx].toString()
                     wimple.clearAllDBRecords()
 
                     if (context != null) {
@@ -179,7 +220,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
     companion object {
 
-        private const val LOG_TAG = "SettingsFragment"
+        //private const val LOG_TAG = "SettingsFragment"
 
         const val KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount"
         const val KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay"
@@ -190,5 +231,6 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         const val KEY_INCOME_EXPENSE_ENABLE_BUDGET = "pref_incomeExpenseStateEnableBudget"
         const val KEY_INCOME_EXPENSE_SHOW_GROUP = "pref_incomeExpenseStateShowGroup"
         const val KEY_FLOATING_BUTTON = "preference_floating_button"
+        const val KEY_BIOMETRIC_OPTION = "pref_enableBiometricSignIn"
     }
 }

@@ -19,6 +19,13 @@
             android:key="preference_floating_button"
             android:summary="@string/settings_summary_floating_button"
             android:title="@string/settings_floating_button" />
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="false"
+            android:key="pref_enableBiometricSignIn"
+            android:summary="@string/settings_summary_entry_enable_biometric_sign_in"
+            android:title="@string/settings_entry_enable_biometric_sign_in" />
+
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry">
         <CheckBoxPreference

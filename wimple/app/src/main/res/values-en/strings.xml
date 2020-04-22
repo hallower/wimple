@@ -17,6 +17,7 @@
     <string name="loggin_failed">Login is failed</string>
     <string name="loggin_user_info">Accquiring account information</string>
     <string name="loggin_end">Accquired account information</string>
+    <string name="loggin_wait_for_authentication">Waiting for authentication</string>
     <string name="drawer_open">Open side menu</string>
     <string name="drawer_close">Close side menu</string>
     <string name="drawer_menu_transaction">Transaction</string>
@@ -160,4 +161,11 @@
     <string name="insert_acount_update_retry">Some accounts missing, update accounts inforamtion again</string>
     <string name="settings_floating_button">Select Button Actions</string>
     <string name="settings_summary_floating_button">Select pages will be displayed while pressing the Action Button</string>
+    <string name="settings_summary_entry_enable_biometric_sign_in">Enable Biometric Sign-in to use Wimple transaction submitting app. Be careful you could not use this app if you can not unlock by your biometrics</string>
+    <string name="settings_entry_enable_biometric_sign_in">Enable Biometric Sign-in</string>
+    <string name="need_biometric_authentication">To use this app, biometric authentication is required. Fail reason : </string>
+    <string name="biometric_title">Biometric login for Wimple</string>
+    <string name="biometric_sign_in_description">Log in using your biometric credential.</string>
+    <string name="biometric_option_description">Change option using your biometric credential.</string>
+    <string name="user_cancel">Cancel</string>
 </resources>

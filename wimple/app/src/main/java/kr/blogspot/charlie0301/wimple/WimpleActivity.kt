@@ -36,7 +36,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
+
         setupWimpleImpl()
+
         super.onResume()
     }
 
@@ -58,9 +60,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         nav_view.itemIconTintList = null
         nav_view.setNavigationItemSelectedListener(this)
 
-        // Setup Wimple
         setupHandler()
-        setupWimpleImpl()
 
         if (null != findViewById(R.id.fragment_container)) {
             if (savedInstanceState != null)
@@ -70,7 +70,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun setFloatingButtonImage(rid: Int) {
-        Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
+        //Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
         when (rid) {
             R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
             R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
@@ -106,10 +106,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setDefaultFragment() {
         this.currentMenuID = R.id.menu_transaction_insert
 
-        var insertFragment: TransactionInsertFragment = TransactionInsertFragment()
+        // TODO : make this configurable
+        var insertFragment = TransactionInsertFragment()
         (insertFragment as IWimpleFragment).setActivityInstance(this)
         insertFragment.arguments = intent.extras
         this.currentFragment = insertFragment;
+
+        if (this.currentFragment!!.isAdded)
+            return
 
         val transaction = supportFragmentManager.beginTransaction()
         transaction.add(R.id.fragment_container, insertFragment)
@@ -144,8 +148,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             }
         }
 
-        Log.d(LOG_TAG, "Selected = $selected")
-        Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
+        //Log.d(LOG_TAG, "Selected = $selected")
+        //Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
 
         val sortedValues = selected.sortedBy { it }
         for (idx in sortedValues.indices) {
@@ -226,6 +230,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         this.currentMenuID = id
 
         setFloatingButtonImage(getNextFloatingButtonPage().first)
+
+
+        if (this.currentFragment!!.isAdded)
+            return true
 
         try {
             (this.currentFragment as IWimpleFragment).setActivityInstance(this)
@@ -443,7 +451,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
                         if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
-                            smd(msg.what, msg.obj, 500)
+                            smd(msg.what, msg.obj, 300)
                         }
 
                         if (this@WimpleActivity.currentFragment is IWimpleFragment) {

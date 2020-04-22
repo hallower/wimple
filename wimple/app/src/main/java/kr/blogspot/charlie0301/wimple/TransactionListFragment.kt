@@ -364,8 +364,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
     }
 
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View,
-                                     menuInfo: ContextMenuInfo) {
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
 
         if (v.id == R.id.entry_list_view) {
             val lv = v as ItemListView
@@ -379,7 +378,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
         //super.onCreateContextMenu(menu, v, menuInfo);
     }
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
+    override fun onContextItemSelected(item: MenuItem): Boolean {
         when (item!!.itemId) {
             R.string.context_menu_delete_item -> {
                 val info = item.menuInfo as AdapterContextMenuInfo
