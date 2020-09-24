@@ -313,17 +313,17 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             this.insert_category_left_title.text = (this.leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-        this.insert_category_left.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-            for (idx in 0 until this.leftAccountListAdapter.groupCount)
-                this.insert_category_left.expandGroup(idx)
-
-            val selectedID = this.leftAccountListAdapter.selected.id
-            if (selectedID.isNotEmpty()) {
-                if (!this.selectLeftCategory(selectedID)) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
-                }
-            }
-        }
+//        this.insert_category_left.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+//            val selectedID = this.leftAccountListAdapter.selected.id
+//            if (selectedID.isNotEmpty()) {
+//                for (idx in 0 until this.leftAccountListAdapter.groupCount)
+//                    this.insert_category_left.collapseGroup(idx)
+//
+//                if (!this.selectLeftCategory(selectedID)) {
+//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
+//                }
+//            }
+//        }
 
         this.insert_category_right_title.background.alpha = 128
         this.rightAccountListAdapter = AccountExpandableListAdapter(this.context)
@@ -334,17 +334,17 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             this.insert_category_right_title.text = (this.rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-        this.insert_category_right.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-            for (idx in 0 until this.rightAccountListAdapter.groupCount)
-                this.insert_category_right.expandGroup(idx)
-
-            val selectedID = this.rightAccountListAdapter.selected.id
-            if (selectedID.isNotEmpty()) {
-                if (!this.selectRightCategory(selectedID)) {
-                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
-                }
-            }
-        }
+//        this.insert_category_right.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+//            val selectedID = this.rightAccountListAdapter.selected.id
+//            if (selectedID.isNotEmpty()) {
+//                for (idx in 0 until this.rightAccountListAdapter.groupCount)
+//                    this.insert_category_right.collapseGroup(idx)
+//
+//                if (!this.selectRightCategory(selectedID)) {
+//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
+//                }
+//            }
+//        }
     }
 
     private fun setupItemDate(date: Long?) {
@@ -428,6 +428,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
 
         //insert_category_right.requestFocusFromTouch()
+        this.insert_category_left.expandGroup(selectedLeftGroup)
         this.insert_category_left.setSelection(selectedLeftGroup)
         this.insert_category_left.setSelectedChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition, true)
         this.insert_category_left_title.text = (this.leftAccountListAdapter.getChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition) as Account).title
@@ -442,6 +443,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
 
         //insert_category_right.requestFocusFromTouch()
+        this.insert_category_right.expandGroup(selectedRightGroup)
         this.insert_category_right.setSelection(selectedRightGroup)
         this.insert_category_right.setSelectedChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition, true)
         this.insert_category_right_title.text = (this.rightAccountListAdapter.getChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition) as Account).title

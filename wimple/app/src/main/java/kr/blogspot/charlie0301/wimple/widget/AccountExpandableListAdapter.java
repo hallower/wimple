@@ -50,6 +50,9 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getChild(int groupPosition, int childPosititon) {
+        if (groupPosition == -1 || childPosititon == -1)
+            return null;
+
         try {
             return this.listDataChild.get(this.listDataHeader.get(groupPosition))
                     .get(childPosititon);
@@ -91,28 +94,30 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
+        if (groupPosition == -1)
+            return 0;
 
         try {
-            return this.listDataChild.get(this.listDataHeader.get(groupPosition))
-                    .size();
+            return this.listDataChild.get(this.listDataHeader.get(groupPosition)).size();
         } catch (Exception e) {
             return 0;
         }
-
     }
 
     @Override
     public Object getGroup(int groupPosition) {
+        if (groupPosition == -1)
+            return null;
+
         return this.listDataHeader.get(groupPosition);
     }
 
     @Override
     public int getGroupCount() {
-        try {
-            return this.listDataHeader.size();
-        } catch (Exception e) {
+        if (this.listDataHeader == null)
             return 0;
-        }
+
+        return this.listDataHeader.size();
     }
 
     @Override
@@ -140,7 +145,7 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean hasStableIds() {
-        return false;
+        return true;
     }
 
     @Override
@@ -148,24 +153,14 @@ public class AccountExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
-
-    @Override
-    public void notifyDataSetChanged() {
-        // TODO : is need this?
-        //this.isSelected = false;
-        super.notifyDataSetChanged();
-    }
-
     public void clear() {
-        try {
-            this.isSelected = false;
-            this.selectedGroupPosition = -1;
-            this.selectedChildPosition = -1;
+        this.isSelected = false;
+        this.selectedGroupPosition = -1;
+        this.selectedChildPosition = -1;
+        if (this.listDataHeader != null)
             this.listDataHeader.clear();
+        if (this.listDataChild != null)
             this.listDataChild.clear();
-        } catch (Exception e) {
-            // ignore
-        }
     }
 
     public void clearSelection() {
