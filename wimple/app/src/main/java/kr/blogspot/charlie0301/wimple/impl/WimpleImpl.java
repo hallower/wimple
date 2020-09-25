@@ -778,6 +778,11 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
+        if(sdbh == null) {
+            Log.e(LOG_TAG, "[getAllSections] db handler is not yet prepared!!!");
+            return false;
+        }
+
         new GetAllSectionsTaskThread(forceUpdate).start();
         return true;
     }
@@ -849,6 +854,11 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
+        if(uidbh == null) {
+            Log.e(LOG_TAG, "[User Info] db handler is not yet prepared!!!");
+            return false;
+        }
+
         new GetUserInfoTaskThread(forceUpdate).start();
 
         return true;
@@ -907,6 +917,11 @@ public class WimpleImpl implements IWimpleImpl {
 
         if (!isAuthed()) {
             Log.e(LOG_TAG, "[Default Sections] No authentication.");
+            return false;
+        }
+
+        if(sdbh == null) {
+            Log.e(LOG_TAG, "[Default Sections] db handler is not yet prepared!!!");
             return false;
         }
 
@@ -987,6 +1002,12 @@ public class WimpleImpl implements IWimpleImpl {
             Log.e(LOG_TAG, "[Account] Initialization is on progressing.");
             return false;
         }
+
+        if(adbh == null) {
+            Log.e(LOG_TAG, "[Account] db handler is not yet prepared!!!");
+            return false;
+        }
+
 		/*
 		if(!apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
 			return true;
@@ -1303,6 +1324,11 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 		 */
 
+        if(asdbh == null) {
+            Log.e(LOG_TAG, "[Financial State] db handler is not yet prepared!!!");
+            return false;
+        }
+
         if (!apiAvailableSemaphore.get("getFinancialState").tryAcquire()) {
             return true;
         }
@@ -1445,6 +1471,11 @@ public class WimpleImpl implements IWimpleImpl {
 		}
 		 */
 
+        if(iedbh == null) {
+            Log.e(LOG_TAG, "[Income Expense] db handler is not yet prepared!!!");
+            return false;
+        }
+
         if (!apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()) {
             return true;
         }
@@ -1470,9 +1501,7 @@ public class WimpleImpl implements IWimpleImpl {
         @Override
         public void run() {
 
-
             try {
-
 
                 if ((!forceUpdate) &&
                         iedbh.hasData()) {
@@ -1632,6 +1661,11 @@ public class WimpleImpl implements IWimpleImpl {
 			return false;
 		}
 		 */
+
+        if(bddbh == null) {
+            Log.e(LOG_TAG, "[Budget] db handler is not yet prepared!!!");
+            return false;
+        }
 
         if (isIncome) {
             if (!apiAvailableSemaphore.get("getIncomeBudget").tryAcquire()) {
