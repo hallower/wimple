@@ -216,6 +216,9 @@ public class WimpleImpl implements IWimpleImpl {
     }
 
     public void setApplicationContext(Context context) {
+        if(WimpleImpl.context != null)
+            return;
+
         WimpleImpl.context = new WeakReference<>(context);
         rrh.setApplicationContext(context);
 
@@ -385,21 +388,6 @@ public class WimpleImpl implements IWimpleImpl {
     /*
      * These APIs are regarding Promise Library management
      */
-
-    /**
-     * Start using the Promise library
-     */
-    public boolean start() {
-        return true;
-    }
-
-    /**
-     * Stop using the Promise library
-     */
-    public void stop() {
-
-    }
-
 
     public String getServicehost() {
         return serviceHost;

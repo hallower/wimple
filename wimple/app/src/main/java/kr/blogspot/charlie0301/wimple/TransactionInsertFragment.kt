@@ -84,6 +84,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         this.ti_update_notification.visibility = View.VISIBLE
         this.ti_list_notification_text.text = this.resources.getString(R.string.update_latest_items)
 
+        this.wimple.setApplicationContext(context);
         this.wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(this.datePicker.selectedDate), false)
         this.wimple.latestItems
     }
