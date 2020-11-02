@@ -129,7 +129,7 @@ public class BudgetStateItemView extends LinearLayout {
 
         }
         Drawable background = tv.getBackground();
-        background.setAlpha(90);
+        background.setAlpha(200);
     }
 
     public void clear() {

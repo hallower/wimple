@@ -489,7 +489,7 @@
                     android:id="@+id/insert_category_right_title"
                     android:layout_width="match_parent"
                     android:layout_height="32dp"
-                    android:background="@color/text_light_blue"
+                    android:background="@color/text_blue"
                     android:gravity="center"
                     android:padding="2dp"
                     android:text="@string/insert_right_accounts"

@@ -150,7 +150,7 @@ public class EntryItemView extends LinearLayout {
                 break;
         }
         Drawable background = tv.getBackground();
-        background.setAlpha(90);
+        background.setAlpha(200);
     }
 
     public void clear() {
