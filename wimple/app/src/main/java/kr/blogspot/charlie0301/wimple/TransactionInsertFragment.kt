@@ -305,7 +305,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun setupAccountLists() {
-        this.insert_category_left_title.background.alpha = 128
+        this.insert_category_left_title.background.alpha = 200
         this.leftAccountListAdapter = AccountExpandableListAdapter(this.context)
         this.insert_category_left.setAdapter(this.leftAccountListAdapter)
 
@@ -326,7 +326,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 //            }
 //        }
 
-        this.insert_category_right_title.background.alpha = 128
+        this.insert_category_right_title.background.alpha = 200
         this.rightAccountListAdapter = AccountExpandableListAdapter(this.context)
         this.insert_category_right.setAdapter(this.rightAccountListAdapter)
 
