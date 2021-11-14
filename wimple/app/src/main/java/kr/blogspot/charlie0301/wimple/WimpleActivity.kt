@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.os.PersistableBundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
@@ -36,9 +37,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
-
         setupWimpleImpl()
-
         super.onResume()
     }
 
@@ -60,13 +59,25 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         nav_view.itemIconTintList = null
         nav_view.setNavigationItemSelectedListener(this)
 
+        // Logic
         setupHandler()
 
-        if (null != findViewById(R.id.fragment_container)) {
-            if (savedInstanceState != null)
-                return
-            setDefaultFragment()
+        if(savedInstanceState != null){
+            Log.e(LOG_TAG, "WimpleActivity - onCreate!!!, savedInstanceState is NOT null")
+            val f = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (f is IWimpleFragment) {
+                currentFragment = f
+                currentMenuID = savedInstanceState.getInt("currentMenuID");
+            }
+            return;
         }
+
+        setDefaultFragment()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+        super.onSaveInstanceState(outState, outPersistentState)
+        outState?.putInt("currentMenuID", currentMenuID)
     }
 
     private fun setFloatingButtonImage(rid: Int) {
@@ -94,8 +105,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun hideVirtualKeyboard() {
-        insert_entry_title.isFocusable = false
-        insert_entry_title.isFocusableInTouchMode = true
+        insert_entry_title?.isFocusable = false
+        insert_entry_title?.isFocusableInTouchMode = true
         val view = this.currentFocus
         if (view != null) {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -105,6 +116,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun setDefaultFragment() {
         this.currentMenuID = R.id.menu_transaction_insert
+
+        if(this.currentFragment != null)
+            return;
 
         // TODO : make this configurable
         var insertFragment = TransactionInsertFragment()

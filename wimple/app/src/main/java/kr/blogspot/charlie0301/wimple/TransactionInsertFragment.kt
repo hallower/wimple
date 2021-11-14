@@ -74,12 +74,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
      */
 
     override fun onResume() {
+        Log.i(LOG_TAG, "onResume()")
         this.initWimple()
         super.onResume()
     }
 
     private fun initWimple() {
-        Log.e(LOG_TAG, "initWimple()")
+        Log.i(LOG_TAG, "initWimple()")
 
         this.ti_update_notification.visibility = View.VISIBLE
         this.ti_list_notification_text.text = this.resources.getString(R.string.update_latest_items)
@@ -91,6 +92,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        Log.i(LOG_TAG, "onCreateView()")
         //synchronized(TransactionInsertFragment.class){
         if (padRIDs.isEmpty()) {
             val ar = this.context!!.resources.obtainTypedArray(R.array.number_buttons)
@@ -103,6 +106,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.i(LOG_TAG, "onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
 
         // To show previous data during new data dispatching without any GUI display delay.
@@ -128,7 +132,6 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         //initWimple();
     }
-
 
     private fun setupTitleAndSubmit() {
 
