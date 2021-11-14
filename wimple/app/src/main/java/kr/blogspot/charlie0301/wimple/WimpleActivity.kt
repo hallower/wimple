@@ -63,12 +63,13 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         setupHandler()
 
         if(savedInstanceState != null){
-            Log.e(LOG_TAG, "WimpleActivity - onCreate!!!, savedInstanceState is NOT null")
+            Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, savedInstanceState is NOT null")
             val f = supportFragmentManager.findFragmentById(R.id.fragment_container)
             if (f is IWimpleFragment) {
                 currentFragment = f
                 currentMenuID = savedInstanceState.getInt("currentMenuID");
             }
+            Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, currentFragment=$currentFragment, currentMenuID=$currentMenuID")
             return;
         }
 
@@ -153,7 +154,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         val selected = sharedPref.getStringSet(SettingsFragment.KEY_FLOATING_BUTTON, null)
         if (selected == null ||
-                selected.size == 0) {
+                selected.size == 0 ||
+                this.currentMenuID == 0) {
             Log.e(LOG_TAG, "Floating Button pages are not set!!!")
             return when {
                 this.currentMenuID == R.id.menu_transaction_insert -> Pair(R.id.menu_transaction_list, R.id.menu_transaction_insert)
