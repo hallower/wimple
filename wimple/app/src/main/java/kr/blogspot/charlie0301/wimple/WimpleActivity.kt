@@ -76,7 +76,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         setDefaultFragment()
     }
 
-    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         outState?.putInt("currentMenuID", currentMenuID)
     }
