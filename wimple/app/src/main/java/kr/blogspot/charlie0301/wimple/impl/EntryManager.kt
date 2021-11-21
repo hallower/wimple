@@ -234,7 +234,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
                     "\"r_account\" : \"%s\"," +
                     "\"r_account_id\" : \"%s\"," +
                     "\"item\" : \"%s\"," +
-                    "\"money\" : %f," +
+                    "\"money\" : %.4f," +
                     "\"memo\" : \"%s\"" +
                     "}]"
             val pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
@@ -294,7 +294,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
                     "&r_account=%s" +
                     "&r_account_id=%s" +
                     "&item=%s" +
-                    "&money=%f" +
+                    "&money=%.4f" +
                     ""
             val pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
                     formatEntryPut,

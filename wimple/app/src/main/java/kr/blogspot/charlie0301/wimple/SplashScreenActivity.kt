@@ -129,13 +129,24 @@ class SplashScreenActivity : AppCompatActivity() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
 
-        val webSettings = webview.settings
-        webSettings.javaScriptEnabled = true
-        webSettings.setAppCacheEnabled(true)
-        webSettings.javaScriptCanOpenWindowsAutomatically = true
-        webSettings.setSupportMultipleWindows(true)
+        webview.addJavascriptInterface(WebAppInterface(this), "Android")
         webview.webViewClient = UriWebViewClient()
         webview.webChromeClient = WebChromeClient()
+
+        val webSettings = webview.settings
+        webSettings.javaScriptCanOpenWindowsAutomatically = true
+        webSettings.setSupportMultipleWindows(true)
+
+        webSettings.javaScriptEnabled = true;
+        webSettings.domStorageEnabled = true;
+        webSettings.loadWithOverviewMode = true;
+        webSettings.useWideViewPort = true;
+        webSettings.builtInZoomControls = true;
+        webSettings.displayZoomControls = false;
+        webSettings.setSupportZoom(true);
+        webSettings.defaultTextEncodingName = "utf-8";
+
+
 
     }
 
@@ -420,6 +431,14 @@ class SplashScreenActivity : AppCompatActivity() {
                                         error: SslError) {
             Log.d(LOG_TAG, "onReceivedSslError")
             //super.onReceivedSslError(view, handler, error);
+        }
+    }
+
+    class WebAppInterface(private val mContext: Context) {
+
+        @JavascriptInterface
+        fun showToast(toast: String) {
+            Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
         }
     }
 
