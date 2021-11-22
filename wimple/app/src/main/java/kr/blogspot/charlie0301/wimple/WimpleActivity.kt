@@ -517,7 +517,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     companion object {
 
         private const val LOG_TAG = "WimpleActivity"
-        private const val whooingURL = "https://new.whooing.com"
+        private const val whooingURL = "https://whooing.com"
 
         private var mainHandler: Handler? = null
 
