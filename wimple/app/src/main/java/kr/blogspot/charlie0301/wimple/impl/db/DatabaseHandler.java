@@ -410,7 +410,9 @@ class DatabaseHandler {
         Cursor cursor = db.rawQuery(query, null);
         long result = -1L;
         if (cursor.moveToFirst()) {
-            result = cursor.getLong(cursor.getColumnIndex(columnName));
+            int cIdx = cursor.getColumnIndex(columnName);
+            if(cIdx >= 0)
+                result = cursor.getLong(cIdx);
         }
         cursor.close();
         return result;

@@ -47,7 +47,9 @@ public class LocalFile {
         try {
             cursor = context.getContentResolver().query(uriPath, null, null, null, null);
             cursor.moveToNext();
-            path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            int cIdx = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+            if(cIdx>=0)
+                path = cursor.getString(cIdx);
 
         } catch (Exception e) {
             e.printStackTrace();

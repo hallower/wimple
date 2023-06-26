@@ -3,11 +3,11 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.blogspot.charlie0301"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion 26
+        targetSdkVersion 32
         versionCode 45
         versionName "1.0.45"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -19,20 +19,16 @@ android {
         }
     }
     packagingOptions {
-        exclude 'META-INF/notice.txt'
-        exclude 'META-INF/license.txt'
-        exclude 'META-INF/jersey-module-version'
-        exclude 'META-INF/ASL2.0'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyReader'
-        exclude 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter'
+        resources {
+            excludes += ['META-INF/notice.txt', 'META-INF/license.txt', 'META-INF/jersey-module-version', 'META-INF/ASL2.0', 'META-INF/LICENSE', 'META-INF/NOTICE', 'META-INF/services/javax.ws.rs.ext.MessageBodyReader', 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter']
+        }
     }
     productFlavors {
     }
-    lintOptions {
-        lintConfig file("lint.xml")
+    namespace 'kr.blogspot.charlie0301.wimple'
+    lint {
         abortOnError false
+        lintConfig file('lint.xml')
     }
 }
 
