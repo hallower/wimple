@@ -49,11 +49,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private var selected: Item? = null
 
-    private val amountValue: Double?
+    private val amountValue: Double
         get() {
-            val amount: Double?
+            val amount: Double
             try {
-                amount = DateFormatUtils.getNumberFormat().parse(this.insert_amount.text.toString()).toDouble()
+                amount =
+                    DateFormatUtils.getNumberFormat().parse(this.insert_amount.text.toString())
+                        ?.toDouble() ?: -1.0
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "Amount parsing error : " + this.insert_amount.text)
                 return -1.0
@@ -70,7 +72,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     /**
      * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
-     * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
+     * onPause() > onStop() > onDestroyView() > onDestroy() > onDetach()
      */
 
     override fun onResume() {
@@ -85,7 +87,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         this.ti_update_notification.visibility = View.VISIBLE
         this.ti_list_notification_text.text = this.resources.getString(R.string.update_latest_items)
 
-        this.wimple.setApplicationContext(context);
+        this.wimple.setApplicationContext(context)
         this.wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(this.datePicker.selectedDate), false)
         this.wimple.latestItems
     }
@@ -228,6 +230,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 if(foundItems.isEmpty()){
                     resetLatestItems(latestItems)
                 }else{
+                    foundItems.sortWith { item1, item2 -> item1.item.length.compareTo(item2.item.length) }
                     resetLatestItems(foundItems)
                 }
             }
@@ -324,7 +327,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 //                    this.insert_category_left.collapseGroup(idx)
 //
 //                if (!this.selectLeftCategory(selectedID)) {
-//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
+//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_account_update_retry))
 //                }
 //            }
 //        }
@@ -345,7 +348,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 //                    this.insert_category_right.collapseGroup(idx)
 //
 //                if (!this.selectRightCategory(selectedID)) {
-//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_acount_update_retry))
+//                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_account_update_retry))
 //                }
 //            }
 //        }

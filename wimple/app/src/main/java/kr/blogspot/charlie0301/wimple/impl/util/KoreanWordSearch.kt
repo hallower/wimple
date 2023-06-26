@@ -17,11 +17,11 @@ class KoreanWordSearch {
         }
 
         private fun getInitialSound(c: Char): Char {
-            return INITIAL_SOUND[(c - HANGUL_BEGIN_UNICODE).toInt() / HANGUL_BASE_UNIT]
+            return INITIAL_SOUND[(c - HANGUL_BEGIN_UNICODE).code / HANGUL_BASE_UNIT]
         }
 
-        fun isHangul(c: Char): Boolean {
-            return c.toInt() in HANGUL_BEGIN_UNICODE..HANGUL_LAST_UNICODE
+        private fun isHangul(c: Char): Boolean {
+            return c.code in HANGUL_BEGIN_UNICODE..HANGUL_LAST_UNICODE
         }
 
         fun matchString(value: String, search: String): Boolean {
@@ -35,7 +35,7 @@ class KoreanWordSearch {
                         if (getInitialSound(value[i + t]) == search[t])
                             t++ else break
                     } else { // value is not Hangul initial sound
-                        if (value[i + t].toLowerCase() == search[t].toLowerCase())
+                        if (value[i + t].equals(search[t], ignoreCase = true))
                             t++ else break
                     }
                 }
