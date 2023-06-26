@@ -4,13 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
+import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
@@ -33,7 +34,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
         addPreferencesFromResource(R.xml.settings)
 
-        listSections = findPreference("preference_sections") as ListPreference
+        listSections = preferenceScreen.findPreference("preference_sections")!!
         run {
             val entries = arrayOfNulls<String>(1)
             val entryValues = arrayOfNulls<String>(1)
@@ -44,9 +45,9 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             listSections.setValueIndex(0)
         }
 
-        val listPages = findPreference("preference_floating_button") as MultiSelectListPreference
+        val listPages = preferenceScreen.findPreference<MultiSelectListPreference>("preference_floating_button")!!
         run {
-            val entries = arrayOf<String>(
+            val entries = arrayOf(
                     resources.getString(R.string.title_transaction_insert_fragment),
                     resources.getString(R.string.title_transaction_list_fragment),
                     resources.getString(R.string.drawer_menu_financial_state),
@@ -74,7 +75,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             */
         }
 
-        val logout = findPreference("preference_logout")
+        val logout = preferenceScreen.findPreference<Preference>("preference_logout")!!
         logout.onPreferenceClickListener = OnPreferenceClickListener {
             wimple.cleanAuth()
             wimple.clearAllDBRecords()
@@ -85,11 +86,11 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 cookieManager.removeAllCookies(null)
                 cookieManager.flush()
 
-                context!!.deleteDatabase("webview.db")
-                context!!.deleteDatabase("webviewCache.db")
+                requireContext().deleteDatabase("webview.db")
+                requireContext().deleteDatabase("webviewCache.db")
 
                 // clear biometric option
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(context!!)
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
                 sharedPref.edit().putBoolean(KEY_BIOMETRIC_OPTION, false).apply()
             }
 
@@ -99,12 +100,12 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             val intent = Intent(context, SplashScreenActivity::class.java)
             intent.putExtra("auth_again", "")
             startActivity(intent)
-            activity!!.finish()
+            requireActivity().finish()
 
             false
         }
 
-        val biometricCheckBox = findPreference("pref_enableBiometricSignIn") as CheckBoxPreference
+        val biometricCheckBox = preferenceScreen.findPreference<CheckBoxPreference>("pref_enableBiometricSignIn")!!
         biometricCheckBox.onPreferenceChangeListener = OnPreferenceChangeListener { preference, newValue ->
 
             val promptInfo = BiometricPrompt.PromptInfo.Builder()
@@ -191,14 +192,14 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                     wimple.clearAllDBRecords()
 
                     if (context != null) {
-                        val settings = context!!.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE)
+                        val settings = requireContext().getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE)
                         settings.edit().putString("section_id", wimple.defaultSectionID).apply()
                         settings.edit().putString("section_name", wimple.defaultSectionName).apply()
                     }
 
                     val intent = Intent(context, SplashScreenActivity::class.java)
                     startActivity(intent)
-                    activity!!.finish()
+                    requireActivity().finish()
 
                     false
                 }

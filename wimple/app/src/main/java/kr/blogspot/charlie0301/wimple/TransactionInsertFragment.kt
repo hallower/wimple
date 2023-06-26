@@ -4,7 +4,7 @@ package kr.blogspot.charlie0301.wimple
 import android.content.Context
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -98,7 +98,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         Log.i(LOG_TAG, "onCreateView()")
         //synchronized(TransactionInsertFragment.class){
         if (padRIDs.isEmpty()) {
-            val ar = this.context!!.resources.obtainTypedArray(R.array.number_buttons)
+            val ar = this.requireContext().resources.obtainTypedArray(R.array.number_buttons)
             for (cnt in 0 until ar.length()) padRIDs.add(ar.getResourceId(cnt, 0))
             ar.recycle()
         }
@@ -112,7 +112,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         super.onViewCreated(view, savedInstanceState)
 
         // To show previous data during new data dispatching without any GUI display delay.
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
         val isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, true)
         if (isNeedDisableMemo) {
             this.insert_memo_window.visibility = View.GONE
@@ -142,8 +142,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 EditorInfo.IME_ACTION_DONE -> {
                     this.setAmount(textView.text.toString())
 
-                    val imm = this.activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(this.view!!.windowToken, 0)
+                    val imm = this.requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(this.requireView().windowToken, 0)
 
                     return@OnEditorActionListener true
                 }
@@ -214,25 +214,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         this.insert_entry_title.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                var changed = s.toString().trim { it <= ' ' }
-                if (changed.contains("(") && changed.indexOf("(") > 0) {
-                    changed = changed.substring(0, changed.indexOf("(") - 1)
-                    changed = changed.trim { it <= ' ' }
-                }
-
-                val foundItems:ArrayList<Item> = ArrayList()
-                for(item in latestItems){
-                    if(KoreanWordSearch.matchString(item.item, s.toString())){
-                        foundItems.add(item)
-                    }
-                }
-
-                if(foundItems.isEmpty()){
-                    resetLatestItems(latestItems)
-                }else{
-                    foundItems.sortWith { item1, item2 -> item1.item.length.compareTo(item2.item.length) }
-                    resetLatestItems(foundItems)
-                }
+                filterLatestItems(s)
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
@@ -241,9 +223,31 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         })
     }
 
+    private fun filterLatestItems(s: CharSequence) {
+        var changed = s.toString().trim { it <= ' ' }
+        if (changed.contains("(") && changed.indexOf("(") > 0) {
+            changed = changed.substring(0, changed.indexOf("(") - 1)
+            changed = changed.trim { it <= ' ' }
+        }
+
+        val foundItems: ArrayList<Item> = ArrayList()
+        for (item in latestItems) {
+            if (KoreanWordSearch.matchString(item.item, s.toString())) {
+                foundItems.add(item)
+            }
+        }
+
+        if (foundItems.isEmpty()) {
+            resetLatestItems(latestItems)
+        } else {
+            foundItems.sortWith { item1, item2 -> item1.item.length.compareTo(item2.item.length) }
+            resetLatestItems(foundItems)
+        }
+    }
+
     private fun setupLatestItems() {
 
-        this.adapterLatestItems = ArrayAdapter(this.context!!, R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems)
+        this.adapterLatestItems = ArrayAdapter(this.requireContext(), R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems)
         this.insert_frequent_items.adapter = this.adapterLatestItems
         this.insert_frequent_items.onItemClickListener = OnItemClickListener { _, _, position, _ -> this.selectLatestItem(position) }
 
@@ -253,7 +257,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun setupButtons() {
         val buttons = arrayOfNulls<TextView>(padRIDs.size)
         for (i in padRIDs.indices) {
-            buttons[i] = this.view!!.findViewById<View>(padRIDs[i]) as TextView
+            buttons[i] = this.requireView().findViewById<View>(padRIDs[i]) as TextView
             buttons[i]!!.setOnClickListener { v ->
                 // remove virtual keyboard
                 this.insert_entry_title.clearFocus()
@@ -295,7 +299,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             }
         })
         this.insert_date.setOnClickListener {
-            this.datePicker.show(this.fragmentManager!!, "itemDate")
+            this.datePicker.show(this.requireFragmentManager(), "itemDate")
         }
         this.setupItemDate(Calendar.getInstance().timeInMillis)
 
@@ -657,6 +661,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                     this.latestItems = obj as ArrayList<Item>
                     resetLatestItems(this.latestItems)
                     //WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.entry_latest_item_added))
+                    filterLatestItems(this.insert_entry_title.text)
                 }
             }
 
