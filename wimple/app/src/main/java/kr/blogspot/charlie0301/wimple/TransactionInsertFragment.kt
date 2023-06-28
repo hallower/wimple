@@ -230,16 +230,16 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             changed = changed.trim { it <= ' ' }
         }
 
-        val foundItems: ArrayList<Item> = ArrayList()
-        for (item in latestItems) {
-            if (KoreanWordSearch.matchString(item.item, s.toString())) {
-                foundItems.add(item)
-            }
-        }
-
-        if (foundItems.isEmpty()) {
+        if (changed.isEmpty()) {
             resetLatestItems(latestItems)
         } else {
+            val foundItems: ArrayList<Item> = ArrayList()
+            for (item in latestItems) {
+                if (KoreanWordSearch.matchString(item.item, changed.toString())) {
+                    foundItems.add(item)
+                }
+            }
+
             foundItems.sortWith { item1, item2 -> item1.item.length.compareTo(item2.item.length) }
             resetLatestItems(foundItems)
         }
@@ -524,7 +524,6 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private fun resetLatestItems(items : ArrayList<Item>) {
         this.adapterLatestItems.clear()
-        //this.adapterLatestItems.filter.filter("")
         this.adapterLatestItems.addAll(items)
         this.adapterLatestItems.notifyDataSetChanged()
     }
@@ -659,8 +658,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
                 if (booleanStatus) {
                     this.latestItems = obj as ArrayList<Item>
+                    Collections.sort(latestItems, Item.DateDescCompare())
                     resetLatestItems(this.latestItems)
-                    //WimpleActivity.sm(CommandID.TOAST_SHORT, resources.getString(R.string.entry_latest_item_added))
                     filterLatestItems(this.insert_entry_title.text)
                 }
             }
