@@ -18,8 +18,8 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
             return false
         }
 
-        object : Thread() {
-            override fun run() {
+        //object : Thread() {
+            //override fun run() {
                 val cl = Calendar.getInstance()
                 cl.add(Calendar.MONTH, -1)
                 Log.d(LOG_TAG, "[StoredEntries] Flushing entries before " + cl.time.toString())
@@ -27,8 +27,8 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
                 Log.d(LOG_TAG, "[StoredEntries] Providing Stored Entries from Cache.")
                 wimpl.sm(CommandID.CMD_GET_ENTRIES, 1, 0, wimpl.entryDBHandler.allEntrys)
-            }
-        }.start()
+            //}
+        //}.start()
 
         return true
     }
@@ -72,7 +72,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
         return true
     }
 
-    private inner class GetAllEntriesTaskThread internal constructor(internal val sectionID: String, internal val latestDate: String, internal val oldestDate: String, internal val count: Int) : Thread() {
+    private inner class GetAllEntriesTaskThread(val sectionID: String, val latestDate: String, val oldestDate: String, val count: Int) : Thread() {
 
         override fun run() {
 
@@ -81,10 +81,10 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
                 val list = ArrayList<Entry>()
                 var path = "?section_id=$sectionID&start_date=$oldestDate&end_date=$latestDate"
 
-                if (0 > count) {
-                    path += "&limit=$count"
+                path += if (0 > count) {
+                    "&limit=$count"
                 } else {
-                    path += "&limit=40"
+                    "&limit=40"
                 }
 
                 val json = wimpl.invokeRESTAPI(HTTPMethod.GET, Path.ENTRIES_ALL + path, "")
@@ -131,7 +131,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
                         val item = Entry(row)
                         val balance = row.getString("total")
-                        if (null != balance && !balance.isEmpty()) {
+                        if (balance.isNotEmpty()) {
                             item.setBalance(balance)
                         }
 
@@ -158,7 +158,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
         }
     }
 
-    private inner class GetLatestEntriesTaskThread internal constructor(internal val sectionID: String, internal val count: Int) : Thread() {
+    private inner class GetLatestEntriesTaskThread(val sectionID: String, val count: Int) : Thread() {
 
         override fun run() {
 
@@ -204,7 +204,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
                     val item = Entry(row)
                     val balance = row.getString("total")
-                    if (null != balance && !balance.isEmpty()) {
+                    if (balance.isNotEmpty()) {
                         item.setBalance(balance)
                     }
 
@@ -222,8 +222,8 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
     }
 
-    private inner class PostEntryTaskThread internal constructor(internal val sectionID: String, internal val date: Long?, internal val left: Account, internal val right: Account,
-                                                                 internal val title: String, internal val amount: Double?, internal val memo: String) : Thread() {
+    private inner class PostEntryTaskThread(val sectionID: String, val date: Long?, val left: Account, val right: Account,
+                                            val title: String, val amount: Double?, val memo: String) : Thread() {
 
         override fun run() {
 
@@ -282,8 +282,8 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
         }
     }
 
-    private inner class PutEntryTaskThread internal constructor(internal val sectionID: String, internal val entryID: String, internal val date: String, internal val left: Account, internal val right: Account,
-                                                                internal val title: String, internal val amount: Double?, internal val memo: String) : Thread() {
+    private inner class PutEntryTaskThread(val sectionID: String, val entryID: String, val date: String, val left: Account, val right: Account,
+                                           val title: String, val amount: Double?, val memo: String) : Thread() {
 
         override fun run() {
 
@@ -308,7 +308,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
             )
 
             var path = "section_id=$sectionID&data_type=json$pushingContent"
-            if (!memo.isEmpty()) {
+            if (memo.isNotEmpty()) {
                 path += "&memo=$memo"
             }
 
@@ -344,7 +344,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
         }
     }
 
-    private inner class DeleteEntryTaskThread internal constructor(internal val sectionID: String, internal val entryID: String) : Thread() {
+    private inner class DeleteEntryTaskThread constructor(val sectionID: String, val entryID: String) : Thread() {
 
         override fun run() {
 

@@ -120,10 +120,7 @@ class DatabaseHandler {
             }
             e.printStackTrace();
             return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } catch (Error e) {
+        } catch (Exception | Error e) {
             e.printStackTrace();
             return false;
         }
@@ -166,8 +163,7 @@ class DatabaseHandler {
         SparseArray<String> keys = item.getColumns();
 
         try {
-            int res = 0;
-            res = db.updateWithOnConflict(tableName, v, keys.get(0) + " = '" + item.getValue(0) + "'", null, SQLiteDatabase.CONFLICT_IGNORE);
+            int res = db.updateWithOnConflict(tableName, v, keys.get(0) + " = '" + item.getValue(0) + "'", null, SQLiteDatabase.CONFLICT_IGNORE);
             Log.d(LOG_TAG, "" + res + " items are updated!!! - updateItem");
         } catch (SQLException e) {
             //e.printStackTrace();
@@ -186,8 +182,7 @@ class DatabaseHandler {
         SQLiteDatabase db = dbms.getWritableDatabase();
 
         try {
-            int res = 0;
-            res = db.updateWithOnConflict(tableName, v, where, null, SQLiteDatabase.CONFLICT_IGNORE);
+            int res = db.updateWithOnConflict(tableName, v, where, null, SQLiteDatabase.CONFLICT_IGNORE);
             Log.d(LOG_TAG, "" + res + " items are updated!!! - updateItem");
         } catch (SQLException e) {
             //e.printStackTrace();
@@ -449,6 +444,10 @@ class DatabaseHandler {
 
     public synchronized int delete(String where) {
         String countQuery = String.format(SQLQueries.deleteSomeWithWhereStatement, tableName, where);
+
+        if (DEBUGALLDATAS)
+            Log.d(LOG_TAG, "delete items, " + countQuery);
+
         SQLiteDatabase db = dbms.getWritableDatabase();
         Cursor cursor;
         int count = 0;
@@ -497,7 +496,7 @@ class DatabaseHandler {
         }
 
         String columnName = " ";
-        String columnValue = "";
+        StringBuilder columnValue = new StringBuilder();
         boolean first = true;
 
         Log.d(LOG_TAG, ">> ALL DATAS");
@@ -514,7 +513,7 @@ class DatabaseHandler {
                         if (first) {
                             columnName += cursor.getColumnName(cnt) + "\t\t";
                         }
-                        columnValue += cursor.getString(cnt) + "\t";
+                        columnValue.append(cursor.getString(cnt)).append("\t");
                     }
 
                     if (first) {
@@ -523,8 +522,8 @@ class DatabaseHandler {
                         first = false;
                     }
 
-                    Log.d(LOG_TAG, columnValue);
-                    columnValue = "";
+                    Log.d(LOG_TAG, columnValue.toString());
+                    columnValue = new StringBuilder();
 
                 } while (cursor.moveToNext());
             }

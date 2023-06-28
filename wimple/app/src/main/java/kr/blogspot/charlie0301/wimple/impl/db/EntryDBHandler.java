@@ -5,13 +5,12 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.Entry;
 
 public class EntryDBHandler {
 
-    private static String tableName = "entryinfo";
-    private static String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
+    private static final String tableName = "entryinfo";
+    private static final String createSchema = "CREATE TABLE IF NOT EXISTS " + tableName + "(" +
 
             "id TEXT, " +
             "date TEXT, " +
@@ -55,8 +54,9 @@ public class EntryDBHandler {
     }
 
     public void cleanOldEntries(Long date) {
-        String dateString = DateFormatUtils.getDBDateFormat().format(date);
-        dbHandler.delete("date < " + dateString);
+        //String dateString = DateFormatUtils.getDBDateFormat().format(date);
+        //dbHandler.delete("date < " + dateString);
+        dbHandler.delete("date < " + date);
     }
 
     public void remove(String id) {

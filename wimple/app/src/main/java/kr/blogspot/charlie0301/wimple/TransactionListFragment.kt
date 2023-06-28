@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
@@ -44,7 +44,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
     /**
      * onAttach() > onCreate() > onCreateView() > onActivityCreated() > onStart() > onResume()
-     * onPause() > onStop() > onDestoryView() > onDestory() > onDetach()
+     * onPause() > onStop() > onDestroyView() > onDestroy() > onDetach()
      */
 
     override fun onResume() {
@@ -57,7 +57,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
     private fun updateLatestItems(forceUpdateMonthlyItems: Boolean) {
         // TODO : what is best? performance
         Log.e(LOG_TAG, "Force Refresh!!!")
-        setShowingNotification(true, true)
+        setShowingNotification(show = true, isLatest = true)
         wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0)
 
         if (monthlyDisplay) {
@@ -83,6 +83,8 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
         registerForContextMenu(entry_list_view)
 
+        wimple.storedEntries
+
         entry_list_view.setOnScrollListener(object : OnScrollListener {
 
             override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {}
@@ -90,7 +92,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
             override fun onScroll(view: AbsListView, firstVisibleItem: Int,
                                   visibleItemCount: Int, totalItemCount: Int) {
 
-                //Log.d(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + ", totalItemcount=" + totalItemCount);
+                //Log.d(LOG_TAG, "firstVisible=" + firstVisibleItem + ", visibleItemCount=" + visibleItemCount + ", totalItemCount=" + totalItemCount);
 
                 isShowingFirstItem = firstVisibleItem == 0
 
@@ -104,18 +106,18 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                     Log.d(LOG_TAG, "Get More!!!, percentage=$percentage")
 
                     if (entryAdapter.count == 0) {
-                        setShowingNotification(true, false)
+                        setShowingNotification(show = true, isLatest = false)
                         wimple.getAllEntries(DateFormatUtils.getCurrentDateString(), DateFormatUtils.getLastMonthDateString(0L), 0)
                     } else {
                         val entry = entryAdapter.getItem(entryAdapter.count - 1) as Item
                         var lastDate = entry.dateValue
 
-                        if (!lastDate.isEmpty()) {
+                        if (lastDate.isNotEmpty()) {
                             lastDate = lastDate.substring(1)
                         }
 
                         //Log.d(LOG_TAG, "1 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
-                        if (!prevLastDate.isEmpty() && 0 == lastDate.compareTo(prevLastDate)) {
+                        if (prevLastDate.isNotEmpty() && 0 == lastDate.compareTo(prevLastDate)) {
                             countLastDateRequest += 1
                         }
                         prevLastDate = lastDate
@@ -128,7 +130,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                         }
                         //Log.d(LOG_TAG, "2 lastDate=" + lastDate + ", prevLastDate=" + prevLastDate + ", count=" + countLastDateRequest);
 
-                        setShowingNotification(true, false)
+                        setShowingNotification(show = true, isLatest = false)
                         wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getLastMonthDateString(lastDate), 0)
                     }
                 }
@@ -144,7 +146,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
             }
         }
 
-        val wm = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val wm = requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val display = wm.defaultDisplay
         val size = Point()
         display.getSize(size)
@@ -183,9 +185,6 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
             false
         })
-
-        // TODO : remove old data
-        wimple.storedEntries
     }
 
 
@@ -220,8 +219,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
             CommandID.GET_ENTRIES_RECEIVED -> {
                 run {
-
-                    setShowingNotification(false, true)
+                    setShowingNotification(show = false, isLatest = true)
                     try {
                         if (!booleanStatus)
                             return
@@ -268,7 +266,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
                     var lastDate = entry.dateValue
 
-                    if (!lastDate.isEmpty())
+                    if (lastDate.isNotEmpty())
                         lastDate = lastDate.substring(1)
 
                     wimple.getAllEntries(DateFormatUtils.getServerDateString(lastDate), DateFormatUtils.getServerDateString(lastDate, -1), 0)
@@ -351,9 +349,9 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
             return
 
         entry_list_notification_text.text = if (isLatest) {
-            context!!.resources.getString(R.string.update_latest_items)
+            requireContext().resources.getString(R.string.update_latest_items)
         } else {
-            context!!.resources.getString(R.string.update_old_items)
+            requireContext().resources.getString(R.string.update_old_items)
         }
 
         entry_list_notification.visibility = if (show) {
@@ -379,7 +377,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        when (item!!.itemId) {
+        when (item.itemId) {
             R.string.context_menu_delete_item -> {
                 val info = item.menuInfo as AdapterContextMenuInfo
 
@@ -407,7 +405,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
     }
 
     private fun updateSettings() {
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
         monthlyDisplay = sharedPref.getBoolean(SettingsFragment.KEY_MONTHLY_ITEM_DISPLAY, true)
         val pref = sharedPref.getString(SettingsFragment.KEY_MONTHLY_ITEM_COUNT, "5")
@@ -416,7 +414,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
     companion object {
 
-        private val LOG_TAG = "TransactionFragment"
+        private const val LOG_TAG = "TransactionFragment"
 
         // Static reference
 
