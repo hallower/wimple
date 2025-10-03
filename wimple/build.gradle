@@ -3,11 +3,11 @@
 buildscript {
     ext.kotlin_version = '1.6.21'
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath 'com.android.tools.build:gradle:8.13.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -17,11 +17,11 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
         google()
     }
-    apply plugin: 'kotlin-android-extensions'
+    //apply plugin: 'kotlin-android-extensions'
 }
 
 task clean(type: Delete) {
