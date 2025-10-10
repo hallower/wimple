@@ -28,6 +28,7 @@ import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.*
 import java.util.*
 import java.util.concurrent.Executors
+import androidx.core.net.toUri
 
 
 class SplashScreenActivity : AppCompatActivity() {
@@ -42,7 +43,7 @@ class SplashScreenActivity : AppCompatActivity() {
     private var isBiometricAuthDone = true
 
     override fun onResume() {
-        settings = applicationContext.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE)
+        settings = applicationContext.getSharedPreferences(WimpleImpl.settingsKey, MODE_PRIVATE)
         Log.i(LOG_TAG, "csk, SplashScreen - onResume!!!")
 
         super.onResume()
@@ -58,7 +59,7 @@ class SplashScreenActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
-        settings = applicationContext.getSharedPreferences(WimpleImpl.settingsKey, Context.MODE_PRIVATE)
+        settings = applicationContext.getSharedPreferences(WimpleImpl.settingsKey, MODE_PRIVATE)
 
         Log.i(LOG_TAG, "SplashScreen - onCreate!!!")
 
@@ -140,14 +141,14 @@ class SplashScreenActivity : AppCompatActivity() {
         webSettings.javaScriptCanOpenWindowsAutomatically = true
         webSettings.setSupportMultipleWindows(true)
 
-        webSettings.javaScriptEnabled = true;
-        webSettings.domStorageEnabled = true;
-        webSettings.loadWithOverviewMode = true;
-        webSettings.useWideViewPort = true;
-        webSettings.builtInZoomControls = true;
-        webSettings.displayZoomControls = false;
-        webSettings.setSupportZoom(true);
-        webSettings.defaultTextEncodingName = "utf-8";
+        webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true
+        webSettings.loadWithOverviewMode = true
+        webSettings.useWideViewPort = true
+        webSettings.builtInZoomControls = true
+        webSettings.displayZoomControls = false
+        webSettings.setSupportZoom(true)
+        webSettings.defaultTextEncodingName = "utf-8"
 
 
 
@@ -305,7 +306,7 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         if (requestCode == PIN_NUMBER_REQUEST) {
-            if (resultCode == Activity.RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 val tempToken = data?.extras!!.getString("temp_token")
                 val pin = data.extras!!.getString("pin")
 
@@ -425,7 +426,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
             // Otherwise, the link is not for a page on my site, so launch
             // another Activity that handles URLs
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
             return true
         }

@@ -141,8 +141,8 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     return
                 }
 
-                var income: Double = 0.0
-                var expense: Double = 0.0
+                var income = 0.0
+                var expense = 0.0
 
                 @Suppress("UNCHECKED_CAST") val accountStates = obj as Collection<AccountState>
                 for (acs in accountStates) {
@@ -181,7 +181,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                 var params: FrameLayout.LayoutParams
 
                 if (income > expense) {
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "expense / income = " + expense / income)
+                    Log.d(LOG_TAG, "expense / income = " + expense / income)
 
                     params = binding.ineBarIncome.layoutParams as FrameLayout.LayoutParams
                     params.width = width
@@ -194,7 +194,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     binding.ineBarExpense.layoutParams = params
 
                 } else {
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "income / expense = " + income / expense)
+                    Log.d(LOG_TAG, "income / expense = " + income / expense)
 
                     params = binding.ineBarExpense.layoutParams as FrameLayout.LayoutParams
                     params.width = width
@@ -230,19 +230,19 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                 try {
                     budgetStatus = map[Budget.SUMMARYACCOUNTID]
                 } catch (e: Exception) {
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "oops no budget summary!!!")
+                    Log.d(LOG_TAG, "oops no budget summary!!!")
                     return
                 }
 
                 if (null == budgetStatus) {
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "oops no budget summary!!!")
+                    Log.d(LOG_TAG, "oops no budget summary!!!")
                     return
                 }
 
                 current = budgetStatus.current
                 budget = budgetStatus.budget
 
-                Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "current=$current, budget=$budget")
+                Log.d(LOG_TAG, "current=$current, budget=$budget")
 
                 val wm = this.requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
                 val display = wm.defaultDisplay
@@ -289,7 +289,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     }
 
                     val percentage = (current!! / budget as Double * 100).toInt()
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "current / budget = " + current / budget * 100)
+                    Log.d(LOG_TAG, "current / budget = " + current / budget * 100)
                     width = (width * current / budget).toInt()
 
                     if (isIncome) {
@@ -315,7 +315,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                         binding.ineBarBudgetCurrentExpense.layoutParams = params
                     }
 
-                    Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "current / budget = " + current!! / budget as Double)
+                    Log.d(LOG_TAG, "current / budget = " + current!! / budget as Double)
                     val percentage = (current / budget * 100).toInt()
                     //width = (int)(width * ((double)budget/ (double)current));
 

@@ -245,7 +245,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         } else {
             val foundItems: ArrayList<Item> = ArrayList()
             for (item in latestItems) {
-                if (KoreanWordSearch.matchString(item.item, changed.toString())) {
+                if (KoreanWordSearch.matchString(item.item, changed)) {
                     foundItems.add(item)
                 }
             }

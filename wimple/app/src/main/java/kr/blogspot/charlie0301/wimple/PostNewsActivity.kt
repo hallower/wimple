@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.wimple
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.ClipboardManager
@@ -28,6 +29,7 @@ class PostNewsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPostNewsBinding
 
     private inner class DownloadWebPageTask : AsyncTask<String, Void, String>() {
+        @Deprecated("Deprecated in Java")
         override fun doInBackground(vararg urls: String): String {
             var response = ""
 
@@ -35,7 +37,7 @@ class PostNewsActivity : AppCompatActivity() {
 
                 Log.d(LOG_TAG, "submitted url is $url")
 
-                val lcURL = url.toLowerCase(Locale.US)
+                val lcURL = url.lowercase(Locale.US)
                 var targetURL = url
                 if (!lcURL.startsWith("http")) {
                     targetURL = url.substring(url.indexOf("http"))
@@ -45,6 +47,8 @@ class PostNewsActivity : AppCompatActivity() {
             return response
         }
 
+        @SuppressLint("ObsoleteSdkInt")
+        @Deprecated("Deprecated in Java")
         override fun onPostExecute(result: String) {
             //Log.d(LOG_TAG, "charset = " + charset + ", " + result);
 
@@ -135,7 +139,7 @@ class PostNewsActivity : AppCompatActivity() {
         val task = DownloadWebPageTask()
         task.execute(url)
 
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         if (clipboard.hasPrimaryClip()) {
             //if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
             val item = clipboard.primaryClip!!.getItemAt(0)

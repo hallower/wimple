@@ -18,12 +18,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.getSystemService
-import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
 import androidx.core.view.GravityCompat
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
 import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
@@ -35,7 +33,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private var currentMenuID: Int = R.id.menu_transaction_insert
     private var currentFragment: androidx.fragment.app.Fragment? = null
-    private var transactionInsertFragment: TransactionInsertFragment? = null
 
     private lateinit var binding: ActivityWimpleBinding
 
@@ -75,10 +72,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             val f = supportFragmentManager.findFragmentById(R.id.fragment_container)
             if (f is IWimpleFragment) {
                 currentFragment = f
-                currentMenuID = savedInstanceState.getInt("currentMenuID");
+                currentMenuID = savedInstanceState.getInt("currentMenuID")
             }
             Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, currentFragment=$currentFragment, currentMenuID=$currentMenuID")
-            return;
+            return
         }
 
         setDefaultFragment()
@@ -86,7 +83,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
-        outState?.putInt("currentMenuID", currentMenuID)
+        outState.putInt("currentMenuID", currentMenuID)
     }
 
     private fun setFloatingButtonImage(rid: Int) {
@@ -122,7 +119,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         //insert_entry_title?.isFocusableInTouchMode = true
         val view = this.currentFocus
         if (view != null) {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
@@ -131,13 +128,13 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         this.currentMenuID = R.id.menu_transaction_insert
 
         if(this.currentFragment != null)
-            return;
+            return
 
         // TODO : make this configurable
-        var insertFragment = TransactionInsertFragment()
+        val insertFragment = TransactionInsertFragment()
         (insertFragment as IWimpleFragment).setActivityInstance(this)
         insertFragment.arguments = intent.extras
-        this.currentFragment = insertFragment;
+        this.currentFragment = insertFragment
 
         if (this.currentFragment!!.isAdded)
             return
@@ -462,7 +459,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 val obj = msg.obj
 
                 if (this@WimpleActivity.currentFragment == null)
-                    return;
+                    return
 
                 updateAPIRemaining()
 

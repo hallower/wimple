@@ -87,8 +87,8 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
                     return
                 }
 
-                var saving: Double = 0.0
-                var debt: Double = 0.0
+                var saving = 0.0
+                var debt = 0.0
 
                 @Suppress("UNCHECKED_CAST") val accountStates = obj as Collection<AccountState>
                 for (acs in accountStates) {
