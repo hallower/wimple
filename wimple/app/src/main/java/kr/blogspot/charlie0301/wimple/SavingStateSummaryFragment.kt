@@ -3,7 +3,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,7 +73,7 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
 
             CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED -> {
 
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false

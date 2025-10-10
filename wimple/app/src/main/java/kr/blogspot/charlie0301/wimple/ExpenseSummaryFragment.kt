@@ -2,7 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,7 +52,7 @@ class ExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment
         val c = Calendar.getInstance()
         c.time = Date()
         c.set(Calendar.DATE, 1)
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
         val isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true)
 
         this.firstUpdate = true
@@ -75,7 +75,7 @@ class ExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment
 
         when (command) {
             CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED -> {
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
@@ -110,7 +110,7 @@ class ExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment
                 }
                 this.asAdapter.notifyDataSetChanged()
 
-                if (values.size > 0) {
+                if (values.isNotEmpty()) {
                     var maxValue = -99999999.0
                     val doubleValues = DoubleArray(values.size)
                     for (i in doubleValues.indices) {

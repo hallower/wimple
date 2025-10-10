@@ -2,7 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -75,7 +75,7 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
                 if (this.firstUpdate) {
                     this.firstUpdate = false
                     // To show previous data during new data dispatching without any GUI display delay.
-                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
                     val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
                     if (autoRefresh) {
                         this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)

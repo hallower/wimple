@@ -3,9 +3,10 @@ package kr.blogspot.charlie0301.wimple
 
 import android.content.Context
 import android.graphics.Point
+import android.os.Build
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
@@ -43,7 +44,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
         super.onViewCreated(view, savedInstanceState)
         this.firstUpdate = true
 
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
         this.isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true)
 
         if (!this.isUsingBudgetInformation) {
@@ -121,7 +122,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                 if (this.firstUpdate) {
                     this.firstUpdate = false
                     // To show previous data during new data dispatching without any GUI display delay.
-                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
                     val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true)
                     if (autoRefresh) {
                         val c = Calendar.getInstance()
@@ -170,11 +171,17 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     binding.ineSumValue.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_red))
                 }
 
-                val wm = this.requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                val display = wm.defaultDisplay
-                val size = Point()
-                display.getSize(size)
-                var width = size.x - ImageUtils.getDPSize(100, this.requireContext())
+                var width = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val windowMetrics = requireActivity().windowManager.currentWindowMetrics
+                    windowMetrics.bounds.width() - ImageUtils.getDPSize(100, requireContext())
+                } else {
+                    @Suppress("DEPRECATION")
+                    val display = requireActivity().windowManager.defaultDisplay
+                    val size = Point()
+                    @Suppress("DEPRECATION")
+                    display.getSize(size)
+                    size.x - ImageUtils.getDPSize(100, requireContext())
+                }
 
                 Log.d(LOG_TAG, "width = $width, expense = $expense, income = $income")
 
@@ -224,8 +231,6 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
                 @Suppress("UNCHECKED_CAST") val map = obj as Map<String, Budget>
                 val budgetStatus: Budget?
-                val current: Double?
-                val budget: Double?
 
                 try {
                     budgetStatus = map[Budget.SUMMARYACCOUNTID]
@@ -239,16 +244,22 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     return
                 }
 
-                current = budgetStatus.current
-                budget = budgetStatus.budget
+                val current = budgetStatus.current
+                val budget = budgetStatus.budget
 
                 Log.d(LOG_TAG, "current=$current, budget=$budget")
 
-                val wm = this.requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                val display = wm.defaultDisplay
-                val size = Point()
-                display.getSize(size)
-                var width = size.x - ImageUtils.getDPSize(130, this.requireContext())
+                var width = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val windowMetrics = requireActivity().windowManager.currentWindowMetrics
+                    windowMetrics.bounds.width() - ImageUtils.getDPSize(100, requireContext())
+                } else {
+                    @Suppress("DEPRECATION")
+                    val display = requireActivity().windowManager.defaultDisplay
+                    val size = Point()
+                    @Suppress("DEPRECATION")
+                    display.getSize(size)
+                    size.x - ImageUtils.getDPSize(100, requireContext())
+                }
 
                 var params: FrameLayout.LayoutParams
 

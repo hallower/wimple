@@ -3,7 +3,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,7 +53,7 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
         val c = Calendar.getInstance()
         c.time = Date()
         c.set(Calendar.DATE, 1)
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
         val isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true)
 
         this.firstUpdate = true
@@ -88,7 +88,7 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
 
             CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED -> {
 
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
                 if (this.firstUpdate) {
                     this.firstUpdate = false
                     val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true)

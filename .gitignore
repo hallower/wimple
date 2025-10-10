@@ -19,3 +19,6 @@ tasks.xml
 /captures
 .externalNativeBuild
 /app/release
+/app/release/app-release
+*.aab
+/wimple/app/release/app-release/
