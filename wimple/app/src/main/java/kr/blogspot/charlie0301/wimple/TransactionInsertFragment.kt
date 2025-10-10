@@ -17,8 +17,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_transaction_insert_tab.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentTransactionInsertTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.Calculator
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -35,6 +35,8 @@ import kotlin.collections.ArrayList
 class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
+    private var _binding: FragmentTransactionInsertTabBinding? = null
+    private val binding get() = _binding!!
 
     // Widget
     private lateinit var leftAccountListAdapter: AccountExpandableListAdapter
@@ -54,10 +56,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             val amount: Double
             try {
                 amount =
-                    DateFormatUtils.getNumberFormat().parse(this.insert_amount.text.toString())
+                    DateFormatUtils.getNumberFormat().parse(binding.insertAmount.text.toString())
                         ?.toDouble() ?: -1.0
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "Amount parsing error : " + this.insert_amount.text)
+                Log.e(LOG_TAG, "Amount parsing error : " + binding.insertAmount.text)
                 return -1.0
             }
 
@@ -84,8 +86,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun initWimple() {
         Log.i(LOG_TAG, "initWimple()")
 
-        this.ti_update_notification.visibility = View.VISIBLE
-        this.ti_list_notification_text.text = this.resources.getString(R.string.update_latest_items)
+        binding.tiUpdateNotification.visibility = View.VISIBLE
+        binding.tiListNotificationText.text = this.resources.getString(R.string.update_latest_items)
 
         this.wimple.setApplicationContext(context)
         this.wimple.getAllAccounts(DateFormatUtils.getServerDateFormat().format(this.datePicker.selectedDate), false)
@@ -96,6 +98,9 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                               savedInstanceState: Bundle?): View? {
 
         Log.i(LOG_TAG, "onCreateView()")
+        _binding = FragmentTransactionInsertTabBinding.inflate(inflater, container, false)
+        val view = binding.root
+
         //synchronized(TransactionInsertFragment.class){
         if (padRIDs.isEmpty()) {
             val ar = this.requireContext().resources.obtainTypedArray(R.array.number_buttons)
@@ -104,7 +109,12 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
         //}
 
-        return inflater.inflate(R.layout.fragment_transaction_insert_tab, container, false)
+        return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -115,10 +125,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
         val isNeedDisableMemo = sharedPref.getBoolean(SettingsFragment.KEY_DISABLE_MEMO, true)
         if (isNeedDisableMemo) {
-            this.insert_memo_window.visibility = View.GONE
+            binding.insertMemoWindow.visibility = View.GONE
         }
 
-        this.ti_update_notification.visibility = View.INVISIBLE
+        binding.tiUpdateNotification.visibility = View.INVISIBLE
 
         this.setupDate()
 
@@ -130,14 +140,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         this.setupButtons()
 
-        cal.setListener { amount -> this.insert_amount.setText(DateFormatUtils.getDecimalFormat().format(amount)) }
+        cal.setListener { amount -> binding.insertAmount.setText(DateFormatUtils.getDecimalFormat().format(amount)) }
 
         //initWimple();
     }
 
     private fun setupTitleAndSubmit() {
 
-        this.insert_amount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, _ ->
+        binding.insertAmount.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, _ ->
             when (id) {
                 EditorInfo.IME_ACTION_DONE -> {
                     this.setAmount(textView.text.toString())
@@ -152,15 +162,15 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         })
 
 
-        this.btn_submit.setOnClickListener(OnClickListener {
-            this.btn_submit.isEnabled = false
+        binding.btnSubmit.setOnClickListener(OnClickListener {
+            binding.btnSubmit.isEnabled = false
 
             // To handle typed amount by IME
-            this.setAmount(this.insert_amount.text.toString())
-            this.insert_amount.setText(cal.eq().toString())
+            this.setAmount(binding.insertAmount.text.toString())
+            binding.insertAmount.setText(cal.eq().toString())
 
             if (!this.validateForms()) {
-                this.btn_submit.isEnabled = true
+                binding.btnSubmit.isEnabled = true
                 return@OnClickListener
             }
 
@@ -185,13 +195,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
                 val res = this.wimple.modifyEntry(this.editingItem!!.id, DateFormatUtils.getServerDateString(this.datePicker.selectedDate),
                         this.leftAccountListAdapter.selected, this.rightAccountListAdapter.selected,
-                        this.insert_entry_title.text.toString(), amount, this.insert_memo.text.toString())
+                        binding.insertEntryTitle.text.toString(), amount, binding.insertMemo.text.toString())
                 if (!res) {
-                    this.btn_submit!!.isEnabled = true
+                    binding.btnSubmit.isEnabled = true
                     WimpleActivity.sm(CommandID.TOAST_LONG, this.resources.getString(R.string.modify_failed))
                 } else {
-                    this.ti_update_notification.visibility = View.VISIBLE
-                    this.ti_list_notification_text.text = this.resources.getString(R.string.modify_exist_item)
+                    binding.tiUpdateNotification.visibility = View.VISIBLE
+                    binding.tiListNotificationText.text = this.resources.getString(R.string.modify_exist_item)
                 }
 
                 this.editingItem = null
@@ -199,20 +209,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             } else {
                 val res = this.wimple.makeEntry(this.datePicker.selectedDate,
                         this.leftAccountListAdapter.selected, this.rightAccountListAdapter.selected,
-                        this.insert_entry_title.text.toString(), amount, this.insert_memo.text.toString())
+                        binding.insertEntryTitle.text.toString(), amount, binding.insertMemo.text.toString())
 
                 if (!res) {
-                    this.btn_submit!!.isEnabled = true
+                    binding.btnSubmit.isEnabled = true
                     WimpleActivity.sm(CommandID.TOAST_LONG, this.resources.getString(R.string.insert_failed))
                 } else {
-                    this.ti_update_notification.visibility = View.VISIBLE
-                    this.ti_list_notification_text.text = this.resources.getString(R.string.insert_new_item)
+                    binding.tiUpdateNotification.visibility = View.VISIBLE
+                    binding.tiListNotificationText.text = this.resources.getString(R.string.insert_new_item)
                 }
             }
         })
         this.setSubmitButton(this.toolMode)
 
-        this.insert_entry_title.addTextChangedListener(object : TextWatcher {
+        binding.insertEntryTitle.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 filterLatestItems(s)
             }
@@ -248,10 +258,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private fun setupLatestItems() {
 
         this.adapterLatestItems = ArrayAdapter(this.requireContext(), R.layout.list_frequent_entries, R.id.list_frequent_entry_name, latestItems)
-        this.insert_frequent_items.adapter = this.adapterLatestItems
-        this.insert_frequent_items.onItemClickListener = OnItemClickListener { _, _, position, _ -> this.selectLatestItem(position) }
+        binding.insertFrequentItems.adapter = this.adapterLatestItems
+        binding.insertFrequentItems.onItemClickListener = OnItemClickListener { _, _, position, _ -> this.selectLatestItem(position) }
 
-        this.insert_title_clear.setOnClickListener { this.clearForms() }
+        binding.insertTitleClear.setOnClickListener { this.clearForms() }
     }
 
     private fun setupButtons() {
@@ -260,8 +270,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             buttons[i] = this.requireView().findViewById<View>(padRIDs[i]) as TextView
             buttons[i]!!.setOnClickListener { v ->
                 // remove virtual keyboard
-                this.insert_entry_title.clearFocus()
-                this.insert_memo.clearFocus()
+                binding.insertEntryTitle.clearFocus()
+                binding.insertMemo.clearFocus()
 
                 when (v.id) {
 
@@ -292,43 +302,43 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun setupDate() {
-        this.datePicker.setTextViewWidget(this.insert_date)
+        this.datePicker.setTextViewWidget(binding.insertDate)
         this.datePicker.setOnDateSetListener(object : DatePickerFragment.OnDateSetListener {
             override fun onDateSet(date: Long?) {
                 this@TransactionInsertFragment.setupItemDate(date)
             }
         })
-        this.insert_date.setOnClickListener {
+        binding.insertDate.setOnClickListener {
             this.datePicker.show(this.requireFragmentManager(), "itemDate")
         }
         this.setupItemDate(Calendar.getInstance().timeInMillis)
 
-        this.insert_yesterday.setOnClickListener {
+        binding.insertYesterday.setOnClickListener {
             val newDate = this.datePicker.selectedDate - 24 * 60 * 60 * 1000
             this.setupItemDate(newDate)
         }
 
-        this.insert_tomorrow.setOnClickListener {
+        binding.insertTomorrow.setOnClickListener {
             val newDate = this.datePicker.selectedDate + 24 * 60 * 60 * 1000
             this.setupItemDate(newDate)
         }
     }
 
     private fun setupAccountLists() {
-        this.insert_category_left_title.background.alpha = 200
+        binding.insertCategoryLeftTitle.background.alpha = 200
         this.leftAccountListAdapter = AccountExpandableListAdapter(this.context)
-        this.insert_category_left.setAdapter(this.leftAccountListAdapter)
+        binding.insertCategoryLeft.setAdapter(this.leftAccountListAdapter)
 
-        this.insert_category_left.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
+        binding.insertCategoryLeft.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             this.leftAccountListAdapter.setSelected(groupPosition, childPosition, id)
-            this.insert_category_left_title.text = (this.leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
+            binding.insertCategoryLeftTitle.text = (this.leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-//        this.insert_category_left.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+//        binding.insertCategoryLeftTitle.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
 //            val selectedID = this.leftAccountListAdapter.selected.id
 //            if (selectedID.isNotEmpty()) {
 //                for (idx in 0 until this.leftAccountListAdapter.groupCount)
-//                    this.insert_category_left.collapseGroup(idx)
+//                    binding.insertCategoryLeftTitle.collapseGroup(idx)
 //
 //                if (!this.selectLeftCategory(selectedID)) {
 //                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_account_update_retry))
@@ -336,20 +346,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 //            }
 //        }
 
-        this.insert_category_right_title.background.alpha = 200
+        binding.insertCategoryRightTitle.background.alpha = 200
         this.rightAccountListAdapter = AccountExpandableListAdapter(this.context)
-        this.insert_category_right.setAdapter(this.rightAccountListAdapter)
+        binding.insertCategoryRight.setAdapter(this.rightAccountListAdapter)
 
-        this.insert_category_right.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
+        binding.insertCategoryRight.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             this.rightAccountListAdapter.setSelected(groupPosition, childPosition, id)
-            this.insert_category_right_title.text = (this.rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
+            binding.insertCategoryRightTitle.text = (this.rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
             false
         }
-//        this.insert_category_right.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+//        binding.insertCategoryRight.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
 //            val selectedID = this.rightAccountListAdapter.selected.id
 //            if (selectedID.isNotEmpty()) {
 //                for (idx in 0 until this.rightAccountListAdapter.groupCount)
-//                    this.insert_category_right.collapseGroup(idx)
+//                    binding.insertCategoryRight.collapseGroup(idx)
 //
 //                if (!this.selectRightCategory(selectedID)) {
 //                    WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_account_update_retry))
@@ -394,7 +404,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         if (this.selected == null)
             return
 
-        var title = this.insert_entry_title.text.toString()
+        var title = binding.insertEntryTitle.text.toString()
         var inlineMemo = ""
 
         val pos = title.indexOf("(")
@@ -404,8 +414,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
 
         if (0 != title.compareTo(this.selected!!.item)) {
-            this.insert_entry_title.setText("${this.selected!!.item}$inlineMemo")
-            this.insert_entry_title.setSelection(this.insert_entry_title.text.length)
+            binding.insertEntryTitle.setText("${this.selected!!.item}$inlineMemo")
+            binding.insertEntryTitle.setSelection(binding.insertEntryTitle.text.length)
         }
         this.setAmount(this.selected!!.amount)
 
@@ -414,9 +424,9 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
     private fun setEntry(entry: Item) {
         selected = entry
-        this.insert_entry_title.setText(entry.item)
+        binding.insertEntryTitle.setText(entry.item)
         if (entry is Entry) {
-            this.insert_memo.setText(entry.memo)
+            binding.insertMemo.setText(entry.memo)
         }
         this.setAmount(entry.amount)
 
@@ -439,10 +449,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
 
         //insert_category_right.requestFocusFromTouch()
-        this.insert_category_left.expandGroup(selectedLeftGroup)
-        this.insert_category_left.setSelection(selectedLeftGroup)
-        this.insert_category_left.setSelectedChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition, true)
-        this.insert_category_left_title.text = (this.leftAccountListAdapter.getChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition) as Account).title
+        binding.insertCategoryLeft.expandGroup(selectedLeftGroup)
+        binding.insertCategoryLeft.setSelection(selectedLeftGroup)
+        binding.insertCategoryLeft.setSelectedChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition, true)
+        binding.insertCategoryLeftTitle.text = (this.leftAccountListAdapter.getChild(selectedLeftGroup, this.leftAccountListAdapter.selectedChildPosition) as Account).title
         return true
     }
 
@@ -454,10 +464,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
 
         //insert_category_right.requestFocusFromTouch()
-        this.insert_category_right.expandGroup(selectedRightGroup)
-        this.insert_category_right.setSelection(selectedRightGroup)
-        this.insert_category_right.setSelectedChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition, true)
-        this.insert_category_right_title.text = (this.rightAccountListAdapter.getChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition) as Account).title
+        binding.insertCategoryRight.expandGroup(selectedRightGroup)
+        binding.insertCategoryRight.setSelection(selectedRightGroup)
+        binding.insertCategoryRight.setSelectedChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition, true)
+        binding.insertCategoryRightTitle.text = (this.rightAccountListAdapter.getChild(selectedRightGroup, this.rightAccountListAdapter.selectedChildPosition) as Account).title
         return true
     }
 
@@ -467,13 +477,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun validateForms(): Boolean {
-        if (this.insert_entry_title.text.toString().isEmpty()) {
+        if (binding.insertEntryTitle.text.toString().isEmpty()) {
             Log.e(LOG_TAG, "Invalid entry title.")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_title))
             return false
         }
 
-        if (this.insert_amount!!.text.toString().isEmpty()) {
+        if (binding.insertAmount.text.toString().isEmpty()) {
             Log.e(LOG_TAG, "Invalid entry amount.")
             WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_invalid_amount))
             return false
@@ -483,7 +493,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 		Double amount = getAmountValue();
 		if(amount <= 0){
 			Log.e(LOG_TAG, "Invalid entry amount.");
-			Toast.makeText(context, context!!.getResources().getString(R.string.insert_invalid_amount),
+			Toast.makeText(context, context.getResources().getString(R.string.insert_invalid_amount),
 					Toast.LENGTH_SHORT).show();
 			return false;
 		}
@@ -504,14 +514,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     private fun clearForms() {
-        this.insert_entry_title.setText("")
-        this.insert_memo.setText("")
+        binding.insertEntryTitle.setText("")
+        binding.insertMemo.setText("")
         this.setAmount(0.0)
         this.datePicker.setDate(Calendar.getInstance().timeInMillis)
         this.selected = null
 
-        this.insert_category_left_title.text = this.resources.getString(R.string.insert_left_accounts)
-        this.insert_category_right_title.text = this.resources.getString(R.string.insert_right_accounts)
+        binding.insertCategoryLeftTitle.text = this.resources.getString(R.string.insert_left_accounts)
+        binding.insertCategoryRightTitle.text = this.resources.getString(R.string.insert_right_accounts)
         this.leftAccountListAdapter.clearSelection()
         this.rightAccountListAdapter.clearSelection()
 
@@ -549,7 +559,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             CommandID.GET_ALL_ACCOUNT_RECEIVED -> {
 
-                this.ti_update_notification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.INVISIBLE
                 if (!booleanStatus) {
                     return
                 }
@@ -612,7 +622,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
 
                     for (idx in 0 until this.leftAccountListAdapter.groupCount)
-                        this.insert_category_left.expandGroup(idx)
+                        binding.insertCategoryLeft.expandGroup(idx)
 
                     if (this.selected != null) {
                         val selectedID = this.selected!!.leftAccountID
@@ -639,7 +649,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                     this.rightAccountListAdapter.notifyDataSetChanged()
 
                     for (idx in 0 until this.rightAccountListAdapter.groupCount)
-                        this.insert_category_right.expandGroup(idx)
+                        binding.insertCategoryRight.expandGroup(idx)
 
                     if (this.selected != null) {
                         val selectedID = this.selected!!.rightAccountID
@@ -654,20 +664,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             }
 
             CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED -> {
-                this.ti_update_notification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.INVISIBLE
 
                 if (booleanStatus) {
                     this.latestItems = obj as ArrayList<Item>
                     Collections.sort(latestItems, Item.DateDescCompare())
                     resetLatestItems(this.latestItems)
-                    filterLatestItems(this.insert_entry_title.text)
+                    filterLatestItems(binding.insertEntryTitle.text)
                 }
             }
 
             CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED -> {
                 val entryDate = obj as String
 
-                this.ti_update_notification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.INVISIBLE
 
                 Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=$entryDate")
                 if (booleanStatus) {
@@ -679,7 +689,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                     WimpleActivity.sm(CommandID.TOAST_LONG, this.resources.getString(R.string.insert_failed))
                 }
 
-                this.btn_submit!!.isEnabled = true
+                binding.btnSubmit.isEnabled = true
             }
 
             CommandID.MODIFY_ENTRY -> {
@@ -712,7 +722,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED -> {
 
-                this.ti_update_notification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.INVISIBLE
 
                 if (booleanStatus) {
                     WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.modify_success))
@@ -720,7 +730,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 } else {
                     WimpleActivity.sm(CommandID.TOAST_LONG, this.resources.getString(R.string.modify_failed))
                 }
-                this.btn_submit!!.isEnabled = true
+                binding.btnSubmit.isEnabled = true
             }
         }
     }
@@ -730,21 +740,21 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         when (mode) {
 
             CurrentToolMode.INSERT -> {
-                this.btn_submit!!.text = this.resources.getString(R.string.mode_entry_insert)
-                this.btn_submit!!.setBackgroundResource(R.drawable.input_color_box_2)
+                binding.btnSubmit.text = this.resources.getString(R.string.mode_entry_insert)
+                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_2)
             }
 
             CurrentToolMode.EDITING -> {
-                this.btn_submit!!.text = this.resources.getString(R.string.mode_entry_modify)
-                this.btn_submit!!.setBackgroundResource(R.drawable.input_color_box_6)
+                binding.btnSubmit.text = this.resources.getString(R.string.mode_entry_modify)
+                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_6)
             }
 
             CurrentToolMode.MONTHLY_INSERT -> {
-                this.btn_submit!!.text = this.resources.getString(R.string.mode_monthly_insert)
-                this.btn_submit!!.setBackgroundResource(R.drawable.input_color_box_2)
+                binding.btnSubmit.text = this.resources.getString(R.string.mode_monthly_insert)
+                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_2)
             }
         }
-        this.btn_submit!!.background.alpha = 192
+        binding.btnSubmit.background.alpha = 192
     }
 
     override fun setActivityInstance(instance: WimpleActivity) {

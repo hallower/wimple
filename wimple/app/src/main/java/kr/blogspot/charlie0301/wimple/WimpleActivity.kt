@@ -13,16 +13,17 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.getSystemService
+import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
 import androidx.core.view.GravityCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_wimple.*
-import kotlinx.android.synthetic.main.app_bar_wimple.*
-import kotlinx.android.synthetic.main.fragment_transaction_insert_tab.*
-import kotlinx.android.synthetic.main.nav_header_wimple.*
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
 import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
@@ -34,6 +35,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private var currentMenuID: Int = R.id.menu_transaction_insert
     private var currentFragment: androidx.fragment.app.Fragment? = null
+    private var transactionInsertFragment: TransactionInsertFragment? = null
+
+    private lateinit var binding: ActivityWimpleBinding
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
@@ -44,20 +48,24 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(LOG_TAG, "WimpleActivity - onCreate!!!")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_wimple)
+
+        binding = ActivityWimpleBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // GUI
-        setSupportActionBar(toolbar)
+        val toolBar = this.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+
+        setSupportActionBar(toolBar)
 
         setupFloatingButton()
 
         val toggle = ActionBarDrawerToggle(
-                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawer_layout.addDrawerListener(toggle)
+                this, binding.drawerLayout, toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        nav_view.itemIconTintList = null
-        nav_view.setNavigationItemSelectedListener(this)
+        binding.navView.itemIconTintList = null
+        binding.navView.setNavigationItemSelectedListener(this)
 
         // Logic
         setupHandler()
@@ -83,22 +91,26 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     private fun setFloatingButtonImage(rid: Int) {
         //Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
+
+        val floatingActionButton = this.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fab)
         when (rid) {
-            R.id.menu_transaction_insert -> fab.setImageResource(R.drawable.ic_fab_add)
-            R.id.menu_transaction_list -> fab.setImageResource(R.drawable.ic_fab_list)
-            R.id.menu_financial_overview -> fab.setImageResource(R.drawable.ic_fab_finalcial)
-            R.id.menu_saving -> fab.setImageResource(R.drawable.ic_fab_saving)
-            R.id.menu_debt -> fab.setImageResource(R.drawable.ic_fab_debt)
-            R.id.menu_income_expense_overview -> fab.setImageResource(R.drawable.ic_fab_incexp)
-            R.id.menu_income -> fab.setImageResource(R.drawable.ic_fab_inc)
-            R.id.menu_expense -> fab.setImageResource(R.drawable.ic_fab_exp)
-            else -> fab.setImageResource(R.drawable.ic_fab_add)
+            R.id.menu_transaction_insert -> floatingActionButton.setImageResource(R.drawable.ic_fab_add)
+            R.id.menu_transaction_list -> floatingActionButton.setImageResource(R.drawable.ic_fab_list)
+            R.id.menu_financial_overview -> floatingActionButton.setImageResource(R.drawable.ic_fab_finalcial)
+            R.id.menu_saving -> floatingActionButton.setImageResource(R.drawable.ic_fab_saving)
+            R.id.menu_debt -> floatingActionButton.setImageResource(R.drawable.ic_fab_debt)
+            R.id.menu_income_expense_overview -> floatingActionButton.setImageResource(R.drawable.ic_fab_incexp)
+            R.id.menu_income -> floatingActionButton.setImageResource(R.drawable.ic_fab_inc)
+            R.id.menu_expense -> floatingActionButton.setImageResource(R.drawable.ic_fab_exp)
+            else -> floatingActionButton.setImageResource(R.drawable.ic_fab_add)
         }
     }
 
     private fun setupFloatingButton() {
         setFloatingButtonImage(getNextFloatingButtonPage().first)
-        fab.setOnClickListener {
+
+        val floatingActionButton = this.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fab)
+        floatingActionButton.setOnClickListener {
             val rids = getNextFloatingButtonPage()
             replaceWimpleFragment(rids.first)
             setFloatingButtonImage(rids.second)
@@ -106,8 +118,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun hideVirtualKeyboard() {
-        insert_entry_title?.isFocusable = false
-        insert_entry_title?.isFocusableInTouchMode = true
+        //insertEntry insert_entry_title?.isFocusable = false
+        //insert_entry_title?.isFocusableInTouchMode = true
         val view = this.currentFocus
         if (view != null) {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -137,8 +149,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
         }
@@ -208,7 +220,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         if (!replaceWimpleFragment(id))
             return false
 
-        drawer_layout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -268,13 +280,19 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
 
     private fun setMyInfoOnMenu(info: UserInfo) {
-        if (null == my_profile_icon) {
+        val headerView = binding.navView.getHeaderView(0)
+
+        val sectionTitle = headerView.findViewById<TextView>(R.id.section_title)
+        val myProfileIcon = headerView.findViewById<ImageView>(R.id.my_profile_icon)
+        val myProfileName = headerView.findViewById<TextView>(R.id.my_profile_name)
+
+        if (null == myProfileIcon) {
             smd(CommandID.UPDATE_USER_INFO, info, 1000)
             return
         }
-        section_title.text = WimpleImpl.getInstance().defaultSectionName
-        WidgetItem.replaceBitmapOfImageView(my_profile_icon, WimpleImpl.getInstance().profilePicture, false)
-        my_profile_name.text = info.name
+        sectionTitle.text = WimpleImpl.getInstance().defaultSectionName
+        WidgetItem.replaceBitmapOfImageView(myProfileIcon, WimpleImpl.getInstance().profilePicture, false)
+        myProfileName.text = info.name
 
         updateAPIRemaining()
 
@@ -295,15 +313,17 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun updateAPIRemaining() {
+        val headerView = binding.navView.getHeaderView(0)
+        val myProfileLevel = headerView.findViewById<TextView>(R.id.my_profile_level)
 
-        if (null == my_profile_level)
+        if (null == myProfileLevel)
             return
 
         var nLevel = WimpleImpl.getInstance().remainedAPICall!!
         if (nLevel < 0)
             nLevel = 0
 
-        my_profile_level.text = resources.getString(R.string.number_api_count) + " " + nLevel
+        myProfileLevel.text = resources.getString(R.string.number_api_count) + " " + nLevel
     }
 
     private fun setupWimpleImpl() {
@@ -448,10 +468,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
                 when (command) {
 
-                    CommandID.TOAST_LONG -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_LONG)
+                    CommandID.TOAST_LONG -> Snackbar.make(binding.drawerLayout, obj.toString(), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show()
 
-                    CommandID.TOAST_SHORT -> Snackbar.make(drawer_layout, obj.toString(), Snackbar.LENGTH_SHORT)
+                    CommandID.TOAST_SHORT -> Snackbar.make(binding.drawerLayout, obj.toString(), Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show()
 
                     CommandID.UPDATE_USER_INFO -> {
@@ -459,7 +479,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     }
 
                     CommandID.WIMPLE_PROFILE_PICTURE_UPDATED -> {
-                        WidgetItem.replaceBitmapOfImageView(my_profile_icon, WimpleImpl.getInstance().profilePicture, false)
+                        val headerView = binding.navView.getHeaderView(0)
+                        val myProfileIcon = headerView.findViewById<ImageView>(R.id.my_profile_icon)
+
+                        WidgetItem.replaceBitmapOfImageView(myProfileIcon, WimpleImpl.getInstance().profilePicture, false)
                     }
 
                     // TransactionInsertFragment

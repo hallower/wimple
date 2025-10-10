@@ -13,8 +13,8 @@ import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_post_news.*
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
+import kr.blogspot.charlie0301.wimple.databinding.ActivityPostNewsBinding // 1. Import the binding class
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.RemoteContent
 import kr.blogspot.charlie0301.wimple.model.*
@@ -25,6 +25,7 @@ import java.util.*
 class PostNewsActivity : AppCompatActivity() {
 
     private val wimple = WimpleImpl.getInstance()
+    private lateinit var binding: ActivityPostNewsBinding
 
     private inner class DownloadWebPageTask : AsyncTask<String, Void, String>() {
         override fun doInBackground(vararg urls: String): String {
@@ -81,7 +82,7 @@ class PostNewsActivity : AppCompatActivity() {
         val alertDialog = AlertDialog.Builder(this)
         alertDialog.setMessage(resources.getString(R.string.post_news_set_title) + "\n\n\"" + exportedTitle + "\"")
         alertDialog.setCancelable(false).setPositiveButton("Yes") { _, _ ->
-            post_news_subject.setText(exportedTitle)
+            binding.postNewsSubject.setText(exportedTitle)
         }
         alertDialog.setNegativeButton("No") { dialog, _ ->
             dialog.cancel()
@@ -95,7 +96,9 @@ class PostNewsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_post_news)
+        // 3. Inflate the layout and set the content view
+        binding = ActivityPostNewsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // intent check
         var url: String? = null
@@ -127,7 +130,7 @@ class PostNewsActivity : AppCompatActivity() {
         }
 
         // Widget
-        post_news_url.text = url
+        binding.postNewsUrl.text = url
 
         val task = DownloadWebPageTask()
         task.execute(url)
@@ -136,7 +139,7 @@ class PostNewsActivity : AppCompatActivity() {
         if (clipboard.hasPrimaryClip()) {
             //if(clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)){
             val item = clipboard.primaryClip!!.getItemAt(0)
-            post_news_subject.setText(item.text)
+            binding.postNewsSubject.setText(item.text)
             //}
         }
 
@@ -146,9 +149,9 @@ class PostNewsActivity : AppCompatActivity() {
             val escapedComment: String
 
             try {
-                escapedSubject = URLEncoder.encode(post_news_subject.text.toString(), "UTF-8")
-                escapedURL = URLEncoder.encode(post_news_url.text.toString(), "UTF-8")
-                escapedComment = URLEncoder.encode(post_news_content.text.toString(), "UTF-8")
+                escapedSubject = URLEncoder.encode(binding.postNewsSubject.text.toString(), "UTF-8")
+                escapedURL = URLEncoder.encode(binding.postNewsUrl.text.toString(), "UTF-8")
+                escapedComment = URLEncoder.encode(binding.postNewsContent.text.toString(), "UTF-8")
             } catch (e: UnsupportedEncodingException) {
                 Toast.makeText(applicationContext, resources.getString(R.string.post_invalid_news_url), Toast.LENGTH_SHORT).show()
                 finish()

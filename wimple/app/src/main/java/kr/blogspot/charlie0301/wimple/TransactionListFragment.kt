@@ -14,8 +14,8 @@ import android.widget.AbsListView.OnScrollListener
 import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.FrameLayout
 import android.widget.Toast
-import kotlinx.android.synthetic.main.fragment_transaction_list_tab.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentTransactionListTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.Entry
@@ -28,6 +28,9 @@ import java.util.concurrent.Semaphore
 
 class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
     private val wimple = WimpleImpl.getInstance()
+
+    private var _binding: FragmentTransactionListTabBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var entryAdapter: EntryItemListAdapter
 
@@ -67,7 +70,8 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_transaction_list_tab, container, false)
+        _binding = FragmentTransactionListTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,14 +82,14 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
         entryAdapter = EntryItemListAdapter(context)
 
-        entry_list_view.setAdapter(entryAdapter)
-        entry_list_view.layoutParams = sessionParams
+        binding.entryListView.setAdapter(entryAdapter)
+        binding.entryListView.layoutParams = sessionParams
 
-        registerForContextMenu(entry_list_view)
+        registerForContextMenu(binding.entryListView)
 
         wimple.storedEntries
 
-        entry_list_view.setOnScrollListener(object : OnScrollListener {
+        binding.entryListView.setOnScrollListener(object : OnScrollListener {
 
             override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {}
 
@@ -137,7 +141,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
             }
         })
 
-        entry_list_view.setOnDataSelectionListener { _, _, position, _ ->
+        binding.entryListView.setOnDataSelectionListener { _, _, position, _ ->
             val item = entryAdapter.getItem(position) as Item
             if(item is Entry){
                 WimpleActivity.sm(CommandID.MODIFY_ENTRY, item)
@@ -152,7 +156,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
         display.getSize(size)
         maxHeight = size.y
 
-        entry_list_view.setOnTouchListener(OnTouchListener { _, event ->
+        binding.entryListView.setOnTouchListener(OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     //TOUCH STARTED
@@ -187,6 +191,11 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
         })
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Clean up the binding reference to avoid memory leaks
+        _binding = null
+    }
 
     override fun handleMessage(msg: Message) {
 
@@ -348,13 +357,13 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
         if (null == context)
             return
 
-        entry_list_notification_text.text = if (isLatest) {
+        binding.entryListNotificationText.text = if (isLatest) {
             requireContext().resources.getString(R.string.update_latest_items)
         } else {
             requireContext().resources.getString(R.string.update_old_items)
         }
 
-        entry_list_notification.visibility = if (show) {
+        binding.entryListNotification.visibility = if (show) {
             View.VISIBLE
         } else {
             View.GONE

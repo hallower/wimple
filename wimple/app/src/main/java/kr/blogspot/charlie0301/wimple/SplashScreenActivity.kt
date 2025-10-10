@@ -19,8 +19,8 @@ import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
-import kotlinx.android.synthetic.main.activity_splash_screen.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.ActivitySplashScreenBinding
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
 import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
@@ -33,6 +33,7 @@ import java.util.concurrent.Executors
 class SplashScreenActivity : AppCompatActivity() {
 
     private val wimple = WimpleImpl.getInstance()
+    private lateinit var binding: ActivitySplashScreenBinding
     private lateinit var settings: SharedPreferences
 
     private var storedTempToken: String = ""
@@ -50,7 +51,9 @@ class SplashScreenActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash_screen)
+        
+        binding = ActivitySplashScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -64,9 +67,9 @@ class SplashScreenActivity : AppCompatActivity() {
         if (intent.hasExtra("auth_again")) {
             Log.e(LOG_TAG, "Need to do Auth again, clean auth!!!")
 
-            webview.clearHistory()
-            webview.clearCache(true)
-            webview.loadUrl("about:blank")
+            binding.webview.clearHistory()
+            binding.webview.clearCache(true)
+            binding.webview.loadUrl("about:blank")
 
             Toast.makeText(applicationContext, applicationContext.resources.getString(R.string.notice_need_auth), Toast.LENGTH_LONG).show()
             wimple.cleanAuth()
@@ -129,11 +132,11 @@ class SplashScreenActivity : AppCompatActivity() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
 
-        webview.addJavascriptInterface(WebAppInterface(this), "Android")
-        webview.webViewClient = UriWebViewClient()
-        webview.webChromeClient = WebChromeClient()
+        binding.webview.addJavascriptInterface(WebAppInterface(this), "Android")
+        binding.webview.webViewClient = UriWebViewClient()
+        binding.webview.webChromeClient = WebChromeClient()
 
-        val webSettings = webview.settings
+        val webSettings = binding.webview.settings
         webSettings.javaScriptCanOpenWindowsAutomatically = true
         webSettings.setSupportMultipleWindows(true)
 
@@ -338,7 +341,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
                     CommandID.FATAL_ERROR -> Toast.makeText(applicationContext, applicationContext.resources.getString(R.string.fatal_error), Toast.LENGTH_LONG).show()
 
-                    CommandID.SHOW_STATUS -> splash_status.text = obj as String
+                    CommandID.SHOW_STATUS -> binding.splashStatus.text = obj as String
 
                     CommandID.GET_PIN -> {
                         /*
@@ -346,8 +349,8 @@ class SplashScreenActivity : AppCompatActivity() {
 					intent.putExtra("temp_token", obj.toString());
 					startActivityForResult(intent, PIN_NUMBER_REQUEST);
 					 */
-                        webview.loadUrl("$target_url?token=$storedTempToken")
-                        webview.visibility = View.VISIBLE
+                        binding.webview.loadUrl("$target_url?token=$storedTempToken")
+                        binding.webview.visibility = View.VISIBLE
                     }
 
                     CommandID.GET_ALL_ACCOUNT_RECEIVED -> Log.d(LOG_TAG, "All Account Information received!")
@@ -407,7 +410,7 @@ class SplashScreenActivity : AppCompatActivity() {
                         url.substring(startPos, endPos)
                     }
 
-                    webview.visibility = View.INVISIBLE
+                    binding.webview.visibility = View.INVISIBLE
 
                     wimple.getAccessToken(storedTempToken, pin)
                     return true
@@ -447,7 +450,7 @@ class SplashScreenActivity : AppCompatActivity() {
         private const val LOG_TAG = "SplashScreenActivity"
         private var mainHandler: Handler? = null
 
-        // WebView for Login
+        // binding.webview for Login
         private const val target_url = "https://whooing.com/app_auth/authorize"
         private const val target_url_prefix = "whooing.com"
 

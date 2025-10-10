@@ -4,14 +4,13 @@ package kr.blogspot.charlie0301.wimple
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.fragment_income_summary_tab.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentIncomeSummaryTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -23,6 +22,9 @@ import java.util.*
 class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
+    // Add these two lines for View Binding
+    private var _binding: FragmentIncomeSummaryTabBinding? = null
+    private val binding get() = _binding!!
 
     // GUI
     private lateinit var asAdapter: BudgetStateItemListAdapter
@@ -32,7 +34,8 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_income_summary_tab, container, false)
+        _binding = FragmentIncomeSummaryTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,10 +45,10 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
         this.asAdapter = BudgetStateItemListAdapter(this.context)
-        this.saving_list_view.setAdapter(this.asAdapter)
-        this.saving_list_view.layoutParams = sessionParams
+        binding.savingListView.setAdapter(this.asAdapter)
+        binding.savingListView.layoutParams = sessionParams
 
-        this.registerForContextMenu(this.saving_list_view)
+        this.registerForContextMenu(binding.savingListView)
 
         val c = Calendar.getInstance()
         c.time = Date()
@@ -60,6 +63,11 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
             this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), false)
         }
 
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun handleMessage(msg: Message) {
@@ -142,8 +150,8 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
 
                     val pcv = ChartUtils.makeChart(this.context, doubleValues, stringValues, maxValue)
 
-                    this.chart.removeAllViews()
-                    this.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+                    binding.chart.removeAllViews()
+                    binding.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
                 }
             }
 

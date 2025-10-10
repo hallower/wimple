@@ -2,14 +2,13 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
-import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.fragment_debt_state_summary_tab.*
+import androidx.preference.PreferenceManager
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentDebtStateSummaryTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -19,9 +18,12 @@ import java.util.*
 
 class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
-    //private final static String LOG_TAG = "TransactionInsertFragment";
+    // private final static String LOG_TAG = "TransactionInsertFragment";
 
     private val wimple = WimpleImpl.getInstance()
+
+    private var _binding: FragmentDebtStateSummaryTabBinding? = null
+    private val binding get() = _binding!!
 
     // GUI
     private lateinit var asAdapter: AccountStateItemListAdapter
@@ -29,23 +31,27 @@ class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragme
     // Data
     private var firstUpdate: Boolean = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_debt_state_summary_tab, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentDebtStateSummaryTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val sessionParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT
+        )
 
         this.asAdapter = AccountStateItemListAdapter(this.context)
 
-        this.debt_list_view.setAdapter(this.asAdapter)
-        this.debt_list_view.layoutParams = sessionParams
+        binding.debtListView.setAdapter(this.asAdapter)
+        binding.debtListView.layoutParams = sessionParams
 
-        this.registerForContextMenu(this.debt_list_view)
+        this.registerForContextMenu(binding.debtListView)
 
         this.firstUpdate = true
         WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false)
@@ -69,12 +75,13 @@ class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragme
 
             CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED -> {
 
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.context)
+                val sharedPref = this.context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh) {
+                    val autoRefresh =
+                        sharedPref?.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
+                    if (autoRefresh == true) {
                         this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
                     }
                 }
@@ -83,7 +90,8 @@ class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragme
                     return
                 }
 
-                val showGroup = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false)
+                val showGroup =
+                    sharedPref?.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_SHOW_GROUP, false)
 
                 val values = ArrayList<Double>()
                 val names = ArrayList<String>()
@@ -119,11 +127,22 @@ class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragme
 
                     val pcv = ChartUtils.makeChart(this.context, doubleValues, stringValues, maxValue)
 
-                    this.chart.removeAllViews()
-                    this.chart.addView(pcv, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
+                    binding.chart.removeAllViews()
+                    binding.chart.addView(
+                        pcv,
+                        LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT
+                        )
+                    )
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun setActivityInstance(instance: WimpleActivity) {}

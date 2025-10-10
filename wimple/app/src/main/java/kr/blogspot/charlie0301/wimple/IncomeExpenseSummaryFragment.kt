@@ -6,7 +6,6 @@ import android.graphics.Point
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,8 +13,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import kotlinx.android.synthetic.main.fragment_income_expense_summary_tab.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentIncomeExpenseSummaryTabBinding // <-- Add this import
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.impl.util.ImageUtils
@@ -27,13 +26,17 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
     private val wimple = WimpleImpl.getInstance()
 
+    private var _binding: FragmentIncomeExpenseSummaryTabBinding? = null
+    private val binding get() = _binding!!
+
     // Data
     private var firstUpdate: Boolean = false
     private var isUsingBudgetInformation: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_income_expense_summary_tab, container, false)
+        _binding = FragmentIncomeExpenseSummaryTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,9 +47,9 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
         this.isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true)
 
         if (!this.isUsingBudgetInformation) {
-            this.ine_budget_status_title.visibility = View.GONE
-            this.ine_budget_status_income.visibility = View.GONE
-            this.ine_budget_status_expense.visibility = View.GONE
+            binding.ineBudgetStatusTitle.visibility = View.GONE
+            binding.ineBudgetStatusIncome.visibility = View.GONE
+            binding.ineBudgetStatusExpense.visibility = View.GONE
 
         }
 
@@ -72,7 +75,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                 this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
             }
 
-            this.ine_update_notification.visibility = View.VISIBLE
+            binding.ineUpdateNotification.visibility = View.VISIBLE
         }
     }
 
@@ -88,6 +91,11 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
         }
 
         super.onResume()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun handleMessage(msg: Message) {
@@ -108,7 +116,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
             CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED -> {
 
-                this.ine_update_notification.visibility = View.GONE
+                binding.ineUpdateNotification.visibility = View.GONE
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
@@ -125,7 +133,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                             this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
                         }
 
-                        this.ine_update_notification.visibility = View.VISIBLE
+                        binding.ineUpdateNotification.visibility = View.VISIBLE
                     }
                 }
 
@@ -150,53 +158,53 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                 }
                 //asAdapter.get().notifyDataSetChanged();
 
-                this.ine_income_value.text = DateFormatUtils.getNoPointDecimalFormat().format(income)
-                this.ine_expense_value.text = DateFormatUtils.getNoPointDecimalFormat().format((-1 * expense))
+                binding.ineIncomeValue.text = DateFormatUtils.getNoPointDecimalFormat().format(income)
+                binding.ineExpenseValue.text = DateFormatUtils.getNoPointDecimalFormat().format((-1 * expense))
 
                 val sum = income - expense
 
-                this.ine_sum_value.text = DateFormatUtils.getNoPointDecimalFormat().format(sum)
+                binding.ineSumValue.text = DateFormatUtils.getNoPointDecimalFormat().format(sum)
                 if (sum >= 0) {
-                    this.ine_sum_value.setTextColor(ContextCompat.getColor(context!!, R.color.text_blue))
+                    binding.ineSumValue.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_blue))
                 } else {
-                    this.ine_sum_value.setTextColor(ContextCompat.getColor(context!!, R.color.text_red))
+                    binding.ineSumValue.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_red))
                 }
 
-                val wm = this.context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val wm = this.requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
                 val display = wm.defaultDisplay
                 val size = Point()
                 display.getSize(size)
-                var width = size.x - ImageUtils.getDPSize(100, this.context!!)
+                var width = size.x - ImageUtils.getDPSize(100, this.requireContext())
 
-                Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "width = $width, expense = $expense, income = $income")
+                Log.d(LOG_TAG, "width = $width, expense = $expense, income = $income")
 
                 var params: FrameLayout.LayoutParams
 
                 if (income > expense) {
                     Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "expense / income = " + expense / income)
 
-                    params = this.ine_bar_income.layoutParams as FrameLayout.LayoutParams
+                    params = binding.ineBarIncome.layoutParams as FrameLayout.LayoutParams
                     params.width = width
-                    this.ine_bar_income.layoutParams = params
+                    binding.ineBarIncome.layoutParams = params
 
                     width = (width * (expense / income)).toInt()
 
-                    params = this.ine_bar_expense.layoutParams as FrameLayout.LayoutParams
+                    params = binding.ineBarExpense.layoutParams as FrameLayout.LayoutParams
                     params.width = width
-                    this.ine_bar_expense.layoutParams = params
+                    binding.ineBarExpense.layoutParams = params
 
                 } else {
                     Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "income / expense = " + income / expense)
 
-                    params = this.ine_bar_expense.layoutParams as FrameLayout.LayoutParams
+                    params = binding.ineBarExpense.layoutParams as FrameLayout.LayoutParams
                     params.width = width
-                    this.ine_bar_expense.layoutParams = params
+                    binding.ineBarExpense.layoutParams = params
 
                     width = (width * (income / expense)).toInt()
 
-                    params = this.ine_bar_income.layoutParams as FrameLayout.LayoutParams
+                    params = binding.ineBarIncome.layoutParams as FrameLayout.LayoutParams
                     params.width = width
-                    this.ine_bar_income.layoutParams = params
+                    binding.ineBarIncome.layoutParams = params
                 }
 
 
@@ -236,48 +244,48 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
                 Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "current=$current, budget=$budget")
 
-                val wm = this.context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val wm = this.requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
                 val display = wm.defaultDisplay
                 val size = Point()
                 display.getSize(size)
-                var width = size.x - ImageUtils.getDPSize(130, this.context!!)
+                var width = size.x - ImageUtils.getDPSize(130, this.requireContext())
 
                 var params: FrameLayout.LayoutParams
 
                 if (0.0 == budget) {
 
                     if (isIncome) {
-                        params = this.ine_bar_budget_base_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_income.layoutParams = params
+                        binding.ineBarBudgetBaseIncome.layoutParams = params
 
-                        params = this.ine_bar_budget_current_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = 0
-                        this.ine_bar_budget_current_income.layoutParams = params
+                        binding.ineBarBudgetCurrentIncome.layoutParams = params
 
-                        this.ine_bar_budget_current_income_percentage.text = this.resources.getString(R.string.budget_not_yet)
+                        binding.ineBarBudgetCurrentIncomePercentage.text = this.resources.getString(R.string.budget_not_yet)
 
                     } else {
-                        params = this.ine_bar_budget_base_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_expense.layoutParams = params
+                        binding.ineBarBudgetBaseExpense.layoutParams = params
 
-                        params = this.ine_bar_budget_current_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = 0
-                        this.ine_bar_budget_current_expense.layoutParams = params
+                        binding.ineBarBudgetCurrentExpense.layoutParams = params
 
-                        this.ine_bar_budget_current_expense_percentage.text = this.resources.getString(R.string.budget_not_yet)
+                        binding.ineBarBudgetCurrentExpensePercentage.text = this.resources.getString(R.string.budget_not_yet)
                     }
 
                 } else if (budget > current) {
                     if (isIncome) {
-                        params = this.ine_bar_budget_base_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_income.layoutParams = params
+                        binding.ineBarBudgetBaseIncome.layoutParams = params
                     } else {
-                        params = this.ine_bar_budget_base_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_expense.layoutParams = params
+                        binding.ineBarBudgetBaseExpense.layoutParams = params
                     }
 
                     val percentage = (current!! / budget as Double * 100).toInt()
@@ -285,26 +293,26 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     width = (width * current / budget).toInt()
 
                     if (isIncome) {
-                        params = this.ine_bar_budget_current_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_current_income.layoutParams = params
-                        this.ine_bar_budget_current_income_percentage.text = "$percentage%"
+                        binding.ineBarBudgetCurrentIncome.layoutParams = params
+                        binding.ineBarBudgetCurrentIncomePercentage.text = "$percentage%"
                     } else {
-                        params = this.ine_bar_budget_current_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_current_expense.layoutParams = params
-                        this.ine_bar_budget_current_expense_percentage.text = "$percentage%"
+                        binding.ineBarBudgetCurrentExpense.layoutParams = params
+                        binding.ineBarBudgetCurrentExpensePercentage.text = "$percentage%"
                     }
                 } else {
 
                     if (isIncome) {
-                        params = this.ine_bar_budget_current_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_current_income.layoutParams = params
+                        binding.ineBarBudgetCurrentIncome.layoutParams = params
                     } else {
-                        params = this.ine_bar_budget_current_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetCurrentExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_current_expense.layoutParams = params
+                        binding.ineBarBudgetCurrentExpense.layoutParams = params
                     }
 
                     Log.d(kr.blogspot.charlie0301.wimple.IncomeExpenseSummaryFragment.Companion.LOG_TAG, "current / budget = " + current!! / budget as Double)
@@ -312,15 +320,15 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                     //width = (int)(width * ((double)budget/ (double)current));
 
                     if (isIncome) {
-                        params = this.ine_bar_budget_base_income.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseIncome.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_income.layoutParams = params
-                        this.ine_bar_budget_current_income_percentage.text = "$percentage%"
+                        binding.ineBarBudgetBaseIncome.layoutParams = params
+                        binding.ineBarBudgetCurrentIncomePercentage.text = "$percentage%"
                     } else {
-                        params = this.ine_bar_budget_base_expense.layoutParams as FrameLayout.LayoutParams
+                        params = binding.ineBarBudgetBaseExpense.layoutParams as FrameLayout.LayoutParams
                         params.width = width
-                        this.ine_bar_budget_base_expense.layoutParams = params
-                        this.ine_bar_budget_current_expense_percentage.text = "$percentage%"
+                        binding.ineBarBudgetBaseExpense.layoutParams = params
+                        binding.ineBarBudgetCurrentExpensePercentage.text = "$percentage%"
                     }
                 }
             }

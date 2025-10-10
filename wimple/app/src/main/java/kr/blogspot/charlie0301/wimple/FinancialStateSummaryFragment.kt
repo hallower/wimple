@@ -3,16 +3,13 @@ package kr.blogspot.charlie0301.wimple
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.widget.LinearLayout
-import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_finalcial_state_summary_tab.*
+import androidx.core.content.ContextCompat
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentFinalcialStateSummaryTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -21,19 +18,16 @@ import kr.blogspot.charlie0301.wimple.model.AccountState
 class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment {
 
     private val wimple = WimpleImpl.getInstance()
-
-    // GUI
-    private var llUpdateNotice: LinearLayout? = null
-    private var tvSavingValue: TextView? = null
-    private var tvDebtValue: TextView? = null
-    private var tvSumValue: TextView? = null
+    private var _binding: FragmentFinalcialStateSummaryTabBinding? = null
+    private val binding get() = _binding!!
 
     // Data
     private var firstUpdate: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_finalcial_state_summary_tab, container, false)
+        _binding = FragmentFinalcialStateSummaryTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,9 +36,9 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
         this.firstUpdate = true
         this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false)
 
-        this.as_refresh.setOnClickListener {
+        binding.asRefresh.setOnClickListener {
             this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-            this.as_update_notification.visibility = View.VISIBLE
+            binding.asUpdateNotification.visibility = View.VISIBLE
         }
     }
 
@@ -53,13 +47,18 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
         super.onResume()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun handleMessage(msg: Message) {
         val command = msg.what
         val booleanStatus = msg.arg1 == 1
         val obj = msg.obj
 
         // if fragment is added or not to the activity
-        if (!this.isAdded) {
+        if (!this.isAdded || _binding == null) {
             return
         }
 
@@ -71,7 +70,7 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
 
             CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED -> {
 
-                this.as_update_notification.visibility = View.GONE
+                binding.asUpdateNotification.visibility = View.GONE
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
@@ -80,7 +79,7 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
                     val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
                     if (autoRefresh) {
                         this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-                        this.as_update_notification.visibility = View.VISIBLE
+                        binding.asUpdateNotification.visibility = View.VISIBLE
                     }
                 }
 
@@ -107,16 +106,16 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
                 }
                 //asAdapter.get().notifyDataSetChanged();
 
-                this.as_saving_value.text = DateFormatUtils.getNoPointDecimalFormat().format(saving)
-                this.as_debt_value.text = DateFormatUtils.getNoPointDecimalFormat().format(-1 * debt)
+                binding.asSavingValue.text = DateFormatUtils.getNoPointDecimalFormat().format(saving)
+                binding.asDebtValue.text = DateFormatUtils.getNoPointDecimalFormat().format(-1 * debt)
 
                 val sum = saving - debt
 
-                this.as_sum_value.text = DateFormatUtils.getNoPointDecimalFormat().format(sum)
+                binding.asSumValue.text = DateFormatUtils.getNoPointDecimalFormat().format(sum)
                 if (sum >= 0) {
-                    this.as_sum_value.setTextColor(ContextCompat.getColor(this.context!!, R.color.text_blue))
+                    binding.asSumValue.setTextColor(ContextCompat.getColor(this.requireContext(), R.color.text_blue))
                 } else {
-                    this.as_sum_value.setTextColor(ContextCompat.getColor(this.context!!, R.color.text_red))
+                    binding.asSumValue.setTextColor(ContextCompat.getColor(this.requireContext(), R.color.text_red))
                 }
 
                 val pcv = ChartUtils.makeChart(this.context,
@@ -124,8 +123,8 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
                         arrayOf(this.resources.getString(R.string.title_saving), this.resources.getString(R.string.title_debt)),
                         if (Math.abs(saving) > Math.abs(debt)) Math.abs(saving) else Math.abs(debt))
 
-                this.chart.removeAllViews()
-                this.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+                binding.chart.removeAllViews()
+                binding.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
             }
         }
     }

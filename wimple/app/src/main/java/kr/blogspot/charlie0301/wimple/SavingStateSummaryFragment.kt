@@ -4,14 +4,13 @@ package kr.blogspot.charlie0301.wimple
 import android.os.Bundle
 import android.os.Message
 import android.preference.PreferenceManager
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.fragment_saving_state_summary_tab.*
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.databinding.FragmentSavingStateSummaryTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.ChartUtils
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -24,6 +23,8 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
     //private final static String LOG_TAG = "TransactionInsertFragment";
 
     private val wimple = WimpleImpl.getInstance()
+    private var _binding: FragmentSavingStateSummaryTabBinding? = null // ADD THIS
+    private val binding get() = _binding!! // ADD THIS
 
     // GUI
     private lateinit var asAdapter: AccountStateItemListAdapter
@@ -33,7 +34,8 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_saving_state_summary_tab, container, false)
+        _binding = FragmentSavingStateSummaryTabBinding.inflate(inflater, container, false) // MODIFY THIS
+        return binding.root // MODIFY THIS
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,13 +45,18 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
         this.asAdapter = AccountStateItemListAdapter(this.context)
-        this.saving_list_view.setAdapter(this.asAdapter)
-        this.saving_list_view.setLayoutParams(sessionParams)
+        binding.savingListView.setAdapter(this.asAdapter)
+        binding.savingListView.setLayoutParams(sessionParams)
 
-        this.registerForContextMenu(this.saving_list_view)
+        this.registerForContextMenu(binding.savingListView)
 
         this.firstUpdate = true
         WimpleImpl.getInstance().getFinancialState(DateFormatUtils.getServerDateString(""), false)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun handleMessage(msg: Message) {
@@ -80,7 +87,7 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
                     return
                 }
 
-                if (null == this.context) {
+                if (null == this.context || _binding == null) {
                     return
                 }
 
@@ -120,8 +127,8 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
 
                     val pcv = ChartUtils.makeChart(this.context, doubleValues, stringValues, maxValue)
 
-                    chart.removeAllViews()
-                    chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+                    binding.chart.removeAllViews()
+                    binding.chart.addView(pcv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
                 }
             }
         }
