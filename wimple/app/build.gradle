@@ -18,7 +18,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -39,9 +39,15 @@ android {
         abortOnError false
         lintConfig file('lint.xml')
     }
-    // No need to specify compileOptions for sourceCompatibility and targetCompatibility
-    // with AGP 8.0+ as it defaults to 1.8. However, if you need a higher Java version,
-    // you can set it here.
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
 }
 
 dependencies {
