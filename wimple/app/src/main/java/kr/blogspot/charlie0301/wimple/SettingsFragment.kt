@@ -89,9 +89,12 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 requireContext().deleteDatabase("webview.db")
                 requireContext().deleteDatabase("webviewCache.db")
 
-                // clear biometric option
+                // clear biometric option and onboarding flag
                 val sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                sharedPref.edit().putBoolean(KEY_BIOMETRIC_OPTION, false).apply()
+                sharedPref.edit()
+                    .putBoolean(KEY_BIOMETRIC_OPTION, false)
+                    .putBoolean(WimpleActivity.KEY_BIOMETRIC_ONBOARDING_SHOWN, false)
+                    .apply()
             }
 
             //System.runFinalizersOnExit(true);

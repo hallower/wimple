@@ -17,7 +17,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import java.util.concurrent.Executors
 import androidx.core.view.GravityCompat
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -79,6 +83,59 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
 
         setDefaultFragment()
+        checkAndShowBiometricOnboarding()
+    }
+
+    private fun checkAndShowBiometricOnboarding() {
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+        if (sharedPref.getBoolean(KEY_BIOMETRIC_ONBOARDING_SHOWN, false)) return
+        if (sharedPref.getBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, false)) return
+
+        val canAuth = BiometricManager.from(this)
+            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        if (canAuth != BiometricManager.BIOMETRIC_SUCCESS) return
+
+        sharedPref.edit().putBoolean(KEY_BIOMETRIC_ONBOARDING_SHOWN, true).apply()
+        showBiometricOnboardingDialog()
+    }
+
+    private fun showBiometricOnboardingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.biometric_onboarding_title)
+            .setMessage(R.string.biometric_onboarding_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.biometric_onboarding_enable) { _, _ -> enrollBiometric() }
+            .setNegativeButton(R.string.biometric_onboarding_skip, null)
+            .show()
+    }
+
+    private fun enrollBiometric() {
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.biometric_title))
+            .setSubtitle(getString(R.string.biometric_option_description))
+            .setNegativeButtonText(getString(R.string.user_cancel))
+            .build()
+
+        BiometricPrompt(this, Executors.newSingleThreadExecutor(),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, errString, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    runOnUiThread {
+                        PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                            .edit().putBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, true).apply()
+                        Toast.makeText(applicationContext,
+                            getString(R.string.biometric_onboarding_enabled), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        ).authenticate(promptInfo)
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
@@ -538,6 +595,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         private const val LOG_TAG = "WimpleActivity"
         private const val whooingURL = "https://whooing.com"
+        const val KEY_BIOMETRIC_ONBOARDING_SHOWN = "biometric_onboarding_shown"
 
         private var mainHandler: Handler? = null
 
