@@ -348,7 +348,8 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
         override fun run() {
 
-            val json = wimpl.invokeRESTAPI(HTTPMethod.DELETE, Path.ENTRIES_REMOVE + entryID + ".json_array", "")
+            Log.d(LOG_TAG, "[DeleteEntry] sectionID=$sectionID, entryID=$entryID")
+            val json = wimpl.invokeRESTAPI(HTTPMethod.DELETE, Path.ENTRIES_REMOVE + entryID + "/" + sectionID + ".json", "")
             if (null == json) {
                 Log.e(LOG_TAG, "[DeleteEntry] Error response - null returned")
                 wimpl.sm(CommandID.CMD_DELETE_ENTRY, 0, 0, "")
