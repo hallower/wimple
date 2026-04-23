@@ -86,6 +86,7 @@ class BankNotificationListener : NotificationListenerService() {
         const val KEY_BANK_NOTI_ADD_APP = "pref_bankNotiAddApp"
         const val KEY_BANK_NOTI_ACCESS_INFO_SHOWN = "pref_bankNotiAccessInfoShown"
         const val KEY_BANK_NOTI_ACCESS_REQUESTED = "pref_bankNotiAccessRequested"
+        const val KEY_BANK_NOTI_SORT_ORDER = "pref_bankNotiSortOrder"
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {
             val flat = android.provider.Settings.Secure.getString(

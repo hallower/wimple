@@ -49,6 +49,15 @@
         <item>com.nhnent.payapp</item>
     </string-array>
 
+    <string-array name="bank_noti_sort_entries">
+        <item>추가된 순</item>
+        <item>이름순</item>
+    </string-array>
+    <string-array name="bank_noti_sort_values">
+        <item>added</item>
+        <item>name</item>
+    </string-array>
+
     <string-array name="notification_threshold_entries">
         <item>2</item>
         <item>3</item>

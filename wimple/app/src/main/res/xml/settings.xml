@@ -50,6 +50,16 @@
             android:title="@string/bank_noti_add_app_title" />
         <ListPreference
             app:iconSpaceReserved="false"
+            android:defaultValue="added"
+            android:dependency="pref_bankNotiEnable"
+            android:dialogTitle="@string/bank_noti_sort_title"
+            android:entries="@array/bank_noti_sort_entries"
+            android:entryValues="@array/bank_noti_sort_values"
+            android:key="pref_bankNotiSortOrder"
+            android:summary="@string/bank_noti_sort_summary"
+            android:title="@string/bank_noti_sort_title" />
+        <ListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="5"
             android:dependency="pref_bankNotiEnable"
             android:dialogTitle="@string/bank_noti_threshold_title"

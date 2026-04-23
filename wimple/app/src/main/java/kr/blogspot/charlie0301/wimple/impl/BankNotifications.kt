@@ -20,6 +20,10 @@ object BankNotifications {
     private const val KEY_PENDING_JSON = "pending_json"
     private const val POST_PAYMENT_PATH = "api/entries/outside.json"
 
+    // Default-SharedPreferences key for user-added (custom) monitored apps, stored as an
+    // ordered JSON array string so we can sort by insertion order in the settings UI.
+    private const val KEY_CUSTOM_APPS = "pref_bankNotiCustomApps"
+
     private val sending = AtomicBoolean(false)
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -208,6 +212,40 @@ object BankNotifications {
             ))
         }
         return list
+    }
+
+    /**
+     * Ordered list of user-added custom bank app package names.
+     * Reads from DEFAULT SharedPreferences (not the banknotifications private file) because
+     * the MultiSelectListPreference in settings.xml uses the default store.
+     * Transparently migrates any legacy StringSet value to the new JSON-array format.
+     */
+    fun getCustomApps(ctx: Context): List<String> {
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val raw: String = try {
+            prefs.getString(KEY_CUSTOM_APPS, "[]") ?: "[]"
+        } catch (_: ClassCastException) {
+            // Legacy StringSet (pre-ordering) — migrate in place.
+            val legacy = prefs.getStringSet(KEY_CUSTOM_APPS, emptySet()) ?: emptySet()
+            val arr = JSONArray()
+            for (p in legacy) arr.put(p)
+            prefs.edit().remove(KEY_CUSTOM_APPS).putString(KEY_CUSTOM_APPS, arr.toString()).apply()
+            arr.toString()
+        }
+        return try {
+            val arr = JSONArray(raw)
+            List(arr.length()) { arr.optString(it) }.filter { it.isNotEmpty() }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    fun setCustomApps(ctx: Context, list: List<String>) {
+        val arr = JSONArray()
+        for (p in list) arr.put(p)
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx).edit()
+            .putString(KEY_CUSTOM_APPS, arr.toString())
+            .apply()
     }
 
     private fun prefs(ctx: Context): SharedPreferences =

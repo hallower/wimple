@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.provider.Settings
 import androidx.preference.PreferenceManager
@@ -199,6 +201,21 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
      * Rebuild the MultiSelectListPreference so it shows preset banks plus any custom packages
      * the user added via [BankAppPickerActivity]. Custom entries resolve their display label
      * from PackageManager; uninstalled packages fall back to the raw package name.
+     *
+     * Respects [BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER]:
+     *  - "added" (default): most recently added custom app FIRST (reverse insertion order),
+     *    then presets in their declared order. Newly-added apps stay on top so the user can
+     *    find them quickly.
+     *  - "name": full combined list sorted by display label (locale-insensitive, case-insensitive).
+     *
+     * Also re-syncs the preference's in-memory [MultiSelectListPreference.getValues] from
+     * SharedPreferences — critical because [BankAppPickerActivity] writes directly to the
+     * underlying StringSet, which doesn't invalidate the preference's cached `mValues`.
+     * Without this, picked apps appear unchecked in the dialog even though they're monitored.
+     *
+     * Also installs a change listener that removes a user-added custom app from the ordered
+     * list when unchecked in the dialog. Unchecking a preset merely stops monitoring it;
+     * presets are never removed from the visible list.
      */
     private fun refreshBankAppEntries() {
         val ctx = context ?: return
@@ -208,10 +225,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         val presetEntries = resources.getStringArray(R.array.bank_app_entries).toList()
         val presetValues = resources.getStringArray(R.array.bank_app_values).toList()
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
-        val customValues = (prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_CUSTOM_APPS, emptySet())
-            ?: emptySet()).toList()
-
+        val customValues = BankNotifications.getCustomApps(ctx)
         val pm = ctx.packageManager
         val customEntries = customValues.map { pkg ->
             try {
@@ -222,8 +236,65 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             }
         }
 
-        appsPref.entries = (presetEntries + customEntries).toTypedArray()
-        appsPref.entryValues = (presetValues + customValues).toTypedArray()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val sortOrder = prefs.getString(BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER, "added")
+        val sorted = ArrayList<Pair<String, String>>(presetEntries.size + customEntries.size)
+        when (sortOrder) {
+            "name" -> {
+                for (i in presetEntries.indices) sorted.add(presetEntries[i] to presetValues[i])
+                for (i in customEntries.indices) sorted.add(customEntries[i] to customValues[i])
+                sorted.sortBy { it.first.lowercase() }
+            }
+            else -> {
+                // "added" — custom apps in REVERSE insertion order (newest first), then presets.
+                for (i in customEntries.indices.reversed()) sorted.add(customEntries[i] to customValues[i])
+                for (i in presetEntries.indices) sorted.add(presetEntries[i] to presetValues[i])
+            }
+        }
+
+        appsPref.entries = sorted.map { it.first }.toTypedArray()
+        appsPref.entryValues = sorted.map { it.second }.toTypedArray()
+
+        // Re-sync the preference's in-memory values with what was just written to SharedPreferences
+        // (e.g., by BankAppPickerActivity.save()). MultiSelectListPreference caches its values
+        // field internally and only reloads on initial bind — without this, newly-picked apps
+        // look unchecked in the dialog despite actually being in the monitored set.
+        val monitored = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+        if (appsPref.values != monitored) {
+            appsPref.values = HashSet(monitored)
+        }
+
+        // When user unticks a custom app inside the dialog, also remove it from the ordered
+        // custom list so it disappears from the entries entirely. Preset values are left alone.
+        appsPref.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
+            @Suppress("UNCHECKED_CAST")
+            val newSelected = (newValue as? Set<String>) ?: return@OnPreferenceChangeListener true
+            val oldSelected = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+            val removed = oldSelected - newSelected
+            if (removed.isEmpty()) return@OnPreferenceChangeListener true
+
+            val presetSet = presetValues.toHashSet()
+            val customRemoved = removed.filter { it !in presetSet }
+            if (customRemoved.isEmpty()) return@OnPreferenceChangeListener true
+
+            val updated = BankNotifications.getCustomApps(ctx).toMutableList()
+            updated.removeAll(customRemoved)
+            BankNotifications.setCustomApps(ctx, updated)
+
+            // Refresh entries after the preference has finished committing the new value.
+            Handler(Looper.getMainLooper()).post { refreshBankAppEntries() }
+            true
+        }
+
+        // Re-sort entries when the sort-order preference changes.
+        val sortPref = preferenceScreen.findPreference<ListPreference>(
+            BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER)
+        if (sortPref != null && sortPref.onPreferenceChangeListener == null) {
+            sortPref.onPreferenceChangeListener = OnPreferenceChangeListener { _, _ ->
+                Handler(Looper.getMainLooper()).post { refreshBankAppEntries() }
+                true
+            }
+        }
     }
 
     private fun showNotificationAccessGuideDialog() {
