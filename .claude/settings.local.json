@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "WebFetch(domain:whooing.com)",
+      "Bash(./gradlew :app:assembleDebug)",
+      "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\" -version)",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(./gradlew :app:compileDebugKotlin)"
+    ]
+  }
+}
