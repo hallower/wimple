@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_send_now"
+        android:title="@string/bank_noti_send_now"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/menu_clear_all"
+        android:title="@string/bank_noti_clear_all"
+        android:showAsAction="never" />
+</menu>

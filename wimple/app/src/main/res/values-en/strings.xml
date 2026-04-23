@@ -171,6 +171,37 @@
 
     <string name="terms_dialog_title">Terms &amp; Privacy Policy</string>
     <string name="terms_dialog_message_html"><![CDATA[Wimple is a <b>third-party client app</b> for the Whooing service.<br><br>This app does not collect any user data directly. All data is processed through the Whooing service. Data is only temporarily stored on your device for caching purposes.<br><br>To use this app, you must agree to the Whooing service terms below. Terms may be updated on the Whooing service — please check the links below for the latest content.<br><br>&#8226; <a href="https://whooing.com/#info/term">Terms of Service</a><br>&#8226; <a href="https://whooing.com/#info/privacy">Privacy Policy</a><br>&#8226; <a href="https://whooing.com/#forum/developer/ko/agreement">Developer Agreement</a>]]></string>
+    <string name="bank_noti_category_title">Bank Notification Auto-Record</string>
+    <string name="bank_noti_enable_title">Enable Bank Notification Capture</string>
+    <string name="bank_noti_enable_summary">Capture notifications from bank/card apps and forward them to Whooing. Requires notification access permission.</string>
+    <string name="bank_noti_apps_title">Apps to Monitor</string>
+    <string name="bank_noti_apps_summary">Select bank/card apps whose notifications should be captured.</string>
+    <string name="bank_noti_threshold_title">Batch Size Before Sending</string>
+    <string name="bank_noti_threshold_summary">Once this many notifications are collected, forward them to Whooing. (minimum 2)</string>
+    <string name="bank_noti_toast_title">Show Toast on Capture</string>
+    <string name="bank_noti_toast_summary">Briefly show a toast when a notification is stored or forwarded.</string>
+    <string name="bank_noti_send_now">Send Stored Notifications Now</string>
+    <string name="bank_noti_send_now_summary">Forward stored notifications to Whooing immediately, regardless of batch size.</string>
+    <string name="bank_noti_send_none">No stored notifications.</string>
+    <string name="bank_noti_view_list_title">View Stored Notifications</string>
+    <string name="bank_noti_view_list_summary">Review or delete notifications that have not yet been sent.</string>
+    <string name="bank_noti_list_title">Stored Bank Notifications</string>
+    <string name="bank_noti_list_empty">No stored notifications.</string>
+    <string name="bank_noti_list_delete_confirm">Delete this notification?</string>
+    <string name="bank_noti_clear_all">Clear All</string>
+    <string name="bank_noti_clear_confirm">Clear all stored notifications?</string>
+    <string name="bank_noti_toast_stored">Notification stored (%1$d total).</string>
+    <string name="bank_noti_toast_sent">Forwarded to Whooing.</string>
+    <string name="bank_noti_toast_send_failed">Forward failed. Check network or login.</string>
+    <string name="bank_noti_access_required">Notification access permission is required. Opening system settings.</string>
+    <string name="bank_noti_access_dialog_title">Notification Access Required</string>
+    <string name="bank_noti_access_dialog_message">To capture bank/card app notifications, the system \"Notification Access\" permission is required.\n\nTap [Open Settings] to go to system settings. Find \"%1$s\" in the list and enable its switch.\n\nOn some devices, the Wimple entry may open directly.</string>
+    <string name="bank_noti_access_dialog_open">Open Settings</string>
+    <string name="bank_noti_access_toast_find_app">Find \"%1$s\" in the list and enable its switch.</string>
+    <string name="bank_noti_access_settings_open_failed">Failed to open system settings. Please enable it manually in Settings &gt; Notifications &gt; Notification Access.</string>
+    <string name="bank_noti_sending">Sending…</string>
+    <string name="bank_noti_service_label">Wimple Bank Notification Capture</string>
+
     <string name="biometric_onboarding_title">Fingerprint App Lock</string>
     <string name="biometric_onboarding_message">You can lock the app with fingerprint (biometric) authentication on each launch.\n\nWould you like to enable it now?\nYou can change this anytime in Settings.</string>
     <string name="biometric_onboarding_enable">Enable Now</string>

@@ -49,6 +49,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
         super.onResume()
+        kr.blogspot.charlie0301.wimple.impl.BankNotifications.retryIfPending(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

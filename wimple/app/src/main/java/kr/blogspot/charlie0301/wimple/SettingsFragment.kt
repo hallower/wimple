@@ -1,9 +1,13 @@
 package kr.blogspot.charlie0301.wimple
 
+import android.app.AlertDialog
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Message
+import android.provider.Settings
 import androidx.preference.PreferenceManager
 import android.webkit.CookieManager
 import android.widget.Toast
@@ -16,6 +20,7 @@ import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
+import kr.blogspot.charlie0301.wimple.impl.BankNotifications
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.model.Section
 import java.lang.ref.WeakReference
@@ -139,6 +144,103 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
             biometricPrompt.authenticate(promptInfo)
             false
+        }
+
+        setupBankNotificationPreferences()
+    }
+
+    private fun setupBankNotificationPreferences() {
+        val enableBox = preferenceScreen.findPreference<CheckBoxPreference>(
+            BankNotificationListener.KEY_BANK_NOTI_ENABLE)!!
+        enableBox.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
+            val turningOn = newValue as Boolean
+            if (turningOn && context != null &&
+                !BankNotificationListener.isNotificationAccessGranted(requireContext())) {
+                showNotificationAccessGuideDialog()
+            }
+            true
+        }
+
+        val sendNow = preferenceScreen.findPreference<Preference>(
+            BankNotificationListener.KEY_BANK_NOTI_SEND_NOW)!!
+        sendNow.onPreferenceClickListener = OnPreferenceClickListener {
+            val ctx = context ?: return@OnPreferenceClickListener false
+            if (!BankNotifications.hasAnyUnsent(ctx)) {
+                Toast.makeText(ctx, R.string.bank_noti_send_none, Toast.LENGTH_SHORT).show()
+                return@OnPreferenceClickListener false
+            }
+            Toast.makeText(ctx, R.string.bank_noti_sending, Toast.LENGTH_SHORT).show()
+            BankNotifications.forwardToWhooing(ctx) { success ->
+                val msg = if (success) R.string.bank_noti_toast_sent else R.string.bank_noti_toast_send_failed
+                Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+            }
+            false
+        }
+
+        val viewList = preferenceScreen.findPreference<Preference>(
+            BankNotificationListener.KEY_BANK_NOTI_VIEW_LIST)!!
+        viewList.onPreferenceClickListener = OnPreferenceClickListener {
+            startActivity(Intent(context, BankNotificationListActivity::class.java))
+            false
+        }
+    }
+
+    private fun showNotificationAccessGuideDialog() {
+        val ctx = context ?: return
+        val appName = ctx.getString(R.string.app_name)
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_access_dialog_title)
+            .setMessage(ctx.getString(R.string.bank_noti_access_dialog_message, appName))
+            .setCancelable(false)
+            .setPositiveButton(R.string.bank_noti_access_dialog_open) { _, _ ->
+                openNotificationAccessSettings()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun openNotificationAccessSettings() {
+        val ctx = context ?: return
+
+        // API 31+ : deep-link directly to our listener's detail screen (simple on/off toggle)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val componentName = ComponentName(ctx, BankNotificationListener::class.java)
+                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
+                    .putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, componentName.flattenToString())
+                startActivity(intent)
+                return
+            } catch (_: Exception) {
+                // fall through to list screen
+            }
+        }
+
+        // Fallback: open the list of all notification listeners
+        try {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            Toast.makeText(
+                ctx,
+                ctx.getString(R.string.bank_noti_access_toast_find_app, ctx.getString(R.string.app_name)),
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (_: Exception) {
+            Toast.makeText(ctx, R.string.bank_noti_access_settings_open_failed, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Keep the checkbox state in sync with actual system permission.
+        // If user disabled access in system settings, uncheck; show confirmation when granted.
+        val ctx = context ?: return
+        val enableBox = preferenceScreen.findPreference<CheckBoxPreference>(
+            BankNotificationListener.KEY_BANK_NOTI_ENABLE) ?: return
+        val granted = BankNotificationListener.isNotificationAccessGranted(ctx)
+        if (enableBox.isChecked && !granted) {
+            enableBox.isChecked = false
+        } else if (enableBox.isChecked && granted) {
+            // Opportunistic retry of any pending batch left over from a previous offline run.
+            BankNotifications.retryIfPending(ctx)
         }
     }
 
