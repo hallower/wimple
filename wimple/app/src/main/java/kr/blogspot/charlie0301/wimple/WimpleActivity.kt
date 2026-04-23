@@ -12,7 +12,12 @@ import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlin.math.abs
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -146,7 +151,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setFloatingButtonImage(rid: Int) {
         //Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
 
-        val floatingActionButton = this.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fab)
+        val floatingActionButton = this.findViewById<FloatingActionButton>(R.id.fab)
         when (rid) {
             R.id.menu_transaction_insert -> floatingActionButton.setImageResource(R.drawable.ic_fab_add)
             R.id.menu_transaction_list -> floatingActionButton.setImageResource(R.drawable.ic_fab_list)
@@ -163,12 +168,76 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private fun setupFloatingButton() {
         setFloatingButtonImage(getNextFloatingButtonPage().first)
 
-        val floatingActionButton = this.findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fab)
-        floatingActionButton.setOnClickListener {
+        val fab = this.findViewById<FloatingActionButton>(R.id.fab)
+        fab.setOnClickListener {
             val rids = getNextFloatingButtonPage()
             replaceWimpleFragment(rids.first)
             setFloatingButtonImage(rids.second)
         }
+        makeFabDraggable(fab)
+        fab.post { restoreFabPosition(fab) }
+    }
+
+    private fun makeFabDraggable(fab: FloatingActionButton) {
+        var dX = 0f
+        var dY = 0f
+        var touchStartX = 0f
+        var touchStartY = 0f
+        var isDragging = false
+        val dragThreshold = 8f
+
+        fab.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    dX = view.x - event.rawX
+                    dY = view.y - event.rawY
+                    touchStartX = event.rawX
+                    touchStartY = event.rawY
+                    isDragging = false
+                    false
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (!isDragging) {
+                        val dx = abs(event.rawX - touchStartX)
+                        val dy = abs(event.rawY - touchStartY)
+                        if (dx > dragThreshold || dy > dragThreshold) isDragging = true
+                    }
+                    if (isDragging) {
+                        val parent = view.parent as ViewGroup
+                        view.x = (event.rawX + dX).coerceIn(0f, (parent.width - view.width).toFloat())
+                        view.y = (event.rawY + dY).coerceIn(0f, (parent.height - view.height).toFloat())
+                    }
+                    isDragging
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (isDragging) {
+                        saveFabPosition(view.x, view.y)
+                        true
+                    } else {
+                        false
+                    }
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun saveFabPosition(x: Float, y: Float) {
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+            .putFloat(KEY_FAB_POS_X, x)
+            .putFloat(KEY_FAB_POS_Y, y)
+            .apply()
+    }
+
+    private fun restoreFabPosition(fab: FloatingActionButton) {
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
+        val savedX = sharedPref.getFloat(KEY_FAB_POS_X, Float.MIN_VALUE)
+        if (savedX == Float.MIN_VALUE) return
+
+        val parent = fab.parent as ViewGroup
+        val savedY = sharedPref.getFloat(KEY_FAB_POS_Y, 0f)
+        fab.x = savedX.coerceIn(0f, (parent.width - fab.width).toFloat())
+        fab.y = savedY.coerceIn(0f, (parent.height - fab.height).toFloat())
     }
 
     private fun hideVirtualKeyboard() {
@@ -596,6 +665,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         private const val LOG_TAG = "WimpleActivity"
         private const val whooingURL = "https://whooing.com"
         const val KEY_BIOMETRIC_ONBOARDING_SHOWN = "biometric_onboarding_shown"
+        private const val KEY_FAB_POS_X = "fab_pos_x"
+        private const val KEY_FAB_POS_Y = "fab_pos_y"
 
         private var mainHandler: Handler? = null
 
