@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Message
@@ -183,6 +184,46 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             startActivity(Intent(context, BankNotificationListActivity::class.java))
             false
         }
+
+        val addApp = preferenceScreen.findPreference<Preference>(
+            BankNotificationListener.KEY_BANK_NOTI_ADD_APP)!!
+        addApp.onPreferenceClickListener = OnPreferenceClickListener {
+            startActivity(Intent(context, BankAppPickerActivity::class.java))
+            false
+        }
+
+        refreshBankAppEntries()
+    }
+
+    /**
+     * Rebuild the MultiSelectListPreference so it shows preset banks plus any custom packages
+     * the user added via [BankAppPickerActivity]. Custom entries resolve their display label
+     * from PackageManager; uninstalled packages fall back to the raw package name.
+     */
+    private fun refreshBankAppEntries() {
+        val ctx = context ?: return
+        val appsPref = preferenceScreen.findPreference<MultiSelectListPreference>(
+            BankNotificationListener.KEY_BANK_NOTI_APPS) ?: return
+
+        val presetEntries = resources.getStringArray(R.array.bank_app_entries).toList()
+        val presetValues = resources.getStringArray(R.array.bank_app_values).toList()
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val customValues = (prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_CUSTOM_APPS, emptySet())
+            ?: emptySet()).toList()
+
+        val pm = ctx.packageManager
+        val customEntries = customValues.map { pkg ->
+            try {
+                val info = pm.getApplicationInfo(pkg, 0)
+                pm.getApplicationLabel(info).toString()
+            } catch (_: PackageManager.NameNotFoundException) {
+                pkg
+            }
+        }
+
+        appsPref.entries = (presetEntries + customEntries).toTypedArray()
+        appsPref.entryValues = (presetValues + customValues).toTypedArray()
     }
 
     private fun showNotificationAccessGuideDialog() {
@@ -201,6 +242,12 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
     private fun openNotificationAccessSettings() {
         val ctx = context ?: return
+
+        // Mark that we sent the user to system settings so we can detect their return
+        // in onResume() and show the data-handling info dialog if they granted access.
+        PreferenceManager.getDefaultSharedPreferences(ctx).edit()
+            .putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, true)
+            .apply()
 
         // API 31+ : deep-link directly to our listener's detail screen (simple on/off toggle)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -228,20 +275,54 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         }
     }
 
+    /**
+     * Privacy/data-handling disclosure shown once, right after the user grants notification
+     * access. Tells them we only read notifications from apps they selected, cache locally
+     * in app-private storage, and forward to Whooing only — nowhere else.
+     */
+    private fun showDataHandlingInfoDialog() {
+        val ctx = context ?: return
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_info_dialog_title)
+            .setMessage(R.string.bank_noti_info_dialog_message)
+            .setCancelable(false)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
     override fun onResume() {
         super.onResume()
-        // Keep the checkbox state in sync with actual system permission.
-        // If user disabled access in system settings, uncheck; show confirmation when granted.
         val ctx = context ?: return
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+
+        // Keep the enable checkbox in sync with actual system permission state.
         val enableBox = preferenceScreen.findPreference<CheckBoxPreference>(
-            BankNotificationListener.KEY_BANK_NOTI_ENABLE) ?: return
+            BankNotificationListener.KEY_BANK_NOTI_ENABLE)
         val granted = BankNotificationListener.isNotificationAccessGranted(ctx)
-        if (enableBox.isChecked && !granted) {
-            enableBox.isChecked = false
-        } else if (enableBox.isChecked && granted) {
-            // Opportunistic retry of any pending batch left over from a previous offline run.
-            BankNotifications.retryIfPending(ctx)
+        if (enableBox != null) {
+            if (enableBox.isChecked && !granted) {
+                enableBox.isChecked = false
+            } else if (enableBox.isChecked && granted) {
+                // Opportunistic retry of any pending batch left over from a previous offline run.
+                BankNotifications.retryIfPending(ctx)
+            }
         }
+
+        // If we previously sent the user to notification-access settings and they granted it,
+        // show the one-time data-handling disclosure. We keep the "accessInfoShown" flag so
+        // toggling off/on later doesn't re-nag the user.
+        val requested = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false)
+        if (requested) {
+            prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false).apply()
+            val alreadyShown = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, false)
+            if (granted && !alreadyShown) {
+                prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, true).apply()
+                showDataHandlingInfoDialog()
+            }
+        }
+
+        // Refresh the app list preference so any apps added via the picker are visible.
+        refreshBankAppEntries()
     }
 
     override fun handleMessage(msg: Message) {

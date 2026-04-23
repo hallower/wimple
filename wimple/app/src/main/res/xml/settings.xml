@@ -42,6 +42,12 @@
             android:key="pref_bankNotiApps"
             android:summary="@string/bank_noti_apps_summary"
             android:title="@string/bank_noti_apps_title" />
+        <Preference
+            app:iconSpaceReserved="false"
+            android:dependency="pref_bankNotiEnable"
+            android:key="pref_bankNotiAddApp"
+            android:summary="@string/bank_noti_add_app_summary"
+            android:title="@string/bank_noti_add_app_title" />
         <ListPreference
             app:iconSpaceReserved="false"
             android:defaultValue="5"

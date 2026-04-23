@@ -78,10 +78,14 @@ class BankNotificationListener : NotificationListenerService() {
 
         const val KEY_BANK_NOTI_ENABLE = "pref_bankNotiEnable"
         const val KEY_BANK_NOTI_APPS = "pref_bankNotiApps"
+        const val KEY_BANK_NOTI_CUSTOM_APPS = "pref_bankNotiCustomApps"
         const val KEY_BANK_NOTI_THRESHOLD = "pref_bankNotiThreshold"
         const val KEY_BANK_NOTI_TOAST = "pref_bankNotiToast"
         const val KEY_BANK_NOTI_SEND_NOW = "pref_bankNotiSendNow"
         const val KEY_BANK_NOTI_VIEW_LIST = "pref_bankNotiViewList"
+        const val KEY_BANK_NOTI_ADD_APP = "pref_bankNotiAddApp"
+        const val KEY_BANK_NOTI_ACCESS_INFO_SHOWN = "pref_bankNotiAccessInfoShown"
+        const val KEY_BANK_NOTI_ACCESS_REQUESTED = "pref_bankNotiAccessRequested"
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {
             val flat = android.provider.Settings.Secure.getString(
