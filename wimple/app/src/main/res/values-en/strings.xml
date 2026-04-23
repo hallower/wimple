@@ -168,4 +168,10 @@
     <string name="biometric_sign_in_description">Log in using your biometric credential.</string>
     <string name="biometric_option_description">Change option using your biometric credential.</string>
     <string name="user_cancel">Cancel</string>
+
+    <string name="terms_dialog_title">Terms &amp; Privacy Policy</string>
+    <string name="terms_dialog_message_html"><![CDATA[Wimple is a <b>third-party client app</b> for the Whooing service.<br><br>This app does not collect any user data directly. All data is processed through the Whooing service. Data is only temporarily stored on your device for caching purposes.<br><br>To use this app, you must agree to the Whooing service terms below. Terms may be updated on the Whooing service — please check the links below for the latest content.<br><br>&#8226; <a href="https://whooing.com/#info/term">Terms of Service</a><br>&#8226; <a href="https://whooing.com/#info/privacy">Privacy Policy</a><br>&#8226; <a href="https://whooing.com/#forum/developer/ko/agreement">Developer Agreement</a>]]></string>
+    <string name="terms_agree">Agree</string>
+    <string name="terms_disagree">Decline</string>
+    <string name="terms_exit_message">You must agree to the terms to use this app.</string>
 </resources>

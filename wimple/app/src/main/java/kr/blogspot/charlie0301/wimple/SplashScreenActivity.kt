@@ -16,7 +16,11 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
@@ -79,55 +83,10 @@ class SplashScreenActivity : AppCompatActivity() {
         setupHandler()
         setupWimpleImpl()
 
-        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_auth))
-
-        if (wimple.tempToken!!) {
-
-            // Check biometric authentication preference
-            val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            val isNeedBiometricAuthentication = sharedPref.getBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, false)
-            if (isNeedBiometricAuthentication) {
-                isBiometricAuthDone = false
-
-                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                            .setTitle(applicationContext.resources.getString(R.string.biometric_title))
-                            .setSubtitle(applicationContext.resources.getString(R.string.biometric_sign_in_description))
-                            .setNegativeButtonText(applicationContext.resources.getString(R.string.user_cancel))
-                            .build()
-                    val biometricPrompt = BiometricPrompt(this, Executors.newSingleThreadExecutor(),
-                            object : BiometricPrompt.AuthenticationCallback() {
-                                override fun onAuthenticationError(errorCode: Int,
-                                                                   errString: CharSequence) {
-                                    super.onAuthenticationError(errorCode, errString)
-                                    runOnUiThread {
-                                        // Exit
-                                        exitApplication("${applicationContext.resources.getString(R.string.need_biometric_authentication)} ( $errString )")
-                                    }
-                                }
-
-                                override fun onAuthenticationSucceeded(
-                                        result: BiometricPrompt.AuthenticationResult) {
-                                    super.onAuthenticationSucceeded(result)
-                                    // Move to main activity
-                                    if(isLogInProcessDone)
-                                        moveToMain()
-                                    isBiometricAuthDone = true
-                                }
-                            })
-
-                    biometricPrompt.authenticate(promptInfo)
-
-            }
-
-            // Already Logged-in
-            val savedSectionID = settings.getString("section_id", null)
-            if (null == savedSectionID || savedSectionID.isEmpty()) {
-                Log.d(LOG_TAG, "logged in - get default section")
-                wimple.getDefaultSections(true)
-            } else {
-                Log.d(LOG_TAG, "logged in - get all section, section id = $savedSectionID")
-                wimple.getAllSections(true)
-            }
+        if (!settings.getBoolean(KEY_TERMS_AGREED, false)) {
+            showTermsDialog()
+        } else {
+            proceedWithAuth()
         }
 
         val cookieManager = CookieManager.getInstance()
@@ -152,6 +111,75 @@ class SplashScreenActivity : AppCompatActivity() {
 
 
 
+    }
+
+    private fun showTermsDialog() {
+        @Suppress("DEPRECATION")
+        val message = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            Html.fromHtml(getString(R.string.terms_dialog_message_html), Html.FROM_HTML_MODE_COMPACT)
+        } else {
+            Html.fromHtml(getString(R.string.terms_dialog_message_html))
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.terms_dialog_title)
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.terms_agree) { _, _ ->
+                settings.edit().putBoolean(KEY_TERMS_AGREED, true).apply()
+                proceedWithAuth()
+            }
+            .setNegativeButton(R.string.terms_disagree) { _, _ ->
+                exitApplication(getString(R.string.terms_exit_message))
+            }
+            .create()
+
+        dialog.show()
+        dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    private fun proceedWithAuth() {
+        sm(CommandID.SHOW_STATUS, applicationContext.resources.getString(R.string.loggin_auth))
+
+        if (wimple.tempToken!!) {
+            val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            val isNeedBiometricAuthentication = sharedPref.getBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, false)
+            if (isNeedBiometricAuthentication) {
+                isBiometricAuthDone = false
+
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(applicationContext.resources.getString(R.string.biometric_title))
+                    .setSubtitle(applicationContext.resources.getString(R.string.biometric_sign_in_description))
+                    .setNegativeButtonText(applicationContext.resources.getString(R.string.user_cancel))
+                    .build()
+                val biometricPrompt = BiometricPrompt(this, Executors.newSingleThreadExecutor(),
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                            super.onAuthenticationError(errorCode, errString)
+                            runOnUiThread {
+                                exitApplication("${applicationContext.resources.getString(R.string.need_biometric_authentication)} ( $errString )")
+                            }
+                        }
+
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            if (isLogInProcessDone) moveToMain()
+                            isBiometricAuthDone = true
+                        }
+                    })
+
+                biometricPrompt.authenticate(promptInfo)
+            }
+
+            val savedSectionID = settings.getString("section_id", null)
+            if (null == savedSectionID || savedSectionID.isEmpty()) {
+                Log.d(LOG_TAG, "logged in - get default section")
+                wimple.getDefaultSections(true)
+            } else {
+                Log.d(LOG_TAG, "logged in - get all section, section id = $savedSectionID")
+                wimple.getAllSections(true)
+            }
+        }
     }
 
     private fun refreshCache() {
@@ -449,6 +477,7 @@ class SplashScreenActivity : AppCompatActivity() {
     companion object {
 
         private const val LOG_TAG = "SplashScreenActivity"
+        private const val KEY_TERMS_AGREED = "terms_agreed"
         private var mainHandler: Handler? = null
 
         // binding.webview for Login

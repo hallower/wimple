@@ -167,4 +167,10 @@
     <string name="biometric_sign_in_description">생체 인증으로 로그인 하세요.</string>
     <string name="biometric_option_description">생체 인증으로 옵션을 설정 하세요.</string>
     <string name="user_cancel">취소</string>
+
+    <string name="terms_dialog_title">약관 및 개인정보 동의</string>
+    <string name="terms_dialog_message_html"><![CDATA[Wimple은 후잉(Whooing) 서비스의 <b>제3자 클라이언트 앱</b>입니다.<br><br>본 앱은 사용자 데이터를 직접 수집하지 않으며, 모든 데이터는 후잉 서비스를 통해 처리됩니다. 앱 내 데이터는 기기에 캐싱 목적으로만 일시 저장됩니다.<br><br>앱을 사용하려면 아래 후잉 서비스 약관에 동의하셔야 합니다. 약관 내용은 후잉 서비스에서 변경될 수 있으며, 최신 내용은 아래 링크에서 확인하세요.<br><br>&#8226; <a href="https://whooing.com/#info/term">이용약관</a><br>&#8226; <a href="https://whooing.com/#info/privacy">개인정보 처리방침</a><br>&#8226; <a href="https://whooing.com/#forum/developer/ko/agreement">개발자 이용약관</a>]]></string>
+    <string name="terms_agree">동의</string>
+    <string name="terms_disagree">거부</string>
+    <string name="terms_exit_message">약관에 동의하지 않으면 앱을 사용할 수 없습니다.</string>
 </resources>
