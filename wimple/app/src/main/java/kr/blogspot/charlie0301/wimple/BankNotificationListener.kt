@@ -11,6 +11,19 @@ import android.widget.Toast
 import androidx.preference.PreferenceManager
 import kr.blogspot.charlie0301.wimple.impl.BankNotifications
 
+// Pixel and One UI wrap notification text in Unicode bidi-isolation marks (U+2068 FIRST
+// STRONG ISOLATE / U+2069 POP DIRECTIONAL ISOLATE). They're invisible but break parsers
+// that anchor on a bank label at the start of a line. Built from char codes so the marks
+// don't sit invisibly in source.
+private val BIDI_MARKS = charArrayOf(0x2068.toChar(), 0x2069.toChar())
+
+private fun String.stripBidiMarks(): String {
+    if (BIDI_MARKS.none { it in this }) return this
+    val sb = StringBuilder(length)
+    for (c in this) if (c !in BIDI_MARKS) sb.append(c)
+    return sb.toString()
+}
+
 class BankNotificationListener : NotificationListenerService() {
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -27,9 +40,19 @@ class BankNotificationListener : NotificationListenerService() {
         if (sbn.notification?.flags?.and(Notification.FLAG_ONGOING_EVENT) != 0) return
 
         val extras = sbn.notification?.extras ?: return
-        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
-        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
-            ?: extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty()
+        val rawTitle = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
+        // EXTRA_BIG_TEXT carries the full transaction body (account, amount, balance) for
+        // collapsed notifications; EXTRA_TEXT often only carries a one-line summary like
+        // "거래내역 알림". Prefer bigText so the Whooing parser sees the actual payload.
+        val rawBigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()
+        val rawNormalText = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
+        val rawText = if (!rawBigText.isNullOrEmpty()) rawBigText else rawNormalText
+
+        // Strip Unicode bidi-isolation marks (U+2068 FSI / U+2069 PDI). Pixel and One UI wrap
+        // notification text with these for RTL-safety; they're invisible but defeat parsers
+        // that anchor on a bank label at the start of the line.
+        val title = rawTitle.stripBidiMarks()
+        val text = rawText.stripBidiMarks()
 
         if (title.isBlank() && text.isBlank()) return
 
@@ -43,7 +66,7 @@ class BankNotificationListener : NotificationListenerService() {
             sbn.packageName
         }
 
-        val count = BankNotifications.add(
+        val (count, added) = BankNotifications.add(
             applicationContext,
             sbn.packageName,
             appLabel,
@@ -51,7 +74,11 @@ class BankNotificationListener : NotificationListenerService() {
             text,
             sbn.postTime
         )
-        Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count)")
+        Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count, added=$added)")
+
+        // If this was a duplicate of the previous entry, don't re-toast or re-trigger the
+        // threshold flush — count didn't actually grow.
+        if (!added) return
 
         if (prefs.getBoolean(KEY_BANK_NOTI_TOAST, true)) {
             mainHandler.post {

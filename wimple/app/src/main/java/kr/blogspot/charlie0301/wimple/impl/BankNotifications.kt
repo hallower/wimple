@@ -35,11 +35,31 @@ object BankNotifications {
         val text: String
     )
 
+    /** Result of [add]: current `stored` count + whether this call actually persisted a new entry. */
+    data class AddResult(val count: Int, val added: Boolean)
+
     @Synchronized
     fun add(ctx: Context, pkg: String, appLabel: String, title: String, text: String,
-            time: Long = System.currentTimeMillis()): Int {
+            time: Long = System.currentTimeMillis()): AddResult {
         val prefs = prefs(ctx)
         val arr = loadArray(prefs, KEY_STORED_JSON)
+
+        // Suppress immediate duplicates. Android can re-post identical notifications when the
+        // user expands/dismisses the panel, when groups are reflowed, or due to OEM quirks —
+        // without this guard the same transaction would be stored (and forwarded) twice.
+        // We persist the comparison rather than holding it in memory like the reference does,
+        // so dedup survives listener rebinds.
+        if (arr.length() > 0) {
+            val last = arr.optJSONObject(arr.length() - 1)
+            if (last != null
+                && last.optString("p") == pkg
+                && last.optString("title") == title
+                && last.optString("text") == text) {
+                Log.d(LOG_TAG, "[add] duplicate of last stored entry (pkg=$pkg), skipping")
+                return AddResult(arr.length(), added = false)
+            }
+        }
+
         val obj = JSONObject().apply {
             put("t", time)
             put("p", pkg)
@@ -61,7 +81,7 @@ object BankNotifications {
         Log.d(LOG_TAG, "[add] counts: stored=${arr.length()}, pending=${pendingArr.length()}, total=${arr.length() + pendingArr.length()}")
         dumpArray("stored", arr)
         dumpArray("pending", pendingArr)
-        return arr.length()
+        return AddResult(arr.length(), added = true)
     }
 
     private fun dumpArray(label: String, arr: JSONArray) {

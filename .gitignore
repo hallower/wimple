@@ -22,3 +22,4 @@ tasks.xml
 /app/release/app-release
 *.aab
 /wimple/app/release/app-release/
+wimple/.settings/org.eclipse.buildship.core.prefs
