@@ -33,14 +33,25 @@ class BankNotificationListener : NotificationListenerService() {
 
         if (title.isBlank() && text.isBlank()) return
 
+        // Resolve the source app's user-facing label (e.g. "카카오뱅크") at capture time so the
+        // forwarded payload carries it even if the app is later uninstalled. Falls back to the
+        // package name if the label can't be resolved.
+        val appLabel = try {
+            val info = applicationContext.packageManager.getApplicationInfo(sbn.packageName, 0)
+            applicationContext.packageManager.getApplicationLabel(info).toString()
+        } catch (_: Exception) {
+            sbn.packageName
+        }
+
         val count = BankNotifications.add(
             applicationContext,
             sbn.packageName,
+            appLabel,
             title,
             text,
             sbn.postTime
         )
-        Log.d(LOG_TAG, "captured notification from ${sbn.packageName} (stored=$count)")
+        Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count)")
 
         if (prefs.getBoolean(KEY_BANK_NOTI_TOAST, true)) {
             mainHandler.post {

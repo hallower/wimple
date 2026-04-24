@@ -30,23 +30,50 @@ object BankNotifications {
     data class StoredNotification(
         val time: Long,
         val packageName: String,
+        val appLabel: String,
         val title: String,
         val text: String
     )
 
     @Synchronized
-    fun add(ctx: Context, pkg: String, title: String, text: String, time: Long = System.currentTimeMillis()): Int {
+    fun add(ctx: Context, pkg: String, appLabel: String, title: String, text: String,
+            time: Long = System.currentTimeMillis()): Int {
         val prefs = prefs(ctx)
         val arr = loadArray(prefs, KEY_STORED_JSON)
         val obj = JSONObject().apply {
             put("t", time)
             put("p", pkg)
+            put("label", appLabel)   // captured here so the payload carries the bank name
+                                      // even if the source app is later uninstalled
             put("title", title)
             put("text", text)
         }
         arr.put(obj)
         prefs.edit().putString(KEY_STORED_JSON, arr.toString()).apply()
+
+        Log.d(LOG_TAG, "[add] new item saved:")
+        Log.d(LOG_TAG, "       pkg   = $pkg")
+        Log.d(LOG_TAG, "       label = '$appLabel'")
+        Log.d(LOG_TAG, "       title = '$title'")
+        Log.d(LOG_TAG, "       text  = '$text'")
+        Log.d(LOG_TAG, "       time  = $time (${Date(time)})")
+        val pendingArr = loadArray(prefs, KEY_PENDING_JSON)
+        Log.d(LOG_TAG, "[add] counts: stored=${arr.length()}, pending=${pendingArr.length()}, total=${arr.length() + pendingArr.length()}")
+        dumpArray("stored", arr)
+        dumpArray("pending", pendingArr)
         return arr.length()
+    }
+
+    private fun dumpArray(label: String, arr: JSONArray) {
+        if (arr.length() == 0) {
+            Log.d(LOG_TAG, "       [$label] (empty)")
+            return
+        }
+        Log.d(LOG_TAG, "       [$label] contents:")
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            Log.d(LOG_TAG, "         [$i] [${o.optString("label")}] ${o.optString("p")} | title='${o.optString("title")}' text='${o.optString("text")}'")
+        }
     }
 
     fun getAll(ctx: Context): List<StoredNotification> =
@@ -106,17 +133,26 @@ object BankNotifications {
             return false
         }
 
+        // IMPORTANT: acquire the send lock BEFORE touching pending/stored. If another send
+        // is already in progress, we must not merge stored→pending, because the in-flight
+        // send will clear the whole pending key on success, which would silently drop the
+        // freshly-merged items. Leaving them in stored lets the next forward call (threshold
+        // or retryIfPending) handle them.
+        if (!sending.compareAndSet(false, true)) {
+            val prefs = prefs(ctx)
+            Log.d(LOG_TAG, "[forward] another send in progress, skipping (stored=${loadArray(prefs, KEY_STORED_JSON).length()} preserved)")
+            return false
+        }
+
         val prefs = prefs(ctx)
         val mergedPendingSize = mergeStoredIntoPending(prefs)
         if (mergedPendingSize == 0) {
             Log.d(LOG_TAG, "[forward] nothing to send")
+            sending.set(false)
             return false
         }
-
-        if (!sending.compareAndSet(false, true)) {
-            Log.d(LOG_TAG, "[forward] another send in progress, skipping")
-            return false
-        }
+        Log.d(LOG_TAG, "[forward] starting send: $mergedPendingSize items moved into pending")
+        dumpArray("pending-to-send", loadArray(prefs, KEY_PENDING_JSON))
 
         val appCtx = ctx.applicationContext
         Thread {
@@ -133,9 +169,21 @@ object BankNotifications {
         return true
     }
 
-    /** Called on app start (after authentication) to retry any leftover pending batch from previous run. */
+    /**
+     * Retry a previously-failed send batch on app start/resume.
+     *
+     * Only fires when [pendingCount] > 0 — i.e. a real failed/interrupted batch exists.
+     * Must NOT trigger on stored-only (freshly captured, threshold not yet met) because
+     * that would bypass the user's "batch size" preference: a single captured notification
+     * would get sent the moment the user opens the app.
+     *
+     * Stored items that haven't hit the threshold simply wait. They'll be flushed when
+     * (a) threshold is reached, (b) user taps "지금 전송", or (c) a retry-triggered send
+     * happens to merge them in (which is fine — we were making an HTTP call anyway).
+     */
     fun retryIfPending(ctx: Context) {
-        if (pendingCount(ctx) == 0 && count(ctx) == 0) return
+        if (pendingCount(ctx) == 0) return
+        Log.d(LOG_TAG, "[retryIfPending] pending=${pendingCount(ctx)} — retrying failed batch")
         forwardToWhooing(ctx)
     }
 
@@ -160,6 +208,9 @@ object BankNotifications {
 
         val payload = buildPayloadFromArray(pending)
         if (payload.isEmpty()) return false
+
+        Log.d(LOG_TAG, "[send] posting ${pending.length()} items to Whooing, payload bytes=${payload.length}")
+        Log.d(LOG_TAG, "[send] payload:\n$payload")
 
         val content = "section_id=" + wimple.defaultSectionID +
             "&rows=" + URLEncoder.encode(payload, "UTF-8")
@@ -186,16 +237,56 @@ object BankNotifications {
         return success
     }
 
+    /**
+     * Build the `rows` payload for api/entries/outside.json.
+     *
+     * The Whooing API doc only specifies `rows = "외부데이터 내용 (예: 은행 SMS 문자 내용)"`,
+     * no detailed format. The server parses SMS-style raw bank/card messages, so we mimic the
+     * legacy (2019) SMSReceiver format as closely as possible:
+     *
+     *   {title} {text}\n
+     *   MM/dd HH:mm\n         <- only appended if the message doesn't already contain a date
+     *
+     * Title and text are joined with a single space so the combined string reads like a flat
+     * bank SMS (e.g. "출금 10,000원 입출금통장(1596) → 김철승 잔액 2,672,023원"). The server
+     * parser looks for patterns like amounts, bank names, and MM/dd tokens; prepending "title:"
+     * with a colon is non-standard and likely confuses it, so we drop that.
+     *
+     * Newlines inside a single notification's text are collapsed to spaces so each captured
+     * notification lands on its own line — matching how multi-SMS batches were concatenated
+     * in the original implementation.
+     */
     private fun buildPayloadFromArray(arr: JSONArray): String {
         val sb = StringBuilder()
         val fmt = DateFormatUtils.getSMSDateFormat()
+        val dateInMessageRegex = Regex("""\d{1,2}/\d{1,2}""")
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
-            val title = o.optString("title")
-            val text = o.optString("text")
-            if (title.isNotEmpty()) sb.append(title).append(": ")
-            sb.append(text).append('\n')
-            sb.append(fmt.format(Date(o.optLong("t")))).append('\n')
+            val label = o.optString("label").trim()
+            val title = o.optString("title").trim()
+            val text = o.optString("text").replace(Regex("""[\r\n]+"""), " ").trim()
+
+            // Prepend the source app label in [brackets] so the line reads like a real bank SMS
+            // (e.g. "[KB국민은행] 출금 10,000원 ..."). The Whooing outside-input parser uses bank
+            // name keywords to select per-bank parsing rules — without this hint, notifications
+            // from banks whose name isn't in the title/text body can fall back to generic rules
+            // that miss amount/account fields.
+            val prefix = if (label.isNotEmpty()) "[$label] " else ""
+            val body = when {
+                title.isNotEmpty() && text.isNotEmpty() -> "$title $text"
+                title.isNotEmpty() -> title
+                else -> text
+            }
+            if (body.isEmpty()) continue
+            val combined = prefix + body
+
+            sb.append(combined).append('\n')
+
+            // Legacy SMSReceiver logic: only append the capture timestamp if the message body
+            // doesn't already contain a MM/dd token. Avoids duplicate dates confusing the parser.
+            if (!dateInMessageRegex.containsMatchIn(combined)) {
+                sb.append(fmt.format(Date(o.optLong("t")))).append('\n')
+            }
         }
         return sb.toString()
     }
@@ -207,6 +298,7 @@ object BankNotifications {
             list.add(StoredNotification(
                 time = o.optLong("t"),
                 packageName = o.optString("p"),
+                appLabel = o.optString("label"),
                 title = o.optString("title"),
                 text = o.optString("text")
             ))

@@ -123,7 +123,9 @@ class BankNotificationListActivity : AppCompatActivity() {
             val view = convertView ?: LayoutInflater.from(this@BankNotificationListActivity)
                 .inflate(R.layout.item_bank_notification, parent, false)
             val item = items[position]
-            view.findViewById<TextView>(R.id.noti_title).text = item.title.ifBlank { item.packageName }
+            val source = item.appLabel.ifBlank { item.packageName }
+            view.findViewById<TextView>(R.id.noti_title).text =
+                if (item.title.isNotBlank()) "[$source] ${item.title}" else "[$source]"
             view.findViewById<TextView>(R.id.noti_text).text = item.text
             view.findViewById<TextView>(R.id.noti_time).text =
                 DateFormat.format("yyyy-MM-dd HH:mm:ss", item.time)
