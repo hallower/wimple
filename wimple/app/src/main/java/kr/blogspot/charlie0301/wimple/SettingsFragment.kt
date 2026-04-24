@@ -101,7 +101,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 val sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
                 sharedPref.edit()
                     .putBoolean(KEY_BIOMETRIC_OPTION, false)
-                    .putBoolean(WimpleActivity.KEY_BIOMETRIC_ONBOARDING_SHOWN, false)
+                    .putBoolean(BiometricOnboarding.KEY_BIOMETRIC_ONBOARDING_SHOWN, false)
                     .apply()
             }
 

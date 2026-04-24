@@ -1,33 +1,24 @@
 package kr.blogspot.charlie0301.wimple
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.PersistableBundle
-import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlin.math.abs
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricPrompt
-import java.util.concurrent.Executors
 import androidx.core.view.GravityCompat
+import androidx.preference.PreferenceManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
@@ -44,6 +35,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private var currentFragment: androidx.fragment.app.Fragment? = null
 
     private lateinit var binding: ActivityWimpleBinding
+    private lateinit var fabController: FloatingActionButtonController
 
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
@@ -64,7 +56,13 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         setSupportActionBar(toolBar)
 
-        setupFloatingButton()
+        fabController = FloatingActionButtonController(
+            activity = this,
+            fab = findViewById(R.id.fab),
+            currentMenuIdProvider = { currentMenuID },
+            onNavigateTo = { menuId -> replaceWimpleFragment(menuId) }
+        )
+        fabController.attach()
 
         val toggle = ActionBarDrawerToggle(
                 this, binding.drawerLayout, toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -89,156 +87,12 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
 
         setDefaultFragment()
-        checkAndShowBiometricOnboarding()
-    }
-
-    private fun checkAndShowBiometricOnboarding() {
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-        if (sharedPref.getBoolean(KEY_BIOMETRIC_ONBOARDING_SHOWN, false)) return
-        if (sharedPref.getBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, false)) return
-
-        val canAuth = BiometricManager.from(this)
-            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.BIOMETRIC_WEAK)
-        if (canAuth != BiometricManager.BIOMETRIC_SUCCESS) return
-
-        sharedPref.edit().putBoolean(KEY_BIOMETRIC_ONBOARDING_SHOWN, true).apply()
-        showBiometricOnboardingDialog()
-    }
-
-    private fun showBiometricOnboardingDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.biometric_onboarding_title)
-            .setMessage(R.string.biometric_onboarding_message)
-            .setCancelable(false)
-            .setPositiveButton(R.string.biometric_onboarding_enable) { _, _ -> enrollBiometric() }
-            .setNegativeButton(R.string.biometric_onboarding_skip, null)
-            .show()
-    }
-
-    private fun enrollBiometric() {
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(getString(R.string.biometric_title))
-            .setSubtitle(getString(R.string.biometric_option_description))
-            .setNegativeButtonText(getString(R.string.user_cancel))
-            .build()
-
-        BiometricPrompt(this, Executors.newSingleThreadExecutor(),
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    super.onAuthenticationError(errorCode, errString)
-                    runOnUiThread {
-                        Toast.makeText(applicationContext, errString, Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
-                    runOnUiThread {
-                        PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                            .edit().putBoolean(SettingsFragment.KEY_BIOMETRIC_OPTION, true).apply()
-                        Toast.makeText(applicationContext,
-                            getString(R.string.biometric_onboarding_enabled), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        ).authenticate(promptInfo)
+        BiometricOnboarding.showIfNeeded(this)
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         outState.putInt("currentMenuID", currentMenuID)
-    }
-
-    private fun setFloatingButtonImage(rid: Int) {
-        //Log.d(LOG_TAG, "setFloatingButtonImage, $rid = ${resources.getResourceName(rid)}")
-
-        val floatingActionButton = this.findViewById<FloatingActionButton>(R.id.fab)
-        when (rid) {
-            R.id.menu_transaction_insert -> floatingActionButton.setImageResource(R.drawable.ic_fab_add)
-            R.id.menu_transaction_list -> floatingActionButton.setImageResource(R.drawable.ic_fab_list)
-            R.id.menu_financial_overview -> floatingActionButton.setImageResource(R.drawable.ic_fab_finalcial)
-            R.id.menu_saving -> floatingActionButton.setImageResource(R.drawable.ic_fab_saving)
-            R.id.menu_debt -> floatingActionButton.setImageResource(R.drawable.ic_fab_debt)
-            R.id.menu_income_expense_overview -> floatingActionButton.setImageResource(R.drawable.ic_fab_incexp)
-            R.id.menu_income -> floatingActionButton.setImageResource(R.drawable.ic_fab_inc)
-            R.id.menu_expense -> floatingActionButton.setImageResource(R.drawable.ic_fab_exp)
-            else -> floatingActionButton.setImageResource(R.drawable.ic_fab_add)
-        }
-    }
-
-    private fun setupFloatingButton() {
-        setFloatingButtonImage(getNextFloatingButtonPage().first)
-
-        val fab = this.findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener {
-            val rids = getNextFloatingButtonPage()
-            replaceWimpleFragment(rids.first)
-            setFloatingButtonImage(rids.second)
-        }
-        makeFabDraggable(fab)
-        fab.post { restoreFabPosition(fab) }
-    }
-
-    private fun makeFabDraggable(fab: FloatingActionButton) {
-        var dX = 0f
-        var dY = 0f
-        var touchStartX = 0f
-        var touchStartY = 0f
-        var isDragging = false
-        val dragThreshold = 8f
-
-        fab.setOnTouchListener { view, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    dX = view.x - event.rawX
-                    dY = view.y - event.rawY
-                    touchStartX = event.rawX
-                    touchStartY = event.rawY
-                    isDragging = false
-                    false
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    if (!isDragging) {
-                        val dx = abs(event.rawX - touchStartX)
-                        val dy = abs(event.rawY - touchStartY)
-                        if (dx > dragThreshold || dy > dragThreshold) isDragging = true
-                    }
-                    if (isDragging) {
-                        val parent = view.parent as ViewGroup
-                        view.x = (event.rawX + dX).coerceIn(0f, (parent.width - view.width).toFloat())
-                        view.y = (event.rawY + dY).coerceIn(0f, (parent.height - view.height).toFloat())
-                    }
-                    isDragging
-                }
-                MotionEvent.ACTION_UP -> {
-                    if (isDragging) {
-                        saveFabPosition(view.x, view.y)
-                        true
-                    } else {
-                        false
-                    }
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun saveFabPosition(x: Float, y: Float) {
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-            .putFloat(KEY_FAB_POS_X, x)
-            .putFloat(KEY_FAB_POS_Y, y)
-            .apply()
-    }
-
-    private fun restoreFabPosition(fab: FloatingActionButton) {
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-        val savedX = sharedPref.getFloat(KEY_FAB_POS_X, Float.MIN_VALUE)
-        if (savedX == Float.MIN_VALUE) return
-
-        val parent = fab.parent as ViewGroup
-        val savedY = sharedPref.getFloat(KEY_FAB_POS_Y, 0f)
-        fab.x = savedX.coerceIn(0f, (parent.width - fab.width).toFloat())
-        fab.y = savedY.coerceIn(0f, (parent.height - fab.height).toFloat())
     }
 
     private fun hideVirtualKeyboard() {
@@ -283,47 +137,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.wimple, menu)
         return true
-    }
-
-    fun getNextFloatingButtonPage(): Pair<Int, Int> {
-
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        val selected = sharedPref.getStringSet(SettingsFragment.KEY_FLOATING_BUTTON, null)
-        if (selected == null ||
-                selected.size == 0 ||
-                this.currentMenuID == 0) {
-            Log.e(LOG_TAG, "Floating Button pages are not set!!!")
-            return when {
-                this.currentMenuID == R.id.menu_transaction_insert -> Pair(R.id.menu_transaction_list, R.id.menu_transaction_insert)
-                this.currentMenuID == R.id.menu_transaction_list -> Pair(R.id.menu_transaction_insert, R.id.menu_transaction_list)
-                else -> Pair(R.id.menu_transaction_insert, R.id.menu_transaction_list)
-            }
-        }
-
-        //Log.d(LOG_TAG, "Selected = $selected")
-        //Log.d(LOG_TAG, "Current = ${resources.getResourceEntryName(this.currentMenuID)}, ${this.currentMenuID}")
-
-        val sortedValues = selected.sortedBy { it }
-        for (idx in sortedValues.indices) {
-            if (resources.getResourceEntryName(this.currentMenuID) == sortedValues[idx].substring(1)) {
-                Log.d(LOG_TAG, "Move = ${sortedValues[(idx + 1) % sortedValues.size].substring(1)}, " +
-                        "Next = ${sortedValues[(idx + 2) % sortedValues.size].substring(1)}")
-                return Pair(resources.getIdentifier(sortedValues[(idx + 1) % sortedValues.size].substring(1), "id", packageName),
-                        resources.getIdentifier(sortedValues[(idx + 2) % sortedValues.size].substring(1), "id", packageName))
-            }
-        }
-
-        if (sortedValues.size == 1) {
-            Log.d(LOG_TAG, "Move = ${sortedValues[0].substring(1)}, " +
-                    "Next = ${sortedValues[0].substring(1)}")
-            return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
-                    resources.getIdentifier(sortedValues[0].substring(1), "id", packageName))
-        }
-
-        Log.d(LOG_TAG, "Move = ${sortedValues[0].substring(1)}, " +
-                "Next = ${sortedValues[1].substring(1)}")
-        return Pair(resources.getIdentifier(sortedValues[0].substring(1), "id", packageName),
-                resources.getIdentifier(sortedValues[1].substring(1), "id", packageName))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -381,8 +194,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         this.currentMenuID = id
 
-        setFloatingButtonImage(getNextFloatingButtonPage().first)
-
+        fabController.refreshIcon()
 
         if (this.currentFragment!!.isAdded)
             return true
@@ -665,9 +477,6 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         private const val LOG_TAG = "WimpleActivity"
         private const val whooingURL = "https://whooing.com"
-        const val KEY_BIOMETRIC_ONBOARDING_SHOWN = "biometric_onboarding_shown"
-        private const val KEY_FAB_POS_X = "fab_pos_x"
-        private const val KEY_FAB_POS_Y = "fab_pos_y"
 
         private var mainHandler: Handler? = null
 
