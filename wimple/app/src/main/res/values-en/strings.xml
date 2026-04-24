@@ -203,6 +203,12 @@
     <string name="bank_noti_service_label">Wimple Bank Notification Capture</string>
     <string name="bank_noti_add_app_title">Add from Installed Apps</string>
     <string name="bank_noti_add_app_summary">Pick additional bank/card apps directly from the list of installed apps.</string>
+    <string name="settings_about_category">About</string>
+    <string name="opensource_licenses_title">Open Source Licenses</string>
+    <string name="opensource_licenses_summary">Third-party libraries bundled in this app and the full text of their licenses.</string>
+    <string name="opensource_licenses_intro">Wimple uses the following open source libraries. Each library\'s copyright and full license text is listed below.</string>
+    <string name="opensource_licenses_libraries_header">Libraries in use</string>
+
     <string name="bank_noti_sort_title">App List Order</string>
     <string name="bank_noti_sort_summary">Choose how \"Apps to Monitor\" is sorted.</string>
     <string name="bank_noti_picker_title">Select Apps to Monitor</string>

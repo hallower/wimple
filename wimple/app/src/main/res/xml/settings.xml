@@ -145,4 +145,12 @@
             android:title="@string/settings_income_expense_state_enable_budget" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/settings_about_category">
+        <Preference
+            app:iconSpaceReserved="false"
+            android:key="pref_opensourceLicenses"
+            android:summary="@string/opensource_licenses_summary"
+            android:title="@string/opensource_licenses_title" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

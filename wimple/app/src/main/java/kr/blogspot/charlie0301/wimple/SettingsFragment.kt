@@ -150,6 +150,12 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         }
 
         setupBankNotificationPreferences()
+
+        preferenceScreen.findPreference<Preference>("pref_opensourceLicenses")
+            ?.onPreferenceClickListener = OnPreferenceClickListener {
+                startActivity(Intent(context, OpenSourceLicensesActivity::class.java))
+                false
+            }
     }
 
     private fun setupBankNotificationPreferences() {

@@ -63,6 +63,11 @@
             android:label="@string/bank_noti_picker_title"
             android:parentActivityName="kr.blogspot.charlie0301.wimple.WimpleActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="kr.blogspot.charlie0301.wimple.OpenSourceLicensesActivity"
+            android:label="@string/opensource_licenses_title"
+            android:parentActivityName="kr.blogspot.charlie0301.wimple.WimpleActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name="kr.blogspot.charlie0301.wimple.BankNotificationListener"
