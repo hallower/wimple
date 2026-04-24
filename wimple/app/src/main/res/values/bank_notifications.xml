@@ -20,9 +20,6 @@
         <item>우리카드</item>
         <item>하나카드</item>
         <item>NH농협카드</item>
-        <item>카카오페이</item>
-        <item>네이버페이</item>
-        <item>페이코</item>
     </string-array>
     <string-array name="bank_app_values">
         <item>com.kbstar.kbbank</item>
@@ -44,9 +41,6 @@
         <item>com.wooricard.wpay</item>
         <item>com.hanaskcard.paycla</item>
         <item>nh.smart.card</item>
-        <item>com.kakao.talk</item>
-        <item>com.nhn.android.search</item>
-        <item>com.nhnent.payapp</item>
     </string-array>
 
     <string-array name="bank_noti_sort_entries">

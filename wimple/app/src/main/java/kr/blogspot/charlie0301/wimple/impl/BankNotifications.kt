@@ -4,11 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
-import android.text.TextUtils
 import android.util.Log
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -162,7 +162,7 @@ object BankNotifications {
         if (payload.isEmpty()) return false
 
         val content = "section_id=" + wimple.defaultSectionID +
-            "&rows=" + TextUtils.htmlEncode(payload)
+            "&rows=" + URLEncoder.encode(payload, "UTF-8")
 
         val json: JSONObject? = try {
             wimple.invokeRESTAPI(RestAPIInvoker.HTTPMethod.POST, POST_PAYMENT_PATH, content)
