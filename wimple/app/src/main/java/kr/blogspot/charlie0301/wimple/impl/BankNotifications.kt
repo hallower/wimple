@@ -201,60 +201,158 @@ object BankNotifications {
         return pending.length()
     }
 
+    /**
+     * Forward pending notifications to Whooing as one POST per source app.
+     *
+     * Grouping rationale — from Whooing dev (흥반장) on the dev forum (posts 45307/45685):
+     *   > "api로 보내주실 때에는 각 번호별로 해주시는게 좋을 것 같습니다."
+     *   > "임시저장소에 보낼 때에 각 번호별로 보내는 것을 권장"
+     *
+     * The server parses each `rows` payload as SMS from a SINGLE sender with a single bank-
+     * specific format. Mixing multiple banks/apps into one batch causes the parser to pick
+     * one format and silently miss the others — this is exactly why 하나카드·우리카드 entries
+     * used to disappear from the 임시저장소. Splitting per-package gives each group its own
+     * parse pass.
+     *
+     * Response schema — confirmed from forum logs:
+     *   { "code":"200", "message":"", "error_parameters":[], "rest_of_api":N,
+     *     "results":{ "cnt": <recognized count> } }
+     *
+     * Failure isolation: each group is POSTed independently. On group failure, the items in
+     * that group stay in pending for a later retry; successful groups are dropped. This way
+     * a single bank's format quirk doesn't block the whole batch from getting through.
+     */
     private fun doSynchronousSend(ctx: Context, wimple: WimpleImpl): Boolean {
         val prefs = prefs(ctx)
         val pending = loadArray(prefs, KEY_PENDING_JSON)
         if (pending.length() == 0) return false
 
-        val payload = buildPayloadFromArray(pending)
-        if (payload.isEmpty()) return false
-
-        Log.d(LOG_TAG, "[send] posting ${pending.length()} items to Whooing, payload bytes=${payload.length}")
-        Log.d(LOG_TAG, "[send] payload:\n$payload")
-
-        val content = "section_id=" + wimple.defaultSectionID +
-            "&rows=" + URLEncoder.encode(payload, "UTF-8")
-
-        val json: JSONObject? = try {
-            wimple.invokeRESTAPI(RestAPIInvoker.HTTPMethod.POST, POST_PAYMENT_PATH, content)
-        } catch (e: Exception) {
-            Log.e(LOG_TAG, "[forward] REST invocation failed", e)
-            null
+        // Group pending items by source package while remembering each item's original index,
+        // so we can precisely rebuild `pending` with only the failed items afterwards.
+        data class Group(val pkg: String, val items: JSONArray, val originalIndices: List<Int>)
+        val groupMap = LinkedHashMap<String, Pair<JSONArray, MutableList<Int>>>()
+        for (i in 0 until pending.length()) {
+            val o = pending.optJSONObject(i) ?: continue
+            val pkg = o.optString("p").ifEmpty { "_unknown" }
+            val entry = groupMap.getOrPut(pkg) { JSONArray() to mutableListOf() }
+            entry.first.put(o)
+            entry.second.add(i)
         }
+        val groups = groupMap.map { (pkg, p) -> Group(pkg, p.first, p.second) }
+        Log.d(LOG_TAG, "[send] split ${pending.length()} items into ${groups.size} per-package group(s): " +
+            groups.joinToString { "${it.pkg}(${it.items.length()})" })
 
-        val success = json != null && json.optString("code").startsWith("2")
-        if (success) {
-            // Only clear items we actually sent. New notifications that arrived during the HTTP
-            // call are in `stored` (not pending) so they're safely preserved.
-            synchronized(this) {
-                prefs.edit().putString(KEY_PENDING_JSON, "[]").apply()
+        val failedIndices = HashSet<Int>()
+        var totalRecognized = 0
+        val sectionId = wimple.defaultSectionID
+
+        for (g in groups) {
+            val payload = buildPayloadFromArray(g.items)
+            if (payload.isEmpty()) {
+                // Empty payload (e.g., all items had blank title+text) — treat as not-worth-retrying
+                // and just drop, by not adding to failedIndices.
+                continue
             }
-            Log.d(LOG_TAG, "[forward] success, cleared ${pending.length()} pending notifications")
-        } else {
-            val msg = json?.optString("message") ?: "null response"
-            Log.e(LOG_TAG, "[forward] failed - $msg, pending preserved for retry")
+
+            Log.d(LOG_TAG, "[send] → ${g.pkg} (${g.items.length()} items, ${payload.length} bytes)")
+            Log.d(LOG_TAG, "[send] payload:\n$payload")
+
+            val content = "section_id=" + sectionId +
+                "&rows=" + URLEncoder.encode(payload, "UTF-8")
+
+            val json: JSONObject? = try {
+                wimple.invokeRESTAPI(RestAPIInvoker.HTTPMethod.POST, POST_PAYMENT_PATH, content)
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "[send] REST invocation failed for ${g.pkg}", e)
+                null
+            }
+            Log.d(LOG_TAG, "[send] ${g.pkg} response: $json")
+
+            // Classify the response so we can decide retry vs drop. Whooing responses use
+            // stringy codes ("200","400"); fall back to -1 if the response is null/malformed.
+            val code = json?.optString("code")?.toIntOrNull() ?: -1
+            when {
+                code in 200..299 -> {
+                    // results.cnt = number of entries the server actually recognized and stored
+                    // in 임시저장소. cnt=0 with code=200 means accepted but unparsed — format
+                    // mismatch for that bank; item is still lost from our side's perspective,
+                    // and retrying won't help, so we let it drop with a prominent warning.
+                    val cnt = json?.optJSONObject("results")?.optInt("cnt", -1) ?: -1
+                    totalRecognized += cnt.coerceAtLeast(0)
+                    if (cnt == 0) {
+                        Log.w(LOG_TAG, "[send] ${g.pkg} code=200 but server recognized 0 entries — " +
+                            "this bank's notification format is NOT being parsed. Report a sample " +
+                            "to Whooing support with the payload below so they can add a parser:")
+                        Log.w(LOG_TAG, "[send] ${g.pkg} unparsed payload:\n$payload")
+                    } else {
+                        Log.d(LOG_TAG, "[send] ${g.pkg} ok, results.cnt=$cnt (of ${g.items.length()} sent)")
+                    }
+                    // Don't add to failedIndices — items get cleared from pending.
+                }
+                code in 400..499 -> {
+                    // Permanent rejection — "지원하지 않는 형식입니다." per Whooing docs.
+                    // Retrying identical bytes won't change the outcome. Dropping prevents an
+                    // infinite retry loop that would block every future send (e.g. a subscribed
+                    // app sends non-transactional notifications like 카카오페이증권's stock price
+                    // alerts, which the server legitimately can't parse as a transaction).
+                    val msg = json?.optString("message") ?: "no message"
+                    Log.w(LOG_TAG, "[send] ${g.pkg} SERVER REJECTED code=$code msg='$msg' — " +
+                        "permanent failure, dropping ${g.items.length()} items (no retry). " +
+                        "If this app's notifications ARE real transactions, report the payload below:")
+                    Log.w(LOG_TAG, "[send] ${g.pkg} rejected payload:\n$payload")
+                    // Don't add to failedIndices — drop from pending.
+                }
+                else -> {
+                    // Network error (null json), 5xx, or unknown code — transient, worth retrying.
+                    val msg = json?.optString("message") ?: "null response"
+                    Log.e(LOG_TAG, "[send] ${g.pkg} transient failure code=$code msg='$msg' — " +
+                        "${g.items.length()} items will be kept for retry")
+                    failedIndices.addAll(g.originalIndices)
+                }
+            }
         }
-        return success
+
+        // Rebuild pending with only the items from groups that failed.
+        val newPending = JSONArray()
+        for (i in 0 until pending.length()) {
+            if (i in failedIndices) newPending.put(pending.get(i))
+        }
+        synchronized(this) {
+            prefs.edit().putString(KEY_PENDING_JSON, newPending.toString()).apply()
+        }
+        val clearedCount = pending.length() - newPending.length()
+        Log.d(LOG_TAG, "[forward] done: groups=${groups.size}, " +
+            "totalRecognized=$totalRecognized, cleared=$clearedCount, preservedForRetry=${newPending.length()}")
+
+        // "Success" = no group failed. Partial success (some recognized, some not recognized
+        // by server) still returns true — those items ARE gone from our side; whether the
+        // server understood them is a server-parser issue surfaced via results.cnt in logs.
+        return failedIndices.isEmpty()
     }
 
     /**
      * Build the `rows` payload for api/entries/outside.json.
      *
-     * The Whooing API doc only specifies `rows = "외부데이터 내용 (예: 은행 SMS 문자 내용)"`,
-     * no detailed format. The server parses SMS-style raw bank/card messages, so we mimic the
-     * legacy (2019) SMSReceiver format as closely as possible:
+     * Format per line (one captured notification = one line):
      *
-     *   {title} {text}\n
-     *   MM/dd HH:mm\n         <- only appended if the message doesn't already contain a date
+     *   {bank} {title?} {text} {MM/dd HH:mm?}\n
      *
-     * Title and text are joined with a single space so the combined string reads like a flat
-     * bank SMS (e.g. "출금 10,000원 입출금통장(1596) → 김철승 잔액 2,672,023원"). The server
-     * parser looks for patterns like amounts, bank names, and MM/dd tokens; prepending "title:"
-     * with a colon is non-standard and likely confuses it, so we drop that.
+     * Shape decisions based on diagnostic logs where group-by-package POSTs returned
+     * `results.cnt` per group:
      *
-     * Newlines inside a single notification's text are collapsed to spaces so each captured
-     * notification lands on its own line — matching how multi-SMS batches were concatenated
-     * in the original implementation.
+     *  - Bank name leads, no brackets — mirrors real bank SMS convention.
+     *  - **Title is dropped if it equals the bank label.** Some apps (e.g. MG새마을금고) use
+     *    the app name as the notification title, which previously produced duplicated
+     *    prefixes like "MG새마을금고 MG새마을금고 [입금] …" and threw off the parser.
+     *  - Body stays as `title text` (single space join) when they differ, preserving the
+     *    transaction-type + details shape that the parser's regex anchors on.
+     *  - **Timestamp goes at the END of the line**, not the middle. The working format
+     *    observed in logs for 하나은행 has all payload content flat and ends with the
+     *    MM/dd token — matching that shape gives us our best shot at parser compatibility.
+     *  - Timestamp is only appended when the body doesn't already contain an MM/dd token,
+     *    to avoid duplicate dates confusing the parser.
+     *  - Newlines → spaces, runs of 2+ spaces → single space: bank apps often pad for
+     *    visual alignment (`"김철승         잔액 …"`) which breaks whitespace tokenization.
      */
     private fun buildPayloadFromArray(arr: JSONArray): String {
         val sb = StringBuilder()
@@ -263,30 +361,30 @@ object BankNotifications {
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
             val label = o.optString("label").trim()
-            val title = o.optString("title").trim()
-            val text = o.optString("text").replace(Regex("""[\r\n]+"""), " ").trim()
+            val rawTitle = o.optString("title").trim()
+            // Drop the title when it just restates the app label — otherwise MG새마을금고 and
+            // similar apps that use the app name as the notification title would emit the
+            // bank name twice in a row.
+            val title = if (label.isNotEmpty() && rawTitle.equals(label, ignoreCase = true)) ""
+                        else rawTitle
+            val text = o.optString("text")
+                .replace(Regex("""[\r\n]+"""), " ")
+                .replace(Regex("""\s{2,}"""), " ")
+                .trim()
 
-            // Prepend the source app label in [brackets] so the line reads like a real bank SMS
-            // (e.g. "[KB국민은행] 출금 10,000원 ..."). The Whooing outside-input parser uses bank
-            // name keywords to select per-bank parsing rules — without this hint, notifications
-            // from banks whose name isn't in the title/text body can fall back to generic rules
-            // that miss amount/account fields.
-            val prefix = if (label.isNotEmpty()) "[$label] " else ""
             val body = when {
                 title.isNotEmpty() && text.isNotEmpty() -> "$title $text"
                 title.isNotEmpty() -> title
                 else -> text
             }
             if (body.isEmpty()) continue
-            val combined = prefix + body
 
-            sb.append(combined).append('\n')
-
-            // Legacy SMSReceiver logic: only append the capture timestamp if the message body
-            // doesn't already contain a MM/dd token. Avoids duplicate dates confusing the parser.
-            if (!dateInMessageRegex.containsMatchIn(combined)) {
-                sb.append(fmt.format(Date(o.optLong("t")))).append('\n')
+            if (label.isNotEmpty()) sb.append(label).append(' ')
+            sb.append(body)
+            if (!dateInMessageRegex.containsMatchIn(body)) {
+                sb.append(' ').append(fmt.format(Date(o.optLong("t"))))
             }
+            sb.append('\n')
         }
         return sb.toString()
     }
@@ -338,6 +436,28 @@ object BankNotifications {
         androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx).edit()
             .putString(KEY_CUSTOM_APPS, arr.toString())
             .apply()
+    }
+
+    /**
+     * One-time migration for installs upgrading from the preset-list era. Any package name
+     * still sitting in the monitored set (`KEY_BANK_NOTI_APPS`) but not in the user's custom
+     * list gets appended to the custom list so it remains visible/manageable in the settings
+     * screen. No-op once all monitored apps are accounted for.
+     */
+    fun migrateLegacyMonitoredApps(ctx: Context) {
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(ctx)
+        val monitored = prefs.getStringSet(
+            kr.blogspot.charlie0301.wimple.BankNotificationListener.KEY_BANK_NOTI_APPS,
+            emptySet()
+        ) ?: emptySet()
+        if (monitored.isEmpty()) return
+        val existing = getCustomApps(ctx)
+        val existingSet = existing.toHashSet()
+        val missing = monitored.filter { it !in existingSet }
+        if (missing.isEmpty()) return
+        val merged = existing.toMutableList().apply { addAll(missing) }
+        setCustomApps(ctx, merged)
+        Log.d(LOG_TAG, "[migrate] added ${missing.size} legacy preset apps to custom list: $missing")
     }
 
     private fun prefs(ctx: Context): SharedPreferences =

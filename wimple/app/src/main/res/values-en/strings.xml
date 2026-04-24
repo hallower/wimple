@@ -207,6 +207,9 @@
     <string name="bank_noti_sort_summary">Choose how \"Apps to Monitor\" is sorted.</string>
     <string name="bank_noti_picker_title">Select Apps to Monitor</string>
     <string name="bank_noti_picker_search_hint">Search by app name or package</string>
+    <string name="bank_noti_picker_finance_subtitle">Showing bank / invest / card / pay apps only</string>
+    <string name="bank_noti_picker_loading">Loading installed apps…</string>
+    <string name="bank_noti_picker_opening">Opening app picker…</string>
     <string name="bank_noti_info_dialog_title">How Notification Capture Works</string>
     <string name="bank_noti_info_dialog_message">Wimple operates as follows:\n\n• Only notifications from apps you selected in \"Apps to Monitor\" are read. Notifications from any other app are ignored.\n\n• Captured notifications are cached in this app\'s private storage only. Due to Android\'s app-sandbox policy, no other app or file manager can access this cache.\n\n• Stored notifications are forwarded to the Whooing service only — never to any other external server.\n\n• Forwarded notifications are deleted from the cache. You can inspect or clear the current cache via \"View Stored Notifications\".</string>
 

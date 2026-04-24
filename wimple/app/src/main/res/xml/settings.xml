@@ -37,8 +37,6 @@
         <MultiSelectListPreference
             app:iconSpaceReserved="false"
             android:dependency="pref_bankNotiEnable"
-            android:entries="@array/bank_app_entries"
-            android:entryValues="@array/bank_app_values"
             android:key="pref_bankNotiApps"
             android:summary="@string/bank_noti_apps_summary"
             android:title="@string/bank_noti_apps_title" />

@@ -8,7 +8,9 @@
       "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\" -version)",
       "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
       "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
-      "Bash(./gradlew :app:compileDebugKotlin)"
+      "Bash(./gradlew :app:compileDebugKotlin)",
+      "Bash(curl -sL \"https://api.github.com/repos/wisedog/WhoochooAdvSms/git/trees/master?recursive=1\")",
+      "Bash(curl -sL \"https://whooing.com/\" -A \"Mozilla/5.0\")"
     ]
   }
 }

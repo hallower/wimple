@@ -1,48 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="bank_app_entries">
-        <item>KB국민은행</item>
-        <item>신한은행</item>
-        <item>우리은행</item>
-        <item>하나은행</item>
-        <item>NH농협</item>
-        <item>IBK기업은행</item>
-        <item>카카오뱅크</item>
-        <item>토스</item>
-        <item>케이뱅크</item>
-        <item>SC제일은행</item>
-        <item>KB국민카드</item>
-        <item>신한카드</item>
-        <item>삼성카드</item>
-        <item>현대카드</item>
-        <item>롯데카드</item>
-        <item>BC카드</item>
-        <item>우리카드</item>
-        <item>하나카드</item>
-        <item>NH농협카드</item>
-    </string-array>
-    <string-array name="bank_app_values">
-        <item>com.kbstar.kbbank</item>
-        <item>com.shinhan.sbanking</item>
-        <item>com.wooribank.smart.npib</item>
-        <item>com.hanabank.ebk.channel.android.hananbank</item>
-        <item>nh.smart</item>
-        <item>com.ibk.neobanking</item>
-        <item>com.kakaobank.channel</item>
-        <item>viva.republica.toss</item>
-        <item>com.kbankwith.smartbanking</item>
-        <item>com.scb.bankingapp</item>
-        <item>com.kbcard.cxh.appcard</item>
-        <item>com.shcard.smartpay</item>
-        <item>kr.co.samsungcard.mpocket</item>
-        <item>com.hyundaicard.appcard</item>
-        <item>com.lotte.lottesmartpay</item>
-        <item>com.bccard.smartpay</item>
-        <item>com.wooricard.wpay</item>
-        <item>com.hanaskcard.paycla</item>
-        <item>nh.smart.card</item>
-    </string-array>
-
     <string-array name="bank_noti_sort_entries">
         <item>추가된 순</item>
         <item>이름순</item>

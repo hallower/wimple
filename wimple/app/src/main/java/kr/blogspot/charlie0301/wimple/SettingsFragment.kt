@@ -194,36 +194,35 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             false
         }
 
+        // One-time migration: legacy installs had preset packages in the monitored set that
+        // weren't tracked in the custom-apps list. Pull them in so they remain visible.
+        BankNotifications.migrateLegacyMonitoredApps(requireContext())
+
         refreshBankAppEntries()
     }
 
     /**
-     * Rebuild the MultiSelectListPreference so it shows preset banks plus any custom packages
-     * the user added via [BankAppPickerActivity]. Custom entries resolve their display label
-     * from PackageManager; uninstalled packages fall back to the raw package name.
+     * Rebuild the MultiSelectListPreference from the user's custom-apps list. There are no
+     * presets anymore — everything in the list was added either via [BankAppPickerActivity]
+     * or via the legacy-migration step. Labels are resolved through PackageManager; any
+     * package whose app has since been uninstalled falls back to the raw package name.
      *
      * Respects [BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER]:
-     *  - "added" (default): most recently added custom app FIRST (reverse insertion order),
-     *    then presets in their declared order. Newly-added apps stay on top so the user can
-     *    find them quickly.
-     *  - "name": full combined list sorted by display label (locale-insensitive, case-insensitive).
+     *  - "added" (default): reverse insertion order (newest-added first).
+     *  - "name": alphabetical by display label (case/locale-insensitive).
      *
-     * Also re-syncs the preference's in-memory [MultiSelectListPreference.getValues] from
-     * SharedPreferences — critical because [BankAppPickerActivity] writes directly to the
-     * underlying StringSet, which doesn't invalidate the preference's cached `mValues`.
-     * Without this, picked apps appear unchecked in the dialog even though they're monitored.
+     * Re-syncs the preference's in-memory values from SharedPreferences — critical because
+     * [BankAppPickerActivity] writes directly to the underlying StringSet, which doesn't
+     * invalidate the preference's cached `mValues`. Without this, picked apps appear
+     * unchecked despite actually being monitored.
      *
-     * Also installs a change listener that removes a user-added custom app from the ordered
-     * list when unchecked in the dialog. Unchecking a preset merely stops monitoring it;
-     * presets are never removed from the visible list.
+     * Also installs a change listener so unchecking an app in the dialog removes it from
+     * the custom-apps list entirely (making the app disappear from the visible list).
      */
     private fun refreshBankAppEntries() {
         val ctx = context ?: return
         val appsPref = preferenceScreen.findPreference<MultiSelectListPreference>(
             BankNotificationListener.KEY_BANK_NOTI_APPS) ?: return
-
-        val presetEntries = resources.getStringArray(R.array.bank_app_entries).toList()
-        val presetValues = resources.getStringArray(R.array.bank_app_values).toList()
 
         val customValues = BankNotifications.getCustomApps(ctx)
         val pm = ctx.packageManager
@@ -238,34 +237,28 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
         val sortOrder = prefs.getString(BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER, "added")
-        val sorted = ArrayList<Pair<String, String>>(presetEntries.size + customEntries.size)
+        val sorted = ArrayList<Pair<String, String>>(customEntries.size)
         when (sortOrder) {
             "name" -> {
-                for (i in presetEntries.indices) sorted.add(presetEntries[i] to presetValues[i])
                 for (i in customEntries.indices) sorted.add(customEntries[i] to customValues[i])
                 sorted.sortBy { it.first.lowercase() }
             }
             else -> {
-                // "added" — custom apps in REVERSE insertion order (newest first), then presets.
+                // "added" — newest-added first (reverse insertion order).
                 for (i in customEntries.indices.reversed()) sorted.add(customEntries[i] to customValues[i])
-                for (i in presetEntries.indices) sorted.add(presetEntries[i] to presetValues[i])
             }
         }
 
         appsPref.entries = sorted.map { it.first }.toTypedArray()
         appsPref.entryValues = sorted.map { it.second }.toTypedArray()
 
-        // Re-sync the preference's in-memory values with what was just written to SharedPreferences
-        // (e.g., by BankAppPickerActivity.save()). MultiSelectListPreference caches its values
-        // field internally and only reloads on initial bind — without this, newly-picked apps
-        // look unchecked in the dialog despite actually being in the monitored set.
         val monitored = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
         if (appsPref.values != monitored) {
             appsPref.values = HashSet(monitored)
         }
 
-        // When user unticks a custom app inside the dialog, also remove it from the ordered
-        // custom list so it disappears from the entries entirely. Preset values are left alone.
+        // Unchecking an app in the dialog removes it from the custom list entirely
+        // (there are no more presets that would stay as "inert" entries).
         appsPref.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
             @Suppress("UNCHECKED_CAST")
             val newSelected = (newValue as? Set<String>) ?: return@OnPreferenceChangeListener true
@@ -273,15 +266,10 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             val removed = oldSelected - newSelected
             if (removed.isEmpty()) return@OnPreferenceChangeListener true
 
-            val presetSet = presetValues.toHashSet()
-            val customRemoved = removed.filter { it !in presetSet }
-            if (customRemoved.isEmpty()) return@OnPreferenceChangeListener true
-
             val updated = BankNotifications.getCustomApps(ctx).toMutableList()
-            updated.removeAll(customRemoved)
+            updated.removeAll(removed)
             BankNotifications.setCustomApps(ctx, updated)
 
-            // Refresh entries after the preference has finished committing the new value.
             Handler(Looper.getMainLooper()).post { refreshBankAppEntries() }
             true
         }
@@ -350,15 +338,39 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
      * Privacy/data-handling disclosure shown once, right after the user grants notification
      * access. Tells them we only read notifications from apps they selected, cache locally
      * in app-private storage, and forward to Whooing only — nowhere else.
+     *
+     * @param onDismiss invoked on the OK button press; used to chain the initial
+     *                  finance-app picker onto the end of the onboarding flow.
      */
-    private fun showDataHandlingInfoDialog() {
+    private fun showDataHandlingInfoDialog(onDismiss: (() -> Unit)? = null) {
         val ctx = context ?: return
         AlertDialog.Builder(ctx)
             .setTitle(R.string.bank_noti_info_dialog_title)
             .setMessage(R.string.bank_noti_info_dialog_message)
             .setCancelable(false)
-            .setPositiveButton(android.R.string.ok, null)
+            .setPositiveButton(android.R.string.ok) { _, _ -> onDismiss?.invoke() }
             .show()
+    }
+
+    /**
+     * Launch the app picker with the finance pre-filter turned on. Used as the final step
+     * of initial onboarding so the user sees bank/card/pay apps right away. Set the
+     * "picker done" flag so this never auto-runs again; subsequent additions go through the
+     * "앱 목록에서 추가" preference (no pre-filter).
+     *
+     * Shows an immediate toast so the user sees feedback during the brief activity-launch
+     * transition — otherwise the device just looks frozen for a moment after they tap OK
+     * on the info dialog.
+     */
+    private fun launchInitialFinancePicker() {
+        val ctx = context ?: return
+        Toast.makeText(ctx, R.string.bank_noti_picker_opening, Toast.LENGTH_SHORT).show()
+        PreferenceManager.getDefaultSharedPreferences(ctx).edit()
+            .putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true)
+            .apply()
+        val intent = Intent(ctx, BankAppPickerActivity::class.java)
+            .putExtra(BankAppPickerActivity.EXTRA_FINANCE_FILTER, true)
+        startActivity(intent)
     }
 
     override fun onResume() {
@@ -380,15 +392,21 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
         }
 
         // If we previously sent the user to notification-access settings and they granted it,
-        // show the one-time data-handling disclosure. We keep the "accessInfoShown" flag so
-        // toggling off/on later doesn't re-nag the user.
+        // show the one-time data-handling disclosure, then (still first-time only) auto-open
+        // the app picker pre-filtered to finance apps so they can pick their banks/cards.
+        // The "accessInfoShown" and "initialPickerDone" flags ensure this whole sequence runs
+        // at most once per device lifetime — subsequent re-enables don't re-nag.
         val requested = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false)
         if (requested) {
             prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false).apply()
-            val alreadyShown = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, false)
-            if (granted && !alreadyShown) {
+            val alreadyShownInfo = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, false)
+            if (granted && !alreadyShownInfo) {
                 prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, true).apply()
-                showDataHandlingInfoDialog()
+                val initialPickerDone = prefs.getBoolean(
+                    BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, false)
+                showDataHandlingInfoDialog(onDismiss = {
+                    if (!initialPickerDone) launchInitialFinancePicker()
+                })
             }
         }
 

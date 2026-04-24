@@ -1,9 +1,10 @@
 package kr.blogspot.charlie0301.wimple
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -23,15 +24,36 @@ import androidx.preference.PreferenceManager
 import kr.blogspot.charlie0301.wimple.impl.BankNotifications
 
 /**
- * App picker for letting the user add banks/cards not in the preset list.
+ * App picker for letting the user choose which installed apps to monitor for bank/card
+ * notifications. There are no longer any preset apps — every monitored package flows
+ * through this picker.
  *
- * Lists all launcher-visible apps installed on the device. The user ticks any
- * they want monitored; the selection is merged into the MultiSelectListPreference
- * set used by [BankNotificationListener]. The full custom-package list is also
- * kept in [KEY_BANK_NOTI_CUSTOM_APPS] so the main settings screen can render
- * those entries with their labels (looked up via PackageManager).
+ * Launch modes:
+ *  - Default: lists all launcher-visible apps so the user can pick freely.
+ *  - With [EXTRA_FINANCE_FILTER] = true: initially filters to apps whose label or package
+ *    contains finance-related keywords (은행, 증권, 카드, 페이, bank, invest, card, pay).
+ *    As soon as the user types in the search box, the finance filter turns off and the
+ *    search query takes over, so nothing is permanently hidden.
  */
 class BankAppPickerActivity : AppCompatActivity() {
+
+    companion object {
+        /** Intent extra: if true, open with the finance-app pre-filter active. */
+        const val EXTRA_FINANCE_FILTER = "extra_finance_filter"
+
+        // Keywords used by the optional finance-app pre-filter. Matched case-insensitively against
+        // both the app's user-facing label AND the package name (label is primary — package names
+        // are usually English even for Korean banks, so they rarely contain the Korean keywords).
+        //
+        // Explicitly covers user-reported misses: 저축은행 (via 은행), 새마을금고 (via 새마을 OR 금고),
+        // 농협·축협·수협 (each added by full name since "은행" alone misses 농협중앙회·축협 등),
+        // plus common fintech like 토스·뱅크·네이버페이·카카오페이.
+        private val FINANCE_KEYWORDS = listOf(
+            "은행", "뱅크", "증권", "카드", "페이", "금융", "저축",
+            "농협", "축협", "수협", "새마을", "금고", "토스",
+            "bank", "invest", "card", "pay", "finance", "wallet", "credit", "toss"
+        )
+    }
 
     private data class AppEntry(val label: String, val pkg: String, val icon: Drawable)
 
@@ -52,14 +74,19 @@ class BankAppPickerActivity : AppCompatActivity() {
         }
 
         listView = findViewById(R.id.app_list)
+        val searchBox = findViewById<EditText>(R.id.search_box)
+        val loadingContainer = findViewById<View>(R.id.loading_container)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         initialSelection.addAll(prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet())
         currentSelection.addAll(initialSelection)
 
-        loadInstalledApps()
-
+        val financeFilterInitial = intent.getBooleanExtra(EXTRA_FINANCE_FILTER, false)
         adapter = AppAdapter()
+        if (financeFilterInitial) {
+            adapter.setFinanceFilterActive(true)
+            supportActionBar?.subtitle = getString(R.string.bank_noti_picker_finance_subtitle)
+        }
         listView.adapter = adapter
 
         listView.setOnItemClickListener { _, _, position, _ ->
@@ -69,10 +96,17 @@ class BankAppPickerActivity : AppCompatActivity() {
             adapter.notifyDataSetChanged()
         }
 
-        findViewById<EditText>(R.id.search_box).addTextChangedListener(object : TextWatcher {
+        searchBox.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                adapter.setQuery(s?.toString() ?: "")
+                val q = s?.toString().orEmpty()
+                adapter.setQuery(q)
+                // Once the user starts searching manually, drop the finance pre-filter so nothing
+                // they might want is permanently hidden.
+                if (q.isNotBlank() && adapter.financeFilterActive) {
+                    adapter.setFinanceFilterActive(false)
+                    supportActionBar?.subtitle = null
+                }
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -84,9 +118,26 @@ class BankAppPickerActivity : AppCompatActivity() {
                 finish()
             }
         })
+
+        // Load installed apps on a background thread so the activity opens instantly
+        // with a visible progress indicator. PackageManager.queryIntentActivities +
+        // loadIcon() for 100+ launcher apps can take several hundred ms — blocking the
+        // main thread there is exactly why users couldn't tell anything was happening
+        // after dismissing the data-handling dialog.
+        Thread {
+            val loaded = enumerateLauncherApps()
+            Handler(Looper.getMainLooper()).post {
+                if (isFinishing || isDestroyed) return@post
+                allEntries = loaded
+                adapter.onDataLoaded()
+                loadingContainer.visibility = View.GONE
+                searchBox.visibility = View.VISIBLE
+                listView.visibility = View.VISIBLE
+            }
+        }.start()
     }
 
-    private fun loadInstalledApps() {
+    private fun enumerateLauncherApps(): List<AppEntry> {
         val pm = packageManager
         val launcher = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
         val resolveInfos = pm.queryIntentActivities(launcher, 0)
@@ -105,7 +156,7 @@ class BankAppPickerActivity : AppCompatActivity() {
             list.add(AppEntry(label, pkg, icon))
         }
         list.sortBy { it.label.lowercase() }
-        allEntries = list
+        return list
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -116,34 +167,28 @@ class BankAppPickerActivity : AppCompatActivity() {
     }
 
     /**
-     * Persists the current pick list. Called from every exit path — back gesture,
-     * toolbar-home button, and as a safety net in [onStop] if the activity is being
-     * finished. No explicit save button is shown.
+     * Persist the current selection. Called on every exit path — back gesture, toolbar home,
+     * and as a safety net in [onStop] if the activity is being finished. No explicit save button.
+     *
+     * All ticked packages become monitored AND get appended (insertion-order preserving) to
+     * the ordered custom-app list. Unticked packages are removed from both sets.
      */
     private fun save() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         // Merge picked selection into the monitored set.
         val monitored = HashSet(prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet())
-        // Remove packages that were in initialSelection but not in currentSelection (user unticked).
         for (pkg in initialSelection) {
             if (!currentSelection.contains(pkg)) monitored.remove(pkg)
         }
-        // Add newly-ticked ones.
         monitored.addAll(currentSelection)
 
-        // Update the ordered custom-app list. Insertion order is preserved so the settings UI
-        // can render "추가된 순" sorting correctly.
-        val presetValues = resources.getStringArray(R.array.bank_app_values).toHashSet()
+        // Maintain the ordered custom-app list: drop unticked, append newly-ticked.
         val deselected = initialSelection - currentSelection
         val existingOrder = BankNotifications.getCustomApps(this).toMutableList()
-        // Drop custom packages that were unticked in this picker session.
-        for (pkg in deselected) {
-            if (pkg !in presetValues) existingOrder.remove(pkg)
-        }
-        // Append newly-added custom packages (preserve first-seen order).
+        for (pkg in deselected) existingOrder.remove(pkg)
         for (pkg in currentSelection) {
-            if (pkg !in presetValues && pkg !in existingOrder) existingOrder.add(pkg)
+            if (pkg !in existingOrder) existingOrder.add(pkg)
         }
 
         prefs.edit()
@@ -153,21 +198,41 @@ class BankAppPickerActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        // Safety net: guarantees a save if the activity is being finished via some path that
-        // bypassed back/home (e.g. task removal, system kill with finish). No-op if already saved.
         if (isFinishing) save()
         super.onStop()
     }
 
     private inner class AppAdapter : BaseAdapter() {
-        private var filtered: List<AppEntry> = allEntries
+        private var filtered: List<AppEntry> = emptyList()
         private var query: String = ""
+        var financeFilterActive: Boolean = false
+            private set
+
+        /** Called once [allEntries] finishes loading on a background thread. */
+        fun onDataLoaded() {
+            applyFilters()
+        }
 
         fun setQuery(q: String) {
             query = q.trim()
-            filtered = if (query.isEmpty()) allEntries
-            else allEntries.filter {
-                it.label.contains(query, ignoreCase = true) || it.pkg.contains(query, ignoreCase = true)
+            applyFilters()
+        }
+
+        fun setFinanceFilterActive(active: Boolean) {
+            financeFilterActive = active
+            applyFilters()
+        }
+
+        private fun applyFilters() {
+            filtered = allEntries.filter { entry ->
+                val matchesFinance = !financeFilterActive || FINANCE_KEYWORDS.any {
+                    entry.label.contains(it, ignoreCase = true) ||
+                    entry.pkg.contains(it, ignoreCase = true)
+                }
+                val matchesQuery = query.isEmpty() ||
+                    entry.label.contains(query, ignoreCase = true) ||
+                    entry.pkg.contains(query, ignoreCase = true)
+                matchesFinance && matchesQuery
             }
             notifyDataSetChanged()
         }
