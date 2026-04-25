@@ -253,6 +253,18 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             // Token loaded from SharedPreferences (or already authed in this process).
             Log.d(LOG_TAG, "WimpleActivity, authed — bootstrapping user info")
             WimpleImpl.getInstance().getUserInfo(true)
+
+            // Replicate the splash-flow section warm-up that we lose by skipping
+            // SplashScreenActivity on cold-start-with-token. getDefaultSections(false)
+            // hits the section DB cache instantly and ends up firing onLoggedIn →
+            // WIMPLE_LOGGIN_SUCCESS. The fragment's handler reruns initWimple(),
+            // giving GET_ALL_ACCOUNT_RECEIVED a guaranteed second arrival — needed
+            // because TransactionInsertFragment can race the user tapping a latest
+            // item before its own getAllAccounts call returns, leaving the bottom
+            // category empty until something re-triggers selectLeftCategory().
+            if (!WimpleImpl.getInstance().isInitializedFinished) {
+                WimpleImpl.getInstance().getDefaultSections(false)
+            }
         } else {
             // No stored token / token cleared. Show splash on top of this activity (no
             // CLEAR_TASK) — combined with WimpleActivity's singleTask launch mode this means
