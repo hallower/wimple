@@ -14,7 +14,6 @@ import android.widget.AbsListView.OnScrollListener
 import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.FrameLayout
 import android.widget.Toast
-import kr.blogspot.charlie0301.wimple.WimpleActivity.Companion.CommandID
 import kr.blogspot.charlie0301.wimple.databinding.FragmentTransactionListTabBinding
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
