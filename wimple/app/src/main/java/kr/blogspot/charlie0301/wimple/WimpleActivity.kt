@@ -165,30 +165,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             return true
         }
 
-        if (id == R.id.menu_transaction_insert) {
-            this.currentFragment = TransactionInsertFragment()
-            //mDrawerList.setItemChecked(position, true);
-            //setTitle(mPlanetTitles[position]);
-        } else if (id == R.id.menu_transaction_list) {
-            this.currentFragment = TransactionListFragment()
-        } else if (id == R.id.menu_financial_overview) {
-            this.currentFragment = FinancialStateSummaryFragment()
-        } else if (id == R.id.menu_saving) {
-            this.currentFragment = SavingStateSummaryFragment()
-        } else if (id == R.id.menu_debt) {
-            this.currentFragment = DebtStateSummaryFragment()
-        } else if (id == R.id.menu_income_expense_overview) {
-            this.currentFragment = IncomeExpenseSummaryFragment()
-        } else if (id == R.id.menu_income) {
-            this.currentFragment = IncomeSummaryFragment()
-        } else if (id == R.id.menu_expense) {
-            this.currentFragment = ExpenseSummaryFragment()
-        } else if (id == R.id.menu_preference) {
-            this.currentFragment = SettingsFragment()
-        } else {
-            return false
-        }
-
+        val target = MenuFragment.fromMenuId(id) ?: return false
+        this.currentFragment = target.factory()
         this.currentMenuID = id
 
         fabController.refreshIcon()
