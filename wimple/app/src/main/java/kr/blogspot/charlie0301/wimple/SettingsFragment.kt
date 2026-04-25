@@ -88,24 +88,33 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             wimple.clearAllDBRecords()
 
             if (context != null) {
+                val ctx = requireContext()
+
                 val cookieManager = CookieManager.getInstance()
                 cookieManager.setAcceptCookie(true)
                 cookieManager.removeAllCookies(null)
                 cookieManager.flush()
 
-                requireContext().deleteDatabase("webview.db")
-                requireContext().deleteDatabase("webviewCache.db")
+                ctx.deleteDatabase("webview.db")
+                ctx.deleteDatabase("webviewCache.db")
 
-                // clear biometric option and onboarding flag
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                sharedPref.edit()
-                    .putBoolean(KEY_BIOMETRIC_OPTION, false)
-                    .putBoolean(BiometricOnboarding.KEY_BIOMETRIC_ONBOARDING_SHOWN, false)
-                    .apply()
+                // Wipe ALL user preferences so the next account starts at the
+                // XML-declared defaults. Selective clears (the old biometric-only
+                // path) leak per-account state into the next session — most
+                // notably pref_bankNotiEnable / pref_bankNotiApps, which would
+                // keep capturing notifications under the previous user's setup.
+                PreferenceManager.getDefaultSharedPreferences(ctx).edit().clear().apply()
+                // Re-seed XML defaultValue declarations (bank-noti threshold/sort/
+                // toast, monthly-item count, financial-state auto-refresh, floating
+                // button rotation, …) so the new session reads the documented
+                // defaults rather than each call site's hard-coded fallback.
+                PreferenceManager.setDefaultValues(ctx, R.xml.settings, true)
+
+                // Drop captured/pending bank-noti payloads from the private prefs
+                // file — these are tied to the previous account and must not be
+                // forwarded after re-login.
+                BankNotifications.clear(ctx)
             }
-
-            //System.runFinalizersOnExit(true);
-            //System.exit(0);
 
             val intent = Intent(context, SplashScreenActivity::class.java)
             intent.putExtra("auth_again", "")
@@ -162,9 +171,22 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             BankNotificationListener.KEY_BANK_NOTI_ENABLE)!!
         enableBox.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
             val turningOn = newValue as Boolean
-            if (turningOn && context != null &&
-                !BankNotificationListener.isNotificationAccessGranted(requireContext())) {
-                showNotificationAccessGuideDialog()
+            if (turningOn && context != null) {
+                val ctx = requireContext()
+                if (!BankNotificationListener.isNotificationAccessGranted(ctx)) {
+                    // No OS permission — guide the user to settings; the data-handling
+                    // notice + initial finance-app picker fire later from onResume()
+                    // once they return with permission granted.
+                    showNotificationAccessGuideDialog()
+                } else {
+                    // Permission already granted at the OS level. This is the common
+                    // post-logout case: notification-listener access persists across
+                    // logout (the OS holds it), but our onboarding flags were wiped.
+                    // Without this branch the user re-enables silently and never sees
+                    // the disclosure or picker again — run them inline here since we
+                    // won't be making the settings round-trip that gates onResume.
+                    maybeRunPostAccessOnboarding(ctx)
+                }
             }
             true
         }
@@ -340,9 +362,33 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
     }
 
     /**
-     * Privacy/data-handling disclosure shown once, right after the user grants notification
-     * access. Tells them we only read notifications from apps they selected, cache locally
-     * in app-private storage, and forward to Whooing only — nowhere else.
+     * Run the post-access onboarding sequence: data-handling disclosure → (if not yet
+     * launched) initial finance-app picker. Idempotent via
+     * [BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN] so enable/disable cycles
+     * within the same login session don't re-nag — the flag is wiped on logout
+     * (SettingsFragment logout handler), so a returning user sees the sequence again.
+     *
+     * Invoked from two paths:
+     *  - Enable toggle when OS permission is already granted (common post-logout).
+     *  - onResume() after the user returns from a settings round-trip with permission newly granted.
+     */
+    private fun maybeRunPostAccessOnboarding(ctx: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        if (prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, false)) return
+
+        prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, true).apply()
+        val initialPickerDone = prefs.getBoolean(
+            BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, false)
+        showDataHandlingInfoDialog(onDismiss = {
+            if (!initialPickerDone) launchInitialFinancePicker()
+        })
+    }
+
+    /**
+     * Privacy/data-handling disclosure shown once per login session, right after the user
+     * grants (or re-confirms) notification access. Tells them we only read notifications
+     * from apps they selected, cache locally in app-private storage, and forward to Whooing
+     * only — nowhere else.
      *
      * @param onDismiss invoked on the OK button press; used to chain the initial
      *                  finance-app picker onto the end of the onboarding flow.
@@ -396,22 +442,16 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             }
         }
 
-        // If we previously sent the user to notification-access settings and they granted it,
-        // show the one-time data-handling disclosure, then (still first-time only) auto-open
-        // the app picker pre-filtered to finance apps so they can pick their banks/cards.
-        // The "accessInfoShown" and "initialPickerDone" flags ensure this whole sequence runs
-        // at most once per device lifetime — subsequent re-enables don't re-nag.
+        // If we sent the user to notification-access settings and they returned with
+        // permission granted, run the post-access onboarding (data-handling notice +
+        // initial finance-app picker). The "info shown" flag inside the helper guards
+        // against re-running across enable/disable cycles within the same login session;
+        // it is reset on logout so a re-login sees the sequence again.
         val requested = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false)
         if (requested) {
             prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false).apply()
-            val alreadyShownInfo = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, false)
-            if (granted && !alreadyShownInfo) {
-                prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_INFO_SHOWN, true).apply()
-                val initialPickerDone = prefs.getBoolean(
-                    BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, false)
-                showDataHandlingInfoDialog(onDismiss = {
-                    if (!initialPickerDone) launchInitialFinancePicker()
-                })
+            if (granted) {
+                maybeRunPostAccessOnboarding(ctx)
             }
         }
 
