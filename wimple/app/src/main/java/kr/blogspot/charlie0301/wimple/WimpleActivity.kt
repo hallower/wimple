@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -22,8 +21,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
-import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
-import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem
 import kr.blogspot.charlie0301.wimple.model.*
@@ -263,116 +260,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun setupWimpleImpl() {
-        WimpleImpl.getInstance().setApplicationContext(applicationContext)
-        WimpleImpl.getInstance().setStatusListener(object : IWimpleStatusListener {
-
-            override fun onLoggedIn(status: Boolean) {
-                if (status) {
-                    sm(CommandID.WIMPLE_LOGGIN_SUCCESS, "")
-                } else {
-                    sm(CommandID.WIMPLE_LOGGIN_FAILED, "")
-                }
-            }
-
-            override fun onLoggedOut() {
-                sm(CommandID.WIMPLE_LOGGOUT, "")
-            }
-
-            override fun onNetworkConnectionEstablished() {}
-
-            override fun onNetworkConnectionLost() {}
-
-            override fun onProfilePictureUpdated() {
-                sm(CommandID.WIMPLE_PROFILE_PICTURE_UPDATED, "")
-            }
-
-        })
-        WimpleImpl.getInstance().setResponseListener(object : IWimpleResponseListener {
-
-            override fun onGetAuthTempToken(status: Boolean, tempToken: String) {}
-
-            override fun onGetAuthAccessToken(status: Boolean,
-                                              result: Map<String, String>) {
-            }
-
-            override fun onGetUserInfoResponseReceived(status: Boolean, info: UserInfo) {
-                if (status) {
-                    Log.i(LOG_TAG, info.toString())
-                    sm(CommandID.UPDATE_USER_INFO, 1, 0, info)
-                } else {
-                    Toast.makeText(applicationContext, "Login Failed!!!!", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onGetAllSectionResponseReceived(status: Boolean, list: Collection<Section>) {
-                sm(CommandID.GET_ALL_SECTION_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetAllAccountResponseReceived(status: Boolean, list: Collection<Account>) {
-                sm(CommandID.GET_ALL_ACCOUNT_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm(CommandID.GET_ENTRIES_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetLatestEntriesResponseReceived(status: Boolean, list: Collection<Entry>) {
-                sm(CommandID.GET_LATEST_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onMakeEntryResponseReceived(status: Boolean, entryDate: String) {
-                sm(CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entryDate)
-            }
-
-            override fun onGetFrequentItemsResponseReceived(status: Boolean,
-                                                            list: Collection<Item>) {
-                sm(CommandID.GET_FREQUENT_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetLatestItemsResponseReceived(status: Boolean,
-                                                          list: Collection<Item>) {
-                sm(CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onModifyEntryResponseReceived(status: Boolean, entry: Entry) {
-                sm(CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, entry)
-            }
-
-            override fun onGetMonthlyItemsResponseReceived(status: Boolean,
-                                                           list: ArrayList<Item>) {
-                sm(CommandID.GET_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onRemoveEntryResponseReceived(status: Boolean, id: String) {
-                sm(CommandID.REMOVE_ENTRY_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
-            }
-
-            override fun onRemoveMonthlyItemResponseReceived(status: Boolean, id: String) {
-                sm(CommandID.REMOVE_MONTHLY_ITEMS_RESPONSE_RECEIVED, if (status) 1 else 0, 0, id)
-            }
-
-            override fun onGetFinancialStateResponseReceived(status: Boolean,
-                                                             list: Collection<AccountState>) {
-                sm(CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetIncomeAndExpenseResponseReceived(status: Boolean,
-                                                               list: Collection<AccountState>) {
-                sm(CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED, if (status) 1 else 0, 0, list)
-            }
-
-            override fun onGetBudgetResponseReceived(status: Boolean, isIncome: Boolean,
-                                                     list: Map<String, Budget>) {
-                sm(CommandID.GET_BUDGET_RESPONSE_RECEIVED, if (status) 1 else 0, if (isIncome) 1 else 0, list)
-            }
-
-            override fun onPostNewsResponseReceived(status: Boolean, id: String) {}
-
-            override fun onPostPaymentsResponseReceived(status: Boolean) {
-                sm(CommandID.POST_PAYMENT_RESPONSE_RECEIVED, if (status) 1 else 0, 0, "")
-            }
-
-        })
+        // Default forwarding behaviour for every callback lives in WimpleListenerBinder; we
+        // accept all defaults here. The auth check below is the only WimpleActivity-specific
+        // logic that needs to stay in this method.
+        WimpleListenerBinder(applicationContext, mainHandler!!).attach()
 
         if (WimpleImpl.getInstance().isAuthed && WimpleImpl.getInstance().isInitializedFinished) {
             // Already Logged-in
