@@ -243,16 +243,22 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // logic that needs to stay in this method.
         WimpleListenerBinder(applicationContext, mainHandler!!).attach()
 
-        if (WimpleImpl.getInstance().isAuthed && WimpleImpl.getInstance().isInitializedFinished) {
-            // Already Logged-in
-            Log.d(LOG_TAG, "WimpleActivity, logged in, default section existing")
+        // We only check `isAuthed` here, NOT `isInitializedFinished`. The latter is a runtime
+        // flag (set after the first successful section query) that is never persisted, so it
+        // is always false on a cold start — gating splash redirection on it caused the task
+        // to be wiped via FLAG_ACTIVITY_CLEAR_TASK after every process death, throwing the
+        // user back to the default fragment. `getUserInfo(true)` only requires `isAuthed`
+        // and triggers the rest of the bootstrap on its own.
+        if (WimpleImpl.getInstance().isAuthed) {
+            // Token loaded from SharedPreferences (or already authed in this process).
+            Log.d(LOG_TAG, "WimpleActivity, authed — bootstrapping user info")
             WimpleImpl.getInstance().getUserInfo(true)
         } else {
-            // not initialized or not Logged-in
-            Log.d(LOG_TAG, "WimpleActivity, not initialized or not logged in")
-            val intent = Intent(applicationContext, SplashScreenActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            applicationContext.startActivity(intent)
+            // No stored token / token cleared. Show splash on top of this activity (no
+            // CLEAR_TASK) — combined with WimpleActivity's singleTask launch mode this means
+            // splash.moveToMain() reuses the existing instance, so restored fragments survive.
+            Log.d(LOG_TAG, "WimpleActivity, no auth — launching splash on top")
+            startActivity(Intent(this, SplashScreenActivity::class.java))
         }
     }
 
