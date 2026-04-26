@@ -76,10 +76,7 @@ class SavingStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFrag
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh) {
-                        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-                    }
+                    this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
                 }
 
                 if (!booleanStatus) {

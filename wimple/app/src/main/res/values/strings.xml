@@ -40,12 +40,8 @@
     <string name="settings_entry_monthly_display">월별 거래 입력 항목 표시</string>
     <string name="settings_summary_entry_monthly_display">등록된 월별 거래 입력 항목을 거래 내역 위에 표시합니다.</string>
     <string name="settings_entry_monthly_display_count">월별 거래 입력 항목 표시 개수</string>
-    <string name="settings_summary_financial_state_auto_refresh">자산 부채 정보를 페이지를 열때 마다 새로운 내역을 반영합니다.</string>
-    <string name="settings_financial_state_auto_refresh">자산 부채 자동 업데이트</string>
     <string name="settings_summary_financial_state_show_group">자산 부채 그래프의 항목을 개별 아이템이 아닌 그룹으로 묶어 표시합니다.</string>
     <string name="settings_financial_state_show_group">그룹 항목 그래프 보여주기</string>
-    <string name="settings_summary_income_expense_state_auto_refresh">비용 수익 정보를 페이지를 열때 마다 새로운 내역을 반영합니다.</string>
-    <string name="settings_income_expense_state_auto_refresh">비용 수익 자동 업데이트</string>
     <string name="settings_summary_income_expense_state_show_group">비용 수익 그래프의 항목을 개별 아이템이 아닌 그룹으로 묶어 표시합니다.</string>
     <string name="settings_income_expense_state_show_group">그룹 항목 그래프 보여주기</string>
     <string name="settings_summary_income_expense_state_enable_budget">비용 수익 정보와 함께 예산정보를 표시합니다.</string>

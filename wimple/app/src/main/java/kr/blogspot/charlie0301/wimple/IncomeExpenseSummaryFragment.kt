@@ -120,21 +120,16 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    // To show previous data during new data dispatching without any GUI display delay.
-                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh) {
-                        val c = Calendar.getInstance()
-                        c.time = Date()
-                        c.set(Calendar.DATE, 1)
-                        this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                        if (this.isUsingBudgetInformation) {
-                            this.wimple.getBudget(true, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                            this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                        }
-
-                        binding.ineUpdateNotification.visibility = View.VISIBLE
+                    val c = Calendar.getInstance()
+                    c.time = Date()
+                    c.set(Calendar.DATE, 1)
+                    this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
+                    if (this.isUsingBudgetInformation) {
+                        this.wimple.getBudget(true, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
+                        this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
                     }
+
+                    binding.ineUpdateNotification.visibility = View.VISIBLE
                 }
 
                 if (!booleanStatus) {

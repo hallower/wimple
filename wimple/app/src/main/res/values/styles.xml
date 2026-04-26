@@ -16,6 +16,20 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!--
+        Variant of AppTheme.NoActionBar that paints the system status bar with
+        colorPrimaryDark so it visually extends the toolbar above. Use this on
+        activities whose layout root has fitsSystemWindows="true" and a colored
+        Toolbar at the top — the parent theme's v21 override forces statusBarColor
+        to transparent (so SplashScreenActivity can render edge-to-edge), which
+        on a Light theme means the system bar shows the white windowBackground
+        and OS icons become hard to read. Overriding here keeps splash unaffected.
+    -->
+    <style name="AppTheme.NoActionBar.Tinted">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />

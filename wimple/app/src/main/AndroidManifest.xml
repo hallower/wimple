@@ -58,12 +58,12 @@
             android:name="kr.blogspot.charlie0301.wimple.BankNotificationListActivity"
             android:label="@string/bank_noti_list_title"
             android:parentActivityName="kr.blogspot.charlie0301.wimple.WimpleActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar.Tinted" />
         <activity
             android:name="kr.blogspot.charlie0301.wimple.BankAppPickerActivity"
             android:label="@string/bank_noti_picker_title"
             android:parentActivityName="kr.blogspot.charlie0301.wimple.WimpleActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar.Tinted" />
         <activity
             android:name="kr.blogspot.charlie0301.wimple.OpenSourceLicensesActivity"
             android:label="@string/opensource_licenses_title"

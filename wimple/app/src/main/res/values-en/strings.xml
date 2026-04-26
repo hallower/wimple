@@ -41,12 +41,8 @@
     <string name="settings_entry_monthly_display">Display Monthly Transactions</string>
     <string name="settings_summary_entry_monthly_display">Display a monthly transaction list in the transaction history page.</string>
     <string name="settings_entry_monthly_display_count">The Number of Monthly Transactions</string>
-    <string name="settings_summary_financial_state_auto_refresh">Update Budget information when the Balance page is opened.</string>
-    <string name="settings_financial_state_auto_refresh">Automatic Budget Update</string>
     <string name="settings_summary_financial_state_show_group">Display the Budget graph as grouped items</string>
     <string name="settings_financial_state_show_group">Show Grouped Items</string>
-    <string name="settings_summary_income_expense_state_auto_refresh">Update Profit/Loss information when the Profit/Loss status page is opened</string>
-    <string name="settings_income_expense_state_auto_refresh">Automatic Information Update</string>
     <string name="settings_summary_income_expense_state_show_group">Display the Profit/Loss graph as grouped items.</string>
     <string name="settings_income_expense_state_show_group">Show Grouped Items</string>
     <string name="settings_summary_income_expense_state_enable_budget">Display budget information in Profit/Loss status page.</string>

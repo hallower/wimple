@@ -545,9 +545,7 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
 
         const val KEY_MONTHLY_ITEM_COUNT = "pref_monthlyItemCount"
         const val KEY_MONTHLY_ITEM_DISPLAY = "pref_monthlyItemDisplay"
-        const val KEY_FINANCIAL_STATE_AUTO_REFRESH = "pref_financialStateAutoRefresh"
         const val KEY_FINANCIAL_STATE_SHOW_GROUP = "pref_financialStateShowGroup"
-        const val KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH = "pref_incomeExpenseStateAutoRefresh"
         const val KEY_DISABLE_MEMO = "pref_disableMemo"
         const val KEY_INCOME_EXPENSE_ENABLE_BUDGET = "pref_incomeExpenseStateEnableBudget"
         const val KEY_INCOME_EXPENSE_SHOW_GROUP = "pref_incomeExpenseStateShowGroup"

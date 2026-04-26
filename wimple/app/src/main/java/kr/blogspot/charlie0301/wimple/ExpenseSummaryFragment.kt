@@ -74,17 +74,12 @@ class ExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment
 
         when (command) {
             CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED -> {
-                val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
-
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh) {
-                        val c = Calendar.getInstance()
-                        c.time = Date()
-                        c.set(Calendar.DATE, 1)
-                        this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                    }
+                    val c = Calendar.getInstance()
+                    c.time = Date()
+                    c.set(Calendar.DATE, 1)
+                    this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
                 }
 
                 if (!booleanStatus) {

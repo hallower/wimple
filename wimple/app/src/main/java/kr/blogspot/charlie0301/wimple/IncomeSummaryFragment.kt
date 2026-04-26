@@ -90,18 +90,15 @@ class IncomeSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragment 
                 val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_STATE_AUTO_REFRESH, true)
                     val isUsingBudgetInformation = sharedPref.getBoolean(SettingsFragment.KEY_INCOME_EXPENSE_ENABLE_BUDGET, true)
 
-                    if (autoRefresh) {
-                        val c = Calendar.getInstance()
-                        c.time = Date()
-                        c.set(Calendar.DATE, 1)
-                        this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                        if (isUsingBudgetInformation) {
-                            this.wimple.getBudget(true, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                            this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
-                        }
+                    val c = Calendar.getInstance()
+                    c.time = Date()
+                    c.set(Calendar.DATE, 1)
+                    this.wimple.getIncomeAndExpense(DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
+                    if (isUsingBudgetInformation) {
+                        this.wimple.getBudget(true, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
+                        this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
                     }
                 }
 

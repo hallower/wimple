@@ -78,11 +78,7 @@ class DebtStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFragme
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    val autoRefresh =
-                        sharedPref?.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh == true) {
-                        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-                    }
+                    this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
                 }
 
                 if (!booleanStatus) {

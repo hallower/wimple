@@ -73,13 +73,8 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
-                    // To show previous data during new data dispatching without any GUI display delay.
-                    val sharedPref = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
-                    val autoRefresh = sharedPref.getBoolean(SettingsFragment.KEY_FINANCIAL_STATE_AUTO_REFRESH, true)
-                    if (autoRefresh) {
-                        this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-                        binding.asUpdateNotification.visibility = View.VISIBLE
-                    }
+                    this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
+                    binding.asUpdateNotification.visibility = View.VISIBLE
                 }
 
                 if (!booleanStatus) {
