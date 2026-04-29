@@ -14,8 +14,19 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- Foldable continuity hint. Without this, Samsung One UI letterboxes
+             the app into cover-screen dimensions (≈411dp wide on Z Fold 7) on
+             the unfolded main display, defeating the sw600dp resource qualifier
+             that drives the two-pane layout. The flag tells the framework we
+             handle size changes correctly so it lets us use the full ~750dp
+             unfolded width. -->
+        <meta-data
+            android:name="android.supports_size_changes"
+            android:value="true" />
         <activity
             android:exported="true"
             android:name="kr.blogspot.charlie0301.wimple.SplashScreenActivity"

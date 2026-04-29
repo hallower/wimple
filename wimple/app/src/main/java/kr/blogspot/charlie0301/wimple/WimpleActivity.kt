@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -72,19 +73,48 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // Logic
         setupHandler()
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, savedInstanceState is NOT null")
-            val f = supportFragmentManager.findFragmentById(R.id.fragment_container)
-            if (f is IWimpleFragment) {
-                currentFragment = f
-                currentMenuID = savedInstanceState.getInt("currentMenuID")
+            val savedMenuId = savedInstanceState.getInt("currentMenuID", R.id.menu_transaction_insert)
+            val restored = supportFragmentManager.findFragmentById(R.id.fragment_container)
+
+            // After a config change that flips the screen-size class — most commonly
+            // unfolding a Z Fold from cover (≈411dp) to main (≈750dp) — the previously
+            // saved fragment may no longer match what newFragmentForMenu would produce
+            // for this menu id (single-pane vs. two-pane). When the class differs, drop
+            // the restored fragment and route fresh so the user actually gets the
+            // form-factor-appropriate view instead of the previous one.
+            val expectedClass = newFragmentForMenu(savedMenuId)?.javaClass
+            if (restored is IWimpleFragment && restored.javaClass == expectedClass) {
+                currentFragment = restored
+                currentMenuID = savedMenuId
+                Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, restored fragment=$currentFragment, menuID=$currentMenuID")
+                BiometricOnboarding.showIfNeeded(this)
+                return
             }
-            Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, currentFragment=$currentFragment, currentMenuID=$currentMenuID")
+            Log.i(LOG_TAG, "WimpleActivity - onCreate, screen class changed; re-routing menuID=$savedMenuId")
+            installInitialFragment(savedMenuId)
+            BiometricOnboarding.showIfNeeded(this)
             return
         }
 
         setDefaultFragment()
         BiometricOnboarding.showIfNeeded(this)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // configChanges in the manifest swallows orientation/screenSize changes without
+        // a recreation, but the screen-size *class* (single vs. two-pane) can still
+        // flip if the device gets resized in multi-window or via fold-state changes
+        // that don't recreate. Re-evaluate the expected fragment class here and swap
+        // if necessary so the pair view appears (or disappears) reactively.
+        val current = currentFragment ?: return
+        val expectedClass = newFragmentForMenu(currentMenuID)?.javaClass ?: return
+        if (current.javaClass != expectedClass) {
+            Log.i(LOG_TAG, "onConfigurationChanged: form factor changed; re-routing menuID=$currentMenuID")
+            installInitialFragment(currentMenuID)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
@@ -103,24 +133,33 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun setDefaultFragment() {
-        this.currentMenuID = R.id.menu_transaction_insert
-
-        if(this.currentFragment != null)
-            return
-
+        if (this.currentFragment != null) return
         // TODO : make this configurable
-        val insertFragment = TransactionInsertFragment()
-        (insertFragment as IWimpleFragment).setActivityInstance(this)
-        insertFragment.arguments = intent.extras
-        this.currentFragment = insertFragment
+        installInitialFragment(R.id.menu_transaction_insert)
+    }
 
-        if (this.currentFragment!!.isAdded)
-            return
+    /**
+     * Build the fragment for [menuId] via the screen-size-aware [newFragmentForMenu]
+     * and install it into the content container, replacing whatever's there. Used by
+     * both the first-launch default and the post-recreation re-route in [onCreate]
+     * when the saved fragment no longer matches the current form factor.
+     *
+     * Going through `newFragmentForMenu` here was the missing piece: the previous
+     * default-fragment path hardcoded TransactionInsertFragment, which meant a fresh
+     * launch on a tablet/foldable always opened single-pane regardless of
+     * R.bool.isLargeScreen. Routing through the helper makes the default behave like
+     * any other navigation tap and pick the pair fragment when applicable.
+     */
+    private fun installInitialFragment(menuId: Int) {
+        val fragment = newFragmentForMenu(menuId) ?: return
+        (fragment as IWimpleFragment).setActivityInstance(this)
+        fragment.arguments = intent.extras
+        this.currentFragment = fragment
+        this.currentMenuID = menuId
 
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.fragment_container, insertFragment)
-        transaction.commit()
-
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 
     override fun onBackPressed() {
