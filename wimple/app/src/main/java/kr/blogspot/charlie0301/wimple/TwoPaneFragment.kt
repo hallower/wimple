@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.os.Bundle
 import android.os.Message
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,11 +73,17 @@ abstract class TwoPaneFragment : Fragment(), IWimpleFragment {
         // WimpleActivity.installInitialFragment calls setActivityInstance *before* the
         // fragment transaction commits, so this can fire while the fragment is still
         // detached. Touching childFragmentManager in that state throws
-        // IllegalStateException("Fragment has not been attached yet"). Only fan out
-        // when the host is wired up; onViewCreated covers the not-yet-attached path
-        // by re-invoking propagateActivity once children exist.
-        if (isAdded) {
+        // IllegalStateException("Fragment has not been attached yet").
+        //
+        // Two-layer guard: isAdded is the primary check; the try/catch is belt-and-
+        // suspenders for any lifecycle-edge timing where isAdded reports true but
+        // mHost is still null. Either way, onViewCreated re-invokes propagateActivity
+        // once children exist, so dropping the call here is non-destructive.
+        if (!isAdded) return
+        try {
             propagateActivity(instance)
+        } catch (e: IllegalStateException) {
+            Log.w(LOG_TAG, "setActivityInstance: deferring propagation; fragment not yet attached", e)
         }
     }
 
@@ -85,9 +92,13 @@ abstract class TwoPaneFragment : Fragment(), IWimpleFragment {
         // Fan out to both panes; each child decides whether the message is relevant.
         // Note: panes share the same Message reference. Existing handlers only read
         // its fields rather than mutating them, so a single instance is safe.
-        for (tag in arrayOf(TAG_LEFT, TAG_RIGHT)) {
-            (childFragmentManager.findFragmentByTag(tag) as? IWimpleFragment)
-                ?.handleMessage(msg)
+        try {
+            for (tag in arrayOf(TAG_LEFT, TAG_RIGHT)) {
+                (childFragmentManager.findFragmentByTag(tag) as? IWimpleFragment)
+                    ?.handleMessage(msg)
+            }
+        } catch (e: IllegalStateException) {
+            Log.w(LOG_TAG, "handleMessage: child manager not ready, dropping cmd=${msg.what}", e)
         }
     }
 
@@ -99,6 +110,7 @@ abstract class TwoPaneFragment : Fragment(), IWimpleFragment {
     }
 
     companion object {
+        private const val LOG_TAG = "TwoPaneFragment"
         private const val TAG_LEFT = "two_pane_left"
         private const val TAG_RIGHT = "two_pane_right"
     }
