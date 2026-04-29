@@ -69,10 +69,19 @@ abstract class TwoPaneFragment : Fragment(), IWimpleFragment {
 
     override fun setActivityInstance(instance: WimpleActivity) {
         pendingActivity = instance
-        propagateActivity(instance)
+        // WimpleActivity.installInitialFragment calls setActivityInstance *before* the
+        // fragment transaction commits, so this can fire while the fragment is still
+        // detached. Touching childFragmentManager in that state throws
+        // IllegalStateException("Fragment has not been attached yet"). Only fan out
+        // when the host is wired up; onViewCreated covers the not-yet-attached path
+        // by re-invoking propagateActivity once children exist.
+        if (isAdded) {
+            propagateActivity(instance)
+        }
     }
 
     override fun handleMessage(msg: Message) {
+        if (!isAdded) return
         // Fan out to both panes; each child decides whether the message is relevant.
         // Note: panes share the same Message reference. Existing handlers only read
         // its fields rather than mutating them, so a single instance is safe.
