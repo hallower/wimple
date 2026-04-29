@@ -1,30 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorPrimaryLight">#C5CAE9</color>
-    <color name="colorAccent">#03A9F4</color>
-    <color name="colorPrimaryText">#212121</color>
-    <color name="colorSecondaryText">#757575</color>
-    <color name="colorIcons">#FFFFFF</color>
-    <color name="colorDivider">#BDBDBD</color>
 
+    <!-- =====================================================================
+         Material 3 brand palette (LIGHT). Generated from source #3F51B5
+         (Material Indigo, the original AppTheme primary). Maps onto the
+         standard M3 token names so they can be wired straight into the
+         theme via styles.xml. The DARK companion lives in values-night.
+         ===================================================================== -->
+    <color name="md_theme_primary">#4355B9</color>
+    <color name="md_theme_on_primary">#FFFFFF</color>
+    <color name="md_theme_primary_container">#DEE0FF</color>
+    <color name="md_theme_on_primary_container">#00115C</color>
+
+    <color name="md_theme_secondary">#5B5D72</color>
+    <color name="md_theme_on_secondary">#FFFFFF</color>
+    <color name="md_theme_secondary_container">#E0E1F9</color>
+    <color name="md_theme_on_secondary_container">#181A2C</color>
+
+    <color name="md_theme_tertiary">#77536C</color>
+    <color name="md_theme_on_tertiary">#FFFFFF</color>
+    <color name="md_theme_tertiary_container">#FFD8EC</color>
+    <color name="md_theme_on_tertiary_container">#2D1227</color>
+
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_on_error">#FFFFFF</color>
+    <color name="md_theme_error_container">#FFDAD6</color>
+    <color name="md_theme_on_error_container">#410002</color>
+
+    <color name="md_theme_background">#FEFBFF</color>
+    <color name="md_theme_on_background">#1B1B1F</color>
+    <color name="md_theme_surface">#FEFBFF</color>
+    <color name="md_theme_on_surface">#1B1B1F</color>
+    <color name="md_theme_surface_variant">#E2E1EC</color>
+    <color name="md_theme_on_surface_variant">#45464F</color>
+
+    <color name="md_theme_outline">#767680</color>
+    <color name="md_theme_outline_variant">#C6C5D0</color>
+
+    <!-- =====================================================================
+         Legacy AppCompat-era brand aliases. Several layouts (and the old
+         colorPrimary/Accent attrs) reference these directly; pointing them at
+         the M3 tokens lets the existing layout XML benefit from the new
+         palette without an audit pass. Kept theme-aware via values-night.
+         ===================================================================== -->
+    <color name="colorPrimary">@color/md_theme_primary</color>
+    <color name="colorPrimaryDark">#2A3D9F</color>
+    <color name="colorPrimaryLight">@color/md_theme_primary_container</color>
+    <color name="colorAccent">@color/md_theme_tertiary</color>
+    <color name="colorPrimaryText">@color/md_theme_on_surface</color>
+    <color name="colorSecondaryText">@color/md_theme_on_surface_variant</color>
+    <color name="colorIcons">@color/md_theme_on_primary</color>
+    <color name="colorDivider">@color/md_theme_outline_variant</color>
+
+    <!-- Brand decoration: nav drawer header band. Stays warm orange in both
+         modes — it's an explicit brand accent rather than a body surface. -->
     <color name="background_nav_header">#FFA000</color>
+
+    <!-- =====================================================================
+         App-specific text role colors. Used as `android:textColor` across
+         layouts; theme-aware so dark surfaces get readable foregrounds.
+         Dark variants are tuned to keep the same hue meaning (red→expense,
+         green→income, etc.) while gaining contrast against #1B1B1F surfaces.
+         ===================================================================== -->
     <color name="text_basic">#6F6F6F</color>
-    <color name="text_group">#2DABD9</color>
-    <color name="text_light_dimmed">#7F6F6F6F</color>
     <color name="text_dimmed">#484848</color>
-    <color name="text_white">#FFFFFF</color>
-    <color name="text_black">#000000</color>
-    <color name="text_blue">#33B5E5</color>
-    <color name="text_green">#00CC00</color>
-    <color name="text_yellow">#FF8000</color>
-    <color name="text_red">#F64D4C</color>
+    <color name="text_light_dimmed">#7F6F6F6F</color>
+    <color name="text_white">#FFFFFF</color>           <!-- foreground on colored chips/FAB -->
+    <color name="text_black">#000000</color>           <!-- "primary text on body" -->
+    <color name="text_blue">#33B5E5</color>            <!-- transfer/info -->
+    <color name="text_green">#00CC00</color>           <!-- positive balance / income highlight -->
+    <color name="text_yellow">#FF8000</color>          <!-- warning / amount focus -->
+    <color name="text_red">#F64D4C</color>             <!-- expense / negative -->
+    <color name="text_group">#2DABD9</color>
     <color name="text_light_blue">#43BEEB</color>
     <color name="text_light_blue_trans">#7543BEEB</color>
-    <color name="separater">#e5e5e5</color>
-    <color name="calc_number">#FFFFFF</color>
-    <color name="calc_func">#6F6F6F</color>
+    <color name="separater">#E5E5E5</color>
+
+    <!-- Misc constants — non-themed. -->
     <color name="transparent">#00000000</color>
     <color name="black_overlay">#66000000</color>
 

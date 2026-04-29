@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- =====================================================================
+         Material 3 brand palette (DARK). Mirror of values/colors.xml. Tones
+         derived from the same source #3F51B5 — primary becomes a lifted
+         lavender so it remains legible against the dark surface, while
+         containers swap their lightness so they read as elevated panels.
+         ===================================================================== -->
+    <color name="md_theme_primary">#BBC3FF</color>
+    <color name="md_theme_on_primary">#0E2580</color>
+    <color name="md_theme_primary_container">#2A3D9F</color>
+    <color name="md_theme_on_primary_container">#DEE0FF</color>
+
+    <color name="md_theme_secondary">#C4C5DD</color>
+    <color name="md_theme_on_secondary">#2D2F42</color>
+    <color name="md_theme_secondary_container">#444559</color>
+    <color name="md_theme_on_secondary_container">#E0E1F9</color>
+
+    <color name="md_theme_tertiary">#E7B9D5</color>
+    <color name="md_theme_on_tertiary">#45263B</color>
+    <color name="md_theme_tertiary_container">#5D3C53</color>
+    <color name="md_theme_on_tertiary_container">#FFD8EC</color>
+
+    <color name="md_theme_error">#FFB4AB</color>
+    <color name="md_theme_on_error">#690005</color>
+    <color name="md_theme_error_container">#93000A</color>
+    <color name="md_theme_on_error_container">#FFDAD6</color>
+
+    <color name="md_theme_background">#1B1B1F</color>
+    <color name="md_theme_on_background">#E4E1E6</color>
+    <color name="md_theme_surface">#1B1B1F</color>
+    <color name="md_theme_on_surface">#E4E1E6</color>
+    <color name="md_theme_surface_variant">#45464F</color>
+    <color name="md_theme_on_surface_variant">#C6C5D0</color>
+
+    <color name="md_theme_outline">#91909A</color>
+    <color name="md_theme_outline_variant">#45464F</color>
+
+    <!-- Status bar / nav drawer hard color. In dark mode we want a true black
+         system bar rather than the dark-indigo light-mode tint, otherwise the
+         status icons sit on a faintly-tinted band that looks dirty next to
+         the proper #1B1B1F surface below. -->
+    <color name="colorPrimaryDark">#000000</color>
+
+    <!-- =====================================================================
+         App-specific text role colors — dark variants. Same hue meaning as the
+         light counterparts (red→expense, green→income), retoned for contrast
+         against the dark surface. text_white stays white because it's used as
+         a foreground over saturated chip / FAB backgrounds. text_black flips
+         because it acts as the "primary on-body text" color across several
+         list rows; in dark mode that role becomes near-white.
+         ===================================================================== -->
+    <color name="text_basic">#BBBBBB</color>
+    <color name="text_dimmed">#D6D6D6</color>
+    <color name="text_light_dimmed">#7FBBBBBB</color>
+    <color name="text_black">#E4E1E6</color>
+    <color name="text_blue">#5BCAF5</color>
+    <color name="text_green">#5DD55D</color>
+    <color name="text_yellow">#FFA84D</color>
+    <color name="text_red">#FF8A87</color>
+    <color name="text_group">#5BC6E8</color>
+    <color name="text_light_blue">#5BCAF5</color>
+    <color name="text_light_blue_trans">#755BCAF5</color>
+    <color name="separater">#3A3A3A</color>
+
+</resources>
