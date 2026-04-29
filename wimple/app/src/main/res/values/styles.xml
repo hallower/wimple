@@ -1,11 +1,12 @@
 <resources>
 
-    <!-- Base application theme. Material 3 with DayNight so the system dark-mode
-         setting automatically swaps in values-night/colors.xml — no per-activity
-         opt-in required. The explicit `<item>` overrides below wire the named
-         palette colors onto the M3 token attrs so they're picked up by every
-         Material 3 component (toolbar, FAB, button, switch, …) consistently. -->
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Base application theme. Material 3 light-only — the parent is explicitly
+         the .Light.* variant rather than .DayNight.* so the app stays on the
+         light palette regardless of the system dark-mode setting. The explicit
+         `<item>` overrides below wire the named palette colors onto the M3
+         token attrs so they're picked up by every Material 3 component
+         (toolbar, FAB, button, switch, …) consistently. -->
+    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
         <!-- M3 brand tokens -->
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_on_primary</item>
