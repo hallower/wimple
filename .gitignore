@@ -23,3 +23,4 @@ tasks.xml
 *.aab
 /wimple/app/release/app-release/
 wimple/.settings/org.eclipse.buildship.core.prefs
+wimple/bin/
