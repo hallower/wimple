@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Large-screen flag. Drives WimpleActivity's routing decision: when true the
+         drawer items for transaction insert/list, saving/debt, and income/expense
+         all open their two-pane sibling fragments instead of single-pane views.
+         The values-sw600dp variant flips this on for tablets and unfolded
+         foldables. -->
+    <bool name="isLargeScreen">false</bool>
+</resources>

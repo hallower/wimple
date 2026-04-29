@@ -165,8 +165,21 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             return true
         }
 
-        val target = MenuFragment.fromMenuId(id) ?: return false
-        this.currentFragment = target.factory()
+        val nextFragment = newFragmentForMenu(id) ?: return false
+
+        // On large screens two drawer entries (e.g. 거래입력 / 거래목록) resolve to the same
+        // pair fragment. When the user toggles between them we don't want to recreate the
+        // already-displayed pair — that would tear down both child fragments and lose any
+        // in-progress input. Instead, just update the menu ID so the drawer's selected-item
+        // highlight follows the tap and refresh the FAB icon.
+        val current = this.currentFragment
+        if (current != null && current::class == nextFragment::class) {
+            this.currentMenuID = id
+            fabController.refreshIcon()
+            return true
+        }
+
+        this.currentFragment = nextFragment
         this.currentMenuID = id
 
         fabController.refreshIcon()
@@ -187,6 +200,31 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             return false
         }
         return true
+    }
+
+    /**
+     * Resolve a drawer menu id to the fragment that should occupy the content pane.
+     *
+     * On phones (R.bool.isLargeScreen=false) this is a 1:1 mapping driven by the
+     * [MenuFragment] enum. On tablets and unfolded foldables (sw600dp+) the three
+     * paired drawer entries instead resolve to a [TwoPaneFragment] subclass that
+     * shows both siblings side by side, so the user doesn't have to ping-pong
+     * through the drawer.
+     */
+    private fun newFragmentForMenu(id: Int): androidx.fragment.app.Fragment? {
+        if (resources.getBoolean(R.bool.isLargeScreen)) {
+            when (id) {
+                R.id.menu_transaction_insert,
+                R.id.menu_transaction_list -> return TransactionPairFragment()
+
+                R.id.menu_saving,
+                R.id.menu_debt -> return SavingDebtPairFragment()
+
+                R.id.menu_income,
+                R.id.menu_expense -> return IncomeExpensePairFragment()
+            }
+        }
+        return MenuFragment.fromMenuId(id)?.factory?.invoke()
     }
 
 
@@ -311,7 +349,15 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                     // TransactionInsertFragment
                     CommandID.MODIFY_ENTRY, CommandID.ADD_MONTHLY_ITEM -> {
 
-                        if (this@WimpleActivity.currentFragment !is TransactionInsertFragment) {
+                        // The insert fragment may be the current single-pane fragment OR the
+                        // right pane of a TransactionPairFragment on large screens. In the
+                        // latter case TwoPaneFragment.handleMessage forwards the command into
+                        // the embedded TransactionInsertFragment, so don't kick the user off
+                        // the pair view back to the single insert screen.
+                        val current = this@WimpleActivity.currentFragment
+                        val alreadyHostsInsert = current is TransactionInsertFragment
+                            || current is TransactionPairFragment
+                        if (!alreadyHostsInsert) {
                             replaceWimpleFragment(R.id.menu_transaction_insert)
                             smd(msg.what, msg.obj, 300)
                         }
