@@ -224,4 +224,16 @@
     <string name="terms_agree">Agree</string>
     <string name="terms_disagree">Decline</string>
     <string name="terms_exit_message">You must agree to the terms to use this app.</string>
+
+    <string name="bank_noti_unsupported_title_pref">View Unrecognized Notifications</string>
+    <string name="bank_noti_unsupported_summary">Review, resend, or delete notifications Whooing could not parse.</string>
+    <string name="bank_noti_unsupported_title">Unrecognized Notifications</string>
+    <string name="bank_noti_unsupported_empty">No unrecognized notifications collected.</string>
+    <string name="bank_noti_unsupported_hint">Long-press to select one or more items, then resend to Whooing or delete. Items older than 14 days or beyond 100 are pruned automatically.</string>
+    <string name="bank_noti_unsupported_send_selected">Send to Whooing</string>
+    <string name="bank_noti_unsupported_delete_selected">Delete</string>
+    <string name="bank_noti_unsupported_delete_confirm">Delete %1$d selected item(s)?</string>
+    <string name="bank_noti_unsupported_clear_confirm">Clear all collected unrecognized notifications?</string>
+    <string name="bank_noti_unsupported_selected_count">%1$d selected</string>
+    <string name="bank_noti_unsupported_rejected_at">Rejected at: %1$s</string>
 </resources>

@@ -223,4 +223,16 @@
     <string name="terms_agree">동의</string>
     <string name="terms_disagree">거부</string>
     <string name="terms_exit_message">약관에 동의하지 않으면 앱을 사용할 수 없습니다.</string>
+
+    <string name="bank_noti_unsupported_title_pref">인식되지 않은 알림 보기</string>
+    <string name="bank_noti_unsupported_summary">후잉이 인식하지 못해 전송되지 않은 알림을 확인·재전송·삭제합니다.</string>
+    <string name="bank_noti_unsupported_title">인식되지 않은 알림</string>
+    <string name="bank_noti_unsupported_empty">인식되지 않아 모아둔 알림이 없습니다.</string>
+    <string name="bank_noti_unsupported_hint">길게 눌러 여러 항목을 선택한 뒤 후잉으로 다시 보내거나 삭제할 수 있습니다. 14일이 지나거나 100건을 초과하면 자동으로 삭제됩니다.</string>
+    <string name="bank_noti_unsupported_send_selected">후잉으로 전송</string>
+    <string name="bank_noti_unsupported_delete_selected">삭제</string>
+    <string name="bank_noti_unsupported_delete_confirm">선택한 %1$d건을 삭제하시겠습니까?</string>
+    <string name="bank_noti_unsupported_clear_confirm">모아둔 인식되지 않은 알림을 모두 삭제하시겠습니까?</string>
+    <string name="bank_noti_unsupported_selected_count">%1$d개 선택됨</string>
+    <string name="bank_noti_unsupported_rejected_at">거부된 시각: %1$s</string>
 </resources>

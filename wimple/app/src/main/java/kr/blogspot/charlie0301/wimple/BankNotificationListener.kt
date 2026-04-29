@@ -121,6 +121,7 @@ class BankNotificationListener : NotificationListenerService() {
         const val KEY_BANK_NOTI_TOAST = "pref_bankNotiToast"
         const val KEY_BANK_NOTI_SEND_NOW = "pref_bankNotiSendNow"
         const val KEY_BANK_NOTI_VIEW_LIST = "pref_bankNotiViewList"
+        const val KEY_BANK_NOTI_VIEW_UNSUPPORTED = "pref_bankNotiViewUnsupported"
         const val KEY_BANK_NOTI_ADD_APP = "pref_bankNotiAddApp"
         const val KEY_BANK_NOTI_ACCESS_INFO_SHOWN = "pref_bankNotiAccessInfoShown"
         const val KEY_BANK_NOTI_ACCESS_REQUESTED = "pref_bankNotiAccessRequested"

@@ -214,6 +214,13 @@ class SettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
             false
         }
 
+        val viewUnsupported = preferenceScreen.findPreference<Preference>(
+            BankNotificationListener.KEY_BANK_NOTI_VIEW_UNSUPPORTED)!!
+        viewUnsupported.onPreferenceClickListener = OnPreferenceClickListener {
+            startActivity(Intent(context, UnsupportedBankNotificationListActivity::class.java))
+            false
+        }
+
         val addApp = preferenceScreen.findPreference<Preference>(
             BankNotificationListener.KEY_BANK_NOTI_ADD_APP)!!
         addApp.onPreferenceClickListener = OnPreferenceClickListener {

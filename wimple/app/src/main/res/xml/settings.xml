@@ -84,6 +84,11 @@
             android:key="pref_bankNotiViewList"
             android:summary="@string/bank_noti_view_list_summary"
             android:title="@string/bank_noti_view_list_title" />
+        <Preference
+            app:iconSpaceReserved="false"
+            android:key="pref_bankNotiViewUnsupported"
+            android:summary="@string/bank_noti_unsupported_summary"
+            android:title="@string/bank_noti_unsupported_title_pref" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_entry">
         <CheckBoxPreference

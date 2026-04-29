@@ -10,6 +10,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 object BankNotifications {
@@ -18,7 +19,20 @@ object BankNotifications {
     private const val PREFS_NAME = "wimple.banknotifications"
     private const val KEY_STORED_JSON = "stored_json"
     private const val KEY_PENDING_JSON = "pending_json"
+    /**
+     * Items the Whooing parser rejected with HTTP 400 ("지원하지 않는 형식"). Held aside so the
+     * user can review them in settings, manually re-attempt forwarding (e.g. after Whooing adds
+     * a parser for that bank's format), or delete. Capped via TTL + max-count pruning so this
+     * store never grows unbounded — see [REJECTED_TTL_MS] and [MAX_REJECTED_ITEMS].
+     */
+    private const val KEY_REJECTED_JSON = "rejected_json"
     private const val POST_PAYMENT_PATH = "api/entries/outside.json"
+
+    // Rejected-store retention bounds: drop entries older than 2 weeks, and keep at most 100
+    // total (oldest-first eviction). The intent is the user reviews failures soon after they
+    // happen — old rejections from formats Whooing will likely never parse aren't actionable.
+    private const val REJECTED_TTL_MS = 14L * 24 * 60 * 60 * 1000
+    private const val MAX_REJECTED_ITEMS = 100
 
     // Default-SharedPreferences key for user-added (custom) monitored apps, stored as an
     // ordered JSON array string so we can sort by insertion order in the settings UI.
@@ -28,6 +42,21 @@ object BankNotifications {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     data class StoredNotification(
+        val time: Long,
+        val packageName: String,
+        val appLabel: String,
+        val title: String,
+        val text: String
+    )
+
+    /**
+     * A notification that the Whooing parser rejected. Carries an [id] (stable across list
+     * reloads, so multi-select works against a moving JSONArray) and the [rejectedTime] at
+     * which the 400 response came back — used both for display and for TTL pruning.
+     */
+    data class RejectedNotification(
+        val id: String,
+        val rejectedTime: Long,
         val time: Long,
         val packageName: String,
         val appLabel: String,
@@ -113,6 +142,7 @@ object BankNotifications {
         prefs(ctx).edit()
             .putString(KEY_STORED_JSON, "[]")
             .putString(KEY_PENDING_JSON, "[]")
+            .putString(KEY_REJECTED_JSON, "[]")
             .apply()
     }
 
@@ -311,15 +341,15 @@ object BankNotifications {
                 }
                 code in 400..499 -> {
                     // Permanent rejection — "지원하지 않는 형식입니다." per Whooing docs.
-                    // Retrying identical bytes won't change the outcome. Dropping prevents an
-                    // infinite retry loop that would block every future send (e.g. a subscribed
-                    // app sends non-transactional notifications like 카카오페이증권's stock price
-                    // alerts, which the server legitimately can't parse as a transaction).
+                    // Retrying identical bytes won't change the outcome, so we don't keep them
+                    // in `pending` (which would block every future send). Instead we move them
+                    // to the rejected store: the user can review them in settings, manually
+                    // re-attempt later (in case Whooing adds parser support), or delete them.
                     val msg = json?.optString("message") ?: "no message"
                     Log.w(LOG_TAG, "[send] ${g.pkg} SERVER REJECTED code=$code msg='$msg' — " +
-                        "permanent failure, dropping ${g.items.length()} items (no retry). " +
-                        "If this app's notifications ARE real transactions, report the payload below:")
+                        "moving ${g.items.length()} items to rejected store for user review.")
                     Log.w(LOG_TAG, "[send] ${g.pkg} rejected payload:\n$payload")
+                    appendRejected(prefs, g.items)
                     // Don't add to failedIndices — drop from pending.
                 }
                 else -> {
@@ -479,6 +509,151 @@ object BankNotifications {
         setCustomApps(ctx, merged)
         Log.d(LOG_TAG, "[migrate] added ${missing.size} legacy preset apps to custom list: $missing")
     }
+
+    // -------------------- Rejected store --------------------
+
+    /**
+     * Returns all currently-held rejected notifications, oldest-first by rejection time.
+     * Pruning runs as a side-effect so callers always see a fresh, bounded view.
+     */
+    @Synchronized
+    fun getRejected(ctx: Context): List<RejectedNotification> {
+        val prefs = prefs(ctx)
+        val arr = pruneAndPersistRejected(prefs)
+        val list = ArrayList<RejectedNotification>(arr.length())
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            list.add(RejectedNotification(
+                id = o.optString("id"),
+                rejectedTime = o.optLong("rt"),
+                time = o.optLong("t"),
+                packageName = o.optString("p"),
+                appLabel = o.optString("label"),
+                title = o.optString("title"),
+                text = o.optString("text")
+            ))
+        }
+        return list
+    }
+
+    @Synchronized
+    fun rejectedCount(ctx: Context): Int = pruneAndPersistRejected(prefs(ctx)).length()
+
+    @Synchronized
+    fun clearRejected(ctx: Context) {
+        prefs(ctx).edit().putString(KEY_REJECTED_JSON, "[]").apply()
+    }
+
+    /** Remove the rejected entries with the given ids. Unknown ids are ignored. */
+    @Synchronized
+    fun removeRejectedByIds(ctx: Context, ids: Set<String>) {
+        if (ids.isEmpty()) return
+        val prefs = prefs(ctx)
+        val arr = loadArray(prefs, KEY_REJECTED_JSON)
+        val newArr = JSONArray()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            if (o.optString("id") !in ids) newArr.put(o)
+        }
+        prefs.edit().putString(KEY_REJECTED_JSON, newArr.toString()).apply()
+    }
+
+    /**
+     * Move the selected rejected entries back into [KEY_PENDING_JSON] and trigger a forward.
+     * Per spec: items the user explicitly chose to send are removed from the rejected list
+     * immediately, regardless of forward outcome. If the server rejects them again, they'll
+     * land back in the rejected store via the normal 400 path in [doSynchronousSend].
+     *
+     * Items are stripped of rejected-store-only fields (`id`, `rt`) before being re-queued
+     * so the pending payload shape matches freshly-captured notifications.
+     */
+    @Synchronized
+    fun resendRejectedByIds(ctx: Context, ids: Set<String>, onDone: ((Boolean) -> Unit)? = null): Boolean {
+        if (ids.isEmpty()) return false
+        val prefs = prefs(ctx)
+        val rejected = loadArray(prefs, KEY_REJECTED_JSON)
+        val pending = loadArray(prefs, KEY_PENDING_JSON)
+        val newRejected = JSONArray()
+        var moved = 0
+        for (i in 0 until rejected.length()) {
+            val o = rejected.optJSONObject(i) ?: continue
+            if (o.optString("id") in ids) {
+                pending.put(JSONObject().apply {
+                    put("t", o.optLong("t"))
+                    put("p", o.optString("p"))
+                    put("label", o.optString("label"))
+                    put("title", o.optString("title"))
+                    put("text", o.optString("text"))
+                })
+                moved++
+            } else {
+                newRejected.put(o)
+            }
+        }
+        if (moved == 0) return false
+        prefs.edit()
+            .putString(KEY_REJECTED_JSON, newRejected.toString())
+            .putString(KEY_PENDING_JSON, pending.toString())
+            .apply()
+        Log.d(LOG_TAG, "[resend] moved $moved item(s) from rejected → pending; invoking forward")
+        return forwardToWhooing(ctx, onDone)
+    }
+
+    /**
+     * Append the items in [items] (each shaped {t,p,label,title,text}) into the rejected store
+     * with a fresh `rt` (rejected time) and stable `id` per row, then prune.
+     */
+    private fun appendRejected(prefs: SharedPreferences, items: JSONArray) {
+        if (items.length() == 0) return
+        val arr = loadArray(prefs, KEY_REJECTED_JSON)
+        val now = System.currentTimeMillis()
+        for (i in 0 until items.length()) {
+            val src = items.optJSONObject(i) ?: continue
+            val o = JSONObject().apply {
+                put("id", UUID.randomUUID().toString())
+                put("rt", now)
+                put("t", src.optLong("t"))
+                put("p", src.optString("p"))
+                put("label", src.optString("label"))
+                put("title", src.optString("title"))
+                put("text", src.optString("text"))
+            }
+            arr.put(o)
+        }
+        val pruned = pruneRejectedArray(arr)
+        prefs.edit().putString(KEY_REJECTED_JSON, pruned.toString()).apply()
+    }
+
+    private fun pruneAndPersistRejected(prefs: SharedPreferences): JSONArray {
+        val arr = loadArray(prefs, KEY_REJECTED_JSON)
+        val pruned = pruneRejectedArray(arr)
+        if (pruned.length() != arr.length()) {
+            prefs.edit().putString(KEY_REJECTED_JSON, pruned.toString()).apply()
+        }
+        return pruned
+    }
+
+    /**
+     * Drop entries older than [REJECTED_TTL_MS], then keep only the most recent
+     * [MAX_REJECTED_ITEMS]. Order in the result is preserved as oldest-first.
+     */
+    private fun pruneRejectedArray(arr: JSONArray): JSONArray {
+        if (arr.length() == 0) return arr
+        val cutoff = System.currentTimeMillis() - REJECTED_TTL_MS
+        val kept = ArrayList<JSONObject>(arr.length())
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            if (o.optLong("rt") >= cutoff) kept.add(o)
+        }
+        // Keep only the newest MAX_REJECTED_ITEMS — drop the oldest excess.
+        val overflow = kept.size - MAX_REJECTED_ITEMS
+        val start = if (overflow > 0) overflow else 0
+        val out = JSONArray()
+        for (i in start until kept.size) out.put(kept[i])
+        return out
+    }
+
+    // -------------------- Internals --------------------
 
     private fun prefs(ctx: Context): SharedPreferences =
         ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
