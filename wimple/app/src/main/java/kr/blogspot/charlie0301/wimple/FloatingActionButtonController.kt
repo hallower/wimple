@@ -178,27 +178,84 @@ class FloatingActionButtonController(
         }
     }
 
+    /** Re-apply the persisted position against the current parent bounds. Called from
+     *  [WimpleActivity.onConfigurationChanged] so an orientation/screenSize change that
+     *  doesn't recreate the activity still picks up the right per-state coordinates and
+     *  re-clamps to the current bounds. */
+    fun reapplyPosition() {
+        fab.post { restorePosition() }
+    }
+
+    /**
+     * Persist the FAB position as absolute pixel coordinates, but under a key pair
+     * scoped to the current fold state. R.bool.isLargeScreen splits "compact" (phone /
+     * Z Fold cover) from "expanded" (tablet / Z Fold main), which matches when the
+     * activity reflows its layout. Each state remembers where the user parked the FAB
+     * on it independently — so dragging on the cover doesn't move the unfolded
+     * placement, and vice versa.
+     */
     private fun savePosition(x: Float, y: Float) {
+        val (keyX, keyY) = positionKeysForCurrentConfig()
         PreferenceManager.getDefaultSharedPreferences(activity).edit()
-            .putFloat(KEY_FAB_POS_X, x)
-            .putFloat(KEY_FAB_POS_Y, y)
+            .putFloat(keyX, x)
+            .putFloat(keyY, y)
             .apply()
     }
 
     private fun restorePosition() {
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(activity)
-        val savedX = sharedPref.getFloat(KEY_FAB_POS_X, Float.MIN_VALUE)
-        if (savedX == Float.MIN_VALUE) return
+        val parent = fab.parent as? ViewGroup ?: return
+        val pw = parent.width.toFloat()
+        val ph = parent.height.toFloat()
+        if (pw <= 0f || ph <= 0f) return
 
-        val parent = fab.parent as ViewGroup
-        val savedY = sharedPref.getFloat(KEY_FAB_POS_Y, 0f)
-        fab.x = savedX.coerceIn(0f, (parent.width - fab.width).toFloat())
-        fab.y = savedY.coerceIn(0f, (parent.height - fab.height).toFloat())
+        val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+        val (keyX, keyY) = positionKeysForCurrentConfig()
+
+        // One-time migration from the pre-fold-aware single key pair. Whichever
+        // fold state the user is in now inherits the legacy coordinates; the
+        // other state is left empty and falls back to the layout's default
+        // bottom-end position until the user drags it.
+        if (!prefs.contains(keyX) && prefs.contains(LEGACY_KEY_X)) {
+            val legacyX = prefs.getFloat(LEGACY_KEY_X, 0f)
+            val legacyY = prefs.getFloat(LEGACY_KEY_Y, 0f)
+            prefs.edit()
+                .putFloat(keyX, legacyX)
+                .putFloat(keyY, legacyY)
+                .remove(LEGACY_KEY_X)
+                .remove(LEGACY_KEY_Y)
+                .apply()
+        }
+
+        if (!prefs.contains(keyX)) return
+
+        val savedX = prefs.getFloat(keyX, 0f)
+        val savedY = prefs.getFloat(keyY, 0f)
+        fab.x = savedX.coerceIn(0f, pw - fab.width)
+        fab.y = savedY.coerceIn(0f, ph - fab.height)
+    }
+
+    private fun positionKeysForCurrentConfig(): Pair<String, String> {
+        return if (activity.resources.getBoolean(R.bool.isLargeScreen)) {
+            KEY_FAB_POS_X_EXPANDED to KEY_FAB_POS_Y_EXPANDED
+        } else {
+            KEY_FAB_POS_X_COMPACT to KEY_FAB_POS_Y_COMPACT
+        }
     }
 
     companion object {
         private const val LOG_TAG = "FabController"
-        private const val KEY_FAB_POS_X = "fab_pos_x"
-        private const val KEY_FAB_POS_Y = "fab_pos_y"
+
+        // Pre-fold-aware single key pair. Migrated once into whichever per-state
+        // pair matches the active fold mode at first restore.
+        private const val LEGACY_KEY_X = "fab_pos_x"
+        private const val LEGACY_KEY_Y = "fab_pos_y"
+
+        // Per-fold-state absolute pixel coordinates. The compact pair is used when
+        // R.bool.isLargeScreen is false (Z Fold cover, phones); the expanded pair
+        // when true (Z Fold main display, tablets).
+        private const val KEY_FAB_POS_X_COMPACT = "fab_pos_x_compact"
+        private const val KEY_FAB_POS_Y_COMPACT = "fab_pos_y_compact"
+        private const val KEY_FAB_POS_X_EXPANDED = "fab_pos_x_expanded"
+        private const val KEY_FAB_POS_Y_EXPANDED = "fab_pos_y_expanded"
     }
 }

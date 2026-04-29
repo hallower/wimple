@@ -104,6 +104,15 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        // The CoordinatorLayout that anchors the FAB resizes on orientation/screenSize
+        // changes (which are listed in configChanges, so the activity stays alive),
+        // but the FAB's absolute x/y stays put — leaving it stranded mid-screen on
+        // the new bounds. Re-apply the persisted corner-anchored position so the FAB
+        // snaps back to its border buffer.
+        if (::fabController.isInitialized) {
+            fabController.reapplyPosition()
+        }
+
         // configChanges in the manifest swallows orientation/screenSize changes without
         // a recreation, but the screen-size *class* (single vs. two-pane) can still
         // flip if the device gets resized in multi-window or via fold-state changes
