@@ -51,11 +51,15 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core:1.3.1'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.preference:preference:1.2.1'
 
-    implementation 'com.google.android.material:material:1.0.0'
+    // Material Components 1.5+ ships Theme.Material3.* themes used by AppTheme
+    // (values/styles.xml). Older 1.0.0 only had Theme.MaterialComponents.* and lacked
+    // the M3 token system (?attr/colorOnSurface, surfaceVariant, etc.) that the
+    // semantic colors in values/colors.xml + values-night/colors.xml resolve to.
+    implementation 'com.google.android.material:material:1.12.0'
     testImplementation 'junit:junit:4.12'
     implementation 'com.sun.jersey:jersey-client:1.19.3'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
