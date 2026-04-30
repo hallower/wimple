@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
@@ -45,7 +46,10 @@ class FloatingActionButtonController(
             setIconForMenu(afterNext)
         }
         makeDraggable()
-        fab.post { restorePosition() }
+        // First-layout case: registering the listener before the activity's initial
+        // layout pass guarantees parent dimensions are populated when restorePosition
+        // reads them.
+        runAfterNextLayout { restorePosition() }
     }
 
     /** Called by the hosting activity when the fragment changed through a non-FAB path
@@ -178,27 +182,79 @@ class FloatingActionButtonController(
         }
     }
 
-    /** Re-apply the persisted position against the current parent bounds. Called from
-     *  [WimpleActivity.onConfigurationChanged] so an orientation/screenSize change that
-     *  doesn't recreate the activity still picks up the right per-state coordinates and
-     *  re-clamps to the current bounds. */
+    /**
+     * Re-apply the persisted position against the current parent bounds. Called from
+     * [WimpleActivity.onConfigurationChanged] so a fold/unfold (now handled live without
+     * activity recreation, after configChanges was widened to cover screenLayout +
+     * smallestScreenSize) still picks up the right per-state coordinates.
+     *
+     * Timing matters here. onConfigurationChanged fires BEFORE the framework has run a
+     * new layout pass — observed via the system's `handleResized` log line landing a
+     * few ms later, and the actual relayout tens of ms after that. So at this point:
+     *
+     *  - `parent.width` still reflects the OLD fold state (e.g. 1968px from unfolded
+     *    when we're actually transitioning to the 1080px folded state).
+     *  - The FAB's mLeft is still at the old gravity-end position.
+     *  - androidx.core's doOnLayout short-circuits to "run immediately" because the
+     *    view is already laid out and no layout has been requested yet — which means
+     *    we'd compute translationX off the stale mLeft. The post-layout pass then
+     *    updates mLeft to the new bounds without touching translationX, and the
+     *    visible position lands far off-screen (left for fold, right for unfold).
+     *
+     * The fix: register an OnLayoutChangeListener and explicitly request a layout.
+     * The listener fires *after* the next layout pass completes, by which time
+     * `parent.width` and `mLeft` reflect the new config. Resetting translationX/Y
+     * to 0 first prevents the FAB from briefly rendering at a wrong location during
+     * the layout pass (gravity-end in the new bounds becomes the transient position
+     * while we wait for restorePosition to run).
+     */
     fun reapplyPosition() {
-        fab.post { restorePosition() }
+        fab.translationX = 0f
+        fab.translationY = 0f
+        runAfterNextLayout { restorePosition() }
+        fab.requestLayout()
     }
 
     /**
-     * Persist the FAB position as absolute pixel coordinates, but under a key pair
-     * scoped to the current fold state. R.bool.isLargeScreen splits "compact" (phone /
-     * Z Fold cover) from "expanded" (tablet / Z Fold main), which matches when the
-     * activity reflows its layout. Each state remembers where the user parked the FAB
-     * on it independently — so dragging on the cover doesn't move the unfolded
+     * Defer [action] until after the next layout pass completes. Unlike
+     * `View.doOnLayout`, this never runs synchronously — even if the view is already
+     * laid out, we wait for a fresh layout. That's the property we need around
+     * config changes where parent bounds are about to update but haven't yet.
+     */
+    private inline fun runAfterNextLayout(crossinline action: () -> Unit) {
+        fab.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(
+                v: View, left: Int, top: Int, right: Int, bottom: Int,
+                oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
+            ) {
+                fab.removeOnLayoutChangeListener(this)
+                action()
+            }
+        })
+    }
+
+    /**
+     * Persist the FAB position under a key pair scoped to the current fold state.
+     * R.bool.isLargeScreen splits "compact" (phone / Z Fold cover) from "expanded"
+     * (tablet / Z Fold main). Each state remembers where the user parked the FAB
+     * on it independently — dragging on the cover doesn't move the unfolded
      * placement, and vice versa.
+     *
+     * The drag handler already clamps during MOVE, but we re-clamp at save time
+     * as a defensive guard so a future change to the drag path can't accidentally
+     * persist out-of-bounds coordinates that would later resolve off-screen.
      */
     private fun savePosition(x: Float, y: Float) {
+        val parent = fab.parent as? ViewGroup
+        val pw = parent?.width?.toFloat() ?: 0f
+        val ph = parent?.height?.toFloat() ?: 0f
+        val clampedX = if (pw > 0f) x.coerceIn(0f, pw - fab.width) else x
+        val clampedY = if (ph > 0f) y.coerceIn(0f, ph - fab.height) else y
+
         val (keyX, keyY) = positionKeysForCurrentConfig()
         PreferenceManager.getDefaultSharedPreferences(activity).edit()
-            .putFloat(keyX, x)
-            .putFloat(keyY, y)
+            .putFloat(keyX, clampedX)
+            .putFloat(keyY, clampedY)
             .apply()
     }
 
@@ -213,8 +269,8 @@ class FloatingActionButtonController(
 
         // One-time migration from the pre-fold-aware single key pair. Whichever
         // fold state the user is in now inherits the legacy coordinates; the
-        // other state is left empty and falls back to the layout's default
-        // bottom-end position until the user drags it.
+        // other state stays unset until the user drags it (and meanwhile gets
+        // the default bottom-end placement below).
         if (!prefs.contains(keyX) && prefs.contains(LEGACY_KEY_X)) {
             val legacyX = prefs.getFloat(LEGACY_KEY_X, 0f)
             val legacyY = prefs.getFloat(LEGACY_KEY_Y, 0f)
@@ -226,12 +282,21 @@ class FloatingActionButtonController(
                 .apply()
         }
 
-        if (!prefs.contains(keyX)) return
-
-        val savedX = prefs.getFloat(keyX, 0f)
-        val savedY = prefs.getFloat(keyY, 0f)
-        fab.x = savedX.coerceIn(0f, pw - fab.width)
-        fab.y = savedY.coerceIn(0f, ph - fab.height)
+        if (prefs.contains(keyX)) {
+            val savedX = prefs.getFloat(keyX, 0f)
+            val savedY = prefs.getFloat(keyY, 0f)
+            fab.x = savedX.coerceIn(0f, pw - fab.width)
+            fab.y = savedY.coerceIn(0f, ph - fab.height)
+        } else {
+            // No saved coords for this fold state. Reset to the layout's intent —
+            // bottom-end with fab_margin — since the FAB has a manual x/y carried
+            // over from the OTHER state and would otherwise sit at coordinates
+            // that were correct for those bounds but are now off-screen or in
+            // the middle of the smaller layout.
+            val margin = activity.resources.getDimensionPixelSize(R.dimen.fab_margin).toFloat()
+            fab.x = pw - fab.width - margin
+            fab.y = ph - fab.height - margin
+        }
     }
 
     private fun positionKeysForCurrentConfig(): Pair<String, String> {

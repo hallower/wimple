@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -126,8 +125,15 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Override the 1-arg form: that's what the framework calls during normal
+        // recreation (e.g., theme/locale change, low-memory kill, or any config
+        // change not covered by the manifest's configChanges). The 2-arg
+        // (Bundle, PersistableBundle) variant only fires when the activity is
+        // declared with persistableMode="persistAcrossReboots", which we don't
+        // use — so overriding only that one silently dropped currentMenuID and
+        // forced every recreation back to the default screen.
         outState.putInt("currentMenuID", currentMenuID)
     }
 
