@@ -22,7 +22,7 @@ enum class MenuFragment(
     INCOME_EXPENSE    (R.id.menu_income_expense_overview,    ::IncomeExpenseSummaryFragment),
     INCOME            (R.id.menu_income,                     ::IncomeSummaryFragment),
     EXPENSE           (R.id.menu_expense,                    ::ExpenseSummaryFragment),
-    PREFERENCE        (R.id.menu_preference,                 ::SettingsFragment);
+    PREFERENCE        (R.id.menu_preference,                 ::SettingsHostFragment);
 
     companion object {
         private val byMenuId: Map<Int, MenuFragment> = entries.associateBy { it.menuId }

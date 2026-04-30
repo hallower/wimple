@@ -203,6 +203,10 @@
     <string name="opensource_licenses_summary">이 앱에 포함된 오픈소스 라이브러리 및 라이선스 전문을 확인합니다.</string>
     <string name="opensource_licenses_intro">Wimple은 다음 오픈소스 라이브러리를 사용합니다. 각 라이브러리의 저작권과 라이선스 전문은 아래와 같습니다.</string>
     <string name="opensource_licenses_libraries_header">사용 중인 라이브러리</string>
+    <string name="settings_contact_title">Wimple 문의</string>
+    <string name="settings_contact_summary">whooing 개발자 포럼에서 문의하거나 다른 사용자의 글을 확인합니다.</string>
+    <string name="settings_contact_url">https://whooing.com/#forum/developer/ko/app_list/0/_/28698</string>
+    <string name="settings_contact_open_failed">브라우저를 열 수 없습니다.</string>
 
     <string name="bank_noti_sort_title">앱 목록 정렬</string>
     <string name="bank_noti_sort_summary">\'감지할 은행·카드 앱\' 목록의 정렬 기준을 선택합니다.</string>

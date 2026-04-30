@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="true"
+        android:key="pref_disableMemo"
+        android:summary="@string/settings_summary_entry_disable_memo"
+        android:title="@string/settings_entry_disable_memo" />
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="true"
+        android:key="pref_monthlyItemDisplay"
+        android:summary="@string/settings_summary_entry_monthly_display"
+        android:title="@string/settings_entry_monthly_display" />
+
+    <ListPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="5"
+        android:dialogTitle="@string/settings_entry_monthly_display_count"
+        android:entries="@array/monthly_item_count"
+        android:entryValues="@array/monthly_item_count"
+        android:key="pref_monthlyItemCount"
+        android:title="@string/settings_entry_monthly_display_count" />
+
+</PreferenceScreen>

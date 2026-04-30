@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="false"
+        android:key="pref_incomeExpenseStateShowGroup"
+        android:summary="@string/settings_summary_income_expense_state_show_group"
+        android:title="@string/settings_income_expense_state_show_group" />
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="true"
+        android:key="pref_incomeExpenseStateEnableBudget"
+        android:summary="@string/settings_summary_income_expense_state_enable_budget"
+        android:title="@string/settings_income_expense_state_enable_budget" />
+
+</PreferenceScreen>

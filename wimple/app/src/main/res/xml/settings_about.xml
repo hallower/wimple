@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="pref_contact"
+        android:summary="@string/settings_contact_summary"
+        android:title="@string/settings_contact_title" />
+
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="pref_opensourceLicenses"
+        android:summary="@string/opensource_licenses_summary"
+        android:title="@string/opensource_licenses_title" />
+
+</PreferenceScreen>

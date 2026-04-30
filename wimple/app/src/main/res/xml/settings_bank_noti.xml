@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="false"
+        android:key="pref_bankNotiEnable"
+        android:summary="@string/bank_noti_enable_summary"
+        android:title="@string/bank_noti_enable_title" />
+    <MultiSelectListPreference
+        app:iconSpaceReserved="false"
+        android:dependency="pref_bankNotiEnable"
+        android:key="pref_bankNotiApps"
+        android:summary="@string/bank_noti_apps_summary"
+        android:title="@string/bank_noti_apps_title" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:dependency="pref_bankNotiEnable"
+        android:key="pref_bankNotiAddApp"
+        android:summary="@string/bank_noti_add_app_summary"
+        android:title="@string/bank_noti_add_app_title" />
+    <ListPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="added"
+        android:dependency="pref_bankNotiEnable"
+        android:dialogTitle="@string/bank_noti_sort_title"
+        android:entries="@array/bank_noti_sort_entries"
+        android:entryValues="@array/bank_noti_sort_values"
+        android:key="pref_bankNotiSortOrder"
+        android:summary="@string/bank_noti_sort_summary"
+        android:title="@string/bank_noti_sort_title" />
+    <ListPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="5"
+        android:dependency="pref_bankNotiEnable"
+        android:dialogTitle="@string/bank_noti_threshold_title"
+        android:entries="@array/notification_threshold_entries"
+        android:entryValues="@array/notification_threshold_values"
+        android:key="pref_bankNotiThreshold"
+        android:summary="@string/bank_noti_threshold_summary"
+        android:title="@string/bank_noti_threshold_title" />
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="true"
+        android:dependency="pref_bankNotiEnable"
+        android:key="pref_bankNotiToast"
+        android:summary="@string/bank_noti_toast_summary"
+        android:title="@string/bank_noti_toast_title" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:dependency="pref_bankNotiEnable"
+        android:key="pref_bankNotiSendNow"
+        android:summary="@string/bank_noti_send_now_summary"
+        android:title="@string/bank_noti_send_now" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="pref_bankNotiViewList"
+        android:summary="@string/bank_noti_view_list_summary"
+        android:title="@string/bank_noti_view_list_title" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="pref_bankNotiViewUnsupported"
+        android:summary="@string/bank_noti_unsupported_summary"
+        android:title="@string/bank_noti_unsupported_title_pref" />
+
+</PreferenceScreen>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_general"
+        android:title="@string/settings_general"
+        app:fragment="kr.blogspot.charlie0301.wimple.GeneralSettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_bank_noti"
+        android:title="@string/bank_noti_category_title"
+        app:fragment="kr.blogspot.charlie0301.wimple.BankNotificationSettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_entry"
+        android:title="@string/settings_entry"
+        app:fragment="kr.blogspot.charlie0301.wimple.EntrySettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_financial_state"
+        android:title="@string/drawer_menu_financial_state"
+        app:fragment="kr.blogspot.charlie0301.wimple.FinancialStateSettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_income_expense"
+        android:title="@string/drawer_menu_income_expense"
+        app:fragment="kr.blogspot.charlie0301.wimple.IncomeExpenseSettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="header_about"
+        android:title="@string/settings_about_category"
+        app:fragment="kr.blogspot.charlie0301.wimple.AboutSettingsFragment" />
+
+</PreferenceScreen>
