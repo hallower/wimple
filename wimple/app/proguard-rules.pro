@@ -9,6 +9,9 @@
 
 # Add any project specific keep options here:
 
+# Jersey OSGi registry references missing OSGi classes on Android
+-dontwarn org.osgi.framework.**
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
