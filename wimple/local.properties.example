@@ -1,0 +1,10 @@
+# Copy this file to local.properties and fill in the values below.
+# local.properties is gitignored — never commit real values.
+
+# Path to your Android SDK installation.
+# sdk.dir=/path/to/Android/Sdk
+
+# Whooing API app secret. Required for the app to authenticate against
+# https://whooing.com. Register your own app on Whooing to obtain a value.
+# May also be supplied via the WIMPLE_APP_SECRET environment variable.
+WIMPLE_APP_SECRET=

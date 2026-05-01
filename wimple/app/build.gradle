@@ -5,6 +5,16 @@ plugins {
     id 'kotlin-parcelize' // Add this for @Parcelize functionality
 }
 
+// Whooing API credentials are injected at build time from local.properties
+// (gitignored) or the WIMPLE_APP_SECRET environment variable so they never
+// land in the tracked source. See local.properties.example for the keys.
+def wimpleLocalProps = new Properties()
+def wimpleLocalPropsFile = rootProject.file('local.properties')
+if (wimpleLocalPropsFile.exists()) {
+    wimpleLocalPropsFile.withInputStream { wimpleLocalProps.load(it) }
+}
+def wimpleAppSecret = wimpleLocalProps.getProperty('WIMPLE_APP_SECRET') ?: System.getenv('WIMPLE_APP_SECRET') ?: ''
+
 android {
     compileSdkVersion 36
     defaultConfig {
@@ -14,6 +24,8 @@ android {
         versionCode 52
         versionName "1.0.52"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "WIMPLE_APP_SECRET", "\"${wimpleAppSecret}\""
     }
     buildTypes {
         release {
@@ -25,6 +37,7 @@ android {
     // Enable View Binding to replace Kotlin Synthetics
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     packagingOptions {

@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import kr.blogspot.charlie0301.wimple.BuildConfig;
 import kr.blogspot.charlie0301.wimple.R;
 import kr.blogspot.charlie0301.wimple.impl.RestAPIInvoker.HTTPMethod;
 import kr.blogspot.charlie0301.wimple.impl.db.AccountDBHandler;
@@ -331,7 +332,9 @@ public class WimpleImpl implements IWimpleImpl {
 
     private static final String serviceHost = "https://whooing.com/";
     private static final String appID = "140";
-    private static final String vo42iw5me4vxz = "***REDACTED-WIMPLE-APP-SECRET***";
+    // Injected from local.properties / WIMPLE_APP_SECRET env via BuildConfig
+    // so the Whooing app secret never lives in tracked source.
+    private static final String vo42iw5me4vxz = BuildConfig.WIMPLE_APP_SECRET;
 
     //private final Semaphore authInProgress = new Semaphore(0);
     private static Integer sequence = 10000;
