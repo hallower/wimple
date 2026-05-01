@@ -27,9 +27,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-some icon - graphic loads
+In-app icons — graphicloads.com
 --------------------------------------------------------------------------------
 
-Link: http://graphicloads.com/license/
+The following in-app icons were sourced in 2014 from graphicloads.com
+under the license then published at http://graphicloads.com/license/,
+which permitted royalty-free use in personal and commercial projects:
 
-contact: info@graphicloads.com
+  - wimple/app/src/main/res/drawable/financial_state.png
+  - wimple/app/src/main/res/drawable/graph.png
+  - wimple/app/src/main/res/drawable/income_expense.png
+  - wimple/app/src/main/res/drawable/refresh.png
+  - wimple/app/src/main/res/drawable/settings.png
+  - wimple/app/src/main/res/drawable/user.png
+
+License page (as read at the time of inclusion):
+  http://graphicloads.com/license/
+Contact:
+  info@graphicloads.com
+
+The graphicloads license terms have not been re-verified since the
+icons were added. If you fork this repository or build a derivative
+work, please confirm that the current terms still cover your intended
+use before redistributing.
