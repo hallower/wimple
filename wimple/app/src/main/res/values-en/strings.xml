@@ -8,6 +8,7 @@
 
     <string name="action_more">..</string>
     <string name="action_go_to_whooing">Whooing.com</string>
+    <string name="action_whooing_notifications">Whooing alerts</string>
     <string name="action_find_entry">Find</string>
     <string name="title_activity_web_view">Login to Whooing</string>
     <string name="program_exit">It\'s required to login to Whooing if you\'d like to use this app. :)</string>

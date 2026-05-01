@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
+import kr.blogspot.charlie0301.wimple.impl.WhooingNotifications
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem
 import kr.blogspot.charlie0301.wimple.model.*
@@ -34,11 +35,33 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private lateinit var binding: ActivityWimpleBinding
     private lateinit var fabController: FloatingActionButtonController
 
+    // Cached unread-notification badge count fetched once per Activity lifetime.
+    // Stays at 0 (= bell hidden) until the one-shot onResume fetch returns; the
+    // user clears it server-side by visiting whooing.com, never from Wimple.
+    private var notificationCount: Int = 0
+    private var notificationMenuItem: MenuItem? = null
+    private var hasFetchedNotifications: Boolean = false
+
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
         super.onResume()
         kr.blogspot.charlie0301.wimple.impl.BankNotifications.retryIfPending(this)
+        if (!hasFetchedNotifications) {
+            hasFetchedNotifications = true
+            fetchNotificationBadge()
+        }
+    }
+
+    private fun fetchNotificationBadge() {
+        val wimple = WimpleImpl.getInstance() ?: return
+        Thread {
+            val count = WhooingNotifications.fetchBadgeCount(wimple)
+            runOnUiThread {
+                notificationCount = count
+                notificationMenuItem?.isVisible = count > 0
+            }
+        }.start()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -187,13 +210,16 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.wimple, menu)
+        notificationMenuItem = menu.findItem(R.id.action_whooing_notifications)?.also {
+            it.isVisible = notificationCount > 0
+        }
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
 
-        if (id == R.id.action_go_to_whooing) {
+        if (id == R.id.action_go_to_whooing || id == R.id.action_whooing_notifications) {
             val i = Intent(Intent.ACTION_VIEW)
             i.data = Uri.parse(whooingURL)
             startActivity(i)

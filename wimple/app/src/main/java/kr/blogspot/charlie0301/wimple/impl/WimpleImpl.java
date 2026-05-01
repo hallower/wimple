@@ -383,6 +383,8 @@ public class WimpleImpl implements IWimpleImpl {
 
         static final String MONEYNEWS = "api/bbs/moneynews.json";
 
+        static final String NOTIFICATIONS = "api/notifications.json";
+
     }
 
     ;
