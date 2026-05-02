@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground"
+    android:padding="6dp">
+
+    <!-- Header: prev | month label | next | refresh -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/widget_action_prev_month"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_left" />
+
+        <TextView
+            android:id="@+id/widget_month_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+ />
+
+        <ImageView
+            android:id="@+id/widget_btn_next"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/widget_action_next_month"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_right" />
+
+        <ImageView
+            android:id="@+id/widget_btn_refresh"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/widget_action_refresh"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_refresh" />
+    </LinearLayout>
+
+    <!-- Day-of-week row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="2dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="#D32F2F"
+            android:text="@string/widget_dow_sun" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/widget_dow_mon" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/widget_dow_tue" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/widget_dow_wed" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/widget_dow_thu" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="@string/widget_dow_fri" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="#1976D2"
+            android:text="@string/widget_dow_sat" />
+    </LinearLayout>
+
+    <!-- Stack the grid and empty/loading state inside a single weight=1
+         container so they overlap instead of competing for vertical space.
+         The previous LinearLayout-with-two-weights setup let the empty view
+         briefly steal half the column during resize, which made the grid
+         look like it "dropped" off-screen. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="2dp">
+
+        <!-- 7-column day grid populated by MonthlySummaryWidgetService.Factory.
+             The 1dp grid spacing combined with the divider-colored background
+             draws thin lines between cells (cells paint colorBackground over
+             everything except those 1dp gaps). -->
+        <GridView
+            android:id="@+id/widget_day_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numColumns="7"
+            android:stretchMode="columnWidth"
+            android:background="@color/separater"
+            android:verticalSpacing="1dp"
+            android:horizontalSpacing="1dp" />
+
+        <!-- Shown by the framework when the GridView's adapter reports
+             count=0. Provider seeds the text per state (loading, login
+             required, no data). -->
+        <TextView
+            android:id="@+id/widget_empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Footer: monthly totals. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="2dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_total_income"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="13sp"
+            android:textColor="#2E7D32"
+            android:gravity="start" />
+
+        <TextView
+            android:id="@+id/widget_total_expense"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="13sp"
+            android:textColor="#C62828"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/widget_total_net"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textStyle="bold"
+            android:gravity="end" />
+    </LinearLayout>
+</LinearLayout>

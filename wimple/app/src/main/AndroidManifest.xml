@@ -95,6 +95,23 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name="kr.blogspot.charlie0301.wimple.MonthlySummaryWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_monthly_summary_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_monthly_summary_info" />
+        </receiver>
+
+        <service
+            android:name="kr.blogspot.charlie0301.wimple.MonthlySummaryWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
     </application>
 
 </manifest>

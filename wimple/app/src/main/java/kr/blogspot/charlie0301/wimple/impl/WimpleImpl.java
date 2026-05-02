@@ -1321,6 +1321,24 @@ public class WimpleImpl implements IWimpleImpl {
         return name;
     }
 
+    /**
+     * Snapshot of the cached account directory keyed by account id (e.g. "x21" -> Account).
+     * Used by the home-screen widget to classify each entry's left/right account as
+     * income / expense / asset / debt / capital without firing additional API calls.
+     */
+    public java.util.Map<String, Account> getAccountIdMap() {
+        java.util.Map<String, Account> map = new java.util.HashMap<>();
+        if (adbh == null) return map;
+        try {
+            for (Account account : adbh.getAllAccounts()) {
+                if (account.getId() != null) map.put(account.getId(), account);
+            }
+        } catch (Exception e) {
+            // empty map — caller treats unknown ids as "transfer" and skips them
+        }
+        return map;
+    }
+
 
     public boolean getFinancialState(String date, boolean forceUpdate) {
 		/*

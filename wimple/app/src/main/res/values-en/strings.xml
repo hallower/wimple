@@ -237,4 +237,24 @@
     <string name="bank_noti_unsupported_clear_confirm">Clear all collected unrecognized notifications?</string>
     <string name="bank_noti_unsupported_selected_count">%1$d selected</string>
     <string name="bank_noti_unsupported_rejected_at">Rejected at: %1$s</string>
+
+    <string name="widget_monthly_summary_label">Wimple Monthly Summary</string>
+    <string name="widget_monthly_summary_description">Daily income, expense, and net for the month at a glance.</string>
+    <string name="widget_loading">Loading…</string>
+    <string name="widget_login_required">Open Wimple to sign in.</string>
+    <string name="widget_no_data">No transactions to display.</string>
+    <string name="widget_month_label">%1$d-%2$02d</string>
+    <string name="widget_total_income">Income %1$s</string>
+    <string name="widget_total_expense">Expense %1$s</string>
+    <string name="widget_total_net">Net %1$s</string>
+    <string name="widget_action_prev_month">Previous month</string>
+    <string name="widget_action_next_month">Next month</string>
+    <string name="widget_action_refresh">Refresh</string>
+    <string name="widget_dow_sun">Sun</string>
+    <string name="widget_dow_mon">Mon</string>
+    <string name="widget_dow_tue">Tue</string>
+    <string name="widget_dow_wed">Wed</string>
+    <string name="widget_dow_thu">Thu</string>
+    <string name="widget_dow_fri">Fri</string>
+    <string name="widget_dow_sat">Sat</string>
 </resources>

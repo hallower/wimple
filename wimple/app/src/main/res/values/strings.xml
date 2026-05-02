@@ -240,4 +240,24 @@
     <string name="bank_noti_unsupported_clear_confirm">모아둔 인식되지 않은 알림을 모두 삭제하시겠습니까?</string>
     <string name="bank_noti_unsupported_selected_count">%1$d개 선택됨</string>
     <string name="bank_noti_unsupported_rejected_at">거부된 시각: %1$s</string>
+
+    <string name="widget_monthly_summary_label">Wimple 월별 요약</string>
+    <string name="widget_monthly_summary_description">한 달간 일별 수익·지출·순액을 한눈에 표시합니다.</string>
+    <string name="widget_loading">불러오는 중…</string>
+    <string name="widget_login_required">Wimple 앱을 실행해 로그인하세요.</string>
+    <string name="widget_no_data">표시할 거래가 없습니다.</string>
+    <string name="widget_month_label">%1$d년 %2$d월</string>
+    <string name="widget_total_income">수익 %1$s</string>
+    <string name="widget_total_expense">지출 %1$s</string>
+    <string name="widget_total_net">순액 %1$s</string>
+    <string name="widget_action_prev_month">이전 달</string>
+    <string name="widget_action_next_month">다음 달</string>
+    <string name="widget_action_refresh">새로고침</string>
+    <string name="widget_dow_sun">일</string>
+    <string name="widget_dow_mon">월</string>
+    <string name="widget_dow_tue">화</string>
+    <string name="widget_dow_wed">수</string>
+    <string name="widget_dow_thu">목</string>
+    <string name="widget_dow_fri">금</string>
+    <string name="widget_dow_sat">토</string>
 </resources>
