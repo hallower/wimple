@@ -282,11 +282,13 @@ class MonthlySummaryWidgetProvider : AppWidgetProvider() {
         val appCtx = ctx.applicationContext
         Thread {
             val (year, month) = computeYearMonth(appCtx, widgetId)
+            Log.d(LOG_TAG, "[trigger] widgetId=$widgetId fetching $year-$month")
             val data = fetchMonth(year, month)
             writeCache(appCtx, widgetId, year, month, data)
             val mgr = AppWidgetManager.getInstance(appCtx)
             renderWidget(appCtx, mgr, widgetId)
             mgr.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_day_grid)
+            Log.d(LOG_TAG, "[trigger] widgetId=$widgetId done $year-$month")
         }.start()
     }
 
@@ -520,76 +522,160 @@ class MonthlySummaryWidgetProvider : AppWidgetProvider() {
                 set(Calendar.MILLISECOND, 0)
             }
             val daysInMonth = firstOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
-            val accountMap = wimple.accountIdMap
+            // accountMap is no longer used for classification (l_account /
+            // r_account in each row already carry the category). Kept only as
+            // a fallback if future debugging needs to map account_id → title.
 
             val perDay = HashMap<Int, LongArray>()
             var totalIncome = 0L
             var totalExpense = 0L
+            // Lightweight tallies surfaced in the per-fetch summary log so
+            // future regressions are still easy to diagnose at a glance.
+            var classifiedIncome = 0
+            var classifiedExpense = 0
+            var transferRows = 0
+            val sectionId = wimple.defaultSectionID ?: ""
+            val startDate = DateFormatUtils.getServerDateString(firstOfMonth.timeInMillis)
+            val endCal = (firstOfMonth.clone() as Calendar).apply {
+                set(Calendar.DAY_OF_MONTH, daysInMonth)
+            }
+            val endDateStr = DateFormatUtils.getServerDateString(endCal.timeInMillis)
+
+            // Whooing returns entries in descending entry_date order with a
+            // server-side cap of ~100 rows per call, regardless of the limit
+            // we ask for. Two consequences:
+            //
+            //   (1) We can't decide pagination is "done" from row count — every
+            //       batch can hit the cap with more entries waiting behind it.
+            //   (2) Decrementing end_date by one day after each batch silently
+            //       skips the rest of the day we just partially fetched. If
+            //       day 21 has >100 entries and we only got the latest 80,
+            //       moving end_date to day 20 drops the other 20+ forever
+            //       (this is exactly why a busy day's income was disappearing
+            //       from the widget).
+            //
+            // Use the doc-recommended `max` parameter instead: it returns
+            // entries strictly older than the given entry_date *including
+            // suffix*, so feeding it the smallest entry_date from the previous
+            // batch picks up the exact cut-off point with no overlap and no
+            // gap. Loop bounded for safety.
+            var maxParam: String? = null
+            var iteration = 0
+            var grandTotalRows = 0
             try {
-                val sectionId = wimple.defaultSectionID ?: ""
-                val startDate = DateFormatUtils.getServerDateString(firstOfMonth.timeInMillis)
-                val endCal = (firstOfMonth.clone() as Calendar).apply {
-                    set(Calendar.DAY_OF_MONTH, daysInMonth)
-                }
-                val endDate = DateFormatUtils.getServerDateString(endCal.timeInMillis)
-                // limit=500 covers typical home-accounting volume per month;
-                // heavy users would lose entries beyond that until we paginate.
-                val path = "?section_id=$sectionId" +
-                    "&start_date=$startDate" +
-                    "&end_date=$endDate" +
-                    "&limit=500"
-                val json = wimple.invokeRESTAPI(
-                    RestAPIInvoker.HTTPMethod.GET,
-                    ENTRIES_ALL_PATH + path,
-                    ""
-                )
-                if (json != null && json.optString("code").startsWith("2")) {
+                while (iteration < 30) {
+                    iteration++
+                    val path = buildString {
+                        append("?section_id=").append(sectionId)
+                        append("&start_date=").append(startDate)
+                        append("&end_date=").append(endDateStr)
+                        append("&limit=100")
+                        if (maxParam != null) append("&max=").append(maxParam)
+                    }
+                    val json = wimple.invokeRESTAPI(
+                        RestAPIInvoker.HTTPMethod.GET,
+                        ENTRIES_ALL_PATH + path,
+                        ""
+                    )
+                    if (json == null || !json.optString("code").startsWith("2")) {
+                        Log.w(LOG_TAG, "[fetch] iter=$iteration non-2xx: code=${json?.optString("code")}")
+                        break
+                    }
                     val rows = json.optJSONObject("results")?.optJSONArray("rows")
-                    if (rows != null) {
-                        for (i in 0 until rows.length()) {
-                            val row = rows.optJSONObject(i) ?: continue
-                            val lAccountId = row.optString("l_account_id")
-                            val rAccountId = row.optString("r_account_id")
-                            // x0 is Whooing's tombstone for deleted entries.
-                            if (lAccountId.equals("x0", ignoreCase = true) ||
-                                rAccountId.equals("x0", ignoreCase = true)) continue
-                            val item = row.optString("item")
-                            // Auto-generated rebalancing entries — pl.json hides
-                            // them too, so we do the same.
-                            if (item.startsWith("Adjusted to close")) continue
-                            val amount = parseAmount(row.optString("money")) ?: continue
-                            val entryDate = row.optString("entry_date") // yyyyMMdd
-                            val day = entryDate.takeLast(2).toIntOrNull() ?: continue
-                            if (day < 1 || day > daysInMonth) continue
+                    val rowCount = rows?.length() ?: 0
+                    if (rows == null || rowCount == 0) {
+                        Log.d(LOG_TAG, "[fetch] iter=$iteration max=$maxParam received=0 → done")
+                        break
+                    }
+                    grandTotalRows += rowCount
 
-                            val lWhat = accountMap[lAccountId]?.what
-                            val rWhat = accountMap[rAccountId]?.what
+                    // Track BOTH the date-only (for the "covered start of month
+                    // yet?" check) and the full entry_date string with suffix
+                    // (to feed back as `max` on the next call).
+                    var oldestInBatch: String? = null
+                    var smallestFullEntryDate: String? = null
+                    for (i in 0 until rows.length()) {
+                        val row = rows.optJSONObject(i) ?: continue
+                        val lAccountId = row.optString("l_account_id")
+                        val rAccountId = row.optString("r_account_id")
+                        // x0 is Whooing's tombstone for deleted entries.
+                        if (lAccountId.equals("x0", ignoreCase = true) ||
+                            rAccountId.equals("x0", ignoreCase = true)) continue
+                        val item = row.optString("item")
+                        // Auto-generated rebalancing entries — pl.json hides
+                        // them too, so we do the same.
+                        if (item.startsWith("Adjusted to close")) continue
+                        val amount = parseAmount(row.optString("money")) ?: continue
+                        // entry_date is yyyyMMdd, optionally suffixed with
+                        // ".NNNN" (per-day sequence). The full string (with
+                        // suffix) is needed to drive `max=` pagination; the
+                        // bare date is needed to extract day-of-month and to
+                        // tell when we've covered the start of the month.
+                        val fullEntryDate = parseFullEntryDate(row.opt("entry_date")) ?: continue
+                        val datePart = fullEntryDate.substringBefore('.')
+                        if (datePart.length < 8) continue
+                        if (oldestInBatch == null || datePart < oldestInBatch) {
+                            oldestInBatch = datePart
+                        }
+                        if (smallestFullEntryDate == null || fullEntryDate < smallestFullEntryDate) {
+                            smallestFullEntryDate = fullEntryDate
+                        }
+                        val day = datePart.substring(6, 8).toIntOrNull() ?: continue
+                        if (day < 1 || day > daysInMonth) continue
 
-                            val arr = perDay.getOrPut(day) { longArrayOf(0L, 0L) }
-                            // Whooing's bookkeeping convention:
-                            //   income recorded on the right (credit)
-                            //   expense recorded on the left (debit)
-                            // Reversals (refunds) flip the sides → subtract.
-                            // Pure asset/debt/capital legs are transfers and don't count.
-                            when {
-                                rWhat == "income" -> {
-                                    arr[0] += amount; totalIncome += amount
-                                }
-                                lWhat == "income" -> {
-                                    arr[0] -= amount; totalIncome -= amount
-                                }
-                                lWhat == "expenses" -> {
-                                    arr[1] += amount; totalExpense += amount
-                                }
-                                rWhat == "expenses" -> {
-                                    arr[1] -= amount; totalExpense -= amount
-                                }
+                        // entries.json_array carries the account category
+                        // ("assets" / "liabilities" / "capital" / "income" /
+                        // "expenses") DIRECTLY in `l_account` and `r_account`,
+                        // so we just look at the first letter — robust against
+                        // singular/plural variants and avoids depending on a
+                        // possibly-stale local accounts cache.
+                        val lFirst = row.optString("l_account").firstOrNull()
+                        val rFirst = row.optString("r_account").firstOrNull()
+
+                        val arr = perDay.getOrPut(day) { longArrayOf(0L, 0L) }
+                        // Whooing's bookkeeping convention:
+                        //   income recorded on the right (credit)  → 'i'
+                        //   expense recorded on the left (debit)   → 'e'
+                        // Reversals (refunds) flip the sides → subtract.
+                        // Pure asset / liabilities / capital legs are transfers
+                        // and don't count toward income or expense.
+                        when {
+                            rFirst == 'i' -> {
+                                arr[0] += amount; totalIncome += amount; classifiedIncome++
                             }
+                            lFirst == 'i' -> {
+                                arr[0] -= amount; totalIncome -= amount; classifiedIncome++
+                            }
+                            lFirst == 'e' -> {
+                                arr[1] += amount; totalExpense += amount; classifiedExpense++
+                            }
+                            rFirst == 'e' -> {
+                                arr[1] -= amount; totalExpense -= amount; classifiedExpense++
+                            }
+                            else -> transferRows++
                         }
                     }
-                } else {
-                    Log.w(LOG_TAG, "[fetch] non-2xx response: code=${json?.optString("code")}")
+
+                    Log.d(LOG_TAG, "[fetch] iter=$iteration max=$maxParam received=$rowCount oldest=$oldestInBatch smallestFull=$smallestFullEntryDate")
+
+                    // Stop when we have nothing usable to paginate from, or
+                    // when the smallest entry_date in the batch has reached
+                    // the start of the month — the server has nothing older
+                    // to give us within the requested date window.
+                    if (smallestFullEntryDate == null) break
+                    if (oldestInBatch != null && oldestInBatch < startDate) break
+
+                    val nextMax = smallestFullEntryDate
+                    if (maxParam != null && nextMax >= maxParam) {
+                        // Defensive: the server returned a row whose full
+                        // entry_date is at or beyond the previous max, so
+                        // we'd just spin re-fetching the same batch. Bail.
+                        Log.w(LOG_TAG, "[fetch] iter=$iteration nextMax=$nextMax not before max=$maxParam → stop")
+                        break
+                    }
+                    maxParam = nextMax
                 }
+                Log.d(LOG_TAG, "[fetch] done iterations=$iteration rows=$grandTotalRows days=${perDay.size} income=$totalIncome expense=$totalExpense (i=$classifiedIncome e=$classifiedExpense xfer=$transferRows)")
             } catch (t: Throwable) {
                 Log.e(LOG_TAG, "[fetch] failed", t)
             }
@@ -606,6 +692,31 @@ class MonthlySummaryWidgetProvider : AppWidgetProvider() {
         private fun parseAmount(s: String): Long? {
             if (s.isEmpty()) return null
             return s.toLongOrNull() ?: s.toDoubleOrNull()?.toLong()
+        }
+
+        /**
+         * Renders a Whooing entry_date back to its canonical "YYYYMMDD" or
+         * "YYYYMMDD.NNNN" string. The JSON shape varies — sometimes a
+         * quoted string, sometimes a JSON number that the parser stores as
+         * Long (no suffix) or Double (with suffix). For Doubles we have to
+         * reconstruct the suffix by hand because Double.toString switches
+         * to scientific notation above 10⁷, which would mangle the date.
+         */
+        private fun parseFullEntryDate(raw: Any?): String? = when (raw) {
+            null -> null
+            is String -> raw
+            is Long -> raw.toString()
+            is Double -> {
+                val intPart = raw.toLong()
+                val fracPart = Math.round((raw - intPart) * 10000.0).toInt()
+                if (fracPart > 0) {
+                    java.lang.String.format(java.util.Locale.US, "%d.%04d", intPart, fracPart)
+                } else {
+                    intPart.toString()
+                }
+            }
+            is Number -> raw.toLong().toString()
+            else -> raw.toString()
         }
 
         // ---------- formatting helpers (also used by Factory) ----------
