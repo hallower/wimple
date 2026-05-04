@@ -127,7 +127,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             binding.insertMemoWindow.visibility = View.GONE
         }
 
-        binding.tiUpdateNotification.visibility = View.INVISIBLE
+        binding.tiUpdateNotification.visibility = View.GONE
 
         this.setupDate()
 
@@ -558,7 +558,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             CommandID.GET_ALL_ACCOUNT_RECEIVED -> {
 
-                binding.tiUpdateNotification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.GONE
                 if (!booleanStatus) {
                     return
                 }
@@ -663,7 +663,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             }
 
             CommandID.GET_LATEST_ITEMS_RESPONSE_RECEIVED -> {
-                binding.tiUpdateNotification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.GONE
 
                 if (booleanStatus) {
                     this.latestItems = obj as ArrayList<Item>
@@ -676,7 +676,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED -> {
                 val entryDate = obj as String
 
-                binding.tiUpdateNotification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.GONE
 
                 Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=$entryDate")
                 if (booleanStatus) {
@@ -721,7 +721,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             CommandID.GET_MODIFY_ENTRY_RESPONSE_RECEIVED -> {
 
-                binding.tiUpdateNotification.visibility = View.INVISIBLE
+                binding.tiUpdateNotification.visibility = View.GONE
 
                 if (booleanStatus) {
                     WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.modify_success))

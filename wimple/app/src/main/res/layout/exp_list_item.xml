@@ -6,12 +6,14 @@
 
     <TextView
         android:id="@+id/expListGroupItem"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
         android:maxLines="1"
         android:gravity="center_vertical"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:textColor="@color/text_basic"
-        android:textSize="16sp" />
+        android:paddingStart="20dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/md_theme_on_surface"
+        android:textSize="14sp"
+        android:background="?attr/selectableItemBackground" />
 
 </LinearLayout>

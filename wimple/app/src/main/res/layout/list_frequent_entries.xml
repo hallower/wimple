@@ -6,16 +6,15 @@
 
     <TextView
         android:id="@+id/list_frequent_entry_name"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:gravity="left|center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="start|center_vertical"
         android:lines="1"
         android:maxLines="1"
-        android:textColor="@color/text_light_dimmed"
-        android:paddingBottom="1dp"
-        android:paddingLeft="4dp"
-        android:paddingRight="1dp"
-        android:paddingTop="1dp"
-        android:textSize="16sp" />
+        android:textColor="@color/md_theme_on_surface_variant"
+        android:paddingStart="@dimen/spacing_medium"
+        android:paddingEnd="@dimen/spacing_medium"
+        android:textSize="14sp"
+        android:background="?attr/selectableItemBackground" />
 
 </LinearLayout>
