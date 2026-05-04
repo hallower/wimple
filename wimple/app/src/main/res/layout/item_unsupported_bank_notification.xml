@@ -2,14 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?android:attr/activatedBackgroundIndicator"
+    android:background="?attr/selectableItemBackground"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/noti_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/md_theme_on_surface"
         android:textStyle="bold"
         android:textSize="14sp" />
 
@@ -18,21 +19,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:textColor="@color/md_theme_on_surface_variant"
         android:textSize="13sp" />
 
     <TextView
         android:id="@+id/noti_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#888888"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/md_theme_outline"
         android:textSize="11sp" />
 
     <TextView
         android:id="@+id/noti_rejected_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#B71C1C"
+        android:textColor="@color/md_theme_error"
         android:textSize="11sp" />
 
 </LinearLayout>

@@ -10,9 +10,10 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/AppTheme.AppBarOverlay"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        android:background="@color/md_theme_surface"
+        app:titleTextColor="@color/md_theme_on_surface"
+        android:theme="@style/ThemeOverlay.Material3.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.Material3.Dark" />
 
     <TextView
         android:id="@+id/header_hint"
@@ -20,7 +21,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp"
         android:textSize="12sp"
-        android:textColor="#666666"
+        android:textColor="@color/md_theme_on_surface_variant"
         android:text="@string/bank_noti_unsupported_hint" />
 
     <TextView
@@ -30,14 +31,16 @@
         android:gravity="center"
         android:padding="24dp"
         android:text="@string/bank_noti_unsupported_empty"
+        android:textColor="@color/md_theme_on_surface_variant"
         android:visibility="gone" />
 
     <ListView
         android:id="@+id/notification_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/md_theme_surface"
         android:choiceMode="multipleChoiceModal"
-        android:divider="?android:attr/listDivider"
+        android:divider="@color/md_theme_outline_variant"
         android:dividerHeight="1dp" />
 
 </LinearLayout>

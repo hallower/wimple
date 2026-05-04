@@ -10,31 +10,37 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/AppTheme.AppBarOverlay"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        android:background="@color/md_theme_surface"
+        app:titleTextColor="@color/md_theme_on_surface"
+        android:theme="@style/ThemeOverlay.Material3.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.Material3.Dark" />
 
     <EditText
         android:id="@+id/search_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginVertical="6dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="8dp"
+        android:background="@drawable/bg_input_field"
+        android:padding="12dp"
         android:hint="@string/bank_noti_picker_search_hint"
+        android:textColor="@color/md_theme_on_surface"
+        android:textColorHint="@color/md_theme_on_surface_variant"
         android:inputType="text"
         android:singleLine="true"
         android:visibility="gone" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/md_theme_surface">
 
         <ListView
             android:id="@+id/app_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:choiceMode="multipleChoice"
-            android:divider="?android:attr/listDivider"
+            android:divider="@color/md_theme_outline_variant"
             android:dividerHeight="1dp"
             android:visibility="gone" />
 
@@ -49,13 +55,14 @@
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="?android:attr/progressBarStyleLarge" />
+                style="@style/Widget.Material3.CircularProgressIndicator" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/bank_noti_picker_loading"
+                android:textColor="@color/md_theme_on_surface_variant"
                 android:textSize="14sp" />
         </LinearLayout>
 

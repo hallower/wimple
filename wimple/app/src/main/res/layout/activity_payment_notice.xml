@@ -2,11 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="10dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginTop="10dp"
-    android:paddingTop="40dp"
+    android:background="@color/md_theme_surface"
+    android:padding="20dp"
     android:orientation="vertical"
     tools:context=".PaymentNoticeActivity">
 
@@ -16,48 +13,37 @@
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/about_payment_smile"
-        android:textColor="@color/text_blue"
-        android:textSize="50sp" />
+        android:textColor="@color/md_theme_primary"
+        android:textSize="48sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="32dp"
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/about_payment"
-        android:textColor="@color/text_blue"
-        android:textSize="14sp" />
+        android:textColor="@color/md_theme_on_surface"
+        android:textSize="16sp" />
 
-    <TextView
+    <Button
         android:id="@+id/fullscreen_go_to_payment"
+        style="@style/Widget.Material3.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:background="@color/md_theme_primary"
-        android:gravity="center"
-        android:paddingBottom="10dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="10dp"
-        android:text="@string/go_to_payment"
-        android:textColor="@color/md_theme_on_primary" />
+        android:layout_marginTop="32dp"
+        android:text="@string/go_to_payment" />
 
-    <TextView
+    <Button
         android:id="@+id/fullscreen_close"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:background="@color/md_theme_surface_variant"
-        android:gravity="center"
-        android:paddingBottom="10dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="10dp"
-        android:text="@string/close"
-        android:textColor="@color/md_theme_on_surface_variant" />
+        android:layout_marginTop="16dp"
+        android:text="@string/close" />
 
 </LinearLayout>

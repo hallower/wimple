@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/main_bg"
+    android:background="@color/md_theme_surface"
     android:orientation="vertical"
     android:focusable="true"
     android:focusableInTouchMode="true">
@@ -9,17 +9,17 @@
     <TextView
         android:id="@+id/settings_loggout"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginBottom="2dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginTop="2dp"
+        android:layout_height="56dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:gravity="center_vertical"
         android:text="@string/settings_loggout"
-        android:textSize="20sp" />
+        android:textColor="@color/md_theme_on_surface"
+        android:textSize="16sp" />
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/separater" />
+        android:layout_height="1dp"
+        android:background="@color/md_theme_outline_variant" />
 
 </LinearLayout>

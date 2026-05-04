@@ -10,14 +10,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/ThemeOverlay.Material3.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:background="@color/md_theme_surface"
+            app:titleTextColor="@color/md_theme_on_surface"
+            app:popupTheme="@style/ThemeOverlay.Material3.Dark" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -33,6 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:tint="@color/text_white" />
+        app:tint="@color/md_theme_on_primary_container"
+        app:backgroundTint="@color/md_theme_primary_container" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -2,14 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
-    android:background="@drawable/side_nav_bar"
+    android:background="@color/md_theme_primary_container"
     android:gravity="bottom"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:theme="@style/ThemeOverlay.Material3.Dark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,7 +31,8 @@
             android:layout_gravity="center"
             android:gravity="center|end"
             android:text="Default Section"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            android:textColor="@color/md_theme_on_primary_container"
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
     </LinearLayout>
 
     <TextView
@@ -40,12 +41,14 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="User Name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:textColor="@color/md_theme_on_primary_container"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
     <TextView
         android:id="@+id/my_profile_level"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/md_theme_on_primary_container"
         android:text="A Number of Remained Reporting" />
 
 </LinearLayout>
