@@ -11,7 +11,6 @@ import kr.blogspot.charlie0301.wimple.R;
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.AccountState;
 
-@SuppressWarnings("deprecation")
 public class AccountStateItemView extends LinearLayout {
 
     private final Context context;
@@ -47,6 +46,7 @@ public class AccountStateItemView extends LinearLayout {
 
         title.setText(item.getAccountName());
         amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
+        amount.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_surface));
 
         setBackgroundAccountWidget(title, item.getCategory());
 
@@ -54,10 +54,8 @@ public class AccountStateItemView extends LinearLayout {
                 LinearLayout.LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
         if (item.getGroup()) {
-            //type.setText(context.getResources().getString(R.string.title_group));
-            //type.setTextColor(context.getResources().getColor(R.color.text_black));
             title.setBackgroundResource(R.color.md_theme_primary);
-            title.setTextColor(getResources().getColor(R.color.md_theme_on_primary));
+            title.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_primary));
             amount.setTypeface(null, Typeface.BOLD);
             layoutParams.setMargins(0, 0, 0, 0);
         } else {
@@ -82,17 +80,17 @@ public class AccountStateItemView extends LinearLayout {
                 bgColorResId = R.color.md_theme_primary_container;
                 textColorResId = R.color.md_theme_on_primary_container;
                 break;
-            case 'l': // liabilities
-                bgColorResId = R.color.md_theme_warning_container;
-                textColorResId = R.color.md_theme_on_warning_container;
+            case 'l': // liabilities (Red)
+                bgColorResId = R.color.md_theme_liabilities_container;
+                textColorResId = R.color.md_theme_on_liabilities_container;
                 break;
-            case 'i': // income
+            case 'i': // income (Green)
                 bgColorResId = R.color.md_theme_success_container;
                 textColorResId = R.color.md_theme_on_success_container;
                 break;
-            case 'e': // expenses
-                bgColorResId = R.color.md_theme_error_container;
-                textColorResId = R.color.md_theme_on_error_container;
+            case 'e': // expenses (Yellow)
+                bgColorResId = R.color.md_theme_warning_container;
+                textColorResId = R.color.md_theme_on_warning_container;
                 break;
             default:
                 tv.setBackgroundResource(R.drawable.progress_n);
@@ -100,7 +98,7 @@ public class AccountStateItemView extends LinearLayout {
         }
 
         tv.setBackgroundResource(bgColorResId);
-        tv.setTextColor(getResources().getColor(textColorResId));
+        tv.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), textColorResId));
 
         Drawable background = tv.getBackground();
         if (background != null) {

@@ -42,9 +42,12 @@
     <!-- Income: Green -->
     <color name="md_theme_success_container">#CDE9B1</color>
     <color name="md_theme_on_success_container">#062100</color>
-    <!-- Liabilities: Yellow/Orange -->
+    <!-- Expenses: Yellow -->
     <color name="md_theme_warning_container">#F9E45B</color>
     <color name="md_theme_on_warning_container">#201B00</color>
+    <!-- Liabilities: Red (Using standard error tokens) -->
+    <color name="md_theme_liabilities_container">#FFDAD6</color>
+    <color name="md_theme_on_liabilities_container">#410002</color>
 
     <color name="md_theme_outline">#767680</color>
     <color name="md_theme_outline_variant">#C6C5D0</color>

@@ -44,7 +44,6 @@ public class BudgetStateItemView extends LinearLayout {
         return setData(item, null);
     }
 
-    @SuppressWarnings("deprecation")
     public boolean setData(AccountState item, Budget budget) {
 
         if (null == title)
@@ -52,17 +51,15 @@ public class BudgetStateItemView extends LinearLayout {
 
         title.setText(item.getAccountName());
         amount.setText(DateFormatUtils.getDecimalFormat().format(item.getAmount()));
-        amount.setTextColor(getResources().getColor(R.color.md_theme_on_surface));
+        amount.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_surface));
         setBackgroundAccountWidget(title, item.getCategory());
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
         if (item.getGroup()) {
-            //type.setText(context.getResources().getString(R.string.title_group));
-            //type.setTextColor(context.getResources().getColor(R.color.text_black));
             title.setBackgroundResource(R.color.md_theme_primary);
-            title.setTextColor(getResources().getColor(R.color.md_theme_on_primary));
+            title.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_primary));
             amount.setTypeface(null, Typeface.BOLD);
             layoutParams.setMargins(0, 0, 0, 0);
         } else {
@@ -75,18 +72,18 @@ public class BudgetStateItemView extends LinearLayout {
             return true;
         }
 
-        amount.setTextColor(getResources().getColor(R.color.md_theme_on_surface));
-        percentage.setTextColor(getResources().getColor(R.color.md_theme_on_surface));
+        amount.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_surface));
+        percentage.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_on_surface));
 
         if (budget.getBudget() > 0) {
 
             if (item.getAmount() > budget.getBudget()) {
                 if (item.getCategory().startsWith("in")) {
-                    amount.setTextColor(getResources().getColor(R.color.md_theme_primary));
-                    percentage.setTextColor(getResources().getColor(R.color.md_theme_primary));
+                    amount.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_primary));
+                    percentage.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_primary));
                 } else {
-                    amount.setTextColor(getResources().getColor(R.color.md_theme_error));
-                    percentage.setTextColor(getResources().getColor(R.color.md_theme_error));
+                    amount.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_error));
+                    percentage.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.md_theme_error));
                 }
             }
 
@@ -94,8 +91,8 @@ public class BudgetStateItemView extends LinearLayout {
             int pc = (int) ((item.getAmount() / budget.getBudget()) * 100);
             this.percentage.setText(String.valueOf(pc) + "%");
         } else {
-            this.budget.setText(getResources().getString(R.string.budget_nothing_budget));
-            this.percentage.setText(getResources().getString(R.string.budget_nothing_budget));
+            this.budget.setText(getContext().getResources().getString(R.string.budget_nothing_budget));
+            this.percentage.setText(getContext().getResources().getString(R.string.budget_nothing_budget));
         }
         return true;
     }
@@ -113,17 +110,17 @@ public class BudgetStateItemView extends LinearLayout {
                 bgColorResId = R.color.md_theme_primary_container;
                 textColorResId = R.color.md_theme_on_primary_container;
                 break;
-            case 'l': // liabilities
-                bgColorResId = R.color.md_theme_warning_container;
-                textColorResId = R.color.md_theme_on_warning_container;
+            case 'l': // liabilities (Red)
+                bgColorResId = R.color.md_theme_liabilities_container;
+                textColorResId = R.color.md_theme_on_liabilities_container;
                 break;
-            case 'i': // income
+            case 'i': // income (Green)
                 bgColorResId = R.color.md_theme_success_container;
                 textColorResId = R.color.md_theme_on_success_container;
                 break;
-            case 'e': // expenses
-                bgColorResId = R.color.md_theme_error_container;
-                textColorResId = R.color.md_theme_on_error_container;
+            case 'e': // expenses (Yellow)
+                bgColorResId = R.color.md_theme_warning_container;
+                textColorResId = R.color.md_theme_on_warning_container;
                 break;
             default:
                 tv.setBackgroundResource(R.drawable.progress_n);
@@ -131,7 +128,7 @@ public class BudgetStateItemView extends LinearLayout {
         }
 
         tv.setBackgroundResource(bgColorResId);
-        tv.setTextColor(getResources().getColor(textColorResId));
+        tv.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), textColorResId));
 
         Drawable background = tv.getBackground();
         if (background != null) {

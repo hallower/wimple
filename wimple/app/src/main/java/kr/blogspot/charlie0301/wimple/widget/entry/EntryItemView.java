@@ -79,14 +79,14 @@ public class EntryItemView extends LinearLayout {
                 memo.setVisibility(View.GONE);
             } else {
                 memo.setText(entry.getMemo());
-                memo.setTextColor(context.getResources().getColor(R.color.text_black));
+                memo.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface_variant));
                 memo.setVisibility(View.VISIBLE);
             }
             total.setText(DateFormatUtils.getDecimalFormat().format(entry.getBalance()));
 
-            date.setTextColor(context.getResources().getColor(R.color.text_basic));
-            title.setTextColor(context.getResources().getColor(R.color.text_black));
-            amount.setTextColor(context.getResources().getColor(R.color.text_black));
+            date.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface_variant));
+            title.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface));
+            amount.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface));
         } else {
             /*
 			background.setBackgroundResource(R.drawable.gray_box);
@@ -96,12 +96,12 @@ public class EntryItemView extends LinearLayout {
 			*/
             notyet.setVisibility(View.VISIBLE);
             if (item.getDate() < Calendar.getInstance().getTimeInMillis()) {
-                date.setTextColor(context.getResources().getColor(R.color.text_red));
+                date.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_error));
             } else {
-                date.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+                date.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_outline));
             }
-            title.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
-            amount.setTextColor(context.getResources().getColor(R.color.text_light_dimmed));
+            title.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_outline));
+            amount.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_outline));
 
         }
 		
@@ -135,19 +135,19 @@ public class EntryItemView extends LinearLayout {
                 bgColorResId = R.color.md_theme_surface_container_high;
                 textColorResId = R.color.md_theme_on_surface;
                 break;
-            case 'e': // expenses
-                bgColorResId = R.color.md_theme_error_container;
-                textColorResId = R.color.md_theme_on_error_container;
+            case 'e': // expenses (Yellow)
+                bgColorResId = R.color.md_theme_warning_container;
+                textColorResId = R.color.md_theme_on_warning_container;
                 break;
             case 'a': // assets
                 bgColorResId = R.color.md_theme_primary_container;
                 textColorResId = R.color.md_theme_on_primary_container;
                 break;
-            case 'l': // liabilities
-                bgColorResId = R.color.md_theme_warning_container;
-                textColorResId = R.color.md_theme_on_warning_container;
+            case 'l': // liabilities (Red)
+                bgColorResId = R.color.md_theme_liabilities_container;
+                textColorResId = R.color.md_theme_on_liabilities_container;
                 break;
-            case 'i': // income
+            case 'i': // income (Green)
                 bgColorResId = R.color.md_theme_success_container;
                 textColorResId = R.color.md_theme_on_success_container;
                 break;
@@ -156,7 +156,7 @@ public class EntryItemView extends LinearLayout {
         }
 
         tv.setBackgroundResource(bgColorResId);
-        tv.setTextColor(context.getResources().getColor(textColorResId));
+        tv.setTextColor(androidx.core.content.ContextCompat.getColor(context, textColorResId));
         
         Drawable background = tv.getBackground();
         if (background != null) {

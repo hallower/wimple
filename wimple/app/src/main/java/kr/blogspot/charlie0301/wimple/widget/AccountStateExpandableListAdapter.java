@@ -97,9 +97,9 @@ public class AccountStateExpandableListAdapter extends BaseExpandableListAdapter
 
         if (groupPosition == selectedGroupPosition &&
                 childPosition == selectedChildPosition) {
-            txtListChild.setTextColor(context.getResources().getColor(R.color.text_red));
+            txtListChild.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_primary));
         } else {
-            txtListChild.setTextColor(context.getResources().getColor(R.color.text_basic));
+            txtListChild.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface));
         }
         return convertView;
     }
