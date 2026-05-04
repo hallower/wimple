@@ -25,11 +25,11 @@
 
                 <ImageView
                     android:id="@+id/ine_refresh"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="end|top"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="4dp"
                     android:contentDescription="@string/na"
                     android:src="@drawable/refresh" />
 
@@ -37,31 +37,33 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|start"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginTop="18dp"
-                    android:background="@color/colorAccent"
-                    android:padding="3dp"
-                    android:scaleType="fitXY"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:text="@string/entry_header_income_expense_status"
-                    android:textColor="@color/text_white"
+                    android:textColor="@color/md_theme_on_surface_variant"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
                     android:gravity="center" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="58dp">
+                    android:layout_marginTop="48dp">
 
                     <!-- Incomes -->
 
-                    <ImageView
+                    <View
                         android:id="@+id/ine_bar_income"
+                        android:layout_width="60dp"
                         android:layout_height="58dp"
                         android:layout_gravity="center_vertical|left"
                         android:layout_marginLeft="65dp"
-                        android:contentDescription="@string/na"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/input_color_box_3"
-                        android:layout_width="60dp" />
+                        android:background="@color/md_theme_success_container" />
 
                     <TextView
                         android:id="@+id/ine_income_value"
@@ -69,11 +71,10 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical|left"
                         android:layout_marginLeft="80dp"
-                        android:background="@color/text_white"
                         android:paddingLeft="3dp"
                         android:paddingRight="3dp"
                         android:text="..."
-                        android:textColor="@color/text_blue"
+                        android:textColor="@color/md_theme_on_success_container"
                         android:textScaleX="0.8"
                         android:textSize="28sp" />
 
@@ -92,19 +93,17 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="8dp">
 
                 <!-- Expenses -->
 
-                <ImageView
+                <View
                     android:id="@+id/ine_bar_expense"
+                    android:layout_width="60dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
-                    android:contentDescription="@string/na"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/input_color_box"
-                    android:layout_width="60dp" />
+                    android:background="@color/md_theme_error_container" />
 
                 <TextView
                     android:id="@+id/ine_expense_value"
@@ -112,11 +111,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
-                    android:background="@color/text_white"
                     android:paddingLeft="3dp"
                     android:paddingRight="3dp"
                     android:text="..."
-                    android:textColor="@color/text_red"
+                    android:textColor="@color/md_theme_on_error_container"
                     android:textScaleX="0.8"
                     android:textSize="28sp" />
 
@@ -136,20 +134,19 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input_field"
                 android:orientation="horizontal"
-                android:paddingBottom="8dp"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:paddingTop="6dp">
+                android:padding="8dp">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentLeft="true"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
+                    android:alpha="0.6"
                     android:contentDescription="@string/na"
                     android:src="@drawable/graph" />
 
@@ -174,13 +171,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|start"
-                android:layout_marginLeft="15dp"
-                android:layout_marginTop="20dp"
-                android:background="@color/colorAccent"
-                android:padding="3dp"
-                android:scaleType="fitXY"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
                 android:text="@string/entry_header_budget_income_expense_status"
-                android:textColor="@color/text_white"
+                android:textColor="@color/md_theme_on_surface_variant"
+                android:textSize="14sp"
+                android:textStyle="bold"
                 android:gravity="center" />
 
             <!-- 예산 대비 수익 -->
@@ -190,7 +191,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="12dp">
 
                 <ImageView
                     android:id="@+id/ine_bar_budget_base_income"
@@ -202,15 +203,13 @@
                     android:scaleType="fitXY"
                     android:src="@drawable/progress_n" />
 
-                <ImageView
+                <View
                     android:id="@+id/ine_bar_budget_current_income"
                     android:layout_width="60dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
-                    android:contentDescription="@string/na"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/input_color_box_3" />
+                    android:background="@color/md_theme_success_container" />
 
                 <TextView
                     android:id="@+id/ine_bar_budget_current_income_percentage"
@@ -218,11 +217,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
-                    android:background="@color/text_white"
                     android:paddingLeft="3dp"
                     android:paddingRight="3dp"
                     android:text="..."
-                    android:textColor="@color/text_blue"
+                    android:textColor="@color/md_theme_on_success_container"
                     android:textScaleX="0.8"
                     android:textSize="28sp" />
 
@@ -256,15 +254,13 @@
                     android:scaleType="fitXY"
                     android:src="@drawable/progress_n" />
 
-                <ImageView
+                <View
                     android:id="@+id/ine_bar_budget_current_expense"
+                    android:layout_width="60dp"
                     android:layout_height="58dp"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="65dp"
-                    android:contentDescription="@string/na"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/input_color_box"
-                    android:layout_width="60dp" />
+                    android:background="@color/md_theme_error_container" />
 
                 <TextView
                     android:id="@+id/ine_bar_budget_current_expense_percentage"
@@ -272,11 +268,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|left"
                     android:layout_marginLeft="80dp"
-                    android:background="@color/text_white"
                     android:paddingLeft="3dp"
                     android:paddingRight="3dp"
                     android:text="..."
-                    android:textColor="@color/text_red"
+                    android:textColor="@color/md_theme_on_error_container"
                     android:textScaleX="0.8"
                     android:textSize="28sp" />
 
@@ -294,19 +289,12 @@
     </ScrollView>
 
     <!-- update notification 표시 -->
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/ine_update_notification"
-        android:layout_width="wrap_content"
-        android:layout_height="90dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_gravity="right"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/input_box_round_2"
-        android:orientation="horizontal"
-        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/md_theme_secondary_container"
         android:visibility="gone">
 
         <TextView
@@ -314,16 +302,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="10dp"
-            android:text="@string/update_as_date"
-            android:textColor="@color/text_blue" />
-
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_vertical"
-            android:contentDescription="@string/na"
-            android:gravity="center_vertical"
-            android:src="@drawable/waiting" />
-    </LinearLayout>
+            android:padding="4dp"
+            android:textColor="@color/md_theme_on_secondary_container"
+            android:textSize="12sp" />
+    </FrameLayout>
 </RelativeLayout>

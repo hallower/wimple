@@ -740,17 +740,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
             CurrentToolMode.INSERT -> {
                 binding.btnSubmit.text = this.resources.getString(R.string.mode_entry_insert)
-                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_2)
+                binding.btnSubmit.setBackgroundResource(R.color.md_theme_primary)
+                binding.btnSubmit.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.md_theme_on_primary))
             }
 
             CurrentToolMode.EDITING -> {
                 binding.btnSubmit.text = this.resources.getString(R.string.mode_entry_modify)
-                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_6)
+                binding.btnSubmit.setBackgroundResource(R.color.md_theme_secondary)
+                binding.btnSubmit.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.md_theme_on_secondary))
             }
 
             CurrentToolMode.MONTHLY_INSERT -> {
                 binding.btnSubmit.text = this.resources.getString(R.string.mode_monthly_insert)
-                binding.btnSubmit.setBackgroundResource(R.drawable.input_color_box_2)
+                binding.btnSubmit.setBackgroundResource(R.color.md_theme_primary)
+                binding.btnSubmit.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.md_theme_on_primary))
             }
         }
         binding.btnSubmit.background.alpha = 192

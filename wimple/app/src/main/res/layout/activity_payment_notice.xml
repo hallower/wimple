@@ -36,14 +36,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="30dp"
-        android:background="@drawable/input_color_box_5"
+        android:background="@color/md_theme_primary"
         android:gravity="center"
         android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:paddingTop="10dp"
         android:text="@string/go_to_payment"
-        android:textColor="@color/text_black" />
+        android:textColor="@color/md_theme_on_primary" />
 
     <TextView
         android:id="@+id/fullscreen_close"
@@ -51,13 +51,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="30dp"
-        android:background="@drawable/progress_n"
+        android:background="@color/md_theme_surface_variant"
         android:gravity="center"
         android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:paddingTop="10dp"
         android:text="@string/close"
-        android:textColor="@color/text_black" />
+        android:textColor="@color/md_theme_on_surface_variant" />
 
 </LinearLayout>

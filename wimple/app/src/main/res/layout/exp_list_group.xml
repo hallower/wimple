@@ -10,12 +10,12 @@
         android:layout_height="32dp"
         android:maxLines="1"
         android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:textColor="@color/md_theme_on_surface_variant"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:textStyle="bold"
         android:textAllCaps="true"
-        android:background="@color/md_theme_surface_container_low" />
+        android:background="@color/md_theme_surface_container_high" />
 
 </LinearLayout>

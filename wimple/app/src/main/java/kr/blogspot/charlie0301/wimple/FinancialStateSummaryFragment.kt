@@ -41,6 +41,12 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
         }
     }
 
+    private fun setShowingNotification(show: Boolean) {
+        _binding?.let {
+            it.asUpdateNotification.visibility = if (show) View.VISIBLE else View.GONE
+        }
+    }
+
     override fun onResume() {
         this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), false)
         super.onResume()
@@ -69,12 +75,12 @@ class FinancialStateSummaryFragment : androidx.fragment.app.Fragment(), IWimpleF
 
             CommandID.GET_FINANCIAL_STATE_RESPONSE_RECEIVED -> {
 
-                binding.asUpdateNotification.visibility = View.GONE
+                setShowingNotification(false)
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
                     this.wimple.getFinancialState(DateFormatUtils.getServerDateString(""), true)
-                    binding.asUpdateNotification.visibility = View.VISIBLE
+                    setShowingNotification(true)
                 }
 
                 if (!booleanStatus) {

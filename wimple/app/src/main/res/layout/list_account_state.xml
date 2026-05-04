@@ -3,23 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/as_background"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
-    android:paddingTop="4dp"
+    android:layout_height="48dp"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/as_item_title"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
+        android:layout_height="32dp"
         android:layout_weight="0.5"
+        android:background="@drawable/bg_input_field"
         android:gravity="center"
         android:text="title"
-        android:textColor="@color/text_white"
-        android:textScaleX="0.9"
-        android:textSize="16sp"
-        app:autoSizeMaxTextSize="16dp"
+        android:textColor="@color/md_theme_on_surface_variant"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:autoSizeMaxTextSize="14sp"
+        app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform" />
 
     <TextView
@@ -29,9 +31,11 @@
         android:layout_weight="0.5"
         android:gravity="end|center"
         android:text="amount"
-        android:textColor="@color/text_black"
+        android:textColor="@color/md_theme_on_surface"
         android:textSize="16sp"
-        app:autoSizeMaxTextSize="16dp"
+        android:textStyle="bold"
+        app:autoSizeMaxTextSize="16sp"
+        app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform" />
 
 </LinearLayout>

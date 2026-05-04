@@ -56,7 +56,8 @@ public class AccountStateItemView extends LinearLayout {
         if (item.getGroup()) {
             //type.setText(context.getResources().getString(R.string.title_group));
             //type.setTextColor(context.getResources().getColor(R.color.text_black));
-            title.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            title.setBackgroundResource(R.color.md_theme_primary);
+            title.setTextColor(getResources().getColor(R.color.md_theme_on_primary));
             amount.setTypeface(null, Typeface.BOLD);
             layoutParams.setMargins(0, 0, 0, 0);
         } else {
@@ -69,35 +70,42 @@ public class AccountStateItemView extends LinearLayout {
     }
 
     public void setBackgroundAccountWidget(TextView tv, String account) {
+        int bgColorResId;
+        int textColorResId;
+
         switch (account.charAt(0)) {
-
-            case 'a':
-                tv.setBackgroundColor(getResources().getColor(R.color.text_blue));
-                //tv.setBackgroundResource(R.drawable.input_color_box_3);
+            case 'c': // capital
+                bgColorResId = R.color.md_theme_surface_container_high;
+                textColorResId = R.color.md_theme_on_surface;
                 break;
-
-            case 'l':
-                tv.setBackgroundColor(getResources().getColor(R.color.text_red));
-                //tv.setBackgroundResource(R.drawable.input_color_box);
+            case 'a': // assets
+                bgColorResId = R.color.md_theme_primary_container;
+                textColorResId = R.color.md_theme_on_primary_container;
                 break;
-
-            case 'i':
-                tv.setBackgroundColor(getResources().getColor(R.color.text_green));
-                //tv.setBackgroundResource(R.drawable.input_color_box_6);
+            case 'l': // liabilities
+                bgColorResId = R.color.md_theme_warning_container;
+                textColorResId = R.color.md_theme_on_warning_container;
                 break;
-
-            case 'e':
-                tv.setBackgroundColor(getResources().getColor(R.color.text_yellow));
-                //tv.setBackgroundResource(R.drawable.input_color_box_4);
+            case 'i': // income
+                bgColorResId = R.color.md_theme_success_container;
+                textColorResId = R.color.md_theme_on_success_container;
                 break;
-
+            case 'e': // expenses
+                bgColorResId = R.color.md_theme_error_container;
+                textColorResId = R.color.md_theme_on_error_container;
+                break;
             default:
                 tv.setBackgroundResource(R.drawable.progress_n);
-                break;
-
+                return;
         }
+
+        tv.setBackgroundResource(bgColorResId);
+        tv.setTextColor(getResources().getColor(textColorResId));
+
         Drawable background = tv.getBackground();
-        background.setAlpha(200);
+        if (background != null) {
+            background.setAlpha(200);
+        }
     }
 
     public void clear() {

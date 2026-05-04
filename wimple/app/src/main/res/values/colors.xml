@@ -34,6 +34,17 @@
     <color name="md_theme_surface_variant">#E2E1EC</color>
     <color name="md_theme_on_surface_variant">#45464F</color>
     <color name="md_theme_surface_container_low">#F7F2FA</color>
+    <color name="md_theme_surface_container">#F1EDF7</color>
+    <color name="md_theme_surface_container_high">#EBE7F1</color>
+    <color name="md_theme_surface_container_highest">#E5E1EB</color>
+
+    <!-- Custom Semantic Colors (M3 style) -->
+    <!-- Income: Green -->
+    <color name="md_theme_success_container">#CDE9B1</color>
+    <color name="md_theme_on_success_container">#062100</color>
+    <!-- Liabilities: Yellow/Orange -->
+    <color name="md_theme_warning_container">#F9E45B</color>
+    <color name="md_theme_on_warning_container">#201B00</color>
 
     <color name="md_theme_outline">#767680</color>
     <color name="md_theme_outline_variant">#C6C5D0</color>

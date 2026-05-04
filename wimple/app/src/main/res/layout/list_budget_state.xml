@@ -3,23 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/as_background"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
-    android:paddingTop="4dp"
+    android:layout_height="48dp"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/as_item_title"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
+        android:layout_height="32dp"
         android:layout_weight="0.4"
+        android:background="@drawable/bg_input_field"
         android:gravity="center"
-        android:textColor="@color/text_white"
-        android:textScaleX="0.9"
-        android:textSize="14sp"
-        app:autoSizeMaxTextSize="14dp"
+        android:textColor="@color/md_theme_on_surface_variant"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:autoSizeMaxTextSize="13sp"
+        app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform" />
 
     <TextView
@@ -28,10 +29,11 @@
         android:layout_height="match_parent"
         android:layout_weight="0.25"
         android:gravity="end|center"
-        android:textColor="@color/text_black"
-        android:textScaleX="0.8"
+        android:textColor="@color/md_theme_on_surface"
         android:textSize="14sp"
-        app:autoSizeMaxTextSize="14dp"
+        android:textStyle="bold"
+        app:autoSizeMaxTextSize="14sp"
+        app:autoSizeMinTextSize="8sp"
         app:autoSizeTextType="uniform" />
 
     <TextView
@@ -41,10 +43,10 @@
         android:layout_weight="0.17"
         android:gravity="end|center"
         android:text="@string/budget_nothing_budget"
-        android:textColor="@color/text_black"
-        android:textScaleX="0.8"
-        android:textSize="14sp"
-        app:autoSizeMaxTextSize="14dp"
+        android:textColor="@color/md_theme_primary"
+        android:textSize="12sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="6sp"
         app:autoSizeTextType="uniform" />
 
     <TextView
@@ -54,10 +56,10 @@
         android:layout_weight="0.18"
         android:gravity="end|center"
         android:text="@string/budget_nothing_budget"
-        android:textColor="@color/text_black"
-        android:textScaleX="0.8"
-        android:textSize="14sp"
-        app:autoSizeMaxTextSize="14dp"
+        android:textColor="@color/md_theme_on_surface_variant"
+        android:textSize="12sp"
+        app:autoSizeMaxTextSize="12sp"
+        app:autoSizeMinTextSize="6sp"
         app:autoSizeTextType="uniform" />
 
 </LinearLayout>

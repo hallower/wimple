@@ -353,7 +353,7 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
 
     fun setShowingNotification(show: Boolean, isLatest: Boolean) {
 
-        if (null == context)
+        if (null == _binding)
             return
 
         binding.entryListNotificationText.text = if (isLatest) {

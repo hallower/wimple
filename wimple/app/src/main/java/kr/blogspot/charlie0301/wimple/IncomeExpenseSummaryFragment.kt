@@ -79,6 +79,12 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
         }
     }
 
+    private fun setShowingNotification(show: Boolean) {
+        _binding?.let {
+            it.ineUpdateNotification.visibility = if (show) View.VISIBLE else View.GONE
+        }
+    }
+
     override fun onResume() {
         val c = Calendar.getInstance()
         c.time = Date()
@@ -116,7 +122,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
 
             CommandID.GET_INCOME_AND_EXPENSE_RESPONSE_RECEIVED -> {
 
-                binding.ineUpdateNotification.visibility = View.GONE
+                setShowingNotification(false)
 
                 if (this.firstUpdate) {
                     this.firstUpdate = false
@@ -129,7 +135,7 @@ class IncomeExpenseSummaryFragment : androidx.fragment.app.Fragment(), IWimpleFr
                         this.wimple.getBudget(false, DateFormatUtils.getServerDateString(c.timeInMillis), DateFormatUtils.getServerDateString(""), true)
                     }
 
-                    binding.ineUpdateNotification.visibility = View.VISIBLE
+                    setShowingNotification(true)
                 }
 
                 if (!booleanStatus) {
