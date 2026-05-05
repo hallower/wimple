@@ -141,7 +141,43 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
         cal.setListener { amount -> binding.insertAmount.setText(DateFormatUtils.getDecimalFormat().format(amount)) }
 
+        // Apply review-queue prefill (title + amount from the cached classification) if the
+        // fragment was opened via BankNotificationReviewActivity → "수동 입력". Args are
+        // cleared after read so a config change rebuild doesn't re-stomp user edits.
+        consumePrefillArguments()
+
         //initWimple();
+    }
+
+    private fun consumePrefillArguments() {
+        val args = arguments ?: return
+        val title = args.getString(WimpleActivity.EXTRA_PREFILL_TITLE)
+        val amount = if (args.containsKey(WimpleActivity.EXTRA_PREFILL_AMOUNT))
+            args.getDouble(WimpleActivity.EXTRA_PREFILL_AMOUNT)
+        else null
+        applyPrefill(title, amount)
+        args.remove(WimpleActivity.EXTRA_PREFILL_TITLE)
+        args.remove(WimpleActivity.EXTRA_PREFILL_AMOUNT)
+    }
+
+    /**
+     * Public hook so [WimpleActivity] can re-prefill an already-displayed instance of this
+     * fragment when the review-queue activity returns via singleTask + CLEAR_TOP. The
+     * onViewCreated arguments path covers fresh creation; this covers the same-instance case
+     * where replaceWimpleFragment early-returns without re-applying arguments.
+     *
+     * Both [title] and [amount] are independently optional — pass only what's known so we
+     * don't blank fields the user already filled in.
+     */
+    fun applyPrefill(title: String?, amount: Double?) {
+        if (_binding == null) return
+        if (!title.isNullOrBlank()) {
+            binding.insertEntryTitle.setText(title)
+            binding.insertEntryTitle.setSelection(binding.insertEntryTitle.text.length)
+        }
+        if (amount != null && amount > 0.0) {
+            cal.setValue(amount)
+        }
     }
 
     private fun setupTitleAndSubmit() {

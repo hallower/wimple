@@ -121,14 +121,26 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     }
 
     /**
-     * Hand off to manual entry. Phase 2 limitation persists: we don't prefill the form or
-     * auto-remove the queue row on submit — the user comes back and Dismisses. Phase 5 will
-     * close that loop using Intent extras + a post-submit hook.
+     * Hand off to manual entry, prefilling the title and amount from the cached classifier
+     * output when the row produced extracted fields. UNPARSED rows (no merchant/amount in
+     * the cache) just open an empty form like before. Phase 5 will also auto-remove the
+     * queue row when the form is successfully submitted; for now the user [Dismiss]es it
+     * after entry.
      */
     private fun openManualEntry(item: LocalReviewQueue.ReviewItem) {
         val intent = Intent(this, WimpleActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(WimpleActivity.EXTRA_OPEN_MENU, R.id.menu_transaction_insert)
+
+        val result = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+        if (result != null) {
+            result.merchant?.takeIf { it.isNotBlank() }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_PREFILL_TITLE, it)
+            }
+            result.amount?.takeIf { it > 0.0 }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, it)
+            }
+        }
         startActivity(intent)
     }
 

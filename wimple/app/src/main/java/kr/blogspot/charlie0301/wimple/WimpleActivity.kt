@@ -149,7 +149,29 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // return the new one, then process the menu request if present.
         setIntent(intent)
         val requestedMenu = consumeOpenMenuExtra(intent) ?: return
-        replaceWimpleFragment(requestedMenu)
+        // Forward intent extras as fragment arguments so prefill keys (title/amount) flow
+        // through to TransactionInsertFragment when it's freshly created. The fragment
+        // ignores keys it doesn't recognize.
+        replaceWimpleFragment(requestedMenu, intent.extras)
+
+        // If the same fragment was already on screen, replaceWimpleFragment early-returns
+        // without re-applying arguments, so the prefill never reaches the form. Push the
+        // values directly into the live instance to cover that case.
+        applyPrefillToCurrentTransactionFragment(intent)
+    }
+
+    private fun applyPrefillToCurrentTransactionFragment(intent: Intent) {
+        val fragment = currentFragment as? TransactionInsertFragment ?: return
+        val title = intent.getStringExtra(EXTRA_PREFILL_TITLE)
+        val amount = if (intent.hasExtra(EXTRA_PREFILL_AMOUNT))
+            intent.getDoubleExtra(EXTRA_PREFILL_AMOUNT, 0.0)
+        else null
+        if (title == null && amount == null) return
+        fragment.applyPrefill(title, amount)
+        // Single-shot — remove from the active intent so the next config change doesn't
+        // re-prefill on top of user edits.
+        intent.removeExtra(EXTRA_PREFILL_TITLE)
+        intent.removeExtra(EXTRA_PREFILL_AMOUNT)
     }
 
     private fun consumeOpenMenuExtra(intent: Intent?): Int? {
@@ -541,6 +563,15 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
          * cleared after consumption so a config change doesn't re-route.
          */
         const val EXTRA_OPEN_MENU = "wimple.extra.open_menu"
+
+        /**
+         * Optional companion extras used together with [EXTRA_OPEN_MENU] when routing into
+         * the transaction-insert form from a classified review row. The fragment reads its
+         * own arguments in onViewCreated to seed the title and amount fields. Forwarded
+         * verbatim from the launching intent — WimpleActivity itself doesn't interpret them.
+         */
+        const val EXTRA_PREFILL_TITLE = "wimple.extra.prefill_title"
+        const val EXTRA_PREFILL_AMOUNT = "wimple.extra.prefill_amount"
 
         private var mainHandler: Handler? = null
 
