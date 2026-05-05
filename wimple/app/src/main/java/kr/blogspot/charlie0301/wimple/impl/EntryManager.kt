@@ -7,7 +7,11 @@ import kr.blogspot.charlie0301.wimple.impl.WimpleImpl.Path
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.Account
 import kr.blogspot.charlie0301.wimple.model.Entry
+import org.json.JSONArray
 import org.json.JSONException
+import org.json.JSONObject
+import java.math.BigDecimal
+import java.net.URLEncoder
 import java.util.*
 
 internal class EntryManager(private val wimpl: IWimpleImpl) {
@@ -227,29 +231,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
         override fun run() {
 
-            val formatEntryPost = "[{" +
-                    "\"entry_date\" : %s," +
-                    "\"l_account\" : \"%s\"," +
-                    "\"l_account_id\" : \"%s\"," +
-                    "\"r_account\" : \"%s\"," +
-                    "\"r_account_id\" : \"%s\"," +
-                    "\"item\" : \"%s\"," +
-                    "\"money\" : %.4f," +
-                    "\"memo\" : \"%s\"" +
-                    "}]"
-            val pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
-                    formatEntryPost,
-                    DateFormatUtils.getServerDateFormat().format(Date(date!!)),
-                    left.what,
-                    left.id,
-                    right.what,
-                    right.id,
-                    title,
-                    amount,
-                    memo
-            )
-
-            val path = "section_id=$sectionID&data_type=json&entries=$pushingContent"
+            val path = buildEntryPostParams(sectionID, date!!, left, right, title, amount, memo)
 
             //Log.d(LOG_TAG, path);
 
@@ -287,30 +269,7 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
 
         override fun run() {
 
-            val formatEntryPut = "" +
-                    "&entry_date=%s" +
-                    "&l_account=%s" +
-                    "&l_account_id=%s" +
-                    "&r_account=%s" +
-                    "&r_account_id=%s" +
-                    "&item=%s" +
-                    "&money=%.4f" +
-                    ""
-            val pushingContent = String.format(DateFormatUtils.getDefaultLocale(),
-                    formatEntryPut,
-                    date,
-                    left.what,
-                    left.id,
-                    right.what,
-                    right.id,
-                    title,
-                    amount
-            )
-
-            var path = "section_id=$sectionID&data_type=json$pushingContent"
-            if (memo.isNotEmpty()) {
-                path += "&memo=$memo"
-            }
+            val path = buildEntryPutParams(sectionID, date, left, right, title, amount, memo)
 
             //Log.d(LOG_TAG, path);
 
@@ -378,5 +337,70 @@ internal class EntryManager(private val wimpl: IWimpleImpl) {
     companion object {
 
         private const val LOG_TAG = "EntryManager"
+
+        private fun buildEntryPostParams(
+            sectionID: String,
+            date: Long,
+            left: Account,
+            right: Account,
+            title: String,
+            amount: Double?,
+            memo: String
+        ): String {
+            val dateString = DateFormatUtils.getServerDateFormat().format(Date(date))
+            val entry = JSONObject().apply {
+                put("entry_date", dateString.toIntOrNull() ?: dateString)
+                put("l_account", left.what)
+                put("l_account_id", left.id)
+                put("r_account", right.what)
+                put("r_account_id", right.id)
+                put("item", title)
+                put("money", BigDecimal(formatMoney(amount)))
+                put("memo", memo)
+            }
+
+            return formEncode(
+                "section_id" to sectionID,
+                "data_type" to "json",
+                "entries" to JSONArray().put(entry).toString()
+            )
+        }
+
+        private fun buildEntryPutParams(
+            sectionID: String,
+            date: String,
+            left: Account,
+            right: Account,
+            title: String,
+            amount: Double?,
+            memo: String
+        ): String {
+            val params = mutableListOf(
+                "section_id" to sectionID,
+                "data_type" to "json",
+                "entry_date" to date,
+                "l_account" to left.what,
+                "l_account_id" to left.id,
+                "r_account" to right.what,
+                "r_account_id" to right.id,
+                "item" to title,
+                "money" to formatMoney(amount)
+            )
+            if (memo.isNotEmpty()) {
+                params.add("memo" to memo)
+            }
+            return formEncode(*params.toTypedArray())
+        }
+
+        private fun formEncode(vararg params: Pair<String, String>): String =
+            params.joinToString("&") { (key, value) ->
+                "${urlEncode(key)}=${urlEncode(value)}"
+            }
+
+        private fun formatMoney(amount: Double?): String =
+            String.format(DateFormatUtils.getDefaultLocale(), "%.4f", amount)
+
+        private fun urlEncode(value: String): String =
+            URLEncoder.encode(value, "UTF-8")
     }
 }
