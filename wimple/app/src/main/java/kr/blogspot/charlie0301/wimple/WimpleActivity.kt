@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
+import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WhooingNotifications
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.WidgetItem
@@ -42,6 +43,11 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private var notificationMenuItem: MenuItem? = null
     private var hasFetchedNotifications: Boolean = false
 
+    // Local review queue badge — visible only when at least one notification is awaiting
+    // review. Refreshed on every onResume since the queue can grow while we're foregrounded
+    // (notification listener writes asynchronously).
+    private var reviewQueueMenuItem: MenuItem? = null
+
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
@@ -51,6 +57,11 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             hasFetchedNotifications = true
             fetchNotificationBadge()
         }
+        refreshReviewQueueBadge()
+    }
+
+    private fun refreshReviewQueueBadge() {
+        reviewQueueMenuItem?.isVisible = LocalReviewQueue.count(this) > 0
     }
 
     private fun fetchNotificationBadge() {
@@ -120,8 +131,34 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             return
         }
 
-        setDefaultFragment()
+        // Honor an explicit menu request on cold launch (e.g., review activity → manual entry).
+        // Falls back to the configured default screen when no extra is present.
+        val requestedMenu = consumeOpenMenuExtra(intent)
+        if (requestedMenu != null) {
+            installInitialFragment(requestedMenu)
+        } else {
+            setDefaultFragment()
+        }
         BiometricOnboarding.showIfNeeded(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // singleTask launchMode means re-entry through Intent.FLAG_ACTIVITY_CLEAR_TOP routes
+        // here instead of onCreate. Update the stored intent so subsequent getIntent() calls
+        // return the new one, then process the menu request if present.
+        setIntent(intent)
+        val requestedMenu = consumeOpenMenuExtra(intent) ?: return
+        replaceWimpleFragment(requestedMenu)
+    }
+
+    private fun consumeOpenMenuExtra(intent: Intent?): Int? {
+        if (intent == null) return null
+        val menuId = intent.getIntExtra(EXTRA_OPEN_MENU, 0)
+        if (menuId == 0) return null
+        // Single-shot — strip the extra so a later config change / restart doesn't re-route.
+        intent.removeExtra(EXTRA_OPEN_MENU)
+        return menuId
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -213,6 +250,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         notificationMenuItem = menu.findItem(R.id.action_whooing_notifications)?.also {
             it.isVisible = notificationCount > 0
         }
+        reviewQueueMenuItem = menu.findItem(R.id.action_review_queue)
+        refreshReviewQueueBadge()
         return true
     }
 
@@ -223,6 +262,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             val i = Intent(Intent.ACTION_VIEW)
             i.data = Uri.parse(whooingURL)
             startActivity(i)
+            return true
+        }
+        if (id == R.id.action_review_queue) {
+            startActivity(Intent(this, BankNotificationReviewActivity::class.java))
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -490,6 +533,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         private const val LOG_TAG = "WimpleActivity"
         private const val whooingURL = "https://whooing.com"
+
+        /**
+         * Intent extra that asks WimpleActivity to install (or swap to) a specific drawer
+         * menu id on entry. Used by [BankNotificationReviewActivity] to hand off to the
+         * transaction-insert form when the user taps "Enter manually". Single-shot —
+         * cleared after consumption so a config change doesn't re-route.
+         */
+        const val EXTRA_OPEN_MENU = "wimple.extra.open_menu"
 
         private var mainHandler: Handler? = null
 

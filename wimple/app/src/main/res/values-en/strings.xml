@@ -266,4 +266,13 @@
     <string name="bank_noti_local_review_capture_off_summary">Enable notification capture under \"Bank notifications\" settings first.</string>
     <string name="bank_noti_local_review_dual_warning_title">Used together with auto-forward</string>
     <string name="bank_noti_local_review_dual_warning_message">Using auto-forward and review-and-add at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>
+
+    <!-- Local review queue activity (Phase 2) -->
+    <string name="bank_noti_review_title">Notification review</string>
+    <string name="bank_noti_review_empty">No notifications to review.</string>
+    <string name="bank_noti_review_dismiss">Dismiss</string>
+    <string name="bank_noti_review_manual_entry">Enter manually</string>
+    <string name="bank_noti_review_clear_confirm">Delete all notifications in the review queue?</string>
+    <string name="bank_noti_review_delete_confirm">Delete this notification?</string>
+    <string name="action_review_queue">Notification review</string>
 </resources>
