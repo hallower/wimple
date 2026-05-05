@@ -281,4 +281,18 @@
     <string name="bank_noti_review_clear_confirm">모든 검수 알림을 삭제하시겠습니까?</string>
     <string name="bank_noti_review_delete_confirm">이 알림을 삭제하시겠습니까?</string>
     <string name="action_review_queue">알림 검수</string>
+
+    <!-- Classification state badges + progress (Phase 4) -->
+    <string name="bank_noti_review_state_classifying">확인 중…</string>
+    <string name="bank_noti_review_state_ready">자동 분류</string>
+    <string name="bank_noti_review_state_ambiguous">선택 필요</string>
+    <string name="bank_noti_review_state_unparsed">수동 입력</string>
+    <string name="bank_noti_review_state_error">분류 실패</string>
+    <string name="bank_noti_review_classification_progress">분류 중 %1$d/%2$d</string>
+    <!-- "%1$s원" — ICU plural left out, Korean doesn't pluralize -->
+    <string name="bank_noti_review_amount_format">%1$,d원</string>
+    <!-- "<좌> ← <우>" arrow indicates accounting direction (좌·우 항목) -->
+    <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
+    <string name="bank_noti_review_source_mapping">학습된 매핑</string>
+    <string name="bank_noti_review_source_ai">AI 추천</string>
 </resources>

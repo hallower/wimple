@@ -29,7 +29,14 @@ object LocalReviewQueue {
         val packageName: String,
         val appLabel: String,
         val title: String,
-        val text: String
+        val text: String,
+        /**
+         * Cached classifier output for this row, persisted so we don't re-run AI inference
+         * every time the user re-enters the review screen. Stored as opaque JSON shaped by
+         * `BankNotificationClassifier` — null until classification has run, blank string if
+         * classification was attempted but produced an unparseable result.
+         */
+        val classificationJson: String? = null
     )
 
     /** Result of [add]: queue size after the call + whether this call actually persisted a new entry. */
@@ -74,6 +81,29 @@ object LocalReviewQueue {
 
     fun count(ctx: Context): Int = loadArray(prefs(ctx)).length()
 
+    /**
+     * Persist a classifier result for the given queue item. No-op if the id is no longer in
+     * the queue (e.g., user dismissed the row mid-classify). Pass empty string to mark
+     * "classification attempted but failed" — this still counts as classified for resume
+     * skip logic, so we don't loop on rows that consistently produce malformed output.
+     */
+    @Synchronized
+    fun setClassification(ctx: Context, id: String, classificationJson: String): Boolean {
+        val prefs = prefs(ctx)
+        val arr = loadArray(prefs)
+        var changed = false
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            if (o.optString("id") == id) {
+                o.put("classification", classificationJson)
+                changed = true
+                break
+            }
+        }
+        if (changed) prefs.edit().putString(KEY_QUEUE_JSON, arr.toString()).apply()
+        return changed
+    }
+
     @Synchronized
     fun removeById(ctx: Context, id: String): Boolean {
         val prefs = prefs(ctx)
@@ -117,6 +147,9 @@ object LocalReviewQueue {
         val out = ArrayList<ReviewItem>(arr.length())
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
+            // optString returns "" when the key is absent; preserve null vs "attempted-failed"
+            // (empty string) distinction so the classifier can skip already-tried rows.
+            val classification = if (o.has("classification")) o.optString("classification") else null
             out.add(
                 ReviewItem(
                     id = o.optString("id"),
@@ -124,7 +157,8 @@ object LocalReviewQueue {
                     packageName = o.optString("p"),
                     appLabel = o.optString("label"),
                     title = o.optString("title"),
-                    text = o.optString("text")
+                    text = o.optString("text"),
+                    classificationJson = classification
                 )
             )
         }

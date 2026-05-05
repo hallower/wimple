@@ -1134,6 +1134,26 @@ public class WimpleImpl implements IWimpleImpl {
         return edbh.getEntry(entryID);
     }
 
+    /**
+     * Synchronous read of the cached entry collection. Used by {@code BankNotificationClassifier}
+     * to feed candidate transactions into Gemini Nano without needing to round-trip a network
+     * fetch — the cache is what the rest of the UI also reads from. Returns an empty list if
+     * the handler hasn't been initialized yet (pre-auth path).
+     */
+    public java.util.Collection<Entry> getCachedEntries() {
+        if (edbh == null) return java.util.Collections.emptyList();
+        return edbh.getAllEntrys();
+    }
+
+    /**
+     * Synchronous read of the cached account collection. Used by the classifier to validate
+     * that AI-suggested account ids actually exist (and to resolve titles for display).
+     */
+    public java.util.Collection<Account> getCachedAccounts() {
+        if (adbh == null) return java.util.Collections.emptyList();
+        return adbh.getAllAccounts();
+    }
+
     public boolean getAllEntries(String latestDate, String oldestDate) {
 
         if (!isInitializedFinished()) {

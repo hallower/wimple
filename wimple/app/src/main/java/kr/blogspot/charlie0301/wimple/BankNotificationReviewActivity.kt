@@ -15,27 +15,42 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kr.blogspot.charlie0301.wimple.impl.BankNotificationClassifier
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 
 /**
- * Phase 2 review queue screen — displays raw notifications captured into [LocalReviewQueue]
- * and lets the user dismiss them or jump to manual entry. Classification, AI suggestions, and
- * inline confirm are added in later phases; this iteration validates the navigation flow only.
+ * Phase 2 review queue screen, extended in Phase 4 to drive the AI cascade. On entry every
+ * row that doesn't already carry a cached [BankNotificationClassifier.Result] gets queued
+ * for classification — sequential, foreground-only because ML Kit Prompt API rejects
+ * background calls. Each completion persists back into [LocalReviewQueue.setClassification]
+ * so re-entering the screen never repeats inference for the same row.
  *
- * Long-press on a row removes a single item (matches [BankNotificationListActivity] pattern so
- * users don't have to relearn the gesture).
+ * Confirm flow ([확정] one-tap, [선택] picker) is Phase 5; for now only [Dismiss] and
+ * [Manual entry] are wired.
  */
 class BankNotificationReviewActivity : AppCompatActivity() {
 
     private lateinit var adapter: ReviewAdapter
     private lateinit var listView: ListView
     private lateinit var emptyView: TextView
+    private lateinit var toolbar: Toolbar
+
+    /**
+     * Tracks the currently-running classify job so a second resume (or finish()) cancels in-
+     * flight inference instead of leaking a coroutine into the next screen. Single job is
+     * fine because we classify rows serially.
+     */
+    private var classifyJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bank_notification_review)
 
-        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             title = getString(R.string.bank_noti_review_title)
@@ -64,6 +79,16 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refresh()
+        startClassificationPass()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Cancel in-flight classification when leaving the screen — the model's checkStatus
+        // path is foreground-only and we don't want a half-finished call to update the queue
+        // after the user has moved on. The coroutine itself ends once it sees the cancel.
+        classifyJob?.cancel()
+        classifyJob = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -96,18 +121,15 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     }
 
     /**
-     * Hand off to the manual-entry flow. Phase 2 just routes to [TransactionInsertFragment] in
-     * the existing [WimpleActivity] without prefilling — the user keys in the entry while the
-     * notification stays in the review queue, and removes it via [Dismiss] afterwards. Phase 5
-     * will prefill the form from the notification body and auto-remove on successful submit.
+     * Hand off to manual entry. Phase 2 limitation persists: we don't prefill the form or
+     * auto-remove the queue row on submit — the user comes back and Dismisses. Phase 5 will
+     * close that loop using Intent extras + a post-submit hook.
      */
     private fun openManualEntry(item: LocalReviewQueue.ReviewItem) {
         val intent = Intent(this, WimpleActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(WimpleActivity.EXTRA_OPEN_MENU, R.id.menu_transaction_insert)
         startActivity(intent)
-        // Do NOT remove the queue item — Phase 2 has no prefill or post-submit hook, so the
-        // user might want to come back if they cancel input. Explicit Dismiss removes it.
     }
 
     private fun refresh() {
@@ -115,6 +137,40 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         val empty = adapter.count == 0
         emptyView.visibility = if (empty) View.VISIBLE else View.GONE
         listView.visibility = if (empty) View.GONE else View.VISIBLE
+        // Empty queue → clear the toolbar progress subtitle so it doesn't linger from a
+        // prior session.
+        if (empty) supportActionBar?.subtitle = null
+    }
+
+    /**
+     * Walk the queue, find rows without a cached classification, and run them serially.
+     * Each completed row is persisted, then the adapter's matching position is rebound so
+     * the badge / extracted line update without flickering the whole list.
+     */
+    private fun startClassificationPass() {
+        classifyJob?.cancel()
+        val pending = adapter.itemsSnapshot().filter { it.classificationJson == null }
+        if (pending.isEmpty()) {
+            supportActionBar?.subtitle = null
+            return
+        }
+        val total = pending.size
+        classifyJob = lifecycleScope.launch {
+            pending.forEachIndexed { index, item ->
+                supportActionBar?.subtitle =
+                    getString(R.string.bank_noti_review_classification_progress, index + 1, total)
+                val result = BankNotificationClassifier.classify(this@BankNotificationReviewActivity, item)
+                LocalReviewQueue.setClassification(
+                    this@BankNotificationReviewActivity,
+                    item.id,
+                    result.toJson()
+                )
+                // Reload from disk so the row picks up its persisted classification on next
+                // render. Cheap because we only re-parse SharedPreferences JSON.
+                adapter.reload()
+            }
+            supportActionBar?.subtitle = null
+        }
     }
 
     private inner class ReviewAdapter : BaseAdapter() {
@@ -125,6 +181,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             notifyDataSetChanged()
         }
 
+        fun itemsSnapshot(): List<LocalReviewQueue.ReviewItem> = items
+
         override fun getCount() = items.size
         override fun getItem(position: Int) = items[position]
         override fun getItemId(position: Int) = position.toLong()
@@ -133,6 +191,11 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             val view = convertView ?: LayoutInflater.from(this@BankNotificationReviewActivity)
                 .inflate(R.layout.item_bank_notification_review, parent, false)
             val item = items[position]
+            bindRow(view, item)
+            return view
+        }
+
+        private fun bindRow(view: View, item: LocalReviewQueue.ReviewItem) {
             val source = item.appLabel.ifBlank { item.packageName }
             view.findViewById<TextView>(R.id.noti_title).text =
                 if (item.title.isNotBlank()) "[$source] ${item.title}" else "[$source]"
@@ -147,7 +210,83 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             view.findViewById<Button>(R.id.btn_manual_entry).setOnClickListener {
                 openManualEntry(item)
             }
-            return view
+
+            applyClassificationToCard(view, item)
         }
+
+        private fun applyClassificationToCard(view: View, item: LocalReviewQueue.ReviewItem) {
+            val badge = view.findViewById<TextView>(R.id.state_badge)
+            val extracted = view.findViewById<TextView>(R.id.extracted_line)
+            val accountPair = view.findViewById<TextView>(R.id.account_pair_line)
+
+            val result = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+
+            // Three display modes:
+            //  - Pending (no cached JSON yet): "Checking…" badge, extracted/pair hidden.
+            //  - Result with extracted fields: show badge + merchant·amount line + suggested
+            //    account pair (if the cascade resolved one).
+            //  - Result with no extracted fields: show state badge only (e.g., UNPARSED on
+            //    novel notification with no candidates).
+            if (item.classificationJson == null) {
+                badge.text = getString(R.string.bank_noti_review_state_classifying)
+                badge.setBackgroundColor(STATE_COLOR_NEUTRAL)
+                extracted.visibility = View.GONE
+                accountPair.visibility = View.GONE
+                return
+            }
+
+            val (label, color) = when (result?.state) {
+                BankNotificationClassifier.State.READY ->
+                    getString(R.string.bank_noti_review_state_ready) to STATE_COLOR_READY
+                BankNotificationClassifier.State.AMBIGUOUS ->
+                    getString(R.string.bank_noti_review_state_ambiguous) to STATE_COLOR_AMBIGUOUS
+                BankNotificationClassifier.State.UNPARSED ->
+                    getString(R.string.bank_noti_review_state_unparsed) to STATE_COLOR_UNPARSED
+                BankNotificationClassifier.State.ERROR, null ->
+                    getString(R.string.bank_noti_review_state_error) to STATE_COLOR_ERROR
+            }
+            badge.text = label
+            badge.setBackgroundColor(color)
+
+            if (result != null && result.merchant != null && result.amount != null) {
+                val amountStr = getString(
+                    R.string.bank_noti_review_amount_format,
+                    result.amount.toLong()
+                )
+                extracted.text = "${result.merchant}    $amountStr"
+                extracted.visibility = View.VISIBLE
+            } else {
+                extracted.visibility = View.GONE
+            }
+
+            if (result != null && result.leftAccountTitle != null && result.rightAccountTitle != null) {
+                val pair = getString(
+                    R.string.bank_noti_review_account_pair,
+                    result.leftAccountTitle, result.rightAccountTitle
+                )
+                val sourceTag = when (result.source) {
+                    BankNotificationClassifier.Source.MAPPING ->
+                        " · ${getString(R.string.bank_noti_review_source_mapping)}"
+                    BankNotificationClassifier.Source.AI_SIMILARITY ->
+                        " · ${getString(R.string.bank_noti_review_source_ai)}"
+                    BankNotificationClassifier.Source.NONE -> ""
+                }
+                accountPair.text = pair + sourceTag
+                accountPair.visibility = View.VISIBLE
+            } else {
+                accountPair.visibility = View.GONE
+            }
+        }
+    }
+
+    companion object {
+        // Inline ARGB constants — Material chip colors would be cleaner but pulling in the
+        // chip library for four badges isn't worth the dependency cost. These match the
+        // semantic palette in values/colors.xml roughly.
+        private const val STATE_COLOR_NEUTRAL = 0xFF757575.toInt()  // grey
+        private const val STATE_COLOR_READY = 0xFF2E7D32.toInt()    // green 800
+        private const val STATE_COLOR_AMBIGUOUS = 0xFFEF6C00.toInt() // orange 800
+        private const val STATE_COLOR_UNPARSED = 0xFF6A1B9A.toInt()  // purple 800
+        private const val STATE_COLOR_ERROR = 0xFFC62828.toInt()     // red 800
     }
 }

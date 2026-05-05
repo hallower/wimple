@@ -278,4 +278,16 @@
     <string name="bank_noti_review_clear_confirm">Delete all notifications in the review queue?</string>
     <string name="bank_noti_review_delete_confirm">Delete this notification?</string>
     <string name="action_review_queue">Notification review</string>
+
+    <!-- Classification state badges + progress (Phase 4) -->
+    <string name="bank_noti_review_state_classifying">Checking…</string>
+    <string name="bank_noti_review_state_ready">Auto-classified</string>
+    <string name="bank_noti_review_state_ambiguous">Needs review</string>
+    <string name="bank_noti_review_state_unparsed">Manual entry</string>
+    <string name="bank_noti_review_state_error">Classification failed</string>
+    <string name="bank_noti_review_classification_progress">Classifying %1$d/%2$d</string>
+    <string name="bank_noti_review_amount_format">%1$,d KRW</string>
+    <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
+    <string name="bank_noti_review_source_mapping">Learned mapping</string>
+    <string name="bank_noti_review_source_ai">AI suggestion</string>
 </resources>
