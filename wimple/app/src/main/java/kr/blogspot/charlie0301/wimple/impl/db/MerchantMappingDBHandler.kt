@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.text.Normalizer
 
 /**
  * Persisted "this notification merchant maps to these accounts" decisions, used by the local
@@ -186,12 +187,47 @@ class MerchantMappingDBHandler(context: Context) {
         """
 
         /**
-         * Collapse whitespace runs and lowercase. Doesn't strip punctuation aggressively —
-         * "GS25 강남점" should collide with "gs25  강남점" but stay distinct from "GS25
-         * 역삼점" (different store), so periods/commas inside the merchant string survive.
+         * Collapse superficial encoding/format variants of the same merchant string into a
+         * single key, while keeping genuinely-different stores distinct. Each step is layered
+         * on the prior so a merchant typed with a fullwidth IME, copy-pasted with stray BOM,
+         * or wrapped in a bracket ends up at the same key as the canonical form:
+         *
+         * 1. NFKC unifies fullwidth/halfwidth and compatibility forms (ＧＳ２５ → GS25,
+         *    ① → 1) and composed/decomposed Korean — these are encoding artifacts the user
+         *    never sees, but they would otherwise produce phantom-distinct rows.
+         * 2. Zero-width chars (BOM, ZWSP, ZWNJ, ZWJ) sometimes ride along on copy-paste from
+         *    web-rendered notifications and would create invisible-but-distinct keys.
+         * 3. Brackets become spaces — keeps the content inside (so "GS25(강남점)" and
+         *    "GS25(역삼점)" stay distinct after collapse) while letting "GS25(강남점)" and
+         *    "GS25 강남점" collide once whitespace is collapsed below.
+         * 4. Leading/trailing punctuation+space is trimmed so "·이마트" and "이마트 " collide
+         *    on "이마트". Interior punctuation (`이마트.com`, `4·19기념관`) survives by design.
+         * 5. Existing baseline: collapse interior whitespace runs, lowercase.
+         *
+         * Does NOT strip the corporate marker `(주)` or store-suffixes like `점/매장/지점`
+         * — that would merge actually-different stores; see #2-B in the design doc.
          */
         fun normalize(raw: String): String {
-            return raw.trim().replace(Regex("\\s+"), " ").lowercase()
+            if (raw.isBlank()) return ""
+            val nfkc = Normalizer.normalize(raw, Normalizer.Form.NFKC)
+            val noZeroWidth = nfkc.replace(ZERO_WIDTH_REGEX, "")
+            val bracketsAsSpaces = noZeroWidth.replace(BRACKET_REGEX, " ")
+            val edgesTrimmed = bracketsAsSpaces.replace(EDGE_PUNCT_REGEX, "")
+            return edgesTrimmed.replace(WHITESPACE_RUN_REGEX, " ").lowercase()
         }
+
+        // ZWSP (U+200B), ZWNJ (U+200C), ZWJ (U+200D), BOM (U+FEFF) — the four invisibles
+        // that ride along on copy-paste from web-rendered notifications. Listed via escapes
+        // so the source stays grep-able rather than embedding the literal invisibles inline.
+        private val ZERO_WIDTH_REGEX = Regex("[\\u200B\\u200C\\u200D\\uFEFF]")
+        // ASCII + halfwidth + fullwidth bracket pairs. NFKC above already maps fullwidth
+        // brackets to ASCII, but listing both is harmless and avoids depending on that
+        // implementation detail across platforms.
+        private val BRACKET_REGEX = Regex("[()\\[\\]{}\\uFF08\\uFF09\\uFF3B\\uFF3D\\uFF5B\\uFF5D]")
+        // Use Unicode property \p{P} (all punctuation categories Pc/Pd/Pe/Pf/Pi/Po/Ps), not
+        // POSIX \p{Punct} which is ASCII-only and would miss the Korean middle dot `·`,
+        // CJK punctuation, fullwidth dashes, and similar.
+        private val EDGE_PUNCT_REGEX = Regex("^[\\p{P}\\s]+|[\\p{P}\\s]+$")
+        private val WHITESPACE_RUN_REGEX = Regex("\\s+")
     }
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.mlkit.genai.prompt.Generation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
 import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
 import kr.blogspot.charlie0301.wimple.model.Account
 import kr.blogspot.charlie0301.wimple.model.Entry
@@ -34,6 +35,13 @@ object BankNotificationClassifier {
 
     private const val LOG_TAG = "BankNotiClassifier"
     private const val MAX_CANDIDATES = 30
+    /**
+     * Cap on multi-shot examples injected into the extract prompt. Three is enough for
+     * format diversity (typically expense + income + transfer) without crowding the small
+     * Gemini Nano context window — adding more risks pushing the live notification or
+     * schema/rules out of the model's effective attention.
+     */
+    private const val MAX_EXTRACT_SHOTS = 3
 
     // Confidence thresholds, mirrored from the design doc. Above READY we offer one-tap
     // confirmation; in the AMBIGUOUS band the user gets a candidate picker; below
@@ -135,7 +143,7 @@ object BankNotificationClassifier {
         item: LocalReviewQueue.ReviewItem,
         stages: MutableList<AiClassificationLog.Stage>
     ): Result = withContext(Dispatchers.IO) {
-        val extracted = extractFields(item, stages)
+        val extracted = extractFields(ctx, item, stages)
             ?: return@withContext Result(state = State.UNPARSED)
 
         val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
@@ -143,19 +151,35 @@ object BankNotificationClassifier {
         // Step 2: mapping lookup.
         val mappingHandler = MerchantMappingDBHandler(ctx)
         val mapping = mappingHandler.find(extracted.merchant, extracted.kind)
+        // Resolve account liveness once so the dev log and the decision branch agree on the
+        // same view of the cache (cachedAccounts is a snapshot already by .orEmpty() above).
+        val mappingLAcc = mapping?.let { m -> accounts.firstOrNull { it.id == m.lAccountId } }
+        val mappingRAcc = mapping?.let { m -> accounts.firstOrNull { it.id == m.rAccountId } }
+        stages.add(
+            AiClassificationLog.Stage(
+                "mapping_lookup",
+                "find(merchant=\"${extracted.merchant}\", kind=\"${extracted.kind}\")",
+                describeMappingLookup(extracted, mapping, mappingLAcc, mappingRAcc)
+            )
+        )
+        if (mapping != null && mappingLAcc != null && mappingRAcc != null) {
+            return@withContext mappingResult(extracted, mappingLAcc, mappingRAcc)
+        }
         if (mapping != null) {
-            val lAcc = accounts.firstOrNull { it.id == mapping.lAccountId }
-            val rAcc = accounts.firstOrNull { it.id == mapping.rAccountId }
-            if (lAcc != null && rAcc != null) {
-                return@withContext mappingResult(extracted, lAcc, rAcc)
-            }
-            // Mapping references stale accounts (since-deleted) — fall through to similarity.
             Log.d(LOG_TAG, "mapping accounts no longer in cache; falling back to similarity")
         }
 
         // Step 3: AI similarity.
         val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
         val candidates = pickCandidates(entries, extracted, MAX_CANDIDATES)
+        stages.add(
+            AiClassificationLog.Stage(
+                "candidates",
+                "pickCandidates(pool=${entries.size}, max=$MAX_CANDIDATES) " +
+                    "filter: token-overlap(merchant=\"${extracted.merchant}\") + amount near ${extracted.amount.toLong()}",
+                describeCandidates(entries.size, candidates)
+            )
+        )
         if (candidates.isEmpty()) return@withContext extractedOnly(extracted, State.UNPARSED)
 
         val match = aiSimilarity(item, extracted, candidates, stages)
@@ -220,13 +244,47 @@ object BankNotificationClassifier {
     private data class ExtractedFields(val kind: String, val merchant: String, val amount: Double)
 
     private suspend fun extractFields(
+        ctx: Context,
         item: LocalReviewQueue.ReviewItem,
         stages: MutableList<AiClassificationLog.Stage>
     ): ExtractedFields? {
+        // User-confirmed shots ground the model in the bank-app formats this device actually
+        // sees. Failure to load (DB miss, schema migration mid-flight) collapses to zero-shot
+        // — the original prompt still works, we just lose grounding.
+        val shots = try {
+            ExtractionExampleDBHandler(ctx).pickShots(MAX_EXTRACT_SHOTS)
+        } catch (t: Throwable) {
+            Log.w(LOG_TAG, "pickShots failed; falling back to zero-shot", t)
+            emptyList()
+        }
+        // Record what we pulled out of the example DB so the dev log shows whether a poor
+        // extraction is "model failed despite good shots" or "shot pool empty / unhelpful".
+        stages.add(
+            AiClassificationLog.Stage(
+                "shots",
+                "ExtractionExampleDBHandler.pickShots(k=$MAX_EXTRACT_SHOTS)",
+                describeShots(shots)
+            )
+        )
         val prompt = buildString {
             append("You will receive a Korean bank notification. ")
             append("Extract the merchant, transaction type, and amount. ")
             append("Respond ONLY with a single JSON object — no markdown fences, no commentary.\n\n")
+            if (shots.isNotEmpty()) {
+                append("Examples — past notifications confirmed by the user, with the correct JSON:\n\n")
+                for (s in shots) {
+                    append("Notification:\n")
+                    append("Body: ").append(s.notificationText).append('\n')
+                    append("JSON: ").append(
+                        JSONObject().apply {
+                            put("kind", s.kind)
+                            put("merchant", s.merchant)
+                            put("amount", s.amount)
+                        }.toString()
+                    ).append("\n\n")
+                }
+                append("Now extract the JSON for this new notification.\n")
+            }
             append("Notification:\n")
             if (item.title.isNotBlank()) append("Title: ").append(item.title).append('\n')
             append("Body: ").append(item.text).append("\n\n")
@@ -371,6 +429,74 @@ object BankNotificationClassifier {
 
     private fun tokenize(s: String): Set<String> =
         s.lowercase().split(Regex("[\\s,.()/\\-]+")).filter { it.length >= 2 }.toSet()
+
+    // -------------------- Stage logging helpers --------------------
+    //
+    // The dev AI log surfaces every stage of the cascade. AI stages already self-record
+    // (extract / similarity); these helpers format the DB-side stages (shots pulled from
+    // ExtractionExampleDBHandler, mapping_lookup against MerchantMappingDBHandler, candidate
+    // selection from cached entries) so the on-device log reads as a complete trace.
+
+    private fun describeShots(shots: List<ExtractionExampleDBHandler.Example>): String {
+        if (shots.isEmpty()) return "0 shots — zero-shot fallback (DB empty or pickShots failed)"
+        return buildString {
+            append(shots.size).append(" shots:\n")
+            for (s in shots) {
+                append("- [").append(s.kind).append("] hit=").append(s.hitCount)
+                    .append(" merchant=").append(s.merchant)
+                    .append(" amount=").append(s.amount).append('\n')
+                append("  body=").append(s.notificationText.take(80).replace('\n', ' '))
+                if (s.notificationText.length > 80) append('…')
+                append('\n')
+            }
+        }
+    }
+
+    private fun describeMappingLookup(
+        extracted: ExtractedFields,
+        mapping: MerchantMappingDBHandler.Mapping?,
+        lAcc: Account?,
+        rAcc: Account?
+    ): String {
+        if (mapping == null) return "MISS — falling back to AI similarity"
+        val outcome = when {
+            lAcc != null && rAcc != null -> "BOTH ACCOUNTS LIVE → READY (state short-circuits AI)"
+            lAcc == null && rAcc == null -> "BOTH ACCOUNTS STALE → falling back to AI similarity"
+            lAcc == null -> "LEFT ACCOUNT STALE → falling back to AI similarity"
+            else -> "RIGHT ACCOUNT STALE → falling back to AI similarity"
+        }
+        return buildString {
+            append("HIT (hit_count=").append(mapping.hitCount)
+                .append(", last_used=").append(mapping.lastUsed).append(")\n")
+            append("  l=").append(mapping.lAccountType).append('/').append(mapping.lAccountId).append('\n')
+            append("  r=").append(mapping.rAccountType).append('/').append(mapping.rAccountId).append('\n')
+            append(outcome)
+        }
+    }
+
+    private fun describeCandidates(
+        poolSize: Int,
+        candidates: List<Entry>
+    ): String {
+        if (candidates.isEmpty()) {
+            return "0 candidates from pool of $poolSize — UNPARSED (similarity skipped)"
+        }
+        return buildString {
+            append(candidates.size).append(" candidates from pool of ").append(poolSize).append(":\n")
+            val previewLimit = 5
+            for ((idx, e) in candidates.withIndex()) {
+                if (idx >= previewLimit) {
+                    append("  … (+").append(candidates.size - previewLimit).append(" more)\n")
+                    break
+                }
+                append("- ").append(e.id).append(" | ")
+                    .append((e.item.orEmpty()).take(40)).append(" | ")
+                    .append(e.amount?.toLong() ?: 0L).append(" | ")
+                    .append(e.leftAccount.orEmpty()).append(" → ").append(e.rightAccount.orEmpty())
+                    .append('\n')
+            }
+        }
+    }
 
     // optString returns "" for missing keys, which collides with legitimately empty values;
     // use this to disambiguate.

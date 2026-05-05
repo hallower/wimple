@@ -98,13 +98,19 @@ class AiClassificationLogActivity : AppCompatActivity() {
             append("Body: ").append(entry.notiText).append("\n\n")
             for ((idx, stage) in entry.stages.withIndex()) {
                 val label = when (stage.label) {
+                    "shots" -> getString(R.string.dev_ai_log_stage_shots)
                     "extract" -> getString(R.string.dev_ai_log_stage_extract)
+                    "mapping_lookup" -> getString(R.string.dev_ai_log_stage_mapping)
+                    "candidates" -> getString(R.string.dev_ai_log_stage_candidates)
                     "similarity" -> getString(R.string.dev_ai_log_stage_similarity)
                     else -> stage.label
                 }
                 append("── Stage ").append(idx + 1).append(" / ").append(label).append(" ──\n")
-                append("Prompt:\n").append(stage.prompt).append("\n\n")
-                append("Response:\n").append(stage.response ?: "<null>").append("\n\n")
+                // DB-side stages (shots / mapping_lookup / candidates) repurpose the same
+                // (prompt, response) Stage shape: prompt = the query/inputs, response = the
+                // result. Keep the rendered labels generic-enough that both readings work.
+                append("Query:\n").append(stage.prompt).append("\n\n")
+                append("Result:\n").append(stage.response ?: "<null>").append("\n\n")
             }
             entry.resultJson?.let {
                 append("── Result ──\n").append(it)

@@ -8,6 +8,7 @@ import kr.blogspot.charlie0301.wimple.impl.BankNotificationClassifier
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
 import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
 import kr.blogspot.charlie0301.wimple.model.Account
 import java.util.Calendar
@@ -167,6 +168,16 @@ class BankNotificationConfirmController(
                     ctx.lAcc.what, ctx.lAcc.id,
                     ctx.rAcc.what, ctx.rAcc.id
                 )
+                // Snapshot the (notification body → confirmed extraction) pair so future
+                // extractFields() prompts can ground the model in the user's own bank-app
+                // formats. One-tap confirms imply the AI's extraction was accepted as-is,
+                // so the result fields are de-facto labels.
+                val amount = ctx.result.amount?.takeIf { it > 0.0 }?.toLong() ?: 0L
+                if (amount > 0L && ctx.item.text.isNotBlank()) {
+                    ExtractionExampleDBHandler(activity).upsert(
+                        ctx.item.text, kind, merchant, amount
+                    )
+                }
             }
             LocalReviewQueue.removeById(activity, ctx.item.id)
             toast(activity.getString(R.string.bank_noti_review_confirm_success_format, merchant))

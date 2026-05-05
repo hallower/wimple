@@ -101,12 +101,15 @@ class GeneralSettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 PreferenceManager.setDefaultValues(ctx, R.xml.settings_income_expense, true)
 
                 BankNotifications.clear(ctx)
-                // Wipe local-review state + dev AI log so prior-user data doesn't leak into
+                // Wipe every local user-specific store so prior-user data doesn't leak into
                 // the next account. Default-prefs clear above already drops the dev unlock
-                // flag and review-queue toggle; these are stored in their own files and so
-                // need explicit cleanup.
+                // flag and review-queue toggle; the stores below live in their own files
+                // (review queue / AI log SharedPreferences, plus two SQLite DBs for the
+                // mapping cache and extraction shots) and need explicit cleanup.
                 kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue.clear(ctx)
                 kr.blogspot.charlie0301.wimple.impl.AiClassificationLog.clear(ctx)
+                kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler(ctx).clear()
+                kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler(ctx).clear()
             }
 
             val intent = Intent(context, SplashScreenActivity::class.java)

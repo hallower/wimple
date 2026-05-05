@@ -20,6 +20,7 @@ import android.widget.TextView
 import kr.blogspot.charlie0301.wimple.databinding.FragmentTransactionInsertTabBinding
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
 import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
 import kr.blogspot.charlie0301.wimple.impl.util.Calculator
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
@@ -60,6 +61,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private var activeReviewItemId: String? = null
     private var activeReviewMerchant: String? = null
     private var activeReviewKind: String? = null
+    // Original bank-notification body kept around for the success path so we can persist a
+    // (body → user-confirmed extraction) shot to ExtractionExampleDBHandler. Only retained
+    // for the duration of the review session — wiped in closeReviewSessionOnSuccess().
+    private var activeReviewNotificationText: String? = null
 
     private val amountValue: Double
         get() {
@@ -229,6 +234,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         activeReviewItemId = reviewItemId?.takeIf { it.isNotBlank() }
         activeReviewMerchant = reviewMerchant?.takeIf { it.isNotBlank() }
         activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
+        activeReviewNotificationText = notificationText?.takeIf { it.isNotBlank() }
         applyNotificationPanel(notificationText, notificationSource)
         tryApplyPendingAccountSelection()
     }
@@ -284,26 +290,41 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val itemId = activeReviewItemId ?: return
         val ctx = context
         if (ctx != null) {
-            val merchant = activeReviewMerchant
             val kind = activeReviewKind
-            if (!merchant.isNullOrBlank() && !kind.isNullOrBlank()
+            if (!activeReviewMerchant.isNullOrBlank() && !kind.isNullOrBlank()
                 && ::leftAccountListAdapter.isInitialized
                 && ::rightAccountListAdapter.isInitialized) {
                 val left = leftAccountListAdapter.selected
                 val right = rightAccountListAdapter.selected
                 if (left != null && right != null) {
                     MerchantMappingDBHandler(ctx).upsert(
-                        merchant, kind,
+                        activeReviewMerchant!!, kind,
                         left.what, left.id,
                         right.what, right.id
                     )
                 }
+            }
+            // Persist a (notification body → ground-truth extraction) shot using the form's
+            // final values, since the user may have corrected merchant or amount. The shot
+            // table is separate from the merchant mapping above — that one keys on merchant
+            // for AI bypass, this one is keyed on body for prompt grounding.
+            val notiText = activeReviewNotificationText
+            val finalMerchant = binding.insertEntryTitle.text?.toString()?.trim().orEmpty()
+            val finalAmount = amountValue.takeIf { it > 0.0 }?.toLong() ?: 0L
+            if (!notiText.isNullOrBlank()
+                && !kind.isNullOrBlank()
+                && finalMerchant.isNotBlank()
+                && finalAmount > 0L) {
+                ExtractionExampleDBHandler(ctx).upsert(
+                    notiText, kind, finalMerchant, finalAmount
+                )
             }
             LocalReviewQueue.removeById(ctx, itemId)
         }
         activeReviewItemId = null
         activeReviewMerchant = null
         activeReviewKind = null
+        activeReviewNotificationText = null
         pendingLeftAccountId = null
         pendingRightAccountId = null
         // Hide the source-notification panel so a follow-up non-review submit (re-using the

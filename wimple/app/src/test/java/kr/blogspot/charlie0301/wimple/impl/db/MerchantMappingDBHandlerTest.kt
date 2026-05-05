@@ -90,6 +90,68 @@ class MerchantMappingDBHandlerTest {
     }
 
     @Test
+    fun normalize_unifiesFullwidthAndHalfwidth() {
+        // Fullwidth ASCII (FF21..FF5A range) sometimes appears via Korean IME composition or
+        // copy-paste from receipt printers. NFKC collapses them.
+        handler.upsert("ＧＳ２５ 강남점", "expense", "expenses", "x101", "assets", "x201")
+
+        val found = handler.find("GS25 강남점", "expense")
+        assertNotNull("fullwidth → halfwidth should collide", found)
+        assertEquals(1, found!!.hitCount)
+    }
+
+    @Test
+    fun normalize_stripsZeroWidthCharacters() {
+        // Build with Kotlin Unicode escapes so the source stays grep-able rather than
+        // embedding the actual invisible characters. Cover all four invisibles we strip:
+        // ZWSP (U+200B), ZWNJ (U+200C), ZWJ (U+200D), BOM (U+FEFF) — exactly what rides
+        // along on copy-paste from web-rendered notifications.
+        val withInvisibles = "GS25​‌‍﻿ 강남점"
+        handler.upsert(withInvisibles, "expense", "expenses", "x101", "assets", "x201")
+
+        val found = handler.find("GS25 강남점", "expense")
+        assertNotNull("invisibles should be stripped", found)
+        assertEquals(1, found!!.hitCount)
+    }
+
+    @Test
+    fun normalize_bracketsBecomeSpaces() {
+        // Parens around the branch name should still collide with space-separated form,
+        // since brackets get rewritten to whitespace before the collapse step.
+        handler.upsert("GS25(강남점)", "expense", "expenses", "x101", "assets", "x201")
+
+        val found = handler.find("GS25 강남점", "expense")
+        assertNotNull("bracketed branch should collide with spaced form", found)
+        assertEquals(1, found!!.hitCount)
+
+        // But different branches inside brackets stay distinct — content survives, only
+        // the bracket characters become spaces.
+        assertNull(handler.find("GS25(역삼점)", "expense"))
+    }
+
+    @Test
+    fun normalize_trimsLeadingAndTrailingPunctuation() {
+        // "·이마트" / "이마트 " / "이마트." all collide once edge punctuation is trimmed,
+        // while interior punctuation is preserved.
+        handler.upsert("·이마트.", "expense", "expenses", "x101", "assets", "x201")
+
+        assertNotNull(handler.find("이마트", "expense"))
+        assertNotNull(handler.find(" 이마트 ", "expense"))
+        // Interior dot survives — different merchants stay distinct.
+        assertNull(handler.find("이.마.트", "expense"))
+    }
+
+    @Test
+    fun normalize_doesNotMergeStoreSuffixes() {
+        // Conservative normalize must NOT collapse "이마트" and "이마트 강남점" — that's a
+        // policy change tracked separately as #2-B (brand/branch split).
+        handler.upsert("이마트", "expense", "expenses", "x101", "assets", "x201")
+
+        assertNull(handler.find("이마트 강남점", "expense"))
+        assertNull(handler.find("이마트(주)", "expense"))
+    }
+
+    @Test
     fun upsert_blankInputsAreIgnored() {
         handler.upsert("   ", "expense", "expenses", "x101", "assets", "x201")
         handler.upsert("GS25 강남점", "", "expenses", "x101", "assets", "x201")

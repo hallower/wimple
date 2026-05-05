@@ -307,7 +307,10 @@
     <string name="dev_ai_log_clear">전체 삭제</string>
     <string name="dev_ai_log_clear_confirm">로그를 모두 삭제하시겠습니까?</string>
     <string name="dev_ai_log_detail_title">분류 상세</string>
+    <string name="dev_ai_log_stage_shots">예시 선별 (shots)</string>
     <string name="dev_ai_log_stage_extract">추출 (extract)</string>
+    <string name="dev_ai_log_stage_mapping">매핑 조회 (mapping_lookup)</string>
+    <string name="dev_ai_log_stage_candidates">후보 선별 (candidates)</string>
     <string name="dev_ai_log_stage_similarity">유사도 (similarity)</string>
 
     <!-- Review-flow original notification panel inside the manual entry form -->

@@ -302,7 +302,10 @@
     <string name="dev_ai_log_clear">Clear all</string>
     <string name="dev_ai_log_clear_confirm">Clear the entire log?</string>
     <string name="dev_ai_log_detail_title">Classification detail</string>
+    <string name="dev_ai_log_stage_shots">Shots</string>
     <string name="dev_ai_log_stage_extract">Extract</string>
+    <string name="dev_ai_log_stage_mapping">Mapping lookup</string>
+    <string name="dev_ai_log_stage_candidates">Candidates</string>
     <string name="dev_ai_log_stage_similarity">Similarity</string>
 
     <!-- Review-flow original notification panel inside the manual entry form -->
