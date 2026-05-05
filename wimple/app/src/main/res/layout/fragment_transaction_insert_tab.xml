@@ -54,7 +54,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.4"
+                android:layout_weight="0.35"
                 android:background="@drawable/bg_input_field"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -65,7 +65,7 @@
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/na"
-                    android:padding="12dp"
+                    android:padding="6dp"
                     android:src="@drawable/ic_action_previous_item" />
 
                 <TextView
@@ -84,7 +84,7 @@
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/na"
-                    android:padding="12dp"
+                    android:padding="6dp"
                     android:src="@drawable/ic_action_next_item" />
             </LinearLayout>
 
@@ -93,7 +93,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="@dimen/spacing_medium"
-                android:layout_weight="0.6"
+                android:layout_weight="0.65"
                 android:background="@drawable/bg_input_field"
                 android:gravity="end|center_vertical"
                 android:hint="0"
@@ -117,7 +117,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.4"
+                android:layout_weight="0.35"
                 android:orientation="vertical">
 
                 <FrameLayout
@@ -161,7 +161,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_medium"
-                android:layout_weight="0.6"
+                android:layout_weight="0.65"
                 android:stretchColumns="0,1,2,3,4">
 
                 <TableRow>
@@ -198,11 +198,15 @@
         </LinearLayout>
 
         <!-- Memo -->
+        <!-- marginTop bumped above the spacing_small baseline so memo + accounts sit ~50dp
+             lower than the natural compact layout would put them. Trades vertical screen
+             real estate for breathing room above memo (and shifts accounts down with it,
+             so accounts is correspondingly shorter). -->
         <LinearLayout
             android:id="@+id/insert_memo_window"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginTop="50dp"
             android:background="@drawable/bg_input_field"
             android:orientation="horizontal">
 

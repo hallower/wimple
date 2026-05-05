@@ -6,17 +6,17 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_list_item_bottom_line"
     android:gravity="center_vertical"
-    android:minHeight="48dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:minHeight="@dimen/list_item_min_height"
+    android:paddingStart="@dimen/list_item_padding_horizontal"
+    android:paddingEnd="@dimen/list_item_padding_horizontal"
+    android:paddingTop="@dimen/list_item_padding_vertical"
+    android:paddingBottom="@dimen/list_item_padding_vertical"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/as_item_title"
         android:layout_width="0dp"
-        android:layout_height="32dp"
+        android:layout_height="@dimen/list_item_chip_height"
         android:layout_weight="0.5"
         android:background="@drawable/bg_input_field"
         android:gravity="center"

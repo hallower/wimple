@@ -7,14 +7,14 @@
     <TextView
         android:id="@+id/list_frequent_entry_name"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="@dimen/list_item_min_height"
         android:gravity="start|center_vertical"
         android:lines="1"
         android:maxLines="1"
         android:textColor="@color/md_theme_on_surface_variant"
-        android:paddingStart="@dimen/spacing_medium"
-        android:paddingEnd="@dimen/spacing_medium"
-        android:textSize="14sp"
+        android:paddingStart="@dimen/list_item_padding_horizontal"
+        android:paddingEnd="@dimen/list_item_padding_horizontal"
+        android:textSize="16sp"
         android:background="?attr/selectableItemBackground" />
 
 </LinearLayout>
