@@ -550,7 +550,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             binding.insertEntryTitle.setText("${this.selected!!.item}$inlineMemo")
             binding.insertEntryTitle.setSelection(binding.insertEntryTitle.text.length)
         }
-        this.setAmount(this.selected!!.amount)
+        // In a review session the amount comes from the bank notification — that's the
+        // ground truth, not whatever the user happened to spend at this merchant last
+        // time. Skip the auto-overwrite so picking a frequent-item title doesn't stomp
+        // the prefilled value. Account selection still flows through, since reusing the
+        // user's prior 좌/우 mapping for the same merchant is the whole point.
+        if (activeReviewItemId == null) {
+            this.setAmount(this.selected!!.amount)
+        }
 
         this.selectCategory(this.selected!!)
     }
