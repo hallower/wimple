@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
@@ -297,7 +296,7 @@ object BankNotifications {
         val sectionId = wimple.defaultSectionID
 
         for (g in groups) {
-            val payload = buildPayloadFromArray(g.items)
+            val payload = BankNotificationPayloadBuilder.buildFromArray(g.items)
             if (payload.isEmpty()) {
                 // Empty payload (e.g., all items had blank title+text) — treat as not-worth-retrying
                 // and just drop, by not adding to failedIndices.
@@ -378,65 +377,6 @@ object BankNotifications {
         // by server) still returns true — those items ARE gone from our side; whether the
         // server understood them is a server-parser issue surfaced via results.cnt in logs.
         return failedIndices.isEmpty()
-    }
-
-    /**
-     * Build the `rows` payload for api/entries/outside.json.
-     *
-     * Format per line (one captured notification = one line):
-     *
-     *   {bank} {title?} {text} {MM/dd HH:mm?}\n
-     *
-     * Shape decisions based on diagnostic logs where group-by-package POSTs returned
-     * `results.cnt` per group:
-     *
-     *  - Bank name leads, no brackets — mirrors real bank SMS convention.
-     *  - **Title is dropped if it equals the bank label.** Some apps (e.g. MG새마을금고) use
-     *    the app name as the notification title, which previously produced duplicated
-     *    prefixes like "MG새마을금고 MG새마을금고 [입금] …" and threw off the parser.
-     *  - Body stays as `title text` (single space join) when they differ, preserving the
-     *    transaction-type + details shape that the parser's regex anchors on.
-     *  - **Timestamp goes at the END of the line**, not the middle. The working format
-     *    observed in logs for 하나은행 has all payload content flat and ends with the
-     *    MM/dd token — matching that shape gives us our best shot at parser compatibility.
-     *  - Timestamp is only appended when the body doesn't already contain an MM/dd token,
-     *    to avoid duplicate dates confusing the parser.
-     *  - Newlines → spaces, runs of 2+ spaces → single space: bank apps often pad for
-     *    visual alignment (`"김철승         잔액 …"`) which breaks whitespace tokenization.
-     */
-    private fun buildPayloadFromArray(arr: JSONArray): String {
-        val sb = StringBuilder()
-        val fmt = DateFormatUtils.getSMSDateFormat()
-        val dateInMessageRegex = Regex("""\d{1,2}/\d{1,2}""")
-        for (i in 0 until arr.length()) {
-            val o = arr.optJSONObject(i) ?: continue
-            val label = o.optString("label").trim()
-            val rawTitle = o.optString("title").trim()
-            // Drop the title when it just restates the app label — otherwise MG새마을금고 and
-            // similar apps that use the app name as the notification title would emit the
-            // bank name twice in a row.
-            val title = if (label.isNotEmpty() && rawTitle.equals(label, ignoreCase = true)) ""
-                        else rawTitle
-            val text = o.optString("text")
-                .replace(Regex("""[\r\n]+"""), " ")
-                .replace(Regex("""\s{2,}"""), " ")
-                .trim()
-
-            val body = when {
-                title.isNotEmpty() && text.isNotEmpty() -> "$title $text"
-                title.isNotEmpty() -> title
-                else -> text
-            }
-            if (body.isEmpty()) continue
-
-            if (label.isNotEmpty()) sb.append(label).append(' ')
-            sb.append(body)
-            if (!dateInMessageRegex.containsMatchIn(body)) {
-                sb.append(' ').append(fmt.format(Date(o.optLong("t"))))
-            }
-            sb.append('\n')
-        }
-        return sb.toString()
     }
 
     private fun arrayToList(arr: JSONArray): List<StoredNotification> {
