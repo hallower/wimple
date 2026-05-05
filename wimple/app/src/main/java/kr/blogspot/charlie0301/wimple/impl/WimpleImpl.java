@@ -2,7 +2,6 @@ package kr.blogspot.charlie0301.wimple.impl;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -16,14 +15,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -64,6 +61,8 @@ public class WimpleImpl implements IWimpleImpl {
     private final ItemManager im = new ItemManager(this);
     private final RestAPIInvoker rai;
     private final RestResponseHandler rrh;
+    private WimpleAuthStore authStore;
+    private WimpleProfileStore profileStore;
 
     private UserInfoDBHandler uidbh = null;
     private AccountDBHandler adbh = null;
@@ -81,11 +80,10 @@ public class WimpleImpl implements IWimpleImpl {
     public static final String settingsKey = "wimple.auth";
 
     // Data
-    private int countOfRemainedAPICall = -1;
-    private int countOfTotalAPICall = 1;
+    private final WimpleApiQuota apiQuota = new WimpleApiQuota();
+    private final WimpleApiGate apiGate = new WimpleApiGate();
     private String defaultSectionID;
     private String defaultSectionName = "Default";
-    private Hashtable<String, Semaphore> apiAvailableSemaphore = new Hashtable<>();
 
     private static IWimpleStatusListener statusListener = new IWimpleStatusListener() {
 
@@ -197,19 +195,10 @@ public class WimpleImpl implements IWimpleImpl {
         rai = new RestAPIInvoker(this);
         rrh = new RestResponseHandler();
 
-        apiAvailableSemaphore.put("getAllEntries", new Semaphore(1));
-        // Because of delayed account list display, ignore multiple Account get request and response received situation.
-        //apiAvailableSemaphore.put("getAllAccounts", new Semaphore(1));
-        apiAvailableSemaphore.put("getFinancialState", new Semaphore(1));
-        apiAvailableSemaphore.put("getIncomeAndExpense", new Semaphore(1));
-        apiAvailableSemaphore.put("getIncomeBudget", new Semaphore(1));
-        apiAvailableSemaphore.put("getExpenseBudget", new Semaphore(1));
-        apiAvailableSemaphore.put("postNews", new Semaphore(1));
-        apiAvailableSemaphore.put("postPayments", new Semaphore(1));
     }
 
     public Semaphore getApiAvailableSemaphore(String key) {
-        return apiAvailableSemaphore.get(key);
+        return apiGate.get(key);
     }
 
     public static WimpleImpl getInstance() {
@@ -223,18 +212,18 @@ public class WimpleImpl implements IWimpleImpl {
         WimpleImpl.context = new WeakReference<>(context);
         rrh.setApplicationContext(context);
 
-        SharedPreferences settings = context.getSharedPreferences(settingsKey, Context.MODE_PRIVATE);
+        authStore = new WimpleAuthStore(context);
+        profileStore = new WimpleProfileStore(context);
+        WimpleAuthStore.StoredSession storedSession = authStore.load();
 
-        String saved_value = settings.getString("token", null);
         if (token.isEmpty() &&
-                null != saved_value) {
-            token = saved_value;
+                null != storedSession.token) {
+            token = storedSession.token;
         }
 
-        saved_value = settings.getString("token_secret", null);
         if (tokenSecret.isEmpty() &&
-                null != saved_value) {
-            tokenSecret = saved_value;
+                null != storedSession.tokenSecret) {
+            tokenSecret = storedSession.tokenSecret;
         }
 
         if (!token.isEmpty() &&
@@ -242,18 +231,14 @@ public class WimpleImpl implements IWimpleImpl {
             this.isAuthed = true;
         }
 
-        saved_value = settings.getString("userid", null);
         if (userID.isEmpty() &&
-                null != saved_value) {
-            userID = saved_value;
+                null != storedSession.userID) {
+            userID = storedSession.userID;
         }
 
-        saved_value = settings.getString("section_id", null);
-        if (null != saved_value) {
-            defaultSectionID = saved_value;
-
-            saved_value = settings.getString("section_name", "Default");
-            defaultSectionName = saved_value;
+        if (null != storedSession.sectionID) {
+            defaultSectionID = storedSession.sectionID;
+            defaultSectionName = storedSession.sectionName;
         }
 
         if (null == uidbh) {
@@ -527,10 +512,7 @@ public class WimpleImpl implements IWimpleImpl {
                         //throw new Exception("Application Context is not set!!!");
                     }
 
-                    SharedPreferences settings = context.get().getSharedPreferences(settingsKey, context.get().MODE_PRIVATE);
-                    settings.edit().putString("token", token).apply();
-                    settings.edit().putString("token_secret", tokenSecret).apply();
-                    settings.edit().putString("userid", userID).apply();
+                    authStore.saveAuth(token, tokenSecret, userID);
 
                     if (booleanStatus) {
                         Log.d(LOG_TAG, "CMD_GET_ACCESS_TOKEN is succeed!!!");
@@ -547,17 +529,7 @@ public class WimpleImpl implements IWimpleImpl {
 
                     UserInfo ui = (UserInfo) obj;
                     if (booleanStatus) {
-                        switch (ui.getAPICountLevel()) {
-                            case 2:
-                                countOfTotalAPICall = 200;
-                                break;
-                            case 3:
-                                countOfTotalAPICall = 1000;
-                                break;
-                            default:
-                                countOfTotalAPICall = 30;
-                                break;
-                        }
+                        apiQuota.setTotalByApiCountLevel(ui.getAPICountLevel());
                     }
 
                     new ProfileDownloadTaskThread(ui.getUserImgURL()).start();
@@ -669,12 +641,7 @@ public class WimpleImpl implements IWimpleImpl {
         defaultSectionID = "";
         defaultSectionName = "";
 
-        SharedPreferences settings = context.get().getSharedPreferences(settingsKey, context.get().MODE_PRIVATE);
-        settings.edit().putString("token", "").apply();
-        settings.edit().putString("token_secret", "").apply();
-        settings.edit().putString("userid", "").apply();
-        settings.edit().putString("section_id", "").apply();
-        settings.edit().putString("section_name", "").apply();
+        authStore.clear();
 
         this.isInitializedFinished = false;
         this.isAuthed = false;
@@ -953,8 +920,7 @@ public class WimpleImpl implements IWimpleImpl {
                 list = sdbh.getAllSections();
                 defaultSectionID = ((Section) list.toArray()[0]).getId();
                 defaultSectionName = ((Section) list.toArray()[0]).getTitle();
-                context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).commit();
-                context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).apply();
+                authStore.saveSection(defaultSectionID, defaultSectionName);
                 sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
                 return;
             }
@@ -988,8 +954,7 @@ public class WimpleImpl implements IWimpleImpl {
                 list = sdbh.getAllSections();
                 defaultSectionID = ((Section) list.toArray()[0]).getId();
                 defaultSectionName = ((Section) list.toArray()[0]).getTitle();
-                context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_id", defaultSectionID).apply();
-                context.get().getSharedPreferences(settingsKey, Context.MODE_PRIVATE).edit().putString("section_name", defaultSectionName).apply();
+                authStore.saveSection(defaultSectionID, defaultSectionName);
                 Log.d(LOG_TAG, "[Default Sections] Providing Section from Server");
                 sm(CommandID.CMD_GET_SECTIONS_DEFAULT, 1, 0, list);
 
@@ -1014,7 +979,7 @@ public class WimpleImpl implements IWimpleImpl {
         }
 
 		/*
-		if(!apiAvailableSemaphore.get("getAllAccounts").tryAcquire()){
+		if(!apiGate.tryAcquire("getAllAccounts")){
 			return true;
 		}
 		 */
@@ -1176,7 +1141,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("getAllEntries").tryAcquire()) {
+        if (!apiGate.tryAcquire("getAllEntries")) {
             return true;
         }
 
@@ -1190,7 +1155,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("getAllEntries").tryAcquire()) {
+        if (!apiGate.tryAcquire("getAllEntries")) {
             return true;
         }
 
@@ -1352,7 +1317,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("getFinancialState").tryAcquire()) {
+        if (!apiGate.tryAcquire("getFinancialState")) {
             return true;
         }
 
@@ -1480,7 +1445,7 @@ public class WimpleImpl implements IWimpleImpl {
                 sm(CommandID.CMD_GET_FINANCIAL_STATE, 1, 0, list);
 
             } finally {
-                apiAvailableSemaphore.get("getFinancialState").release();
+                apiGate.release("getFinancialState");
             }
         }
 
@@ -1499,7 +1464,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("getIncomeAndExpense").tryAcquire()) {
+        if (!apiGate.tryAcquire("getIncomeAndExpense")) {
             return true;
         }
 
@@ -1670,7 +1635,7 @@ public class WimpleImpl implements IWimpleImpl {
 
 
             } finally {
-                apiAvailableSemaphore.get("getIncomeAndExpense").release();
+                apiGate.release("getIncomeAndExpense");
             }
 
         }
@@ -1691,11 +1656,11 @@ public class WimpleImpl implements IWimpleImpl {
         }
 
         if (isIncome) {
-            if (!apiAvailableSemaphore.get("getIncomeBudget").tryAcquire()) {
+            if (!apiGate.tryAcquire("getIncomeBudget")) {
                 return true;
             }
         } else {
-            if (!apiAvailableSemaphore.get("getExpenseBudget").tryAcquire()) {
+            if (!apiGate.tryAcquire("getExpenseBudget")) {
                 return true;
             }
         }
@@ -1928,9 +1893,9 @@ public class WimpleImpl implements IWimpleImpl {
 
             } finally {
                 if (isIncome) {
-                    apiAvailableSemaphore.get("getIncomeBudget").release();
+                    apiGate.release("getIncomeBudget");
                 } else {
-                    apiAvailableSemaphore.get("getExpenseBudget").release();
+                    apiGate.release("getExpenseBudget");
                 }
             }
         }
@@ -1945,7 +1910,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("postNews").tryAcquire()) {
+        if (!apiGate.tryAcquire("postNews")) {
             return true;
         }
 
@@ -2000,7 +1965,7 @@ public class WimpleImpl implements IWimpleImpl {
                 sm(CommandID.CMD_POST_NEWS, 1, 0, "");
 
             } finally {
-                apiAvailableSemaphore.get("postNews").release();
+                apiGate.release("postNews");
             }
         }
 
@@ -2016,7 +1981,7 @@ public class WimpleImpl implements IWimpleImpl {
             return false;
         }
 
-        if (!apiAvailableSemaphore.get("postPayments").tryAcquire()) {
+        if (!apiGate.tryAcquire("postPayments")) {
             return true;
         }
 
@@ -2081,7 +2046,7 @@ public class WimpleImpl implements IWimpleImpl {
                 sm(CommandID.CMD_POST_PAYMENTS, 1, 0, "");
 
             } finally {
-                apiAvailableSemaphore.get("postPayments").release();
+                apiGate.release("postPayments");
             }
         }
     }
@@ -2089,18 +2054,18 @@ public class WimpleImpl implements IWimpleImpl {
 
     @Override
     public Integer getRemainedAPICall() {
-        return countOfRemainedAPICall;
+        return apiQuota.getRemaining();
     }
 
     @Override
     public void setRemainedAPICall(String count) {
 
         try {
-            countOfRemainedAPICall = Integer.parseInt(count);
+            apiQuota.setRemaining(count);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d(LOG_TAG, "Remained API call count = " + countOfRemainedAPICall);
+        Log.d(LOG_TAG, "Remained API call count = " + apiQuota.getRemaining());
     }
 
     @Override
@@ -2119,27 +2084,7 @@ public class WimpleImpl implements IWimpleImpl {
     }
 
     private String getProfilePath() {
-
-        String filename = this.userID;
-        if (filename.contains("@")) {
-            filename = filename.replace("@", "_");
-        }
-
-		/*
-		String packageName = context.get().getPackageName();
-		File externalPath = Environment.getExternalStorageDirectory();		
-
-		String storagePath = externalPath.getAbsolutePath() +
-                "/Android/data/" + packageName + "/files";
-		 */
-        File filePath = context.get().getFilesDir();
-        String storagePath = filePath.getAbsolutePath();
-
-        if (!storagePath.endsWith("/")) {
-            storagePath += "/";
-        }
-
-        return storagePath + filename + ".bin";
+        return profileStore.getProfilePath(userID);
     }
 
     public Bitmap getProfilePicture() {
