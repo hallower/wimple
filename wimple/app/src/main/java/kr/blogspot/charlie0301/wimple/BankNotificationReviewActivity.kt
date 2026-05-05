@@ -47,6 +47,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
      */
     private var classifyJob: Job? = null
 
+    private lateinit var confirmController: BankNotificationConfirmController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bank_notification_review)
@@ -63,6 +65,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         dualUseBanner = findViewById(R.id.dual_use_banner)
         adapter = ReviewAdapter()
         listView.adapter = adapter
+
+        confirmController = BankNotificationConfirmController(this) { refresh() }
 
         dualUseBanner.setOnClickListener {
             // Settings is a fragment hosted by WimpleActivity, not its own activity. Send
@@ -114,6 +118,9 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         // after the user has moved on. The coroutine itself ends once it sees the cancel.
         classifyJob?.cancel()
         classifyJob = null
+        // Drop our listener proxy so the next foreground surface (likely WimpleActivity) sees
+        // its original response routing. release() is a no-op if no confirm round was active.
+        if (::confirmController.isInitialized) confirmController.release()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -129,8 +136,24 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             R.id.menu_clear_all -> {
                 confirmClearAll(); true
             }
+            R.id.menu_confirm_all_ready -> {
+                confirmAllReady(); true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun confirmAllReady() {
+        val readyItems = adapter.itemsSnapshot().mapNotNull { item ->
+            val r = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+            if (r?.state == BankNotificationClassifier.State.READY) item to r else null
+        }
+        if (readyItems.isEmpty()) return
+        confirmController.confirmBatch(readyItems)
+    }
+
+    private fun confirmRow(item: LocalReviewQueue.ReviewItem, result: BankNotificationClassifier.Result) {
+        confirmController.confirmOne(item, result)
     }
 
     private fun confirmClearAll() {
@@ -189,6 +212,16 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             // Even with no classification (UNPARSED, ERROR, or pre-classify dismiss), still
             // tag the item id so a manual submit removes the row.
             intent.putExtra(WimpleActivity.EXTRA_REVIEW_ITEM_ID, item.id)
+        }
+
+        // Always include the source notification body for the form's review panel — even
+        // UNPARSED rows benefit, since the user is filling the form by hand against it.
+        if (item.text.isNotBlank()) {
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT, item.text)
+        }
+        val source = item.appLabel.ifBlank { item.packageName }
+        if (source.isNotBlank()) {
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE, source)
         }
         startActivity(intent)
     }
@@ -273,6 +306,30 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             }
 
             applyClassificationToCard(view, item)
+            applyConfirmButton(view, item)
+        }
+
+        /**
+         * Show the [확정] one-tap button only on READY rows that carry a fully-resolved
+         * suggestion (merchant + amount + both account ids). Lower confidence states need a
+         * picker / manual review and so route through [수동 입력] instead.
+         */
+        private fun applyConfirmButton(view: View, item: LocalReviewQueue.ReviewItem) {
+            val confirmBtn = view.findViewById<Button>(R.id.btn_confirm)
+            val result = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+            val ready = result != null
+                && result.state == BankNotificationClassifier.State.READY
+                && !result.merchant.isNullOrBlank()
+                && result.amount != null && result.amount > 0.0
+                && !result.leftAccountId.isNullOrBlank()
+                && !result.rightAccountId.isNullOrBlank()
+            if (ready) {
+                confirmBtn.visibility = View.VISIBLE
+                confirmBtn.setOnClickListener { confirmRow(item, result!!) }
+            } else {
+                confirmBtn.visibility = View.GONE
+                confirmBtn.setOnClickListener(null)
+            }
         }
 
         private fun applyClassificationToCard(view: View, item: LocalReviewQueue.ReviewItem) {

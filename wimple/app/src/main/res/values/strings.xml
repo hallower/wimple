@@ -309,4 +309,15 @@
     <string name="dev_ai_log_detail_title">분류 상세</string>
     <string name="dev_ai_log_stage_extract">추출 (extract)</string>
     <string name="dev_ai_log_stage_similarity">유사도 (similarity)</string>
+
+    <!-- Review-flow original notification panel inside the manual entry form -->
+    <string name="review_notification_panel_label">원본 알림 · %1$s</string>
+
+    <!-- One-tap confirm + bulk confirm (Phase 5B) -->
+    <string name="bank_noti_review_confirm">확정</string>
+    <string name="bank_noti_review_confirm_all">READY 모두 확정</string>
+    <string name="bank_noti_review_confirm_busy">이전 확정 처리가 진행 중입니다.</string>
+    <string name="bank_noti_review_confirm_failed">전송 실패. 네트워크나 로그인 상태를 확인하세요.</string>
+    <string name="bank_noti_review_confirm_skip_invalid">계정 정보가 없어 건너뜁니다. 수동 입력으로 처리하세요.</string>
+    <string name="bank_noti_review_confirm_success_format">거래 등록: %1$s</string>
 </resources>

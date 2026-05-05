@@ -304,4 +304,15 @@
     <string name="dev_ai_log_detail_title">Classification detail</string>
     <string name="dev_ai_log_stage_extract">Extract</string>
     <string name="dev_ai_log_stage_similarity">Similarity</string>
+
+    <!-- Review-flow original notification panel inside the manual entry form -->
+    <string name="review_notification_panel_label">Original notification · %1$s</string>
+
+    <!-- One-tap confirm + bulk confirm (Phase 5B) -->
+    <string name="bank_noti_review_confirm">Confirm</string>
+    <string name="bank_noti_review_confirm_all">Confirm all READY</string>
+    <string name="bank_noti_review_confirm_busy">A previous confirmation is still in flight.</string>
+    <string name="bank_noti_review_confirm_failed">Send failed. Check network or login state.</string>
+    <string name="bank_noti_review_confirm_skip_invalid">Skipped — account info missing. Use manual entry.</string>
+    <string name="bank_noti_review_confirm_success_format">Recorded: %1$s</string>
 </resources>

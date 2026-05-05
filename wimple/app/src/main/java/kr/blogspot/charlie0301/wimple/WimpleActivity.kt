@@ -171,11 +171,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val reviewItemId = intent.getStringExtra(EXTRA_REVIEW_ITEM_ID)
         val reviewMerchant = intent.getStringExtra(EXTRA_REVIEW_MERCHANT)
         val reviewKind = intent.getStringExtra(EXTRA_REVIEW_KIND)
+        val notificationText = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
+        val notificationSource = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_SOURCE)
         if (title == null && amount == null && leftAccountId == null && rightAccountId == null
-            && reviewItemId == null) return
+            && reviewItemId == null && notificationText == null) return
         fragment.applyPrefill(
             title, amount, leftAccountId, rightAccountId,
-            reviewItemId, reviewMerchant, reviewKind
+            reviewItemId, reviewMerchant, reviewKind,
+            notificationText, notificationSource
         )
         // Single-shot — remove from the active intent so the next config change doesn't
         // re-prefill on top of user edits.
@@ -186,6 +189,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         intent.removeExtra(EXTRA_REVIEW_ITEM_ID)
         intent.removeExtra(EXTRA_REVIEW_MERCHANT)
         intent.removeExtra(EXTRA_REVIEW_KIND)
+        intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
+        intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_SOURCE)
     }
 
     private fun consumeOpenMenuExtra(intent: Intent?): Int? {
@@ -598,6 +603,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         const val EXTRA_REVIEW_ITEM_ID = "wimple.extra.review_item_id"
         const val EXTRA_REVIEW_MERCHANT = "wimple.extra.review_merchant"
         const val EXTRA_REVIEW_KIND = "wimple.extra.review_kind"
+
+        /**
+         * Original bank-notification body shown above the form so the user can verify what
+         * the AI extracted before confirming. Optional — UNPARSED rows still benefit from
+         * seeing the source even though no fields are prefilled.
+         */
+        const val EXTRA_REVIEW_NOTIFICATION_TEXT = "wimple.extra.review_notification_text"
+        const val EXTRA_REVIEW_NOTIFICATION_SOURCE = "wimple.extra.review_notification_source"
 
         private var mainHandler: Handler? = null
 

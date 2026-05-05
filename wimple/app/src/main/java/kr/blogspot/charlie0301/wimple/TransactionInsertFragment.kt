@@ -171,7 +171,13 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val reviewItemId = args.getString(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
         val reviewMerchant = args.getString(WimpleActivity.EXTRA_REVIEW_MERCHANT)
         val reviewKind = args.getString(WimpleActivity.EXTRA_REVIEW_KIND)
-        applyPrefill(title, amount, leftId, rightId, reviewItemId, reviewMerchant, reviewKind)
+        val notificationText = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
+        val notificationSource = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE)
+        applyPrefill(
+            title, amount, leftId, rightId,
+            reviewItemId, reviewMerchant, reviewKind,
+            notificationText, notificationSource
+        )
         // Single-shot — clear so a config-change rebuild doesn't re-prefill over edits.
         args.remove(WimpleActivity.EXTRA_PREFILL_TITLE)
         args.remove(WimpleActivity.EXTRA_PREFILL_AMOUNT)
@@ -180,6 +186,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         args.remove(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
         args.remove(WimpleActivity.EXTRA_REVIEW_MERCHANT)
         args.remove(WimpleActivity.EXTRA_REVIEW_KIND)
+        args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
+        args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE)
     }
 
     /**
@@ -204,7 +212,9 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         rightAccountId: String? = null,
         reviewItemId: String? = null,
         reviewMerchant: String? = null,
-        reviewKind: String? = null
+        reviewKind: String? = null,
+        notificationText: String? = null,
+        notificationSource: String? = null
     ) {
         if (_binding == null) return
         if (!title.isNullOrBlank()) {
@@ -219,7 +229,27 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         activeReviewItemId = reviewItemId?.takeIf { it.isNotBlank() }
         activeReviewMerchant = reviewMerchant?.takeIf { it.isNotBlank() }
         activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
+        applyNotificationPanel(notificationText, notificationSource)
         tryApplyPendingAccountSelection()
+    }
+
+    /**
+     * Show or hide the original-notification panel above the form. We surface it whenever a
+     * non-blank text arrives, even on UNPARSED rows that have no field prefill — seeing the
+     * source body is exactly what a user needs to fill the form by hand.
+     */
+    private fun applyNotificationPanel(text: String?, source: String?) {
+        if (_binding == null) return
+        if (text.isNullOrBlank()) {
+            binding.reviewNotificationPanel.visibility = View.GONE
+            return
+        }
+        val labelSource = source?.takeIf { it.isNotBlank() } ?: ""
+        binding.reviewNotificationLabel.text = getString(
+            R.string.review_notification_panel_label, labelSource
+        )
+        binding.reviewNotificationText.text = text
+        binding.reviewNotificationPanel.visibility = View.VISIBLE
     }
 
     /**
@@ -276,6 +306,11 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         activeReviewKind = null
         pendingLeftAccountId = null
         pendingRightAccountId = null
+        // Hide the source-notification panel so a follow-up non-review submit (re-using the
+        // same fragment instance) doesn't show stale context above the empty form.
+        if (_binding != null) {
+            binding.reviewNotificationPanel.visibility = View.GONE
+        }
     }
 
     private fun setupTitleAndSubmit() {

@@ -95,6 +95,16 @@
             android:layout_marginStart="8dp"
             android:text="@string/bank_noti_review_manual_entry" />
 
+        <!-- Visible only on READY rows; the activity unhides it once classification lands. -->
+        <Button
+            android:id="@+id/btn_confirm"
+            style="?attr/buttonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/bank_noti_review_confirm"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </LinearLayout>
