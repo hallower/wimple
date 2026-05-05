@@ -87,7 +87,7 @@ class GeneralSettingsFragment : PreferenceFragmentCompat(), IWimpleFragment {
                 // Wipe ALL user preferences so the next account starts at the
                 // XML-declared defaults. Selective clears (the old biometric-only
                 // path) leak per-account state into the next session — most
-                // notably pref_bankNotiEnable / pref_bankNotiApps, which would
+                // notably pref_bankNotiEnable (forward) / pref_bankNotiApps, which would
                 // keep capturing notifications under the previous user's setup.
                 PreferenceManager.getDefaultSharedPreferences(ctx).edit().clear().apply()
                 // Re-seed XML defaultValue declarations across every settings sub-screen

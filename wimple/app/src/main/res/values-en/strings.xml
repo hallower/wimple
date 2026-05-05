@@ -219,8 +219,9 @@
     <!-- One-shot suggestion shown at fresh install / post-logout / post-update on AI-capable devices -->
     <string name="local_review_suggestion_title">Try AI-classified entry</string>
     <string name="local_review_suggestion_message">Bank notifications are automatically classified by on-device AI (Gemini Nano) to assist with entry.\n\n• Runs entirely on-device — no external transmission\n• Some entries are cached locally only\n• Wiped on logout / app uninstall\n\nWould you like to set it up now?</string>
-    <string name="local_review_suggestion_enable">Go to settings</string>
+    <string name="local_review_suggestion_enable">Get started</string>
     <string name="local_review_suggestion_skip">Later</string>
+    <string name="local_review_suggestion_enabled">AI-classified entry enabled.</string>
 
 
     <string name="terms_agree">Agree</string>
@@ -267,7 +268,6 @@
     <string name="bank_noti_local_review_checking_summary">Checking device support…</string>
     <string name="bank_noti_local_review_downloadable_summary">Available. Turning this on will trigger a one-time model download.</string>
     <string name="bank_noti_local_review_downloading_summary">Model is downloading. It will become usable automatically once finished.</string>
-    <string name="bank_noti_local_review_capture_off_summary">Enable Whooing forward under \"Forward to Whooing (External Input)\" settings first.</string>
     <string name="bank_noti_local_review_dual_warning_title">Used together with Whooing forward</string>
     <string name="bank_noti_local_review_dual_warning_message">Using Whooing forward and AI-classified entry at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>
 

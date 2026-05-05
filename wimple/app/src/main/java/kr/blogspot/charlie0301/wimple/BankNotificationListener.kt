@@ -33,7 +33,13 @@ class BankNotificationListener : NotificationListenerService() {
         if (sbn == null) return
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        if (!prefs.getBoolean(KEY_BANK_NOTI_ENABLE, false)) return
+        // Two independent downstream consumers — outside.json forwarding and the local review
+        // queue — gate independently. If neither is on, drop early so we do no work for users
+        // who haven't asked for either feature (the system still wakes us on every notification
+        // as long as notification access is granted, regardless of these flags).
+        val forwardOn = prefs.getBoolean(KEY_BANK_NOTI_FORWARD, false)
+        val localReviewOn = prefs.getBoolean(KEY_BANK_NOTI_LOCAL_REVIEW, false)
+        if (!forwardOn && !localReviewOn) return
 
         val selectedPackages = prefs.getStringSet(KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
         if (sbn.packageName !in selectedPackages) return
@@ -67,21 +73,11 @@ class BankNotificationListener : NotificationListenerService() {
             sbn.packageName
         }
 
-        val (count, added) = BankNotifications.add(
-            applicationContext,
-            sbn.packageName,
-            appLabel,
-            title,
-            text,
-            sbn.postTime
-        )
-        Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count, added=$added)")
-
-        // Mirror the same notification into the local review queue when that feature is on. The
-        // two queues are independent: outside.json forwarding still proceeds via BankNotifications,
-        // and review/confirm runs from LocalReviewQueue. This is the user-acknowledged duplicate-
-        // possibility tradeoff (R1) — a settings-time warning informs them.
-        if (prefs.getBoolean(KEY_BANK_NOTI_LOCAL_REVIEW, false)) {
+        // Mirror the same notification into the local review queue when that feature is on.
+        // Independent of forwarding: a user with only AI classification on still gets queued
+        // entries; one with only forwarding on gets the outside.json path; both on duplicates
+        // (the dual-use warning in settings owns that tradeoff).
+        if (localReviewOn) {
             val reviewResult = LocalReviewQueue.add(
                 applicationContext,
                 sbn.packageName,
@@ -92,6 +88,18 @@ class BankNotificationListener : NotificationListenerService() {
             )
             Log.d(LOG_TAG, "review queue (count=${reviewResult.count}, added=${reviewResult.added})")
         }
+
+        if (!forwardOn) return
+
+        val (count, added) = BankNotifications.add(
+            applicationContext,
+            sbn.packageName,
+            appLabel,
+            title,
+            text,
+            sbn.postTime
+        )
+        Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count, added=$added)")
 
         // If this was a duplicate of the previous entry, don't re-toast or re-trigger the
         // threshold flush — count didn't actually grow.
@@ -131,7 +139,11 @@ class BankNotificationListener : NotificationListenerService() {
     companion object {
         private const val LOG_TAG = "BankNotiListener"
 
-        const val KEY_BANK_NOTI_ENABLE = "pref_bankNotiEnable"
+        // SharedPreferences key string is unchanged ("pref_bankNotiEnable") so existing
+        // installations don't lose their forward toggle state. The Kotlin name is what's
+        // updated to reflect the post-split semantics: this flag now governs ONLY the
+        // outside.json/forwarding path, not the listener as a whole.
+        const val KEY_BANK_NOTI_FORWARD = "pref_bankNotiEnable"
         const val KEY_BANK_NOTI_APPS = "pref_bankNotiApps"
         const val KEY_BANK_NOTI_CUSTOM_APPS = "pref_bankNotiCustomApps"
         const val KEY_BANK_NOTI_THRESHOLD = "pref_bankNotiThreshold"

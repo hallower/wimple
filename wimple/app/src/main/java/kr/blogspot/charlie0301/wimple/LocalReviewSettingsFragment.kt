@@ -1,7 +1,12 @@
 package kr.blogspot.charlie0301.wimple
 
 import android.app.AlertDialog
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Toast
 import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.PreferenceFragmentCompat
@@ -9,20 +14,21 @@ import androidx.preference.PreferenceManager
 import kr.blogspot.charlie0301.wimple.impl.util.GenAiAvailability
 
 /**
- * "알림 검수 후 직접 입력" sub-screen of the host settings two-pane layout. Owns the local
+ * "은행 알림 AI 분류 입력" sub-screen of the host settings two-pane layout. Owns the local
  * review toggle and its disable rules:
  *  - Disabled when the device lacks on-device Gemini Nano (R2). Status is queried via
  *    [GenAiAvailability.refresh] in onResume; while the check is in flight the toggle stays
  *    disabled with a "checking…" summary so users on supported devices don't see a brief
  *    flash of "unsupported".
- *  - Disabled when bank-notification capture itself is off, since the queue is fed by the
- *    listener — without capture there's nothing to review.
- *  - On enable, a one-shot dual-use warning prompts when outside.json forwarding is also
- *    active (R1) — same notification can otherwise be recorded twice.
  *
- * Re-runs the rule evaluation in onResume so the toggle reflects changes the user made on
- * the neighbouring "은행 알림 자동 기록" screen (which gates capture) and the latest GenAi
- * availability result.
+ * Notification access permission is required (the system-level NotificationListenerService
+ * is the upstream source). When the user toggles ON without it, we route them to grant via
+ * the same dialog the forward-to-Whooing screen uses; the toggle stays off until access is
+ * granted and the user re-enables.
+ *
+ * Local review is INDEPENDENT of forward-to-Whooing — either path can be on alone or together.
+ * The dual-use warning fires only when forward is ALSO on (same notification recorded twice
+ * via two paths).
  */
 class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
 
@@ -41,13 +47,25 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             // Fragment may have been detached before the callback; check before touching prefs UI.
             if (isAdded) applyState()
         }
+        // After returning from system notification-access settings, the user may have just
+        // granted permission. Drop the "requested" flag and (if granted) move on to the data-
+        // handling notice they came for. Mirrors BankNotificationSettingsFragment.onResume.
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val requested = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false)
+        if (requested && BankNotificationListener.isNotificationAccessGranted(ctx)) {
+            prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, false).apply()
+            val toggle = findPreference<CheckBoxPreference>(
+                BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW)
+            if (toggle != null && !toggle.isChecked) {
+                advanceFromAccess(ctx, prefs, toggle)
+            }
+        }
     }
 
     /**
-     * Single source of truth for the toggle state. Priority order:
-     *   1. GenAi availability — UNKNOWN shows checking, UNAVAILABLE locks off.
-     *   2. Bank-noti capture toggle — must be on; otherwise the queue is never fed.
-     *   3. Otherwise: enabled, with the dual-use warning intercepting the off→on transition.
+     * Single source of truth for the toggle state. GenAi availability fully drives the
+     * enabled/summary state; the toggle handler runs the rest of the chain (access check →
+     * info notice → dual-use warning) when the user actually flips it.
      */
     private fun applyState() {
         val ctx = context ?: return
@@ -70,52 +88,55 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             GenAiAvailability.Status.DOWNLOADABLE,
             GenAiAvailability.Status.DOWNLOADING,
             GenAiAvailability.Status.AVAILABLE -> {
-                // proceed to capture-toggle check below
-                applyCaptureGate(ctx, toggle, prefs, status)
+                toggle.isEnabled = true
+                toggle.summary = when (status) {
+                    GenAiAvailability.Status.DOWNLOADABLE ->
+                        ctx.getString(R.string.bank_noti_local_review_downloadable_summary)
+                    GenAiAvailability.Status.DOWNLOADING ->
+                        ctx.getString(R.string.bank_noti_local_review_downloading_summary)
+                    else -> ctx.getString(R.string.bank_noti_local_review_summary)
+                }
+                wireToggleHandler(ctx, prefs, toggle)
             }
         }
     }
 
-    private fun applyCaptureGate(
+    private fun wireToggleHandler(
         ctx: android.content.Context,
-        toggle: CheckBoxPreference,
         prefs: android.content.SharedPreferences,
-        status: GenAiAvailability.Status
+        toggle: CheckBoxPreference
     ) {
-        val captureOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ENABLE, false)
-        if (!captureOn) {
-            toggle.isChecked = false
-            toggle.isEnabled = false
-            toggle.summary = ctx.getString(R.string.bank_noti_local_review_capture_off_summary)
-            return
-        }
-
-        toggle.isEnabled = true
-        toggle.summary = when (status) {
-            GenAiAvailability.Status.DOWNLOADABLE ->
-                ctx.getString(R.string.bank_noti_local_review_downloadable_summary)
-            GenAiAvailability.Status.DOWNLOADING ->
-                ctx.getString(R.string.bank_noti_local_review_downloading_summary)
-            else -> ctx.getString(R.string.bank_noti_local_review_summary)
-        }
-
         toggle.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
             val turningOn = newValue as Boolean
             if (!turningOn) return@OnPreferenceChangeListener true
 
-            // First-time enable runs the on-device-AI data-handling notice; subsequent enables
-            // skip straight to the dual-use warning. The notice replaces the old launch-time
-            // BiometricOnboarding popup as the app's primary disclosure surface.
-            val infoShown = prefs.getBoolean(
-                BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN, false
-            )
-            if (infoShown) {
-                showDualUseWarning(ctx, toggle)
-            } else {
-                showFirstTimeNotice(ctx, prefs, toggle)
+            if (!BankNotificationListener.isNotificationAccessGranted(ctx)) {
+                showNotificationAccessGuideDialog(ctx)
+                return@OnPreferenceChangeListener false
             }
-            // Defer the actual flip to the dialog's positive button so cancelling leaves it off.
+            advanceFromAccess(ctx, prefs, toggle)
+            // Defer the flip to dialog confirmations so cancelling leaves it off.
             false
+        }
+    }
+
+    /**
+     * Notification access is granted — proceed with the post-access onboarding chain. First-
+     * time users see the on-device-AI data-handling notice; subsequent enables skip straight
+     * to the dual-use warning (only when forward is ALSO on).
+     */
+    private fun advanceFromAccess(
+        ctx: android.content.Context,
+        prefs: android.content.SharedPreferences,
+        toggle: CheckBoxPreference
+    ) {
+        val infoShown = prefs.getBoolean(
+            BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN, false
+        )
+        if (!infoShown) {
+            showFirstTimeNotice(ctx, prefs, toggle)
+        } else {
+            showDualUseWarningOrEnable(ctx, prefs, toggle)
         }
     }
 
@@ -132,24 +153,79 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
                 prefs.edit()
                     .putBoolean(BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN, true)
                     .apply()
-                showDualUseWarning(ctx, toggle)
+                showDualUseWarningOrEnable(ctx, prefs, toggle)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
-    private fun showDualUseWarning(
+    /**
+     * Show the dual-use warning iff the forward path is currently ON — that's the only state
+     * where a single notification can produce two entries (outside.json forward + AI-confirmed
+     * makeEntry). When forward is off, AI is the only writer and the warning would be noise,
+     * so we skip straight to flipping the toggle.
+     */
+    private fun showDualUseWarningOrEnable(
         ctx: android.content.Context,
+        prefs: android.content.SharedPreferences,
         toggle: CheckBoxPreference
     ) {
-        // KEY_BANK_NOTI_ENABLE gates BOTH the outside.json forwarding path AND the local
-        // review path today (single capture switch upstream). When forwarding is split
-        // out, this should compare against the forwarding-only sub-toggle.
+        val forwardOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_FORWARD, false)
+        if (!forwardOn) {
+            toggle.isChecked = true
+            return
+        }
         AlertDialog.Builder(ctx)
             .setTitle(R.string.bank_noti_local_review_dual_warning_title)
             .setMessage(R.string.bank_noti_local_review_dual_warning_message)
             .setPositiveButton(android.R.string.ok) { _, _ -> toggle.isChecked = true }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    private fun showNotificationAccessGuideDialog(ctx: android.content.Context) {
+        val appName = ctx.getString(R.string.app_name)
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_access_dialog_title)
+            .setMessage(ctx.getString(R.string.bank_noti_access_dialog_message, appName))
+            .setCancelable(false)
+            .setPositiveButton(R.string.bank_noti_access_dialog_open) { _, _ ->
+                openNotificationAccessSettings(ctx)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun openNotificationAccessSettings(ctx: android.content.Context) {
+        // Mark requested so onResume can resume the AI-enable flow once permission lands —
+        // mirrors BankNotificationSettingsFragment.openNotificationAccessSettings.
+        PreferenceManager.getDefaultSharedPreferences(ctx).edit()
+            .putBoolean(BankNotificationListener.KEY_BANK_NOTI_ACCESS_REQUESTED, true)
+            .apply()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val componentName = ComponentName(ctx, BankNotificationListener::class.java)
+                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
+                    .putExtra(
+                        Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME,
+                        componentName.flattenToString()
+                    )
+                startActivity(intent)
+                return
+            } catch (_: Exception) {
+                // fall through to list screen
+            }
+        }
+        try {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            Toast.makeText(
+                ctx,
+                ctx.getString(R.string.bank_noti_access_toast_find_app, ctx.getString(R.string.app_name)),
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (_: Exception) {
+            Toast.makeText(ctx, R.string.bank_noti_access_settings_open_failed, Toast.LENGTH_LONG).show()
+        }
     }
 }

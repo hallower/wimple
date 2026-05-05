@@ -101,12 +101,12 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
     /**
      * Show the dual-use warning whenever the user has both outside-input forwarding
-     * (KEY_BANK_NOTI_ENABLE) and local review (KEY_BANK_NOTI_LOCAL_REVIEW) on. Re-evaluated
+     * (KEY_BANK_NOTI_FORWARD) and local review (KEY_BANK_NOTI_LOCAL_REVIEW) on. Re-evaluated
      * every onResume so toggling either setting reflects on next entry.
      */
     private fun refreshDualUseBanner() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val outsideOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ENABLE, false)
+        val outsideOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_FORWARD, false)
         val localOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW, false)
         dualUseBanner.visibility = if (outsideOn && localOn) View.VISIBLE else View.GONE
     }

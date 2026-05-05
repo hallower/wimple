@@ -58,6 +58,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             fetchNotificationBadge()
         }
         refreshReviewQueueBadge()
+        // Finish a "user accepted AI suggestion but had to go grant notification access"
+        // round-trip. No-op when no pending acceptance is recorded; otherwise checks the
+        // current grant state and flips the local-review toggle if granted.
+        LocalReviewSuggestion.resumeIfPending(this)
     }
 
     private fun refreshReviewQueueBadge() {

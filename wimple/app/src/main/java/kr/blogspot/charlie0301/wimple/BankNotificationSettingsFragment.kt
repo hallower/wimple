@@ -38,7 +38,7 @@ class BankNotificationSettingsFragment : PreferenceFragmentCompat() {
 
     private fun setupBankNotificationPreferences() {
         val enableBox = findPreference<CheckBoxPreference>(
-            BankNotificationListener.KEY_BANK_NOTI_ENABLE)!!
+            BankNotificationListener.KEY_BANK_NOTI_FORWARD)!!
         enableBox.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
             val turningOn = newValue as Boolean
             if (turningOn && context != null) {
@@ -245,7 +245,7 @@ class BankNotificationSettingsFragment : PreferenceFragmentCompat() {
         val ctx = context ?: return
         val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
 
-        val enableBox = findPreference<CheckBoxPreference>(BankNotificationListener.KEY_BANK_NOTI_ENABLE)
+        val enableBox = findPreference<CheckBoxPreference>(BankNotificationListener.KEY_BANK_NOTI_FORWARD)
         val granted = BankNotificationListener.isNotificationAccessGranted(ctx)
         if (enableBox != null) {
             if (enableBox.isChecked && !granted) {
