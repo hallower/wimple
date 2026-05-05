@@ -104,19 +104,38 @@ object BankNotificationClassifier {
      * and end up with [State.ERROR].
      */
     suspend fun classify(ctx: Context, item: LocalReviewQueue.ReviewItem): Result {
-        return try {
-            doClassify(ctx, item)
+        val started = System.currentTimeMillis()
+        val stages = mutableListOf<AiClassificationLog.Stage>()
+        val result = try {
+            doClassify(ctx, item, stages)
         } catch (t: Throwable) {
             Log.w(LOG_TAG, "classify failed for ${item.id}", t)
             Result(state = State.ERROR)
         }
+        // Persist the run for the dev log regardless of outcome — the failure cases
+        // (UNPARSED / ERROR) are exactly what we'd want to inspect to tune prompts.
+        AiClassificationLog.record(
+            ctx,
+            AiClassificationLog.Entry(
+                timestamp = started,
+                packageName = item.packageName,
+                appLabel = item.appLabel,
+                notiTitle = item.title,
+                notiText = item.text,
+                stages = stages,
+                resultJson = result.toJson(),
+                durationMs = System.currentTimeMillis() - started
+            )
+        )
+        return result
     }
 
     private suspend fun doClassify(
         ctx: Context,
-        item: LocalReviewQueue.ReviewItem
+        item: LocalReviewQueue.ReviewItem,
+        stages: MutableList<AiClassificationLog.Stage>
     ): Result = withContext(Dispatchers.IO) {
-        val extracted = extractFields(item)
+        val extracted = extractFields(item, stages)
             ?: return@withContext Result(state = State.UNPARSED)
 
         val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
@@ -139,7 +158,7 @@ object BankNotificationClassifier {
         val candidates = pickCandidates(entries, extracted, MAX_CANDIDATES)
         if (candidates.isEmpty()) return@withContext extractedOnly(extracted, State.UNPARSED)
 
-        val match = aiSimilarity(item, extracted, candidates)
+        val match = aiSimilarity(item, extracted, candidates, stages)
             ?: return@withContext extractedOnly(extracted, State.UNPARSED)
 
         val candidateEntry = candidates.firstOrNull { it.id == match.bestMatchEntryId }
@@ -200,7 +219,10 @@ object BankNotificationClassifier {
 
     private data class ExtractedFields(val kind: String, val merchant: String, val amount: Double)
 
-    private suspend fun extractFields(item: LocalReviewQueue.ReviewItem): ExtractedFields? {
+    private suspend fun extractFields(
+        item: LocalReviewQueue.ReviewItem,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): ExtractedFields? {
         val prompt = buildString {
             append("You will receive a Korean bank notification. ")
             append("Extract the merchant, transaction type, and amount. ")
@@ -216,7 +238,9 @@ object BankNotificationClassifier {
             append("- amount: integer KRW; '12,000원' → 12000.\n")
             append("- If a field is unclear, omit its key.")
         }
-        val response = generate(prompt) ?: return null
+        val response = generate(prompt)
+        stages.add(AiClassificationLog.Stage("extract", prompt, response))
+        if (response == null) return null
         val json = parseJson(response) ?: return null
 
         val kind = json.optStringOrNull("kind")?.lowercase()?.takeIf {
@@ -236,7 +260,8 @@ object BankNotificationClassifier {
     private suspend fun aiSimilarity(
         item: LocalReviewQueue.ReviewItem,
         extracted: ExtractedFields,
-        candidates: List<Entry>
+        candidates: List<Entry>,
+        stages: MutableList<AiClassificationLog.Stage>
     ): MatchResult? {
         val candidateBlock = JSONArray().apply {
             candidates.forEach { e ->
@@ -266,7 +291,9 @@ object BankNotificationClassifier {
             append("- Same chain or topical (e.g., another convenience store at similar amount): 0.5–0.8.\n")
             append("- Weak/no link: <0.5 with id null.\n")
         }
-        val response = generate(prompt) ?: return null
+        val response = generate(prompt)
+        stages.add(AiClassificationLog.Stage("similarity", prompt, response))
+        if (response == null) return null
         val json = parseJson(response) ?: return null
 
         val rawId = json.optStringOrNull("best_match_entry_id") ?: return null

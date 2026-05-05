@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_clear_all"
+        android:title="@string/dev_ai_log_clear"
+        android:showAsAction="never" />
+</menu>

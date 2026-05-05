@@ -14,4 +14,14 @@
         android:summary="@string/opensource_licenses_summary"
         android:title="@string/opensource_licenses_title" />
 
+    <!-- Hidden by default. Visibility flips on after the user taps the OSS license entry
+         10 times in one settings session (see AboutSettingsFragment). The flag is wiped on
+         logout because the rest of the logout flow blanket-clears default SharedPreferences;
+         on app reinstall there's nothing to wipe (allowBackup=false). -->
+    <Preference
+        app:iconSpaceReserved="false"
+        android:key="pref_devAiLog"
+        android:summary="@string/dev_ai_log_summary"
+        android:title="@string/dev_ai_log_title" />
+
 </PreferenceScreen>
