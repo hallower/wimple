@@ -257,4 +257,13 @@
     <string name="widget_dow_thu">Thu</string>
     <string name="widget_dow_fri">Fri</string>
     <string name="widget_dow_sat">Sat</string>
+
+    <!-- Local review queue (Phase 1) -->
+    <string name="local_review_category_title">Review and add manually</string>
+    <string name="bank_noti_local_review_title">Enable review and add manually</string>
+    <string name="bank_noti_local_review_summary">Hold notifications on-device and turn them into entries after you review them in Wimple. Classification uses on-device AI (Gemini Nano).</string>
+    <string name="bank_noti_local_review_unsupported_summary">Not supported on this device (Gemini Nano unavailable).</string>
+    <string name="bank_noti_local_review_capture_off_summary">Enable notification capture under \"Bank notifications\" settings first.</string>
+    <string name="bank_noti_local_review_dual_warning_title">Used together with auto-forward</string>
+    <string name="bank_noti_local_review_dual_warning_message">Using auto-forward and review-and-add at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>
 </resources>

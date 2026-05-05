@@ -14,6 +14,11 @@
         app:fragment="kr.blogspot.charlie0301.wimple.BankNotificationSettingsFragment" />
     <Preference
         app:iconSpaceReserved="false"
+        android:key="header_local_review"
+        android:title="@string/local_review_category_title"
+        app:fragment="kr.blogspot.charlie0301.wimple.LocalReviewSettingsFragment" />
+    <Preference
+        app:iconSpaceReserved="false"
         android:key="header_entry"
         android:title="@string/settings_entry"
         app:fragment="kr.blogspot.charlie0301.wimple.EntrySettingsFragment" />

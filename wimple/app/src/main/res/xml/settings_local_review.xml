@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        app:iconSpaceReserved="false"
+        android:defaultValue="false"
+        android:key="pref_bankNotiLocalReview"
+        android:summary="@string/bank_noti_local_review_summary"
+        android:title="@string/bank_noti_local_review_title" />
+
+</PreferenceScreen>

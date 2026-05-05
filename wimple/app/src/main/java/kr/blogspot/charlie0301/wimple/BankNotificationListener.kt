@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 import kr.blogspot.charlie0301.wimple.impl.BankNotifications
+import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 
 // Pixel and One UI wrap notification text in Unicode bidi-isolation marks (U+2068 FIRST
 // STRONG ISOLATE / U+2069 POP DIRECTIONAL ISOLATE). They're invisible but break parsers
@@ -76,6 +77,22 @@ class BankNotificationListener : NotificationListenerService() {
         )
         Log.d(LOG_TAG, "captured notification from $appLabel (${sbn.packageName}) (stored=$count, added=$added)")
 
+        // Mirror the same notification into the local review queue when that feature is on. The
+        // two queues are independent: outside.json forwarding still proceeds via BankNotifications,
+        // and review/confirm runs from LocalReviewQueue. This is the user-acknowledged duplicate-
+        // possibility tradeoff (R1) — a settings-time warning informs them.
+        if (prefs.getBoolean(KEY_BANK_NOTI_LOCAL_REVIEW, false)) {
+            val reviewResult = LocalReviewQueue.add(
+                applicationContext,
+                sbn.packageName,
+                appLabel,
+                title,
+                text,
+                sbn.postTime
+            )
+            Log.d(LOG_TAG, "review queue (count=${reviewResult.count}, added=${reviewResult.added})")
+        }
+
         // If this was a duplicate of the previous entry, don't re-toast or re-trigger the
         // threshold flush — count didn't actually grow.
         if (!added) return
@@ -127,6 +144,7 @@ class BankNotificationListener : NotificationListenerService() {
         const val KEY_BANK_NOTI_ACCESS_REQUESTED = "pref_bankNotiAccessRequested"
         const val KEY_BANK_NOTI_SORT_ORDER = "pref_bankNotiSortOrder"
         const val KEY_BANK_NOTI_INITIAL_PICKER_DONE = "pref_bankNotiInitialPickerDone"
+        const val KEY_BANK_NOTI_LOCAL_REVIEW = "pref_bankNotiLocalReview"
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {
             val flat = android.provider.Settings.Secure.getString(
