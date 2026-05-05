@@ -166,12 +166,26 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val amount = if (intent.hasExtra(EXTRA_PREFILL_AMOUNT))
             intent.getDoubleExtra(EXTRA_PREFILL_AMOUNT, 0.0)
         else null
-        if (title == null && amount == null) return
-        fragment.applyPrefill(title, amount)
+        val leftAccountId = intent.getStringExtra(EXTRA_PREFILL_LEFT_ACCOUNT_ID)
+        val rightAccountId = intent.getStringExtra(EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
+        val reviewItemId = intent.getStringExtra(EXTRA_REVIEW_ITEM_ID)
+        val reviewMerchant = intent.getStringExtra(EXTRA_REVIEW_MERCHANT)
+        val reviewKind = intent.getStringExtra(EXTRA_REVIEW_KIND)
+        if (title == null && amount == null && leftAccountId == null && rightAccountId == null
+            && reviewItemId == null) return
+        fragment.applyPrefill(
+            title, amount, leftAccountId, rightAccountId,
+            reviewItemId, reviewMerchant, reviewKind
+        )
         // Single-shot — remove from the active intent so the next config change doesn't
         // re-prefill on top of user edits.
         intent.removeExtra(EXTRA_PREFILL_TITLE)
         intent.removeExtra(EXTRA_PREFILL_AMOUNT)
+        intent.removeExtra(EXTRA_PREFILL_LEFT_ACCOUNT_ID)
+        intent.removeExtra(EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
+        intent.removeExtra(EXTRA_REVIEW_ITEM_ID)
+        intent.removeExtra(EXTRA_REVIEW_MERCHANT)
+        intent.removeExtra(EXTRA_REVIEW_KIND)
     }
 
     private fun consumeOpenMenuExtra(intent: Intent?): Int? {
@@ -572,6 +586,18 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
          */
         const val EXTRA_PREFILL_TITLE = "wimple.extra.prefill_title"
         const val EXTRA_PREFILL_AMOUNT = "wimple.extra.prefill_amount"
+        const val EXTRA_PREFILL_LEFT_ACCOUNT_ID = "wimple.extra.prefill_left_account_id"
+        const val EXTRA_PREFILL_RIGHT_ACCOUNT_ID = "wimple.extra.prefill_right_account_id"
+
+        /**
+         * "Review session" extras tagging the launch as originating from a queue row. When
+         * present in the manual-entry intent the form, on a successful submit, will (1)
+         * remove the row from [LocalReviewQueue] and (2) upsert the user-confirmed account
+         * pair into [MerchantMappingDBHandler] so subsequent matching merchants auto-resolve.
+         */
+        const val EXTRA_REVIEW_ITEM_ID = "wimple.extra.review_item_id"
+        const val EXTRA_REVIEW_MERCHANT = "wimple.extra.review_merchant"
+        const val EXTRA_REVIEW_KIND = "wimple.extra.review_kind"
 
         private var mainHandler: Handler? = null
 

@@ -290,4 +290,5 @@
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
+    <string name="bank_noti_review_dual_use_banner">Auto-forward is also on. The same notification may be recorded twice. (Tap to open settings)</string>
 </resources>

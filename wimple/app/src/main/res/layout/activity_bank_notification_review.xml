@@ -15,6 +15,20 @@
         android:theme="@style/ThemeOverlay.Material3.ActionBar"
         app:popupTheme="@style/ThemeOverlay.Material3.Dark" />
 
+    <!-- Dual-use banner: auto-forward to outside.json runs in parallel with this review
+         flow when both toggles are on, so the same notification can end up booked twice.
+         Visible only while the user has the combination active; tap = jump to settings. -->
+    <TextView
+        android:id="@+id/dual_use_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:textSize="13sp"
+        android:textColor="@android:color/white"
+        android:background="#FFEF6C00"
+        android:text="@string/bank_noti_review_dual_use_banner"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"

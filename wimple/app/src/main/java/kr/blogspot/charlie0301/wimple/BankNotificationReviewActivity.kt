@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.impl.BankNotificationClassifier
@@ -37,6 +38,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     private lateinit var listView: ListView
     private lateinit var emptyView: TextView
     private lateinit var toolbar: Toolbar
+    private lateinit var dualUseBanner: TextView
 
     /**
      * Tracks the currently-running classify job so a second resume (or finish()) cancels in-
@@ -58,8 +60,18 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.review_list)
         emptyView = findViewById(R.id.empty_view)
+        dualUseBanner = findViewById(R.id.dual_use_banner)
         adapter = ReviewAdapter()
         listView.adapter = adapter
+
+        dualUseBanner.setOnClickListener {
+            // Settings is a fragment hosted by WimpleActivity, not its own activity. Send
+            // the user there via the same EXTRA_OPEN_MENU plumbing used for manual entry.
+            val intent = Intent(this, WimpleActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(WimpleActivity.EXTRA_OPEN_MENU, R.id.menu_preference)
+            startActivity(intent)
+        }
 
         listView.setOnItemLongClickListener { _, _, position, _ ->
             val item = adapter.getItem(position) as? LocalReviewQueue.ReviewItem
@@ -78,8 +90,21 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        refreshDualUseBanner()
         refresh()
         startClassificationPass()
+    }
+
+    /**
+     * Show the dual-use warning whenever the user has both outside-input forwarding
+     * (KEY_BANK_NOTI_ENABLE) and local review (KEY_BANK_NOTI_LOCAL_REVIEW) on. Re-evaluated
+     * every onResume so toggling either setting reflects on next entry.
+     */
+    private fun refreshDualUseBanner() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val outsideOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_ENABLE, false)
+        val localOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW, false)
+        dualUseBanner.visibility = if (outsideOn && localOn) View.VISIBLE else View.GONE
     }
 
     override fun onPause() {
@@ -121,11 +146,14 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     }
 
     /**
-     * Hand off to manual entry, prefilling the title and amount from the cached classifier
-     * output when the row produced extracted fields. UNPARSED rows (no merchant/amount in
-     * the cache) just open an empty form like before. Phase 5 will also auto-remove the
-     * queue row when the form is successfully submitted; for now the user [Dismiss]es it
-     * after entry.
+     * Hand off to manual entry. Attaches everything the cached classifier output knows so
+     * the form arrives prefilled (title/amount) and pre-selected (left/right accounts) when
+     * those are available, and tagged with the review session ids so the form's success
+     * branch can remove the queue row plus learn the user's confirmed account pair into
+     * [MerchantMappingDBHandler].
+     *
+     * UNPARSED rows or those missing fields fall back gracefully: only the keys we know go
+     * onto the intent, and the form ignores any subset that's not present.
      */
     private fun openManualEntry(item: LocalReviewQueue.ReviewItem) {
         val intent = Intent(this, WimpleActivity::class.java)
@@ -140,6 +168,27 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             result.amount?.takeIf { it > 0.0 }?.let {
                 intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, it)
             }
+            result.leftAccountId?.takeIf { it.isNotBlank() }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID, it)
+            }
+            result.rightAccountId?.takeIf { it.isNotBlank() }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_PREFILL_RIGHT_ACCOUNT_ID, it)
+            }
+            // Tag the launch as a review session so the form's success branch can close the
+            // loop. Only attach when we have enough to learn from — merchant + kind drive
+            // the mapping key; without those there's nothing to upsert (we still attach the
+            // item id so the row gets removed on success).
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_ITEM_ID, item.id)
+            result.merchant?.takeIf { it.isNotBlank() }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_REVIEW_MERCHANT, it)
+            }
+            result.kind?.takeIf { it.isNotBlank() }?.let {
+                intent.putExtra(WimpleActivity.EXTRA_REVIEW_KIND, it)
+            }
+        } else {
+            // Even with no classification (UNPARSED, ERROR, or pre-classify dismiss), still
+            // tag the item id so a manual submit removes the row.
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_ITEM_ID, item.id)
         }
         startActivity(intent)
     }

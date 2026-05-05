@@ -18,7 +18,9 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import kr.blogspot.charlie0301.wimple.databinding.FragmentTransactionInsertTabBinding
+import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
 import kr.blogspot.charlie0301.wimple.impl.util.Calculator
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.impl.util.KoreanWordSearch
@@ -49,6 +51,15 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private var toolMode = CurrentToolMode.INSERT
 
     private var selected: Item? = null
+
+    // Review-queue prefill state. Account ids are deferred until after GET_ALL_ACCOUNT_RECEIVED
+    // populates the adapters (initial value during onViewCreated is empty); review-session
+    // ids are kept until the user submits the form so we can close the loop on success.
+    private var pendingLeftAccountId: String? = null
+    private var pendingRightAccountId: String? = null
+    private var activeReviewItemId: String? = null
+    private var activeReviewMerchant: String? = null
+    private var activeReviewKind: String? = null
 
     private val amountValue: Double
         get() {
@@ -155,9 +166,20 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val amount = if (args.containsKey(WimpleActivity.EXTRA_PREFILL_AMOUNT))
             args.getDouble(WimpleActivity.EXTRA_PREFILL_AMOUNT)
         else null
-        applyPrefill(title, amount)
+        val leftId = args.getString(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID)
+        val rightId = args.getString(WimpleActivity.EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
+        val reviewItemId = args.getString(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
+        val reviewMerchant = args.getString(WimpleActivity.EXTRA_REVIEW_MERCHANT)
+        val reviewKind = args.getString(WimpleActivity.EXTRA_REVIEW_KIND)
+        applyPrefill(title, amount, leftId, rightId, reviewItemId, reviewMerchant, reviewKind)
+        // Single-shot — clear so a config-change rebuild doesn't re-prefill over edits.
         args.remove(WimpleActivity.EXTRA_PREFILL_TITLE)
         args.remove(WimpleActivity.EXTRA_PREFILL_AMOUNT)
+        args.remove(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID)
+        args.remove(WimpleActivity.EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
+        args.remove(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
+        args.remove(WimpleActivity.EXTRA_REVIEW_MERCHANT)
+        args.remove(WimpleActivity.EXTRA_REVIEW_KIND)
     }
 
     /**
@@ -166,10 +188,24 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
      * onViewCreated arguments path covers fresh creation; this covers the same-instance case
      * where replaceWimpleFragment early-returns without re-applying arguments.
      *
-     * Both [title] and [amount] are independently optional — pass only what's known so we
-     * don't blank fields the user already filled in.
+     * Title/amount apply to views immediately (calculator value, EditText). Account ids may
+     * arrive before [GET_ALL_ACCOUNT_RECEIVED][CommandID.GET_ALL_ACCOUNT_RECEIVED] populates
+     * the adapters, so they're stashed in pending fields and applied either from the message
+     * handler when the cache lands, or right now if the cache is already in.
+     *
+     * Review-session ids tag the form's next submit as belonging to a queue row, so the
+     * success branch of [CommandID.GET_MAKE_ENTRY_RESPONSE_RECEIVED] can remove the row and
+     * upsert the user-confirmed account pair into [MerchantMappingDBHandler].
      */
-    fun applyPrefill(title: String?, amount: Double?) {
+    fun applyPrefill(
+        title: String?,
+        amount: Double?,
+        leftAccountId: String? = null,
+        rightAccountId: String? = null,
+        reviewItemId: String? = null,
+        reviewMerchant: String? = null,
+        reviewKind: String? = null
+    ) {
         if (_binding == null) return
         if (!title.isNullOrBlank()) {
             binding.insertEntryTitle.setText(title)
@@ -178,6 +214,68 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         if (amount != null && amount > 0.0) {
             cal.setValue(amount)
         }
+        pendingLeftAccountId = leftAccountId?.takeIf { it.isNotBlank() }
+        pendingRightAccountId = rightAccountId?.takeIf { it.isNotBlank() }
+        activeReviewItemId = reviewItemId?.takeIf { it.isNotBlank() }
+        activeReviewMerchant = reviewMerchant?.takeIf { it.isNotBlank() }
+        activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
+        tryApplyPendingAccountSelection()
+    }
+
+    /**
+     * Apply any deferred account-id prefill if the matching adapters now contain the target
+     * ids. Idempotent — clears the pending field on success so subsequent calls (from the
+     * GET_ALL_ACCOUNT_RECEIVED handler) are no-ops. Called from both [applyPrefill] (for the
+     * cache-already-populated path) and the account-received message branch.
+     */
+    private fun tryApplyPendingAccountSelection() {
+        if (_binding == null) return
+        if (!::leftAccountListAdapter.isInitialized || !::rightAccountListAdapter.isInitialized) return
+        val left = pendingLeftAccountId
+        if (left != null && leftAccountListAdapter.groupCount > 0) {
+            if (selectLeftCategory(left)) pendingLeftAccountId = null
+        }
+        val right = pendingRightAccountId
+        if (right != null && rightAccountListAdapter.groupCount > 0) {
+            if (selectRightCategory(right)) pendingRightAccountId = null
+        }
+    }
+
+    /**
+     * Called from the makeEntry success branch BEFORE the form is cleared. If this submit
+     * came out of the review queue ([activeReviewItemId] is set), close the loop:
+     *   1. Upsert the merchant→accounts mapping using the user's currently-selected
+     *      accounts (which may differ from the AI suggestion if they corrected it — that's
+     *      the "auto-learn the correction" path).
+     *   2. Remove the row from [LocalReviewQueue].
+     *   3. Clear the review fields so the next non-review submit doesn't re-fire this.
+     */
+    private fun closeReviewSessionOnSuccess() {
+        val itemId = activeReviewItemId ?: return
+        val ctx = context
+        if (ctx != null) {
+            val merchant = activeReviewMerchant
+            val kind = activeReviewKind
+            if (!merchant.isNullOrBlank() && !kind.isNullOrBlank()
+                && ::leftAccountListAdapter.isInitialized
+                && ::rightAccountListAdapter.isInitialized) {
+                val left = leftAccountListAdapter.selected
+                val right = rightAccountListAdapter.selected
+                if (left != null && right != null) {
+                    MerchantMappingDBHandler(ctx).upsert(
+                        merchant, kind,
+                        left.what, left.id,
+                        right.what, right.id
+                    )
+                }
+            }
+            LocalReviewQueue.removeById(ctx, itemId)
+        }
+        activeReviewItemId = null
+        activeReviewMerchant = null
+        activeReviewKind = null
+        pendingLeftAccountId = null
+        pendingRightAccountId = null
     }
 
     private fun setupTitleAndSubmit() {
@@ -691,6 +789,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                         if (selectedID.isNotEmpty())
                             this.selectRightCategory(selectedID)
                     }
+
+                    // Apply any review-queue prefill that was waiting for the adapters to
+                    // hydrate. Idempotent — clears its own pending fields on success.
+                    tryApplyPendingAccountSelection()
                 }
             }
 
@@ -716,6 +818,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
 
                 Log.e(LOG_TAG, "GET_MAKE_ENTRY_RESPONSE_RECEIVED entryDate=$entryDate")
                 if (booleanStatus) {
+                    // Must run BEFORE clearForms — it reads the user-confirmed account
+                    // selection (which may differ from the AI suggestion) and clears the
+                    // review-session ids; clearForms then drops the form widgets' state.
+                    closeReviewSessionOnSuccess()
                     WimpleActivity.sm(CommandID.TOAST_SHORT, this.resources.getString(R.string.insert_success))
                     this.clearForms()
                     this.wimple.getLatestItems(true)
