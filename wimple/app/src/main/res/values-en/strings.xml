@@ -263,6 +263,9 @@
     <string name="bank_noti_local_review_title">Enable review and add manually</string>
     <string name="bank_noti_local_review_summary">Hold notifications on-device and turn them into entries after you review them in Wimple. Classification uses on-device AI (Gemini Nano).</string>
     <string name="bank_noti_local_review_unsupported_summary">Not supported on this device (Gemini Nano unavailable).</string>
+    <string name="bank_noti_local_review_checking_summary">Checking device support…</string>
+    <string name="bank_noti_local_review_downloadable_summary">Available. Turning this on will trigger a one-time model download.</string>
+    <string name="bank_noti_local_review_downloading_summary">Model is downloading. It will become usable automatically once finished.</string>
     <string name="bank_noti_local_review_capture_off_summary">Enable notification capture under \"Bank notifications\" settings first.</string>
     <string name="bank_noti_local_review_dual_warning_title">Used together with auto-forward</string>
     <string name="bank_noti_local_review_dual_warning_message">Using auto-forward and review-and-add at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>

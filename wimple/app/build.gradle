@@ -81,6 +81,15 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.biometric:biometric:1.1.0'
+
+    // On-device Gemini Nano via ML Kit GenAI Prompt API. Used by the local review queue
+    // (BankNotificationLocalReview design) for availability gating in Phase 1's settings,
+    // and for similarity-based account suggestion in Phase 4. Inference is foreground-only;
+    // calling from a background notification listener returns BACKGROUND_USE_BLOCKED.
+    implementation 'com.google.mlkit:genai-prompt:1.0.0-beta2'
+    // Required because GenerativeModel.checkStatus() / generateContent() are suspend.
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+
     testImplementation 'org.robolectric:robolectric:4.15.1'
 }
 
