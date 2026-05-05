@@ -122,12 +122,12 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 currentFragment = restored
                 currentMenuID = savedMenuId
                 Log.i(LOG_TAG, "WimpleActivity - onCreate!!!, restored fragment=$currentFragment, menuID=$currentMenuID")
-                BiometricOnboarding.showIfNeeded(this)
+                LocalReviewSuggestion.showIfNeeded(this)
                 return
             }
             Log.i(LOG_TAG, "WimpleActivity - onCreate, screen class changed; re-routing menuID=$savedMenuId")
             installInitialFragment(savedMenuId)
-            BiometricOnboarding.showIfNeeded(this)
+            LocalReviewSuggestion.showIfNeeded(this)
             return
         }
 
@@ -139,7 +139,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         } else {
             setDefaultFragment()
         }
-        BiometricOnboarding.showIfNeeded(this)
+        // Suggest AI-classified entry to users on supported devices the first time after a
+        // fresh install, logout, or app update. Self-gates internally so calling here on every
+        // onCreate path is cheap and idempotent.
+        LocalReviewSuggestion.showIfNeeded(this)
     }
 
     override fun onNewIntent(intent: Intent) {

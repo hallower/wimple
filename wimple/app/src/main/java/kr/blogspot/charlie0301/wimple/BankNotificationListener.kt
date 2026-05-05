@@ -145,6 +145,12 @@ class BankNotificationListener : NotificationListenerService() {
         const val KEY_BANK_NOTI_SORT_ORDER = "pref_bankNotiSortOrder"
         const val KEY_BANK_NOTI_INITIAL_PICKER_DONE = "pref_bankNotiInitialPickerDone"
         const val KEY_BANK_NOTI_LOCAL_REVIEW = "pref_bankNotiLocalReview"
+        // One-shot — set after the user acknowledges the on-device-AI data-handling notice
+        // shown the first time KEY_BANK_NOTI_LOCAL_REVIEW is turned on. Cleared on logout
+        // via the default-prefs blanket clear so a new account on the same device sees it
+        // again. This replaces the old first-launch BiometricOnboarding popup as the app's
+        // entry-time disclosure surface.
+        const val KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN = "pref_bankNotiLocalReviewInfoShown"
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {
             val flat = android.provider.Settings.Secure.getString(

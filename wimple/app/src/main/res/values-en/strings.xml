@@ -168,8 +168,8 @@
 
     <string name="terms_dialog_title">Terms &amp; Privacy Policy</string>
     <string name="terms_dialog_message_html"><![CDATA[Wimple is a <b>third-party client app</b> for the Whooing service.<br><br>This app does not collect any user data directly. All data is processed through the Whooing service. Data is only temporarily stored on your device for caching purposes.<br><br>To use this app, you must agree to the Whooing service terms below. Terms may be updated on the Whooing service — please check the links below for the latest content.<br><br>&#8226; <a href="https://whooing.com/#info/term">Terms of Service</a><br>&#8226; <a href="https://whooing.com/#info/privacy">Privacy Policy</a><br>&#8226; <a href="https://whooing.com/#forum/developer/ko/agreement">Developer Agreement</a>]]></string>
-    <string name="bank_noti_category_title">Bank Notification Auto-Record</string>
-    <string name="bank_noti_enable_title">Enable Bank Notification Capture</string>
+    <string name="bank_noti_category_title">Forward to Whooing (External Input)</string>
+    <string name="bank_noti_enable_title">Enable Whooing forward</string>
     <string name="bank_noti_enable_summary">Capture notifications from bank/card apps and forward them to Whooing. Requires notification access permission.</string>
     <string name="bank_noti_apps_title">Apps to Monitor</string>
     <string name="bank_noti_apps_summary">Select bank/card apps whose notifications should be captured.</string>
@@ -216,11 +216,12 @@
     <string name="bank_noti_info_dialog_title">How Notification Capture Works</string>
     <string name="bank_noti_info_dialog_message">Wimple operates as follows:\n\n• Only notifications from apps you selected in \"Apps to Monitor\" are read. Notifications from any other app are ignored.\n\n• Captured notifications are cached in this app\'s private storage only. Due to Android\'s app-sandbox policy, no other app or file manager can access this cache.\n\n• Stored notifications are forwarded to the Whooing service only — never to any other external server.\n\n• Forwarded notifications are deleted from the cache. You can inspect or clear the current cache via \"View Stored Notifications\".</string>
 
-    <string name="biometric_onboarding_title">Fingerprint App Lock</string>
-    <string name="biometric_onboarding_message">You can lock the app with fingerprint (biometric) authentication on each launch.\n\nWould you like to enable it now?\nYou can change this anytime in Settings.</string>
-    <string name="biometric_onboarding_enable">Enable Now</string>
-    <string name="biometric_onboarding_skip">Later</string>
-    <string name="biometric_onboarding_enabled">Fingerprint app lock has been enabled.</string>
+    <!-- One-shot suggestion shown at fresh install / post-logout / post-update on AI-capable devices -->
+    <string name="local_review_suggestion_title">Try AI-classified entry</string>
+    <string name="local_review_suggestion_message">Bank notifications are automatically classified by on-device AI (Gemini Nano) to assist with entry.\n\n• Runs entirely on-device — no external transmission\n• Some entries are cached locally only\n• Wiped on logout / app uninstall\n\nWould you like to set it up now?</string>
+    <string name="local_review_suggestion_enable">Go to settings</string>
+    <string name="local_review_suggestion_skip">Later</string>
+
 
     <string name="terms_agree">Agree</string>
     <string name="terms_disagree">Decline</string>
@@ -259,16 +260,20 @@
     <string name="widget_dow_sat">Sat</string>
 
     <!-- Local review queue (Phase 1) -->
-    <string name="local_review_category_title">Review and add manually</string>
-    <string name="bank_noti_local_review_title">Enable review and add manually</string>
+    <string name="local_review_category_title">AI-Classified Entry</string>
+    <string name="bank_noti_local_review_title">Enable AI-classified entry</string>
     <string name="bank_noti_local_review_summary">Hold notifications on-device and turn them into entries after you review them in Wimple. Classification uses on-device AI (Gemini Nano).</string>
     <string name="bank_noti_local_review_unsupported_summary">Not supported on this device (Gemini Nano unavailable).</string>
     <string name="bank_noti_local_review_checking_summary">Checking device support…</string>
     <string name="bank_noti_local_review_downloadable_summary">Available. Turning this on will trigger a one-time model download.</string>
     <string name="bank_noti_local_review_downloading_summary">Model is downloading. It will become usable automatically once finished.</string>
-    <string name="bank_noti_local_review_capture_off_summary">Enable notification capture under \"Bank notifications\" settings first.</string>
-    <string name="bank_noti_local_review_dual_warning_title">Used together with auto-forward</string>
-    <string name="bank_noti_local_review_dual_warning_message">Using auto-forward and review-and-add at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>
+    <string name="bank_noti_local_review_capture_off_summary">Enable Whooing forward under \"Forward to Whooing (External Input)\" settings first.</string>
+    <string name="bank_noti_local_review_dual_warning_title">Used together with Whooing forward</string>
+    <string name="bank_noti_local_review_dual_warning_message">Using Whooing forward and AI-classified entry at the same time can result in the same transaction being recorded twice.\n\nProceed anyway?</string>
+
+    <!-- One-shot data-handling notice shown the first time the user enables AI classification -->
+    <string name="bank_noti_local_review_info_title">On-device AI classification</string>
+    <string name="bank_noti_local_review_info_message">AI-classified entry works as follows:\n\n• Notifications are classified using on-device AI on your phone.\n\n• Some entries are cached locally to improve classification accuracy.\n\n• Your data is never sent to any external service. Everything is wiped on logout or app uninstall.</string>
 
     <!-- Local review queue activity (Phase 2) -->
     <string name="bank_noti_review_title">Notification review</string>
@@ -290,7 +295,7 @@
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
-    <string name="bank_noti_review_dual_use_banner">Auto-forward is also on. The same notification may be recorded twice. (Tap to open settings)</string>
+    <string name="bank_noti_review_dual_use_banner">Whooing forward is also on. The same notification may be recorded twice. (Tap to open settings)</string>
 
     <!-- Dev-only AI classification log (Phase 5A+). -->
     <string name="dev_ai_log_title">AI classification log (dev)</string>

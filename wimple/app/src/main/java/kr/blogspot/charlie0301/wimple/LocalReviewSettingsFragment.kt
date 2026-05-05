@@ -103,17 +103,53 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             val turningOn = newValue as Boolean
             if (!turningOn) return@OnPreferenceChangeListener true
 
-            // KEY_BANK_NOTI_ENABLE gates BOTH the outside.json forwarding path AND the local
-            // review path today (single capture switch upstream). When forwarding is split
-            // out, this should compare against the forwarding-only sub-toggle.
-            AlertDialog.Builder(ctx)
-                .setTitle(R.string.bank_noti_local_review_dual_warning_title)
-                .setMessage(R.string.bank_noti_local_review_dual_warning_message)
-                .setPositiveButton(android.R.string.ok) { _, _ -> toggle.isChecked = true }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
+            // First-time enable runs the on-device-AI data-handling notice; subsequent enables
+            // skip straight to the dual-use warning. The notice replaces the old launch-time
+            // BiometricOnboarding popup as the app's primary disclosure surface.
+            val infoShown = prefs.getBoolean(
+                BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN, false
+            )
+            if (infoShown) {
+                showDualUseWarning(ctx, toggle)
+            } else {
+                showFirstTimeNotice(ctx, prefs, toggle)
+            }
             // Defer the actual flip to the dialog's positive button so cancelling leaves it off.
             false
         }
+    }
+
+    private fun showFirstTimeNotice(
+        ctx: android.content.Context,
+        prefs: android.content.SharedPreferences,
+        toggle: CheckBoxPreference
+    ) {
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_local_review_info_title)
+            .setMessage(R.string.bank_noti_local_review_info_message)
+            .setCancelable(false)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                prefs.edit()
+                    .putBoolean(BankNotificationListener.KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN, true)
+                    .apply()
+                showDualUseWarning(ctx, toggle)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showDualUseWarning(
+        ctx: android.content.Context,
+        toggle: CheckBoxPreference
+    ) {
+        // KEY_BANK_NOTI_ENABLE gates BOTH the outside.json forwarding path AND the local
+        // review path today (single capture switch upstream). When forwarding is split
+        // out, this should compare against the forwarding-only sub-toggle.
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_local_review_dual_warning_title)
+            .setMessage(R.string.bank_noti_local_review_dual_warning_message)
+            .setPositiveButton(android.R.string.ok) { _, _ -> toggle.isChecked = true }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 }
