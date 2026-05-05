@@ -429,7 +429,18 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.insertFrequentItems.adapter = this.adapterLatestItems
         binding.insertFrequentItems.onItemClickListener = OnItemClickListener { _, _, position, _ -> this.selectLatestItem(position) }
 
-        binding.insertTitleClear.setOnClickListener { this.clearForms() }
+        binding.insertTitleClear.setOnClickListener {
+            // In a review session, the user is correcting the AI-extracted title against the
+            // notification panel above; the amount, date, and selected accounts are still
+            // valid context. Clearing the entire form would force them to redo prefill that
+            // the cascade already resolved. Clear just the title — clearForms remains the
+            // X-button behavior in normal entry mode.
+            if (activeReviewItemId != null) {
+                binding.insertEntryTitle.setText("")
+            } else {
+                this.clearForms()
+            }
+        }
     }
 
     private fun setupButtons() {
