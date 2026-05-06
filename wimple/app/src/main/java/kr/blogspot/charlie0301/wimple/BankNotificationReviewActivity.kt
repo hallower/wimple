@@ -39,6 +39,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     private lateinit var emptyView: TextView
     private lateinit var toolbar: Toolbar
     private lateinit var dualUseBanner: TextView
+    private lateinit var classificationNotice: TextView
 
     /**
      * Tracks the currently-running classify job so a second resume (or finish()) cancels in-
@@ -63,6 +64,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         listView = findViewById(R.id.review_list)
         emptyView = findViewById(R.id.empty_view)
         dualUseBanner = findViewById(R.id.dual_use_banner)
+        classificationNotice = findViewById(R.id.classification_notice)
         adapter = ReviewAdapter()
         listView.adapter = adapter
 
@@ -246,24 +248,30 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         val pending = adapter.itemsSnapshot().filter { it.classificationJson == null }
         if (pending.isEmpty()) {
             supportActionBar?.subtitle = null
+            classificationNotice.visibility = View.GONE
             return
         }
         val total = pending.size
+        classificationNotice.visibility = View.VISIBLE
         classifyJob = lifecycleScope.launch {
-            pending.forEachIndexed { index, item ->
-                supportActionBar?.subtitle =
-                    getString(R.string.bank_noti_review_classification_progress, index + 1, total)
-                val result = BankNotificationClassifier.classify(this@BankNotificationReviewActivity, item)
-                LocalReviewQueue.setClassification(
-                    this@BankNotificationReviewActivity,
-                    item.id,
-                    result.toJson()
-                )
-                // Reload from disk so the row picks up its persisted classification on next
-                // render. Cheap because we only re-parse SharedPreferences JSON.
-                adapter.reload()
+            try {
+                pending.forEachIndexed { index, item ->
+                    supportActionBar?.subtitle =
+                        getString(R.string.bank_noti_review_classification_progress, index + 1, total)
+                    val result = BankNotificationClassifier.classify(this@BankNotificationReviewActivity, item)
+                    LocalReviewQueue.setClassification(
+                        this@BankNotificationReviewActivity,
+                        item.id,
+                        result.toJson()
+                    )
+                    // Reload from disk so the row picks up its persisted classification on next
+                    // render. Cheap because we only re-parse SharedPreferences JSON.
+                    adapter.reload()
+                }
+                supportActionBar?.subtitle = null
+            } finally {
+                classificationNotice.visibility = View.GONE
             }
-            supportActionBar?.subtitle = null
         }
     }
 

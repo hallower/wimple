@@ -218,7 +218,7 @@
 
     <!-- One-shot suggestion shown at fresh install / post-logout / post-update on AI-capable devices -->
     <string name="local_review_suggestion_title">Try AI-classified entry</string>
-    <string name="local_review_suggestion_message">Bank notifications are automatically classified by on-device AI (Gemini Nano) to assist with entry.\n\n• Runs entirely on-device — no external transmission\n• Some entries are cached locally only\n• Wiped on logout / app uninstall\n\nWould you like to set it up now?</string>
+    <string name="local_review_suggestion_message">Bank notifications are automatically classified by on-device AI (Gemini Nano) to assist with entry.\n\n• Runs entirely on-device — no external transmission\n• Some entries are cached locally only\n• Wiped on logout / app uninstall\n• Classification may take longer depending on device performance\n• Accuracy improves as more transactions accumulate\n\nWould you like to set it up now?</string>
     <string name="local_review_suggestion_enable">Get started</string>
     <string name="local_review_suggestion_skip">Later</string>
     <string name="local_review_suggestion_enabled">AI-classified entry enabled.</string>
@@ -296,6 +296,7 @@
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
     <string name="bank_noti_review_dual_use_banner">Whooing forward is also on. The same notification may be recorded twice. (Tap to open settings)</string>
+    <string name="bank_noti_review_device_perf_notice">AI classification may take longer depending on device performance.</string>
 
     <!-- Dev-only AI classification log (Phase 5A+). -->
     <string name="dev_ai_log_title">AI classification log (dev)</string>

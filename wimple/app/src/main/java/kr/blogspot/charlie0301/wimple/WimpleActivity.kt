@@ -1,5 +1,6 @@
 package kr.blogspot.charlie0301.wimple
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
@@ -10,11 +11,13 @@ import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -48,6 +51,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     // (notification listener writes asynchronously).
     private var reviewQueueMenuItem: MenuItem? = null
 
+    private var toolBar: Toolbar? = null
+
+    // Per-activity-instance "shake the toolbar icon once" guards. Armed at activity creation
+    // and disarmed the first time the matching badge appears, so a user opening the app sees a
+    // single attention-grab; later badge visibility flips during the same session don't replay.
+    private var reviewShakeArmed: Boolean = true
+    private var notificationShakeArmed: Boolean = true
+
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
@@ -65,7 +76,12 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun refreshReviewQueueBadge() {
-        reviewQueueMenuItem?.isVisible = LocalReviewQueue.count(this) > 0
+        val visible = LocalReviewQueue.count(this) > 0
+        reviewQueueMenuItem?.isVisible = visible
+        if (visible && reviewShakeArmed) {
+            reviewShakeArmed = false
+            shakeToolbarItem(R.id.action_review_queue)
+        }
     }
 
     private fun fetchNotificationBadge() {
@@ -74,9 +90,45 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             val count = WhooingNotifications.fetchBadgeCount(wimple)
             runOnUiThread {
                 notificationCount = count
-                notificationMenuItem?.isVisible = count > 0
+                val visible = count > 0
+                notificationMenuItem?.isVisible = visible
+                if (visible && notificationShakeArmed) {
+                    notificationShakeArmed = false
+                    shakeToolbarItem(R.id.action_whooing_notifications)
+                }
             }
         }.start()
+    }
+
+    /**
+     * One-shot attention nudge for an "always" toolbar action that just became visible. The
+     * MenuItem-backed action view inherits the menu item id, so we can find it on the toolbar
+     * once layout has settled and rotate it briefly. Posted twice — once to wait out the
+     * current layout pass, then again because Toolbar's action view inflation can lag the
+     * isVisible flip by a frame, especially when the badge appears during onCreateOptionsMenu.
+     */
+    private fun shakeToolbarItem(itemId: Int) {
+        val tb = toolBar ?: return
+        tb.post {
+            val v = tb.findViewById<View>(itemId)
+            if (v != null) {
+                playShake(v)
+            } else {
+                tb.post {
+                    tb.findViewById<View>(itemId)?.let(::playShake)
+                }
+            }
+        }
+    }
+
+    private fun playShake(view: View) {
+        ObjectAnimator.ofFloat(
+            view, View.ROTATION,
+            0f, -15f, 15f, -12f, 12f, -8f, 8f, -4f, 4f, 0f
+        ).apply {
+            duration = 700L
+            start()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,7 +139,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         setContentView(binding.root)
 
         // GUI
-        val toolBar = this.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val toolBar = this.findViewById<Toolbar>(R.id.toolbar)
+        this.toolBar = toolBar
 
         setSupportActionBar(toolBar)
 

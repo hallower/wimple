@@ -29,6 +29,20 @@
         android:text="@string/bank_noti_review_dual_use_banner"
         android:visibility="gone" />
 
+    <!-- Device-performance hint shown only while a classification pass is in flight. On low-
+         end devices Gemini Nano's response can take several seconds per row; this keeps the
+         user from assuming the screen is stuck. -->
+    <TextView
+        android:id="@+id/classification_notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="12sp"
+        android:textColor="@color/md_theme_on_surface_variant"
+        android:background="@color/md_theme_surface_variant"
+        android:text="@string/bank_noti_review_device_perf_notice"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"
