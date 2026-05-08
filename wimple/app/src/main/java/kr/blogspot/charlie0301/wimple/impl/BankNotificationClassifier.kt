@@ -34,7 +34,14 @@ import kotlin.math.max
 object BankNotificationClassifier {
 
     private const val LOG_TAG = "BankNotiClassifier"
-    private const val MAX_CANDIDATES = 30
+    /**
+     * Cap on candidates fed to the AI similarity step. Dropped from an earlier 30 because
+     * Gemini Nano's effective attention budget can't reliably reason over a long candidate
+     * list — past ~10 entries lost-in-the-middle starts to dominate and confidence
+     * calibration drifts. The pre-filter in [pickCandidates] is now responsible for getting
+     * the right merchant/amount neighbors into the top 10.
+     */
+    private const val MAX_CANDIDATES = 10
     /**
      * Cap on multi-shot examples injected into the extract prompt. Three is enough for
      * format diversity (typically expense + income + transfer) without crowding the small
@@ -48,6 +55,39 @@ object BankNotificationClassifier {
     // AMBIGUOUS we treat similarity as too weak to seed the form and fall back to manual.
     private const val THRESHOLD_READY = 0.8
     private const val THRESHOLD_AMBIGUOUS = 0.5
+
+    // Discrete confidence mapping. We ask the model for "high"/"medium"/"low" instead of a
+    // continuous 0.0–1.0 score because small on-device models calibrate ordinal labels much
+    // more reliably than continuous values. The numeric scores below land each label inside
+    // its target band (READY ≥ 0.8, AMBIGUOUS ≥ 0.5, otherwise UNPARSED) without changing
+    // downstream consumers that reason about a Double.
+    private const val CONFIDENCE_HIGH = 0.9
+    private const val CONFIDENCE_MEDIUM = 0.65
+    private const val CONFIDENCE_LOW = 0.3
+
+    // English ↔ Korean kind label tables. Wire format (DB / Result.kind / merchant mapping
+    // key) stays English so existing rows in MerchantMappingDBHandler / Entry.kind survive
+    // unchanged. The Korean variants are used ONLY to talk to the model — small models
+    // cope better when the schema and live notification share a language, so we display
+    // shots and ask for responses in Korean and convert back at the parser boundary.
+    private val KIND_EN_TO_KO = mapOf(
+        "expense" to "지출",
+        "income" to "수입",
+        "transfer" to "이체"
+    )
+    private val KIND_KO_TO_EN = KIND_EN_TO_KO.entries.associate { (en, ko) -> ko to en }
+
+    private fun kindToKorean(en: String): String = KIND_EN_TO_KO[en] ?: en
+
+    /** Accept either Korean (preferred — what the prompt asks for) or English (defensive
+     *  — small models occasionally regress to the schema literal). Returns the canonical
+     *  English form, or null if the value isn't a recognized kind. */
+    private fun parseKindLabel(raw: String): String? {
+        val trimmed = raw.trim()
+        KIND_KO_TO_EN[trimmed]?.let { return it }
+        val lower = trimmed.lowercase()
+        return if (lower == "expense" || lower == "income" || lower == "transfer") lower else null
+    }
 
     enum class State { READY, AMBIGUOUS, UNPARSED, ERROR }
     enum class Source { MAPPING, AI_SIMILARITY, NONE }
@@ -266,44 +306,57 @@ object BankNotificationClassifier {
                 describeShots(shots)
             )
         )
+        // Prompt structure rationale:
+        //   1. Task line in Korean — matches the live notification language and reduces the
+        //      cognitive translation step the model would otherwise perform.
+        //   2. Schema + rules placed BEFORE examples and the live notification. Small models
+        //      anchor on the earliest instructions; putting schema last (the prior shape)
+        //      meant ad-hoc parsing of the body could drift away from the required JSON.
+        //   3. Examples include both Title and Body and use Korean kind labels — matching
+        //      exactly the format of the live "새 알림" block below. Earlier shots only had
+        //      Body, which left the model to guess whether the live Title was data or noise.
+        //   4. Trailing "JSON:" cues the model to produce JSON next, similar to the
+        //      few-shot pattern.
         val prompt = buildString {
-            append("You will receive a Korean bank notification. ")
-            append("Extract the merchant, transaction type, and amount. ")
-            append("Respond ONLY with a single JSON object — no markdown fences, no commentary.\n\n")
+            append("한국어 은행 알림에서 (분류, 가맹점, 금액)을 추출해 JSON 객체 하나만 반환하세요. ")
+            append("마크다운 코드 펜스나 추가 설명 없이 JSON 한 줄만 출력합니다.\n\n")
+            append("스키마:\n")
+            append("{\"kind\":\"지출\"|\"수입\"|\"이체\",\"merchant\":\"<상호 문자열>\",\"amount\":<정수 KRW>}\n\n")
+            append("규칙:\n")
+            append("- 지출: 출금/결제/카드 사용. 수입: 입금/적립/환급. 이체: 본인 계좌 사이 이동.\n")
+            append("- merchant: 가맹점 또는 거래상대방 (예: \"GS25 강남점\"). 은행명·카드사명·예금주명은 제거.\n")
+            append("- amount: 정수 KRW. \"12,000원\" → 12000.\n")
+            append("- 가능하면 모든 키를 채울 것. 정말 알 수 없는 필드만 키 자체를 생략.\n\n")
             if (shots.isNotEmpty()) {
-                append("Examples — past notifications confirmed by the user, with the correct JSON:\n\n")
+                append("예시 — 사용자가 확정한 과거 알림과 정답 JSON:\n\n")
                 for (s in shots) {
-                    append("Notification:\n")
+                    append("알림:\n")
+                    if (s.notificationTitle.isNotBlank()) {
+                        append("Title: ").append(s.notificationTitle).append('\n')
+                    }
                     append("Body: ").append(s.notificationText).append('\n')
                     append("JSON: ").append(
                         JSONObject().apply {
-                            put("kind", s.kind)
+                            put("kind", kindToKorean(s.kind))
                             put("merchant", s.merchant)
                             put("amount", s.amount)
                         }.toString()
                     ).append("\n\n")
                 }
-                append("Now extract the JSON for this new notification.\n")
             }
-            append("Notification:\n")
+            append("새 알림:\n")
             if (item.title.isNotBlank()) append("Title: ").append(item.title).append('\n')
-            append("Body: ").append(item.text).append("\n\n")
-            append("Schema:\n")
-            append("{\"kind\":\"expense\"|\"income\"|\"transfer\",\"merchant\":\"...\",\"amount\":<integer KRW>}\n\n")
-            append("Rules:\n")
-            append("- expense: withdrawal/payment. income: deposit/credit. transfer: between own accounts.\n")
-            append("- merchant: place or counterparty (e.g., 'GS25 강남점'). Strip bank name and cardholder name.\n")
-            append("- amount: integer KRW; '12,000원' → 12000.\n")
-            append("- If a field is unclear, omit its key.")
+            append("Body: ").append(item.text).append('\n')
+            append("JSON:")
         }
         val response = generate(prompt)
         stages.add(AiClassificationLog.Stage("extract", prompt, response))
         if (response == null) return null
         val json = parseJson(response) ?: return null
 
-        val kind = json.optStringOrNull("kind")?.lowercase()?.takeIf {
-            it == "expense" || it == "income" || it == "transfer"
-        } ?: return null
+        // Prefer Korean (what we asked for) but accept English too — the model occasionally
+        // regresses to the schema literal even when the rest of the prompt is Korean.
+        val kind = json.optStringOrNull("kind")?.let { parseKindLabel(it) } ?: return null
         val merchant = json.optStringOrNull("merchant")?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         val amount = if (json.has("amount")) json.optDouble("amount", -1.0) else -1.0
         if (amount <= 0.0) return null
@@ -334,20 +387,36 @@ object BankNotificationClassifier {
             }
         }.toString()
 
+        // Same restructuring rationale as the extract prompt:
+        //   1. Task + schema + rules first so the model anchors on the output format before
+        //      it sees any data. Small models that read instruction-then-data follow the
+        //      schema more reliably than those given data first.
+        //   2. Discrete confidence (high/medium/low) instead of a 0.0–1.0 score. Small
+        //      on-device models calibrate ordinal labels far better than continuous values;
+        //      we map back to the existing numeric thresholds at the parser boundary.
+        //   3. Amount tolerance is now spelled out — earlier the candidates were pre-filtered
+        //      on amount proximity but the model couldn't see that context.
+        //   4. Kind label is shown in Korean to match the rest of the cascade's prompt
+        //      language; candidate JSON keys stay English (id/title/amount/...) so the
+        //      response's id field round-trips cleanly back into our ascii ids.
         val prompt = buildString {
-            append("You are matching a new Korean bank notification to the most similar past transaction so we can reuse its account categorization.\n\n")
-            append("New notification:\n")
-            append("- merchant: ").append(extracted.merchant).append('\n')
-            append("- kind: ").append(extracted.kind).append('\n')
-            append("- amount: ").append(extracted.amount.toLong()).append('\n')
-            append("- raw text: ").append(item.text).append("\n\n")
-            append("Candidate past transactions:\n").append(candidateBlock).append("\n\n")
-            append("Respond ONLY with this JSON — no markdown fences, no commentary:\n")
-            append("{\"best_match_entry_id\":\"<id from list, or null>\",\"confidence\":<0.0 to 1.0>}\n\n")
-            append("Rules:\n")
-            append("- Same merchant exact: 0.9–1.0.\n")
-            append("- Same chain or topical (e.g., another convenience store at similar amount): 0.5–0.8.\n")
-            append("- Weak/no link: <0.5 with id null.\n")
+            append("새 한국어 은행 알림을 가장 비슷한 과거 거래와 매칭합니다. ")
+            append("매칭된 거래의 좌·우 계정을 재사용하기 위함입니다.\n\n")
+            append("응답 스키마 (마크다운 코드 펜스나 설명 없이 JSON만):\n")
+            append("{\"best_match_entry_id\":\"<후보 id 또는 빈 문자열>\",\"confidence\":\"high\"|\"medium\"|\"low\"}\n\n")
+            append("판정 규칙:\n")
+            append("- 같은 가맹점 + 금액 ±20% 이내: high\n")
+            append("- 같은 체인/업종이거나 가맹점 다르지만 명백히 같은 카테고리: medium\n")
+            append("- 약하거나 무관: low (이 경우 best_match_entry_id 는 빈 문자열)\n")
+            append("- 금액이 3배 이상 다르면 한 단계 낮춤\n\n")
+            append("새 알림:\n")
+            append("- 분류: ").append(kindToKorean(extracted.kind)).append('\n')
+            append("- 가맹점: ").append(extracted.merchant).append('\n')
+            append("- 금액: ").append(extracted.amount.toLong()).append('\n')
+            append("- 원문: ").append(item.text).append("\n\n")
+            append("후보 과거 거래 (JSON 배열, 같은 형식의 id 를 그대로 응답에 사용):\n")
+            append(candidateBlock).append('\n')
+            append("JSON:")
         }
         val response = generate(prompt)
         stages.add(AiClassificationLog.Stage("similarity", prompt, response))
@@ -355,8 +424,15 @@ object BankNotificationClassifier {
         val json = parseJson(response) ?: return null
 
         val rawId = json.optStringOrNull("best_match_entry_id") ?: return null
-        if (rawId.equals("null", ignoreCase = true)) return null
-        val confidence = json.optDouble("confidence", 0.0).coerceIn(0.0, 1.0)
+        // Empty string is the canonical "no match" signal we asked for; "null" / "none"
+        // are common model regressions when discrete answers are pushed.
+        if (rawId.isBlank()
+            || rawId.equals("null", ignoreCase = true)
+            || rawId.equals("none", ignoreCase = true)) return null
+        // Prefer the discrete label we asked for, but fall back to a continuous score if
+        // the model regressed to numeric. coerceIn keeps downstream thresholds well-defined
+        // either way.
+        val confidence = parseConfidenceLevel(json) ?: return null
         return MatchResult(rawId, confidence)
     }
 
@@ -445,6 +521,10 @@ object BankNotificationClassifier {
                 append("- [").append(s.kind).append("] hit=").append(s.hitCount)
                     .append(" merchant=").append(s.merchant)
                     .append(" amount=").append(s.amount).append('\n')
+                if (s.notificationTitle.isNotBlank()) {
+                    append("  title=").append(s.notificationTitle.take(60).replace('\n', ' '))
+                    append('\n')
+                }
                 append("  body=").append(s.notificationText.take(80).replace('\n', ' '))
                 if (s.notificationText.length > 80) append('…')
                 append('\n')
@@ -502,4 +582,23 @@ object BankNotificationClassifier {
     // use this to disambiguate.
     private fun JSONObject.optStringOrNull(key: String): String? =
         if (has(key) && !isNull(key)) optString(key) else null
+
+    /**
+     * Resolve the similarity prompt's confidence field to a Double. The prompt asks for
+     * "high" / "medium" / "low" — those are the well-calibrated path. If the model regressed
+     * and returned a number we accept that too (clamped to 0..1) so a noisy run still
+     * produces a usable result rather than UNPARSED. Returns null when the field is missing
+     * or unrecognized so the caller can treat the row as a parse failure.
+     */
+    private fun parseConfidenceLevel(json: JSONObject): Double? {
+        val raw = json.opt("confidence") ?: return null
+        if (raw is Number) return raw.toDouble().coerceIn(0.0, 1.0)
+        val label = raw.toString().trim().lowercase()
+        return when (label) {
+            "high" -> CONFIDENCE_HIGH
+            "medium", "med" -> CONFIDENCE_MEDIUM
+            "low" -> CONFIDENCE_LOW
+            else -> label.toDoubleOrNull()?.coerceIn(0.0, 1.0)
+        }
+    }
 }

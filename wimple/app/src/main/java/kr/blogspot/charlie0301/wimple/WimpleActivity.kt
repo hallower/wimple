@@ -233,12 +233,13 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val reviewKind = intent.getStringExtra(EXTRA_REVIEW_KIND)
         val notificationText = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
         val notificationSource = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_SOURCE)
+        val notificationTitle = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_TITLE)
         if (title == null && amount == null && leftAccountId == null && rightAccountId == null
             && reviewItemId == null && notificationText == null) return
         fragment.applyPrefill(
             title, amount, leftAccountId, rightAccountId,
             reviewItemId, reviewMerchant, reviewKind,
-            notificationText, notificationSource
+            notificationText, notificationSource, notificationTitle
         )
         // Single-shot — remove from the active intent so the next config change doesn't
         // re-prefill on top of user edits.
@@ -251,6 +252,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         intent.removeExtra(EXTRA_REVIEW_KIND)
         intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
         intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_SOURCE)
+        intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_TITLE)
     }
 
     private fun consumeOpenMenuExtra(intent: Intent?): Int? {
@@ -671,6 +673,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
          */
         const val EXTRA_REVIEW_NOTIFICATION_TEXT = "wimple.extra.review_notification_text"
         const val EXTRA_REVIEW_NOTIFICATION_SOURCE = "wimple.extra.review_notification_source"
+        // Original notification title (e.g., "[KB카드] 출금"). Propagated alongside the body
+        // so the form's success branch can persist it as part of the few-shot training row.
+        const val EXTRA_REVIEW_NOTIFICATION_TITLE = "wimple.extra.review_notification_title"
 
         private var mainHandler: Handler? = null
 

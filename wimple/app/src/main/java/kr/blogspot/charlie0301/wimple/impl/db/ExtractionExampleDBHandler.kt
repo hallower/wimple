@@ -32,7 +32,12 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         val merchant: String,
         val amount: Long,
         val lastUsed: Long,
-        val hitCount: Int
+        val hitCount: Int,
+        // Notification title (e.g., "[KB카드] 출금"). Stored alongside the body so the extract
+        // prompt's few-shot examples present exactly the same Title+Body shape the live
+        // notification has. Older rows from before the v2 migration carry an empty string
+        // here — those shots fall back to body-only formatting in the prompt.
+        val notificationTitle: String = ""
     )
 
     private val helper = Helper(context.applicationContext)
@@ -48,11 +53,13 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         kind: String,
         merchant: String,
         amount: Long,
-        now: Long = System.currentTimeMillis()
+        now: Long = System.currentTimeMillis(),
+        notificationTitle: String = ""
     ) {
         val norm = normalizeBody(notificationText)
         if (norm.isBlank() || kind.isBlank() || merchant.isBlank() || amount <= 0L) return
         val storedText = notificationText.trim().take(MAX_TEXT_LEN)
+        val storedTitle = notificationTitle.trim().take(MAX_TITLE_LEN)
         val db = helper.writableDatabase
         db.beginTransaction()
         try {
@@ -60,6 +67,7 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
                 TABLE_NAME,
                 ContentValues().apply {
                     put(COL_TEXT, storedText)
+                    put(COL_TITLE, storedTitle)
                     put(COL_MERCHANT, merchant)
                     put(COL_AMOUNT, amount)
                     put(COL_LAST_USED, now)
@@ -78,6 +86,7 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
                     put(COL_TEXT_NORM, norm)
                     put(COL_KIND, kind)
                     put(COL_TEXT, storedText)
+                    put(COL_TITLE, storedTitle)
                     put(COL_MERCHANT, merchant)
                     put(COL_AMOUNT, amount)
                     put(COL_LAST_USED, now)
@@ -173,7 +182,10 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         merchant = c.getString(c.getColumnIndexOrThrow(COL_MERCHANT)),
         amount = c.getLong(c.getColumnIndexOrThrow(COL_AMOUNT)),
         lastUsed = c.getLong(c.getColumnIndexOrThrow(COL_LAST_USED)),
-        hitCount = c.getInt(c.getColumnIndexOrThrow(COL_HIT_COUNT))
+        hitCount = c.getInt(c.getColumnIndexOrThrow(COL_HIT_COUNT)),
+        notificationTitle = c.getColumnIndex(COL_TITLE).let { idx ->
+            if (idx >= 0) c.getString(idx).orEmpty() else ""
+        }
     )
 
     private class Helper(ctx: Context) : SQLiteOpenHelper(ctx, DB_NAME, null, DB_VERSION) {
@@ -183,14 +195,23 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            db.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
-            onCreate(db)
+            // v1 → v2: add notification_title column. Use ALTER TABLE rather than the
+            // earlier drop-and-recreate so user-confirmed shots survive the upgrade — losing
+            // them would force the model back to zero-shot until the user re-confirms a
+            // representative pool of bank-app formats. New rows post-upgrade fill the title;
+            // pre-existing rows carry an empty title and the prompt formatter falls back to
+            // body-only for those shots.
+            if (oldVersion < 2) {
+                db.execSQL(
+                    "ALTER TABLE $TABLE_NAME ADD COLUMN $COL_TITLE TEXT NOT NULL DEFAULT ''"
+                )
+            }
         }
     }
 
     companion object {
         private const val DB_NAME = "wimple_extraction.db"
-        private const val DB_VERSION = 1
+        private const val DB_VERSION = 2
 
         /**
          * Default cap on stored examples; oldest evicted past this. With ~250 B/row the cap
@@ -203,11 +224,16 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         /** Stored body is capped — leading lines carry the structure the model needs. */
         const val MAX_TEXT_LEN = 300
 
+        /** Notification titles are short (e.g., "[KB카드] 출금"); 100 covers the bank-app
+         *  formats observed in practice without bloating the row. */
+        const val MAX_TITLE_LEN = 100
+
         const val TABLE_NAME = "extraction_examples"
 
         const val COL_TEXT_NORM = "notification_text_norm"
         const val COL_KIND = "kind"
         const val COL_TEXT = "notification_text"
+        const val COL_TITLE = "notification_title"
         const val COL_MERCHANT = "merchant"
         const val COL_AMOUNT = "amount"
         const val COL_LAST_USED = "last_used"
@@ -218,6 +244,7 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
                 $COL_TEXT_NORM TEXT NOT NULL,
                 $COL_KIND TEXT NOT NULL,
                 $COL_TEXT TEXT NOT NULL,
+                $COL_TITLE TEXT NOT NULL DEFAULT '',
                 $COL_MERCHANT TEXT NOT NULL,
                 $COL_AMOUNT INTEGER NOT NULL,
                 $COL_LAST_USED INTEGER NOT NULL DEFAULT 0,

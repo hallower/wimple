@@ -87,6 +87,18 @@
             android:layout_height="wrap_content"
             android:text="@string/bank_noti_review_dismiss" />
 
+        <!-- Visible only on UNPARSED / ERROR rows. Clears the cached classification so the
+             next pass re-runs inference; useful when the first attempt failed because AICore
+             was warming up or candidate pool was thin. -->
+        <Button
+            android:id="@+id/btn_retry"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/bank_noti_review_retry"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/btn_manual_entry"
             style="?attr/borderlessButtonStyle"

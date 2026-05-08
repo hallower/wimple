@@ -104,6 +104,31 @@ object LocalReviewQueue {
         return changed
     }
 
+    /**
+     * Drop the cached classification for the given queue id so the next pass re-runs
+     * inference from scratch. Used by the review screen's retry button when the user wants
+     * another shot on an UNPARSED / ERROR row (e.g., AICore was warming up on first try, or
+     * cached extracts/mappings have grown since). No-op if the id is no longer in the queue.
+     */
+    @Synchronized
+    fun resetClassification(ctx: Context, id: String): Boolean {
+        val prefs = prefs(ctx)
+        val arr = loadArray(prefs)
+        var changed = false
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            if (o.optString("id") == id) {
+                if (o.has("classification")) {
+                    o.remove("classification")
+                    changed = true
+                }
+                break
+            }
+        }
+        if (changed) prefs.edit().putString(KEY_QUEUE_JSON, arr.toString()).apply()
+        return changed
+    }
+
     @Synchronized
     fun removeById(ctx: Context, id: String): Boolean {
         val prefs = prefs(ctx)

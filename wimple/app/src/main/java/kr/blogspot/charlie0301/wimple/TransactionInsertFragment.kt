@@ -65,6 +65,23 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     // (body → user-confirmed extraction) shot to ExtractionExampleDBHandler. Only retained
     // for the duration of the review session — wiped in closeReviewSessionOnSuccess().
     private var activeReviewNotificationText: String? = null
+    // Notification title (e.g., "[KB카드] 출금"). Persisted alongside the body in the same
+    // few-shot row so the extract prompt can show Title+Body in shots — matching the live
+    // notification format and removing the prior format inconsistency. Optional: many bank
+    // notifications carry a meaningful title, but UNPARSED rows can lack one and that's
+    // fine (empty title is a valid stored value).
+    private var activeReviewNotificationTitle: String? = null
+
+    // Per-field "AI prefilled this — don't let the frequent-item cascade stomp it" flags.
+    // Set in applyPrefill when the corresponding value arrived non-blank/positive, cleared
+    // when the user explicitly overrides the field (account list tap) or when the form is
+    // reset (closeReviewSessionOnSuccess / clearForms). selectLatestItem skips updating any
+    // field whose flag is still set, so picking a similar past entry only fills the holes
+    // the AI left behind. Outside a review session all flags stay false and the cascade
+    // behaves exactly as before.
+    private var aiFilledAmount = false
+    private var aiFilledLeftAccount = false
+    private var aiFilledRightAccount = false
 
     private val amountValue: Double
         get() {
@@ -178,10 +195,11 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val reviewKind = args.getString(WimpleActivity.EXTRA_REVIEW_KIND)
         val notificationText = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
         val notificationSource = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE)
+        val notificationTitle = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TITLE)
         applyPrefill(
             title, amount, leftId, rightId,
             reviewItemId, reviewMerchant, reviewKind,
-            notificationText, notificationSource
+            notificationText, notificationSource, notificationTitle
         )
         // Single-shot — clear so a config-change rebuild doesn't re-prefill over edits.
         args.remove(WimpleActivity.EXTRA_PREFILL_TITLE)
@@ -193,6 +211,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         args.remove(WimpleActivity.EXTRA_REVIEW_KIND)
         args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
         args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE)
+        args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TITLE)
     }
 
     /**
@@ -219,7 +238,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         reviewMerchant: String? = null,
         reviewKind: String? = null,
         notificationText: String? = null,
-        notificationSource: String? = null
+        notificationSource: String? = null,
+        notificationTitle: String? = null
     ) {
         if (_binding == null) return
         if (!title.isNullOrBlank()) {
@@ -228,13 +248,17 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         }
         if (amount != null && amount > 0.0) {
             cal.setValue(amount)
+            aiFilledAmount = true
         }
         pendingLeftAccountId = leftAccountId?.takeIf { it.isNotBlank() }
         pendingRightAccountId = rightAccountId?.takeIf { it.isNotBlank() }
+        aiFilledLeftAccount = pendingLeftAccountId != null
+        aiFilledRightAccount = pendingRightAccountId != null
         activeReviewItemId = reviewItemId?.takeIf { it.isNotBlank() }
         activeReviewMerchant = reviewMerchant?.takeIf { it.isNotBlank() }
         activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
         activeReviewNotificationText = notificationText?.takeIf { it.isNotBlank() }
+        activeReviewNotificationTitle = notificationTitle?.takeIf { it.isNotBlank() }
         applyNotificationPanel(notificationText, notificationSource)
         tryApplyPendingAccountSelection()
     }
@@ -316,7 +340,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 && finalMerchant.isNotBlank()
                 && finalAmount > 0L) {
                 ExtractionExampleDBHandler(ctx).upsert(
-                    notiText, kind, finalMerchant, finalAmount
+                    notiText, kind, finalMerchant, finalAmount,
+                    notificationTitle = activeReviewNotificationTitle.orEmpty()
                 )
             }
             LocalReviewQueue.removeById(ctx, itemId)
@@ -325,8 +350,12 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         activeReviewMerchant = null
         activeReviewKind = null
         activeReviewNotificationText = null
+        activeReviewNotificationTitle = null
         pendingLeftAccountId = null
         pendingRightAccountId = null
+        aiFilledAmount = false
+        aiFilledLeftAccount = false
+        aiFilledRightAccount = false
         // Hide the source-notification panel so a follow-up non-review submit (re-using the
         // same fragment instance) doesn't show stale context above the empty form.
         if (_binding != null) {
@@ -532,6 +561,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.insertCategoryLeft.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             this.leftAccountListAdapter.setSelected(groupPosition, childPosition, id)
             binding.insertCategoryLeftTitle.text = (this.leftAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
+            // Explicit user override releases the AI lock for this field — a subsequent
+            // frequent-item pick should now be free to cascade left-account again, in case
+            // the user wants to switch between AI's suggestion and a learned mapping.
+            aiFilledLeftAccount = false
             false
         }
 //        binding.insertCategoryLeftTitle.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
@@ -553,6 +586,9 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.insertCategoryRight.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             this.rightAccountListAdapter.setSelected(groupPosition, childPosition, id)
             binding.insertCategoryRightTitle.text = (this.rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
+            // Same as the left side: explicit pick clears the AI lock so a later
+            // frequent-item cascade can refresh this side again.
+            aiFilledRightAccount = false
             false
         }
 //        binding.insertCategoryRight.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
@@ -617,16 +653,21 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             binding.insertEntryTitle.setText("${this.selected!!.item}$inlineMemo")
             binding.insertEntryTitle.setSelection(binding.insertEntryTitle.text.length)
         }
-        // In a review session the amount comes from the bank notification — that's the
-        // ground truth, not whatever the user happened to spend at this merchant last
-        // time. Skip the auto-overwrite so picking a frequent-item title doesn't stomp
-        // the prefilled value. Account selection still flows through, since reusing the
-        // user's prior 좌/우 mapping for the same merchant is the whole point.
-        if (activeReviewItemId == null) {
+        // For each AI-prefilled field skip the cascade: in a review session the bank
+        // notification (amount) and the AI-suggested account pair are the ground truth, not
+        // whatever the user happened to spend at this merchant last time. Fields the AI
+        // didn't fill (e.g., UNPARSED row with merchant-only extraction) still cascade so
+        // picking a frequent item completes the form. Outside a review session all flags
+        // are false and the cascade runs in full.
+        if (!aiFilledAmount) {
             this.setAmount(this.selected!!.amount)
         }
-
-        this.selectCategory(this.selected!!)
+        if (!aiFilledLeftAccount) {
+            this.selectLeftCategory(this.selected!!.leftAccountID)
+        }
+        if (!aiFilledRightAccount) {
+            this.selectRightCategory(this.selected!!.rightAccountID)
+        }
     }
 
     private fun setEntry(entry: Item) {
@@ -731,6 +772,12 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.insertCategoryRightTitle.text = this.resources.getString(R.string.insert_right_accounts)
         this.leftAccountListAdapter.clearSelection()
         this.rightAccountListAdapter.clearSelection()
+        // Form is empty again, so any AI prefill from a prior session is no longer
+        // protecting anything. Without this reset a same-fragment-instance follow-up
+        // entry would arrive with cascade-blocking flags from an earlier review session.
+        aiFilledAmount = false
+        aiFilledLeftAccount = false
+        aiFilledRightAccount = false
 
         if (CurrentToolMode.EDITING == this.toolMode) {
             this.editingItem = null

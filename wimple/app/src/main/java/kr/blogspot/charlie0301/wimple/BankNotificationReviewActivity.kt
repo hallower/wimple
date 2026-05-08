@@ -158,6 +158,20 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         confirmController.confirmOne(item, result)
     }
 
+    /**
+     * User-triggered retry on an UNPARSED / ERROR row. Drop the cached result so the row
+     * goes back to "pending", refresh the list (badge flips to "확인 중…"), then kick the
+     * classification pass — which now picks the row up again because its classificationJson
+     * is null. Cancels any in-flight pass first so the resumed pass doesn't double-classify.
+     */
+    private fun retryClassification(item: LocalReviewQueue.ReviewItem) {
+        classifyJob?.cancel()
+        classifyJob = null
+        LocalReviewQueue.resetClassification(this, item.id)
+        refresh()
+        startClassificationPass()
+    }
+
     private fun confirmClearAll() {
         if (LocalReviewQueue.count(this) == 0) return
         AlertDialog.Builder(this)
@@ -220,6 +234,11 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         // UNPARSED rows benefit, since the user is filling the form by hand against it.
         if (item.text.isNotBlank()) {
             intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT, item.text)
+        }
+        // Title is propagated separately from the panel-source label so the form's success
+        // branch can persist (Title + Body → extracted JSON) as a few-shot training row.
+        if (item.title.isNotBlank()) {
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TITLE, item.title)
         }
         val source = item.appLabel.ifBlank { item.packageName }
         if (source.isNotBlank()) {
@@ -315,6 +334,27 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
             applyClassificationToCard(view, item)
             applyConfirmButton(view, item)
+            applyRetryButton(view, item)
+        }
+
+        /**
+         * Show the [재시도] button only when the cached result was UNPARSED or ERROR. READY
+         * and AMBIGUOUS rows already have a usable suggestion — re-running inference there
+         * would just churn the model. Pre-classify rows hide it too (the running pass will
+         * land a result on its own).
+         */
+        private fun applyRetryButton(view: View, item: LocalReviewQueue.ReviewItem) {
+            val retryBtn = view.findViewById<Button>(R.id.btn_retry)
+            val result = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+            val canRetry = result?.state == BankNotificationClassifier.State.UNPARSED
+                || result?.state == BankNotificationClassifier.State.ERROR
+            if (canRetry) {
+                retryBtn.visibility = View.VISIBLE
+                retryBtn.setOnClickListener { retryClassification(item) }
+            } else {
+                retryBtn.visibility = View.GONE
+                retryBtn.setOnClickListener(null)
+            }
         }
 
         /**
