@@ -283,21 +283,28 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     }
 
     /**
-     * Apply any deferred account-id prefill if the matching adapters now contain the target
-     * ids. Idempotent — clears the pending field on success so subsequent calls (from the
-     * GET_ALL_ACCOUNT_RECEIVED handler) are no-ops. Called from both [applyPrefill] (for the
-     * cache-already-populated path) and the account-received message branch.
+     * (Re-)apply the AI-prefilled account ids whenever the adapters carry data. The pending
+     * fields are NOT cleared on success — that's intentional. GET_ALL_ACCOUNT_RECEIVED fires
+     * multiple times during a single review session (initial setupDate, onResume's
+     * initWimple, any date-picker change), and each fire calls `adapter.clear()` which
+     * wipes the visual selection. If we cleared pending after the first apply, subsequent
+     * adapter reloads would leave the AI's choice as an empty selection in the list while
+     * the title text might still hint at it — exactly the "AI account doesn't seem
+     * selected" symptom. Holding pending across reloads lets us re-stamp the selection
+     * each time, until the user explicitly overrides (account list tap clears pending +
+     * the aiFilled flag) or the review session ends (closeReviewSessionOnSuccess /
+     * clearForms reset both).
      */
     private fun tryApplyPendingAccountSelection() {
         if (_binding == null) return
         if (!::leftAccountListAdapter.isInitialized || !::rightAccountListAdapter.isInitialized) return
         val left = pendingLeftAccountId
         if (left != null && leftAccountListAdapter.groupCount > 0) {
-            if (selectLeftCategory(left)) pendingLeftAccountId = null
+            selectLeftCategory(left)
         }
         val right = pendingRightAccountId
         if (right != null && rightAccountListAdapter.groupCount > 0) {
-            if (selectRightCategory(right)) pendingRightAccountId = null
+            selectRightCategory(right)
         }
     }
 
@@ -564,7 +571,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             // Explicit user override releases the AI lock for this field — a subsequent
             // frequent-item pick should now be free to cascade left-account again, in case
             // the user wants to switch between AI's suggestion and a learned mapping.
+            // pendingLeftAccountId is also cleared so the next adapter reload doesn't
+            // stomp the user's choice back to the AI's account.
             aiFilledLeftAccount = false
+            pendingLeftAccountId = null
             false
         }
 //        binding.insertCategoryLeftTitle.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
@@ -586,9 +596,10 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.insertCategoryRight.setOnChildClickListener { _, _, groupPosition, childPosition, id ->
             this.rightAccountListAdapter.setSelected(groupPosition, childPosition, id)
             binding.insertCategoryRightTitle.text = (this.rightAccountListAdapter.getChild(groupPosition, childPosition) as Account).title
-            // Same as the left side: explicit pick clears the AI lock so a later
-            // frequent-item cascade can refresh this side again.
+            // Same as the left side: explicit pick clears the AI lock plus the
+            // pending-id so a later cascade or adapter reload doesn't undo the override.
             aiFilledRightAccount = false
+            pendingRightAccountId = null
             false
         }
 //        binding.insertCategoryRight.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
@@ -775,9 +786,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         // Form is empty again, so any AI prefill from a prior session is no longer
         // protecting anything. Without this reset a same-fragment-instance follow-up
         // entry would arrive with cascade-blocking flags from an earlier review session.
+        // pending-id fields would normally already be null via closeReviewSessionOnSuccess
+        // but reset here too so a clearForms reached from any path leaves no stale prefill
+        // that the next account-reload could re-stamp into the form.
         aiFilledAmount = false
         aiFilledLeftAccount = false
         aiFilledRightAccount = false
+        pendingLeftAccountId = null
+        pendingRightAccountId = null
 
         if (CurrentToolMode.EDITING == this.toolMode) {
             this.editingItem = null

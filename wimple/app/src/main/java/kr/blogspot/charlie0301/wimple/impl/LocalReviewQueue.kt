@@ -82,6 +82,20 @@ object LocalReviewQueue {
     fun count(ctx: Context): Int = loadArray(prefs(ctx)).length()
 
     /**
+     * Cheap existence check used by the classification pass to skip rows the user has
+     * dismissed mid-pass. Without this the snapshot-driven loop would still run inference
+     * on a dismissed row, then no-op on setClassification — wasted model time on a row
+     * that's already gone from the UI.
+     */
+    fun exists(ctx: Context, id: String): Boolean {
+        val arr = loadArray(prefs(ctx))
+        for (i in 0 until arr.length()) {
+            if (arr.optJSONObject(i)?.optString("id") == id) return true
+        }
+        return false
+    }
+
+    /**
      * Persist a classifier result for the given queue item. No-op if the id is no longer in
      * the queue (e.g., user dismissed the row mid-classify). Pass empty string to mark
      * "classification attempted but failed" — this still counts as classified for resume

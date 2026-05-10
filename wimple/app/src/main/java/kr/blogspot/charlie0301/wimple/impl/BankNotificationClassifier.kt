@@ -79,6 +79,31 @@ object BankNotificationClassifier {
 
     private fun kindToKorean(en: String): String = KIND_EN_TO_KO[en] ?: en
 
+    /**
+     * Pulls the first KRW-suffixed integer from a bank-notification body. Used as a
+     * regex fallback by [BankNotificationReviewActivity.openManualEntry] when the AI
+     * couldn't return a structured amount — the user shouldn't have to retype an amount
+     * that's already sitting in the original text.
+     *
+     * Heuristic: take the FIRST match. Korean bank notifications conventionally lead
+     * with the transaction amount, then state the account balance afterward (e.g.,
+     * "결제 12,000원 ... 잔액 234,567원"). Picking the first occurrence usually
+     * surfaces the transaction; the user can override on the form. Picking the largest
+     * would systematically prefer balance over transaction.
+     *
+     * Pattern allows comma-grouped (12,000) or plain (12000) integers immediately
+     * before "원", with optional whitespace between. Returns null if no match or the
+     * parsed value isn't positive.
+     */
+    fun extractAmountFromText(text: String?): Double? {
+        if (text.isNullOrBlank()) return null
+        val match = AMOUNT_REGEX.find(text) ?: return null
+        val numStr = match.groupValues[1].replace(",", "")
+        return numStr.toDoubleOrNull()?.takeIf { it > 0.0 }
+    }
+
+    private val AMOUNT_REGEX = Regex("""(\d{1,3}(?:,\d{3})+|\d+)\s*원""")
+
     /** Accept either Korean (preferred — what the prompt asks for) or English (defensive
      *  — small models occasionally regress to the schema literal). Returns the canonical
      *  English form, or null if the value isn't a recognized kind. */

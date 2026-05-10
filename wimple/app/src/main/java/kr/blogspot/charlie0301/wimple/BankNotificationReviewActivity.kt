@@ -204,9 +204,6 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             result.merchant?.takeIf { it.isNotBlank() }?.let {
                 intent.putExtra(WimpleActivity.EXTRA_PREFILL_TITLE, it)
             }
-            result.amount?.takeIf { it > 0.0 }?.let {
-                intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, it)
-            }
             result.leftAccountId?.takeIf { it.isNotBlank() }?.let {
                 intent.putExtra(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID, it)
             }
@@ -228,6 +225,17 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             // Even with no classification (UNPARSED, ERROR, or pre-classify dismiss), still
             // tag the item id so a manual submit removes the row.
             intent.putExtra(WimpleActivity.EXTRA_REVIEW_ITEM_ID, item.id)
+        }
+
+        // Amount handled separately so the regex fallback covers BOTH the no-Result case
+        // (UNPARSED with no classification yet, or ERROR) AND the Result-without-amount
+        // case (extract returned a kind/merchant but no amount). Without this fallback the
+        // user lands on a blank amount field while the original notification text — visible
+        // in the panel above — already contains the digits they need to retype.
+        val prefillAmount = result?.amount?.takeIf { it > 0.0 }
+            ?: BankNotificationClassifier.extractAmountFromText(item.text)
+        if (prefillAmount != null) {
+            intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, prefillAmount)
         }
 
         // Always include the source notification body for the form's review panel — even
@@ -275,6 +283,16 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         classifyJob = lifecycleScope.launch {
             try {
                 pending.forEachIndexed { index, item ->
+                    // Re-check the queue before each row — the user may have dismissed it
+                    // since we took the snapshot. Skipping early avoids spending model time
+                    // on a row that's already gone, and keeps the progress badge
+                    // (1/N … N/N) honest. setClassification would no-op anyway, but the
+                    // inference itself is the expensive part.
+                    if (!LocalReviewQueue.exists(
+                            this@BankNotificationReviewActivity, item.id
+                        )) {
+                        return@forEachIndexed
+                    }
                     supportActionBar?.subtitle =
                         getString(R.string.bank_noti_review_classification_progress, index + 1, total)
                     val result = BankNotificationClassifier.classify(this@BankNotificationReviewActivity, item)
