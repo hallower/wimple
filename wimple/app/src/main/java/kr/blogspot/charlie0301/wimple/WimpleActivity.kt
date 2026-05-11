@@ -9,11 +9,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -59,6 +62,20 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     private var reviewShakeArmed: Boolean = true
     private var notificationShakeArmed: Boolean = true
 
+    // Most-recent toolbar bubble popup so we can dismiss it on pause/destroy. Only one
+    // exists at a time — the second bubble (if both icons appear in the same onResume)
+    // would dismiss the first, which is fine because they're short-lived attention nudges,
+    // not concurrent UI. Kept null when no bubble is showing.
+    private var activeToolbarBubble: PopupWindow? = null
+
+    override fun onPause() {
+        // Dismiss any in-flight toolbar bubble before the window detaches; leaving a
+        // PopupWindow attached to a finishing activity would throw "WindowManager$BadTokenException".
+        activeToolbarBubble?.dismiss()
+        activeToolbarBubble = null
+        super.onPause()
+    }
+
     override fun onResume() {
         Log.i(LOG_TAG, "WimpleActivity - onResume!!!")
         setupWimpleImpl()
@@ -76,11 +93,16 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun refreshReviewQueueBadge() {
-        val visible = LocalReviewQueue.count(this) > 0
+        val count = LocalReviewQueue.count(this)
+        val visible = count > 0
         reviewQueueMenuItem?.isVisible = visible
         if (visible && reviewShakeArmed) {
             reviewShakeArmed = false
             shakeToolbarItem(R.id.action_review_queue)
+            showToolbarBubble(
+                R.id.action_review_queue,
+                getString(R.string.toolbar_bubble_review_count, count)
+            )
         }
     }
 
@@ -95,6 +117,10 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
                 if (visible && notificationShakeArmed) {
                     notificationShakeArmed = false
                     shakeToolbarItem(R.id.action_whooing_notifications)
+                    showToolbarBubble(
+                        R.id.action_whooing_notifications,
+                        getString(R.string.toolbar_bubble_whooing_notifications)
+                    )
                 }
             }
         }.start()
@@ -129,6 +155,79 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             duration = 700L
             start()
         }
+    }
+
+    /**
+     * One-shot chip-style bubble anchored under a toolbar action's view. Pairs with the
+     * shake animation as an attention nudge — the shake says "look here", the bubble
+     * explains "why". Auto-dismisses after [BUBBLE_VISIBLE_MS]; replaces any prior bubble
+     * so the second of two simultaneous appearances doesn't stack on top of the first.
+     *
+     * Posts the show twice through the toolbar message queue for the same reason
+     * [shakeToolbarItem] does: the action view can lag the isVisible flip by a frame.
+     */
+    private fun showToolbarBubble(itemId: Int, text: String) {
+        val tb = toolBar ?: return
+        tb.post {
+            val anchor = tb.findViewById<View>(itemId)
+            if (anchor != null) {
+                presentBubble(anchor, text)
+            } else {
+                tb.post {
+                    tb.findViewById<View>(itemId)?.let { presentBubble(it, text) }
+                }
+            }
+        }
+    }
+
+    private fun presentBubble(anchor: View, text: String) {
+        // Drop any earlier bubble so a fast-arriving second one (both badges appearing in
+        // the same onResume) doesn't leave a stale popup behind. The user can still see the
+        // later one because we show it immediately after.
+        activeToolbarBubble?.dismiss()
+        val bubbleView = LayoutInflater.from(this)
+            .inflate(R.layout.view_toolbar_bubble, binding.root, false) as TextView
+        bubbleView.text = text
+        // Measure the bubble at WRAP_CONTENT so we know its natural width and can center
+        // it horizontally under the anchor. Earlier versions used Gravity.END on
+        // showAsDropDown, which aligned the bubble's RIGHT edge to the anchor's right
+        // edge — since the bubble text ("은행 알림 N건") is wider than the icon, the
+        // result was the bubble extending entirely to the LEFT of the icon. PopupWindow
+        // auto-shifts on overflow when we center, so the rightmost icon
+        // (action_whooing_notifications) still renders within bounds even if the
+        // centered position would clip the right screen edge.
+        bubbleView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val xOffset = (anchor.width - bubbleView.measuredWidth) / 2
+        val popup = PopupWindow(
+            bubbleView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            /* focusable */ false
+        ).apply {
+            // Outside-touchable false so the bubble doesn't intercept taps on the toolbar
+            // (the icon should still be tappable while the bubble is up).
+            isOutsideTouchable = false
+            isTouchable = false
+            // No animation style needed — auto-dismiss is enough; adding fade would also
+            // delay the actual disappearance past BUBBLE_VISIBLE_MS in a janky way on
+            // older devices.
+        }
+        // Default gravity (TOP|START) anchors the popup's top-left to the anchor's
+        // bottom-left; with the negative-or-positive xOffset above, the popup's center
+        // now sits below the anchor's center.
+        popup.showAsDropDown(anchor, xOffset, 0)
+        activeToolbarBubble = popup
+        // Lifecycle-safe dismiss: post to the toolbar so cancellation comes for free on
+        // activity teardown (Toolbar is part of the view hierarchy).
+        toolBar?.postDelayed({
+            if (activeToolbarBubble === popup) {
+                popup.dismiss()
+                activeToolbarBubble = null
+            }
+        }, BUBBLE_VISIBLE_MS)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -636,6 +735,14 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
 
         private const val LOG_TAG = "WimpleActivity"
         private const val whooingURL = "https://whooing.com"
+
+        /**
+         * How long the toolbar bubble stays on screen before auto-dismissing. Sized to
+         * overlap the 700ms shake animation and give the user a beat to read the short
+         * Korean phrase ("은행 알림 N건" or "후잉 게시판 새 알림") without lingering long
+         * enough to block subsequent UI interactions.
+         */
+        private const val BUBBLE_VISIBLE_MS: Long = 2500L
 
         /**
          * Intent extra that asks WimpleActivity to install (or swap to) a specific drawer
