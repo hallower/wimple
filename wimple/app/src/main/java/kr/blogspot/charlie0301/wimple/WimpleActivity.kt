@@ -320,7 +320,20 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
     }
 
     private fun applyPrefillToCurrentTransactionFragment(intent: Intent) {
-        val fragment = currentFragment as? TransactionInsertFragment ?: return
+        // On large screens (isLargeScreen=true) the drawer's menu_transaction_insert
+        // entry routes to TransactionPairFragment, not TransactionInsertFragment
+        // directly — the insert form is the right pane of the pair. Drill through
+        // the pair's childFragmentManager to find the embedded insert fragment so
+        // same-instance prefill (review activity → form already on screen) lands
+        // on the actual form rather than getting silently dropped at the cast.
+        // Fresh-creation prefill is handled separately by TransactionPairFragment
+        // copying the host's args into the inner fragment at construction time.
+        val current = currentFragment
+        val fragment = when (current) {
+            is TransactionInsertFragment -> current
+            is TransactionPairFragment -> current.findPaneOfType<TransactionInsertFragment>()
+            else -> null
+        } ?: return
         val title = intent.getStringExtra(EXTRA_PREFILL_TITLE)
         val amount = if (intent.hasExtra(EXTRA_PREFILL_AMOUNT))
             intent.getDoubleExtra(EXTRA_PREFILL_AMOUNT, 0.0)

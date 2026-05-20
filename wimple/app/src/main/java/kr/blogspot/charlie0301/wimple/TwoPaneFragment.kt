@@ -109,6 +109,22 @@ abstract class TwoPaneFragment : Fragment(), IWimpleFragment {
         }
     }
 
+    /**
+     * Look up a currently-attached child pane by type. Returns null when the child
+     * FragmentManager isn't ready (pre-attach, pre-commit) or no pane matches [T].
+     * Used by [WimpleActivity] to deliver same-instance prefill into the embedded
+     * [TransactionInsertFragment] when the pair is already on screen — the
+     * direct-cast on `currentFragment` doesn't see the inner fragment.
+     */
+    inline fun <reified T : Fragment> findPaneOfType(): T? {
+        if (!isAdded) return null
+        return try {
+            childFragmentManager.fragments.firstOrNull { it is T } as? T
+        } catch (_: IllegalStateException) {
+            null
+        }
+    }
+
     companion object {
         private const val LOG_TAG = "TwoPaneFragment"
         private const val TAG_LEFT = "two_pane_left"
