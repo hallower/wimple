@@ -53,8 +53,18 @@ object BankNotificationClassifier {
     // Confidence thresholds, mirrored from the design doc. Above READY we offer one-tap
     // confirmation; in the AMBIGUOUS band the user gets a candidate picker; below
     // AMBIGUOUS we treat similarity as too weak to seed the form and fall back to manual.
+    //
+    // THRESHOLD_AMBIGUOUS was raised from 0.5 → 0.7 because "medium" confidence
+    // (CONFIDENCE_MEDIUM = 0.65) dominated the dev-log output and contained both
+    // genuine close-but-not-exact matches AND post-hallucination near-misses. After
+    // [grounding_check] removes the obvious hallucinations, the residual medium
+    // results were still wrong often enough that surfacing them as a candidate
+    // picker was lower-utility than asking the user to enter the row manually.
+    // Net effect: similarity now produces only READY (high) or UNPARSED (medium/low);
+    // AMBIGUOUS remains in the enum and is reachable only if the model regresses to
+    // a numeric confidence in [0.7, 0.8).
     private const val THRESHOLD_READY = 0.8
-    private const val THRESHOLD_AMBIGUOUS = 0.5
+    private const val THRESHOLD_AMBIGUOUS = 0.7
 
     // Discrete confidence mapping. We ask the model for "high"/"medium"/"low" instead of a
     // continuous 0.0–1.0 score because small on-device models calibrate ordinal labels much
@@ -103,6 +113,86 @@ object BankNotificationClassifier {
     }
 
     private val AMOUNT_REGEX = Regex("""(\d{1,3}(?:,\d{3})+|\d+)\s*원""")
+
+    // KRW-suffixed pattern above doesn't cover JPY/USD-prefixed bodies that hana
+    // card issues for overseas transactions. Used only by the prefilter to detect
+    // the presence of *any* monetary amount; the regex group set is intentionally
+    // limited to the currency codes seen on this device's bank notifications.
+    private val FOREIGN_AMOUNT_REGEX = Regex("""(?:USD|JPY|EUR|CNY|GBP)\s*\d[\d,]*""")
+
+    // Plain integer groups (with optional comma grouping). Used by the grounding
+    // check to verify the AI's extracted amount actually appears somewhere in the
+    // notification text — independent of currency suffix, since the model may
+    // return either the KRW number or the foreign-currency number depending on
+    // which one shows up in the body.
+    private val NUMBER_GROUP_REGEX = Regex("""\d{1,3}(?:,\d{3})+|\d+""")
+
+    // Phrases that have appeared in misfiring noise notifications on real device
+    // dev-log captures. Containing any of these is treated as a strong signal that
+    // the notification is marketing/news/UI rather than a transaction, even when
+    // an amount-looking number is present elsewhere in the body (e.g. "환율통지"
+    // bodies quote the FX rate as "1500원"). Extend cautiously: each entry here
+    // permanently suppresses notifications containing it.
+    private val NON_TX_PHRASES = listOf(
+        "증시리뷰",
+        "모닝브리핑",
+        "채팅상담",
+        "럭키볼",
+        "환율통지",
+        "기준환율 안내",
+        "카드 청구서가 도착",
+        "청구서를 지금 바로 확인",
+        "결제 금액 할인",
+        "매출취소"
+    )
+
+    /**
+     * Cheap structural check applied before any AI call. Returns a short reason
+     * string when the notification looks like marketing/news/UI rather than a
+     * transaction, or null when the row should proceed to the AI cascade.
+     *
+     * Two signals:
+     *   1. **No monetary amount anywhere.** Korean bank transaction notifications
+     *      always include the amount as "...원" or as a currency-prefixed group
+     *      like "JPY 1,800". Absent → not a transaction.
+     *   2. **Known non-transaction phrases.** See [NON_TX_PHRASES].
+     */
+    private fun nonTransactionReason(title: String, text: String): String? {
+        val combined = "$title $text"
+        if (!AMOUNT_REGEX.containsMatchIn(combined)
+            && !FOREIGN_AMOUNT_REGEX.containsMatchIn(combined)
+        ) {
+            return "no monetary amount in body"
+        }
+        val phrase = NON_TX_PHRASES.firstOrNull { combined.contains(it) }
+        if (phrase != null) return "matches non-transaction phrase \"$phrase\""
+        return null
+    }
+
+    /**
+     * Strict numeric check: the AI's extracted amount must appear as an integer
+     * group somewhere in title+body. Comma grouping is normalized away on both
+     * sides so "21,000" in the body matches an extracted 21000.
+     */
+    private fun amountAppearsInSource(amount: Double, haystack: String): Boolean {
+        val target = amount.toLong()
+        return NUMBER_GROUP_REGEX.findAll(haystack)
+            .mapNotNull { it.value.replace(",", "").toLongOrNull() }
+            .any { it == target }
+    }
+
+    /**
+     * Lenient string check: direct substring first (covers the common case), then
+     * token-overlap fallback so legitimate AI normalization like "GS25강남점" →
+     * "GS25 강남점" still grounds. Returns true if any 2+ char token from the
+     * extracted merchant string appears in the source.
+     */
+    private fun merchantAppearsInSource(merchant: String, haystack: String): Boolean {
+        val low = haystack.lowercase()
+        if (low.contains(merchant.lowercase())) return true
+        val tokens = tokenize(merchant)
+        return tokens.isNotEmpty() && tokens.any { low.contains(it) }
+    }
 
     /** Accept either Korean (preferred — what the prompt asks for) or English (defensive
      *  — small models occasionally regress to the schema literal). Returns the canonical
@@ -208,6 +298,25 @@ object BankNotificationClassifier {
         item: LocalReviewQueue.ReviewItem,
         stages: MutableList<AiClassificationLog.Stage>
     ): Result = withContext(Dispatchers.IO) {
+        // Pre-filter: skip notifications that aren't transactions before any AI call.
+        // The monitored bank apps interleave real transaction alerts with marketing,
+        // morning-brief news, chat replies, FX-rate notices, and bill-due reminders.
+        // Running Gemini Nano on these wastes battery and — more dangerously — invites
+        // fully-hallucinated (merchant, amount, kind) tuples that downstream mapping
+        // gladly turns into a confident fake transaction. See the on-device dev log
+        // for the misfire patterns that seeded the phrase list below.
+        val skipReason = nonTransactionReason(item.title, item.text)
+        if (skipReason != null) {
+            stages.add(
+                AiClassificationLog.Stage(
+                    "prefilter",
+                    "title=\"${item.title}\" text=\"${item.text.take(120)}\"",
+                    "SKIP — $skipReason; classification not attempted"
+                )
+            )
+            return@withContext Result(state = State.UNPARSED)
+        }
+
         val extracted = extractFields(ctx, item, stages)
             ?: return@withContext Result(state = State.UNPARSED)
 
@@ -349,9 +458,13 @@ object BankNotificationClassifier {
             append("{\"kind\":\"지출\"|\"수입\"|\"이체\",\"merchant\":\"<상호 문자열>\",\"amount\":<정수 KRW>}\n\n")
             append("규칙:\n")
             append("- 지출: 출금/결제/카드 사용. 수입: 입금/적립/환급. 이체: 본인 계좌 사이 이동.\n")
-            append("- merchant: 가맹점 또는 거래상대방 (예: \"GS25 강남점\"). 은행명·카드사명·예금주명은 제거.\n")
-            append("- amount: 정수 KRW. \"12,000원\" → 12000.\n")
-            append("- 가능하면 모든 키를 채울 것. 정말 알 수 없는 필드만 키 자체를 생략.\n\n")
+            append("- merchant: **현재 알림 본문에 실제로 등장하는** 가맹점 또는 거래상대방 문자열 ")
+            append("(예: \"GS25 강남점\"). 은행명·카드사명·예금주명은 제거. ")
+            append("본문에 가맹점/거래상대방이 명시되지 않았으면 merchant 키 자체를 생략 — 추측 금지.\n")
+            append("- amount: 정수 KRW. \"12,000원\" → 12000. 본문에 명시된 숫자만 사용.\n")
+            append("- 예시는 출력 형식만 참고할 것. 예시의 merchant/amount 값을 그대로 베끼지 말고, ")
+            append("실제 값은 항상 새 알림에서만 추출한다.\n")
+            append("- 정말 알 수 없는 필드만 키 자체를 생략.\n\n")
             if (shots.isNotEmpty()) {
                 append("예시 — 사용자가 확정한 과거 알림과 정답 JSON:\n\n")
                 for (s in shots) {
@@ -385,6 +498,31 @@ object BankNotificationClassifier {
         val merchant = json.optStringOrNull("merchant")?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         val amount = if (json.has("amount")) json.optDouble("amount", -1.0) else -1.0
         if (amount <= 0.0) return null
+
+        // Grounding check: every field the model returned must trace back to the
+        // source text. Without this, near-empty bodies (e.g. "바로 확인해보세요.")
+        // produce fully-fabricated tuples that mapping_lookup then turns into
+        // confidence-1.0 fake transactions. Amount is checked strictly (exact
+        // numeric match anywhere in title+body); merchant is lenient (any 2+ char
+        // token of the extracted name appears in the source) so legitimate AI
+        // normalization like "GS25강남점" → "GS25 강남점" still passes.
+        val haystack = "${item.title} ${item.text}"
+        val groundedAmount = amountAppearsInSource(amount, haystack)
+        val groundedMerchant = merchantAppearsInSource(merchant, haystack)
+        if (!groundedAmount || !groundedMerchant) {
+            val missing = buildList {
+                if (!groundedAmount) add("amount=${amount.toLong()}")
+                if (!groundedMerchant) add("merchant=\"$merchant\"")
+            }
+            stages.add(
+                AiClassificationLog.Stage(
+                    "grounding_check",
+                    "amount=${amount.toLong()} merchant=\"$merchant\"",
+                    "FAIL — ${missing.joinToString(", ")} not found in source; treating as UNPARSED"
+                )
+            )
+            return null
+        }
 
         return ExtractedFields(kind, merchant, amount)
     }
@@ -429,11 +567,13 @@ object BankNotificationClassifier {
             append("매칭된 거래의 좌·우 계정을 재사용하기 위함입니다.\n\n")
             append("응답 스키마 (마크다운 코드 펜스나 설명 없이 JSON만):\n")
             append("{\"best_match_entry_id\":\"<후보 id 또는 빈 문자열>\",\"confidence\":\"high\"|\"medium\"|\"low\"}\n\n")
-            append("판정 규칙:\n")
-            append("- 같은 가맹점 + 금액 ±20% 이내: high\n")
-            append("- 같은 체인/업종이거나 가맹점 다르지만 명백히 같은 카테고리: medium\n")
-            append("- 약하거나 무관: low (이 경우 best_match_entry_id 는 빈 문자열)\n")
-            append("- 금액이 3배 이상 다르면 한 단계 낮춤\n\n")
+            append("판정 규칙 (보수적으로 — 확실하지 않으면 low 를 선택):\n")
+            append("- high: 가맹점 문자열이 정확히 일치(공백/대소문자 무시 가능)하고 금액이 ±20% 이내.\n")
+            append("- medium: 가맹점 토큰이 부분 일치하거나 같은 체인/브랜드이고 금액이 ±50% 이내.\n")
+            append("  · 단순히 '같은 카테고리'(예: 둘 다 식비)만으로는 medium 도 부족 — low 로 답할 것.\n")
+            append("- low: 위 조건을 모두 충족하지 못하거나 확신이 없는 모든 경우. ")
+            append("best_match_entry_id 는 빈 문자열로.\n")
+            append("- 금액이 3배 이상 다르면 high → medium, medium → low 로 한 단계 낮춤.\n\n")
             append("새 알림:\n")
             append("- 분류: ").append(kindToKorean(extracted.kind)).append('\n')
             append("- 가맹점: ").append(extracted.merchant).append('\n')
