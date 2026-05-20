@@ -651,16 +651,48 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
             binding.insertEntryTitle.setText("${this.selected!!.item}$inlineMemo")
             binding.insertEntryTitle.setSelection(binding.insertEntryTitle.text.length)
         }
-        // Inside a review session the cascade is title-only: amount, date, and both
-        // accounts are either AI-recognized ground truth or the user's deliberate
-        // corrections within this session, and picking a frequent-item to refine the
-        // item label must not overwrite either. Outside a review session the cascade
-        // runs in full so picking a past entry completes the form from past behavior.
-        if (activeReviewItemId == null) {
+        // Inside a review session the cascade is selective:
+        //   - amount stays (bank-notification ground truth or user's session input)
+        //   - asset/liability/capital side of the account pair stays (the AI-recognized
+        //     "from/to" account — frequent-item should not silently move money between
+        //     accounts)
+        //   - expense/income side of the account pair DOES update (that side IS the
+        //     item category for the entry; refining the item via frequent-item means
+        //     the user wants that side to follow)
+        //   - empty/unselected sides also cascade so a UNPARSED row with no AI account
+        //     suggestions can still be completed quickly from a frequent pick.
+        // Outside a review session both sides cascade as before.
+        val inReviewSession = activeReviewItemId != null
+        if (!inReviewSession) {
             this.setAmount(this.selected!!.amount)
+        }
+        if (shouldCascadeAccountSide(inReviewSession, leftAccountListAdapter, WHAT_LEFT_ITEM)) {
             this.selectLeftCategory(this.selected!!.leftAccountID)
+        }
+        if (shouldCascadeAccountSide(inReviewSession, rightAccountListAdapter, WHAT_RIGHT_ITEM)) {
             this.selectRightCategory(this.selected!!.rightAccountID)
         }
+    }
+
+    /**
+     * Decide whether the frequent-item cascade should update one side of the
+     * account pair. Outside a review session the cascade always runs (legacy
+     * behavior). Inside a review session the side is allowed to cascade only
+     * when it is currently empty (nothing to protect) or its current selection
+     * is on the expense/income column ([itemSideWhat] matches the side's
+     * "비용" or "수익" what-string). Asset/liability/capital selections stay
+     * locked so the AI-recognized "from/to" account doesn't get silently
+     * stomped.
+     */
+    private fun shouldCascadeAccountSide(
+        inReviewSession: Boolean,
+        adapter: kr.blogspot.charlie0301.wimple.widget.AccountExpandableListAdapter,
+        itemSideWhat: String
+    ): Boolean {
+        if (!inReviewSession) return true
+        if (!adapter.isSelected) return true
+        val what = adapter.selected?.what.orEmpty()
+        return what.isEmpty() || what == itemSideWhat
     }
 
     private fun setEntry(entry: Item) {
@@ -1021,6 +1053,14 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     companion object {
 
         private const val LOG_TAG = "TransactionInsertFrag"
+
+        // Account.what values that mark the item-category column on each side
+        // (left = 비용, right = 수익). Used by [shouldCascadeAccountSide] to
+        // decide whether a frequent-item pick should overwrite a side mid-
+        // review-session — the item-category column SHOULD follow, the
+        // asset/liability/capital columns should NOT.
+        private const val WHAT_LEFT_ITEM = "expenses"
+        private const val WHAT_RIGHT_ITEM = "income"
 
         private val cal = Calculator()
         private var padRIDs: MutableList<Int> = arrayListOf()
