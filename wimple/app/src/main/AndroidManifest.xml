@@ -122,6 +122,20 @@
             android:name="kr.blogspot.charlie0301.wimple.MonthlySummaryWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
+
+        <!-- FileProvider used by AiClassificationLogActivity's export-to-email
+             flow to hand a cache-dir zip to the email app via a content URI.
+             Authority follows the package-prefixed convention so it's unique
+             across installs. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

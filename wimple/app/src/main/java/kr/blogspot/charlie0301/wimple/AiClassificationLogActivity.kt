@@ -1,8 +1,11 @@
 package kr.blogspot.charlie0301.wimple
 
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -11,9 +14,18 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.FileProvider
 import kr.blogspot.charlie0301.wimple.impl.AiClassificationLog
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Developer-only viewer for the [AiClassificationLog] ring buffer. Reached from the About
@@ -65,6 +77,9 @@ class AiClassificationLogActivity : AppCompatActivity() {
             android.R.id.home -> {
                 finish(); true
             }
+            R.id.menu_export -> {
+                exportLog(); true
+            }
             R.id.menu_clear_all -> {
                 AlertDialog.Builder(this)
                     .setMessage(R.string.dev_ai_log_clear_confirm)
@@ -77,6 +92,72 @@ class AiClassificationLogActivity : AppCompatActivity() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    /**
+     * Pretty-print the log as JSON, zip it into the FileProvider-shared cache
+     * subdirectory, and hand the resulting content:// URI to the system share
+     * sheet pre-populated as an email to the developer recipient. The whole
+     * flow runs on the main thread — the log is capped at 30 entries via the
+     * ring buffer in [AiClassificationLog], so the JSON serialization and zip
+     * write are both well under a frame's worth of work.
+     */
+    private fun exportLog() {
+        val entries = AiClassificationLog.getAll(this)
+        if (entries.isEmpty()) {
+            Toast.makeText(this, R.string.dev_ai_log_export_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val generatedAt = Date()
+        val fileTimestamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(generatedAt)
+        val displayTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            .format(generatedAt)
+        val baseName = "wimple-ailog-$fileTimestamp"
+
+        val exportsDir = File(cacheDir, "ai_log_exports")
+        if (!exportsDir.exists() && !exportsDir.mkdirs()) {
+            Log.w(LOG_TAG, "exportLog: failed to create cache subdir ${exportsDir.absolutePath}")
+            Toast.makeText(this, R.string.dev_ai_log_export_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Best-effort cleanup of prior exports — each export is a one-shot
+        // attachment so leaving stale files around just consumes cache. The
+        // system would clean them on cache pressure anyway, but this keeps the
+        // FileProvider-visible directory tidy.
+        exportsDir.listFiles()?.forEach { runCatching { it.delete() } }
+
+        val zipFile = File(exportsDir, "$baseName.zip")
+        try {
+            ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+                zos.putNextEntry(ZipEntry("$baseName.json"))
+                zos.write(AiClassificationLog.exportJson(this).toByteArray(Charsets.UTF_8))
+                zos.closeEntry()
+            }
+        } catch (t: Throwable) {
+            Log.w(LOG_TAG, "exportLog: compression failed", t)
+            Toast.makeText(this, R.string.dev_ai_log_export_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", zipFile)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/zip"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(REPORT_RECIPIENT))
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.dev_ai_log_email_subject))
+            putExtra(
+                Intent.EXTRA_TEXT,
+                getString(R.string.dev_ai_log_email_body, displayTimestamp, entries.size)
+            )
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(
+                Intent.createChooser(intent, getString(R.string.dev_ai_log_export_chooser))
+            )
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.dev_ai_log_export_no_handler, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -158,5 +239,12 @@ class AiClassificationLogActivity : AppCompatActivity() {
                 "?"
             }
         }
+    }
+
+    companion object {
+        private const val LOG_TAG = "AiClassificationLogActivity"
+        // Hard-coded developer mailbox — this activity is gated behind a dev-only
+        // 10-tap unlock, so the recipient never needs to be user-configurable.
+        private const val REPORT_RECIPIENT = "hallower@gmail.com"
     }
 }

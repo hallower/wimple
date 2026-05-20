@@ -307,6 +307,13 @@
     <string name="dev_ai_log_empty">No classification runs recorded yet.</string>
     <string name="dev_ai_log_clear">Clear all</string>
     <string name="dev_ai_log_clear_confirm">Clear the entire log?</string>
+    <string name="dev_ai_log_export">Compress and email</string>
+    <string name="dev_ai_log_export_empty">No log entries to export.</string>
+    <string name="dev_ai_log_export_failed">Failed to compress the log.</string>
+    <string name="dev_ai_log_export_no_handler">No email app available.</string>
+    <string name="dev_ai_log_export_chooser">Choose email app</string>
+    <string name="dev_ai_log_email_subject">Wimple AI classification log</string>
+    <string name="dev_ai_log_email_body">Wimple AI classification log attached.\n\nGenerated: %1$s\nEntries: %2$d</string>
     <string name="dev_ai_log_detail_title">Classification detail</string>
     <string name="dev_ai_log_stage_shots">Shots</string>
     <string name="dev_ai_log_stage_extract">Extract</string>

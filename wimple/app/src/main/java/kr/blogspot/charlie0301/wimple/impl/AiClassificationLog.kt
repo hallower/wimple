@@ -87,6 +87,15 @@ object AiClassificationLog {
         prefs(ctx).edit().remove(KEY_ENTRIES).apply()
     }
 
+    /**
+     * Pretty-printed JSON dump of every stored entry, intended for the
+     * "export and email" flow in [AiClassificationLogActivity]. Reads the
+     * underlying JSONArray and re-serializes with two-space indentation so
+     * the resulting attachment is browsable in any text editor.
+     */
+    fun exportJson(ctx: Context): String =
+        loadArray(prefs(ctx)).toString(2)
+
     // -------------------- Internals --------------------
 
     private fun prefs(ctx: Context): SharedPreferences =

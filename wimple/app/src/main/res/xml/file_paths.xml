@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider configuration. The only path we currently share is the AI-log
+  export zip the dev-only log activity drops into the app's cache directory
+  before launching an ACTION_SEND intent.  cache-path resolves to
+  Context.getCacheDir() so the file is auto-cleaned by the system on cache
+  pressure or app uninstall — fine for a transient export artifact.
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path
+        name="ai_log_exports"
+        path="ai_log_exports/" />
+</paths>
