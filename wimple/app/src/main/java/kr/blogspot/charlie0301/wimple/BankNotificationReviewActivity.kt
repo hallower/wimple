@@ -453,6 +453,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                         " · ${getString(R.string.bank_noti_review_source_mapping)}"
                     BankNotificationClassifier.Source.AI_SIMILARITY ->
                         " · ${getString(R.string.bank_noti_review_source_ai)}"
+                    BankNotificationClassifier.Source.TRANSFER ->
+                        " · ${getString(R.string.bank_noti_review_source_transfer)}"
                     BankNotificationClassifier.Source.NONE -> ""
                 }
                 accountPair.text = pair + sourceTag

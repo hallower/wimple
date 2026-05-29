@@ -227,6 +227,110 @@ object BankNotificationClassifier {
         }
     }
 
+    // --- Inter-account transfer detection (방안 D) --------------------------------------
+    // Korean bank notifications name the *notifying* account by a number fragment that also
+    // shows up in the user's Whooing account title (새마을금고**3827**, 우리은행주**060**,
+    // 하나카드_하나**7*6***). When the counterparty is ANOTHER own account — named by its bank
+    // token ("하나카드", "우리은행") or its own number in the body — the row is a transfer
+    // between the user's accounts, not an expense/income. Surfaced as a suggestion only
+    // (State.AMBIGUOUS): the left/right convention below is a best guess the user confirms on
+    // the prefilled manual form, so a swap is harmless. Name-only counterparties ("김철승")
+    // don't resolve and fall through to the existing cascade unchanged.
+
+    private val DIGIT_RUN_REGEX = Regex("""\d+""")
+    private val MASKED_CARD_REGEX = Regex("""\d\*\d\*""")
+    private val LEADING_HANGUL_REGEX = Regex("""^[가-힣]+""")
+
+    private fun accountNumberFragments(title: String): List<String> {
+        val out = ArrayList<String>()
+        DIGIT_RUN_REGEX.findAll(title).forEach { if (it.value.length >= 3) out.add(it.value) }
+        MASKED_CARD_REGEX.findAll(title).forEach { out.add(it.value) }
+        return out
+    }
+
+    // A 4+ digit / masked fragment matches anywhere; a 3-digit fragment must sit in an
+    // account-number context (next to '-' or '*') so it doesn't collide with an amount.
+    private fun numberFragmentAppears(text: String, frag: String): Boolean {
+        var idx = text.indexOf(frag)
+        while (idx >= 0) {
+            val left = if (idx > 0) text[idx - 1] else ' '
+            val right = if (idx + frag.length < text.length) text[idx + frag.length] else ' '
+            if (frag.length >= 4 || frag.contains('*') ||
+                left == '-' || left == '*' || right == '-' || right == '*') return true
+            idx = text.indexOf(frag, idx + 1)
+        }
+        return false
+    }
+
+    // Leading-Hangul bank tokens of a title, used to spot the account named as a transfer
+    // counterparty. "하나카드_하나7*6*" → ["하나카드"]. This user suffixes bank accounts with
+    // "주" before the number ("우리은행주060", "하나은행주228"), which the notification body
+    // doesn't carry, so we also emit the 주-stripped form ("우리은행", "하나은행").
+    private fun accountBankTokens(title: String): List<String> {
+        val lead = LEADING_HANGUL_REGEX.find(title)?.value ?: return emptyList()
+        val out = ArrayList<String>()
+        if (lead.length >= 3) out.add(lead)
+        val stripped = lead.removeSuffix("주")
+        if (stripped.length >= 3 && stripped != lead) out.add(stripped)
+        return out
+    }
+
+    private fun resolveAccountByNumber(text: String, pool: List<Account>): Account? =
+        pool.firstOrNull { acc -> accountNumberFragments(acc.title).any { numberFragmentAppears(text, it) } }
+
+    /**
+     * Detect a transfer between two of the user's own asset/liability accounts. Returns a
+     * suggestion-only [Result] (State.AMBIGUOUS, never READY) or null to fall through to the AI
+     * similarity step. Fires only when the notifying account resolves by number AND a DIFFERENT
+     * own account is named (by bank token or a second account number) — the high-precision
+     * subset.
+     */
+    private fun detectTransfer(
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): Result? {
+        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        if (pool.size < 2) return null
+        val source = resolveAccountByNumber(item.text, pool) ?: return null
+        // The extract prompt strips bank/card names from `merchant`, so look for the
+        // counterparty's bank token across title + body + merchant, not merchant alone.
+        val combined = "${item.title} ${item.text} ${extracted.merchant}"
+        val counterparty = pool.firstOrNull { acc ->
+            acc.id != source.id && accountBankTokens(acc.title).any { combined.contains(it) }
+        } ?: pool.firstOrNull { acc ->
+            acc.id != source.id && accountNumberFragments(acc.title).any { numberFragmentAppears(item.text, it) }
+        } ?: return null
+
+        val markerSrc = "${item.title} ${item.text}"
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(markerSrc)
+        val inflow = INFLOW_MARKER_REGEX.containsMatchIn(markerSrc)
+        // Outflow: money leaves the source → counterparty on the left (차변), source on the
+        // right (대변). Inflow: the reverse. Default to the outflow shape when ambiguous.
+        val (left, right) = if (inflow && !outflow) source to counterparty else counterparty to source
+
+        stages.add(
+            AiClassificationLog.Stage(
+                "transfer_detect",
+                "source=${source.title} counterparty=${counterparty.title} merchant=\"${extracted.merchant}\"",
+                "TRANSFER between own accounts — suggestion only (state=AMBIGUOUS)"
+            )
+        )
+        return Result(
+            state = State.AMBIGUOUS,
+            kind = "transfer",
+            merchant = extracted.merchant,
+            amount = extracted.amount,
+            leftAccountId = left.id,
+            leftAccountTitle = left.title,
+            rightAccountId = right.id,
+            rightAccountTitle = right.title,
+            source = Source.TRANSFER,
+            confidence = THRESHOLD_AMBIGUOUS
+        )
+    }
+
     /**
      * Strict numeric check: the AI's extracted amount must appear as an integer
      * group somewhere in title+body. Comma grouping is normalized away on both
@@ -267,7 +371,7 @@ object BankNotificationClassifier {
     }
 
     enum class State { READY, AMBIGUOUS, UNPARSED, ERROR }
-    enum class Source { MAPPING, AI_SIMILARITY, NONE }
+    enum class Source { MAPPING, AI_SIMILARITY, TRANSFER, NONE }
 
     data class Result(
         val state: State,
@@ -419,6 +523,10 @@ object BankNotificationClassifier {
         if (mapping != null) {
             Log.d(LOG_TAG, "mapping accounts no longer in cache; falling back to similarity")
         }
+
+        // Step 2.5: inter-account transfer detection (방안 D). Suggestion-only; runs only when
+        // no confident mapping auto-confirmed above, so it never downgrades a good mapping.
+        detectTransfer(item, extracted, accounts, stages)?.let { return@withContext it }
 
         // Step 3: AI similarity.
         val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
