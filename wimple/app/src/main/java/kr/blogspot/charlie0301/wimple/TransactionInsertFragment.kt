@@ -5,8 +5,12 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Message
 import androidx.preference.PreferenceManager
+import android.graphics.Typeface
 import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -253,18 +257,26 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
         activeReviewNotificationText = notificationText?.takeIf { it.isNotBlank() }
         activeReviewNotificationTitle = notificationTitle?.takeIf { it.isNotBlank() }
-        applyNotificationPanel(notificationText, notificationSource)
+        applyNotificationPanel(notificationText, notificationSource, notificationTitle)
         tryApplyPendingAccountSelection()
     }
 
     /**
      * Show or hide the original-notification panel above the form. We surface it whenever a
-     * non-blank text arrives, even on UNPARSED rows that have no field prefill — seeing the
-     * source body is exactly what a user needs to fill the form by hand.
+     * non-blank title or body arrives, even on UNPARSED rows that have no field prefill —
+     * seeing the source is exactly what a user needs to fill the form by hand.
+     *
+     * Both title and body are shown: some banks carry the transaction amount only in the
+     * title (e.g. Hana card "(결제) 19,900원" with the body holding just merchant +
+     * 누적이용금액), so a body-only panel would hide the very number the user needs.
      */
-    private fun applyNotificationPanel(text: String?, source: String?) {
+    private fun applyNotificationPanel(text: String?, source: String?, title: String?) {
         if (_binding == null) return
-        if (text.isNullOrBlank()) {
+        val body = text?.takeIf { it.isNotBlank() }
+        // Drop a title that merely repeats the source label (e.g. "MG새마을금고") to avoid a
+        // redundant line; keep meaningful titles like "(결제) 19,900원".
+        val titleLine = title?.trim()?.takeIf { it.isNotEmpty() && it != source?.trim() }
+        if (body == null && titleLine == null) {
             binding.reviewNotificationPanel.visibility = View.GONE
             return
         }
@@ -272,7 +284,15 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         binding.reviewNotificationLabel.text = getString(
             R.string.review_notification_panel_label, labelSource
         )
-        binding.reviewNotificationText.text = text
+        binding.reviewNotificationText.text = if (titleLine != null) {
+            SpannableStringBuilder().apply {
+                append(titleLine)
+                setSpan(StyleSpan(Typeface.BOLD), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (body != null) append("\n").append(body)
+            }
+        } else {
+            body
+        }
         binding.reviewNotificationPanel.visibility = View.VISIBLE
     }
 
