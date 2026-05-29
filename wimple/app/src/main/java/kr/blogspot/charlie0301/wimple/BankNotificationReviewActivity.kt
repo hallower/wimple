@@ -233,7 +233,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         // user lands on a blank amount field while the original notification text — visible
         // in the panel above — already contains the digits they need to retype.
         val prefillAmount = result?.amount?.takeIf { it > 0.0 }
-            ?: BankNotificationClassifier.extractAmountFromText(item.text)
+            ?: BankNotificationClassifier.extractAmountFromText("${item.title}\n${item.text}")
         if (prefillAmount != null) {
             intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, prefillAmount)
         }

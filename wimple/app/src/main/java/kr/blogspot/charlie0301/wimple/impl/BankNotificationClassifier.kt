@@ -107,12 +107,31 @@ object BankNotificationClassifier {
      */
     fun extractAmountFromText(text: String?): Double? {
         if (text.isNullOrBlank()) return null
-        val match = AMOUNT_REGEX.find(text) ?: return null
-        val numStr = match.groupValues[1].replace(",", "")
-        return numStr.toDoubleOrNull()?.takeIf { it > 0.0 }
+        // Skip "...원" figures labelled as a running balance / cumulative total / credit
+        // limit rather than the transaction amount. Hana card bodies end with
+        // "누적이용금액 3,774,850원" and most bank bodies carry "잔액 ...원"; taking the first
+        // raw "원" match would surface those instead of the real amount — which for card
+        // apps lives in the title ("(결제) 19,900원"). Callers pass title + body so the
+        // title's transaction amount is reached before the body's cumulative/balance line.
+        for (m in AMOUNT_REGEX.findAll(text)) {
+            if (precededByBalanceLabel(text, m.range.first)) continue
+            val v = m.groupValues[1].replace(",", "").toDoubleOrNull()
+            if (v != null && v > 0.0) return v
+        }
+        return null
     }
 
     private val AMOUNT_REGEX = Regex("""(\d{1,3}(?:,\d{3})+|\d+)\s*원""")
+
+    // Labels marking a "원" figure as a balance / cumulative total / limit rather than the
+    // transaction amount. Checked in the text immediately preceding the matched number.
+    private val BALANCE_LABEL_REGEX = Regex("누적|잔액|한도|이용가능|사용가능|가용")
+    private const val BALANCE_LABEL_LOOKBEHIND = 10
+
+    private fun precededByBalanceLabel(haystack: String, numStart: Int): Boolean {
+        val from = maxOf(0, numStart - BALANCE_LABEL_LOOKBEHIND)
+        return BALANCE_LABEL_REGEX.containsMatchIn(haystack.substring(from, numStart))
+    }
 
     // KRW-suffixed pattern above doesn't cover JPY/USD-prefixed bodies that hana
     // card issues for overseas transactions. Used only by the prefilter to detect
@@ -176,9 +195,13 @@ object BankNotificationClassifier {
      */
     private fun amountAppearsInSource(amount: Double, haystack: String): Boolean {
         val target = amount.toLong()
-        return NUMBER_GROUP_REGEX.findAll(haystack)
-            .mapNotNull { it.value.replace(",", "").toLongOrNull() }
-            .any { it == target }
+        // Require at least one occurrence that ISN'T a balance/cumulative figure, so a model
+        // that returns 누적이용금액/잔액 instead of the transaction amount fails grounding and
+        // collapses to UNPARSED rather than auto-confirming the wrong number.
+        return NUMBER_GROUP_REGEX.findAll(haystack).any { m ->
+            m.value.replace(",", "").toLongOrNull() == target &&
+                !precededByBalanceLabel(haystack, m.range.first)
+        }
     }
 
     /**
@@ -462,6 +485,8 @@ object BankNotificationClassifier {
             append("(예: \"GS25 강남점\"). 은행명·카드사명·예금주명은 제거. ")
             append("본문에 가맹점/거래상대방이 명시되지 않았으면 merchant 키 자체를 생략 — 추측 금지.\n")
             append("- amount: 정수 KRW. \"12,000원\" → 12000. 본문에 명시된 숫자만 사용.\n")
+            append("- 누적이용금액·잔액·이용한도는 거래금액이 아님. ")
+            append("결제/승인/입금/출금 금액(흔히 제목의 \"(결제) 19,900원\")을 사용.\n")
             append("- 예시는 출력 형식만 참고할 것. 예시의 merchant/amount 값을 그대로 베끼지 말고, ")
             append("실제 값은 항상 새 알림에서만 추출한다.\n")
             append("- 정말 알 수 없는 필드만 키 자체를 생략.\n\n")
