@@ -9,8 +9,10 @@ import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
 import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
 import kr.blogspot.charlie0301.wimple.model.Account
 import kr.blogspot.charlie0301.wimple.model.Entry
+import kr.blogspot.charlie0301.wimple.model.Item
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -331,6 +333,92 @@ object BankNotificationClassifier {
         )
     }
 
+    // --- Monthly (recurring) transaction matching (방안 F) ------------------------------
+    // The user pre-plans recurring transactions (관리비, 구독, 대출이자, 보험…) as Whooing
+    // "monthly items", each carrying a due date, amount and a canonical left/right account
+    // pair. When a notification lands on/near a monthly item's due day for a matching amount,
+    // it's that month's occurrence — book it with the monthly item's own accounts (ground
+    // truth the user set), using the notification's actual amount.
+
+    private const val MONTHLY_DATE_WINDOW_DAYS = 2
+    private const val MONTHLY_AMOUNT_TOLERANCE = 0.05
+
+    private fun dayOfMonth(epochMs: Long): Int =
+        Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_MONTH)
+
+    // Day-of-month distance with month wraparound so due-day 1 vs notification-day 30 is near.
+    private fun dayDiffWrap(a: Int, b: Int): Int {
+        val d = abs(a - b)
+        return minOf(d, 31 - d)
+    }
+
+    private fun kindFromAccountTypes(leftType: String?, rightType: String?): String {
+        val l = leftType.orEmpty(); val r = rightType.orEmpty()
+        return when {
+            l == "income" || r == "income" -> "income"
+            l == "expenses" || r == "expenses" -> "expense"
+            else -> "transfer"
+        }
+    }
+
+    /**
+     * Match the notification against the user's cached monthly items by due-day (±window) and
+     * amount (±tolerance). On a single confident match return a READY result built from the
+     * monthly item's canonical account pair + the notification's actual amount. Multiple
+     * candidates or none → null (fall through). The matched item's accounts must still be live.
+     */
+    private fun detectMonthly(
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): Result? {
+        val monthlies: Collection<Item> =
+            WimpleImpl.getInstance()?.monthlyItemDBHandler?.allItems.orEmpty()
+        if (monthlies.isEmpty()) return null
+        val notiDay = dayOfMonth(item.time)
+        val matches = monthlies.filter { mi ->
+            val amt = mi.amount ?: 0.0
+            val due = mi.date ?: 0L
+            amt > 0.0 && due > 0L &&
+                dayDiffWrap(notiDay, dayOfMonth(due)) <= MONTHLY_DATE_WINDOW_DAYS &&
+                abs(amt - extracted.amount) <= max(amt, extracted.amount) * MONTHLY_AMOUNT_TOLERANCE
+        }
+        if (matches.isEmpty()) return null
+        if (matches.size > 1) {
+            stages.add(
+                AiClassificationLog.Stage(
+                    "monthly_match",
+                    "notiDay=$notiDay amount=${extracted.amount.toLong()}",
+                    "AMBIGUOUS — ${matches.size} monthly candidates; skipping auto-match"
+                )
+            )
+            return null
+        }
+        val mi = matches[0]
+        val lAcc = accounts.firstOrNull { it.id == mi.leftAccountID } ?: return null
+        val rAcc = accounts.firstOrNull { it.id == mi.rightAccountID } ?: return null
+        stages.add(
+            AiClassificationLog.Stage(
+                "monthly_match",
+                "notiDay=$notiDay amount=${extracted.amount.toLong()}",
+                "MATCH '${mi.item}' (due day ${dayOfMonth(mi.date ?: 0L)}, plan ${mi.amount?.toLong()}) → READY"
+            )
+        )
+        return Result(
+            state = State.READY,
+            kind = kindFromAccountTypes(mi.leftAccount, mi.rightAccount),
+            merchant = mi.item.ifBlank { extracted.merchant },
+            amount = extracted.amount,
+            leftAccountId = lAcc.id,
+            leftAccountTitle = lAcc.title,
+            rightAccountId = rAcc.id,
+            rightAccountTitle = rAcc.title,
+            source = Source.MONTHLY,
+            confidence = 1.0
+        )
+    }
+
     /**
      * Strict numeric check: the AI's extracted amount must appear as an integer
      * group somewhere in title+body. Comma grouping is normalized away on both
@@ -371,7 +459,7 @@ object BankNotificationClassifier {
     }
 
     enum class State { READY, AMBIGUOUS, UNPARSED, ERROR }
-    enum class Source { MAPPING, AI_SIMILARITY, TRANSFER, NONE }
+    enum class Source { MAPPING, AI_SIMILARITY, TRANSFER, MONTHLY, NONE }
 
     data class Result(
         val state: State,
@@ -523,6 +611,11 @@ object BankNotificationClassifier {
         if (mapping != null) {
             Log.d(LOG_TAG, "mapping accounts no longer in cache; falling back to similarity")
         }
+
+        // Step 2.4: monthly (recurring) match (방안 F). The user's monthly items carry the
+        // canonical account pair, so a due-day + amount match is authoritative — checked before
+        // the transfer heuristic and AI similarity.
+        detectMonthly(item, extracted, accounts, stages)?.let { return@withContext it }
 
         // Step 2.5: inter-account transfer detection (방안 D). Suggestion-only; runs only when
         // no confident mapping auto-confirmed above, so it never downgrades a good mapping.

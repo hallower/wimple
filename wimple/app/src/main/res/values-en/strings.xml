@@ -296,6 +296,7 @@
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
     <string name="bank_noti_review_source_transfer">Account transfer</string>
+    <string name="bank_noti_review_source_monthly">Monthly transaction</string>
     <string name="bank_noti_review_dual_use_banner">Whooing forward is also on. The same notification may be recorded twice. (Tap to open settings)</string>
     <string name="bank_noti_review_device_perf_notice">AI classification may take longer depending on device performance.</string>
 
