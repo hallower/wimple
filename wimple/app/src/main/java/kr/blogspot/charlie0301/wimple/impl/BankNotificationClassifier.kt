@@ -185,7 +185,46 @@ object BankNotificationClassifier {
         }
         val phrase = NON_TX_PHRASES.firstOrNull { combined.contains(it) }
         if (phrase != null) return "matches non-transaction phrase \"$phrase\""
+        // A real transaction always names the movement (입금/출금/결제/승인/이체/충전/취소…) or
+        // shows an account→account arrow. Price/FX/news alerts carry a "...원" figure but none
+        // of these and would otherwise reach extract + mapping and become a confident fake
+        // transaction (e.g. "삼성전자 -5.05% 현재 291,750원" → fake 291,750 income).
+        if (!TX_KEYWORD_REGEX.containsMatchIn(combined)) {
+            return "no transaction keyword (입금/출금/결제/승인/이체…)"
+        }
         return null
+    }
+
+    // Movement keywords that mark a notification as an actual transaction, built from the
+    // bank/card formats on this device. The arrow covers transfer notifications phrased as
+    // "입출금통장(1596) → 김철승" with no explicit 입금/출금 word.
+    private val TX_KEYWORD_REGEX = Regex(
+        "입금|출금|결제|승인|이체|송금|환급|적립|충전|인출|환전|캐시백|취소|신용|일시불|할부|→|->"
+    )
+
+    // Explicit direction markers. Outflow is compatible with expense OR transfer; inflow with
+    // income OR transfer — so [directionConflicts] only flags a hard contradiction
+    // (outflow⇒income, inflow⇒expense), never the expense-vs-transfer ambiguity.
+    private val OUTFLOW_MARKER_REGEX = Regex("출금|결제|승인|인출")
+    private val INFLOW_MARKER_REGEX = Regex("입금|환급|적립|캐시백")
+
+    /**
+     * True when the extracted [kind] hard-contradicts an explicit direction marker in the
+     * notification: an outflow ("[출금]"/결제/승인) extracted as 수입, or an inflow ("[입금]")
+     * extracted as 지출. False for transfer (valid either way) and when both or neither marker
+     * is present. Callers use this to refuse a confidence-1.0 mapping short-circuit and to keep
+     * a direction-flipped row out of READY — the user's own ledger treats 출금 as expense or
+     * transfer (never income), so an 출금→income extraction is always wrong.
+     */
+    private fun directionConflicts(title: String, text: String, kind: String): Boolean {
+        val combined = "$title $text"
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(combined)
+        val inflow = INFLOW_MARKER_REGEX.containsMatchIn(combined)
+        return when (kind) {
+            "income" -> outflow && !inflow
+            "expense" -> inflow && !outflow
+            else -> false
+        }
     }
 
     /**
@@ -343,6 +382,21 @@ object BankNotificationClassifier {
         val extracted = extractFields(ctx, item, stages)
             ?: return@withContext Result(state = State.UNPARSED)
 
+        // The extracted kind sometimes flips against an explicit 입금/출금 marker (the small
+        // model mislabels, or copies a shot's kind). The user's ledger never books an 출금 as
+        // income, so a conflicting kind must not reach a confidence-1.0 mapping short-circuit
+        // or a READY similarity row — route it to manual review instead.
+        val dirConflict = directionConflicts(item.title, item.text, extracted.kind)
+        if (dirConflict) {
+            stages.add(
+                AiClassificationLog.Stage(
+                    "direction_check",
+                    "kind=\"${extracted.kind}\" vs 입금/출금 markers in source",
+                    "CONFLICT — extracted kind contradicts the direction marker; blocking auto-confirm"
+                )
+            )
+        }
+
         val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
 
         // Step 2: mapping lookup.
@@ -359,7 +413,7 @@ object BankNotificationClassifier {
                 describeMappingLookup(extracted, mapping, mappingLAcc, mappingRAcc)
             )
         )
-        if (mapping != null && mappingLAcc != null && mappingRAcc != null) {
+        if (mapping != null && mappingLAcc != null && mappingRAcc != null && !dirConflict) {
             return@withContext mappingResult(extracted, mappingLAcc, mappingRAcc)
         }
         if (mapping != null) {
@@ -389,11 +443,14 @@ object BankNotificationClassifier {
         val rAcc = accounts.firstOrNull { it.id == candidateEntry.rightAccountID }
         if (lAcc == null || rAcc == null) return@withContext extractedOnly(extracted, State.UNPARSED)
 
-        val state = when {
+        var state = when {
             match.confidence >= THRESHOLD_READY -> State.READY
             match.confidence >= THRESHOLD_AMBIGUOUS -> State.AMBIGUOUS
             else -> State.UNPARSED
         }
+        // A direction-conflicting row never auto-confirms — demote READY so the user reviews
+        // it manually even if the similarity model was confident. Leaves AMBIGUOUS/UNPARSED.
+        if (dirConflict && state == State.READY) state = State.AMBIGUOUS
 
         Result(
             state = state,
