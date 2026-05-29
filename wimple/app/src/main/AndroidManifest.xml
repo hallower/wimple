@@ -77,6 +77,7 @@
             android:theme="@style/AppTheme.NoActionBar.Tinted" />
         <activity
             android:name="kr.blogspot.charlie0301.wimple.BankNotificationReviewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:label="@string/bank_noti_review_title"
             android:parentActivityName="kr.blogspot.charlie0301.wimple.WimpleActivity"
             android:theme="@style/AppTheme.NoActionBar.Tinted" />

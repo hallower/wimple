@@ -3,6 +3,7 @@ package kr.blogspot.charlie0301.wimple.impl
 import android.content.Context
 import android.util.Log
 import com.google.mlkit.genai.prompt.Generation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
@@ -525,6 +526,13 @@ object BankNotificationClassifier {
         val stages = mutableListOf<AiClassificationLog.Stage>()
         val result = try {
             doClassify(ctx, item, stages)
+        } catch (c: CancellationException) {
+            // The review screen cancels the in-flight pass on pause / retry. A cancelled run
+            // is NOT a failure — rethrow so it isn't recorded as a State.ERROR log entry. (This
+            // is what produced the "same notification ×6 ERROR" storm: a foldable config-change
+            // recreated the activity, cancelling and restarting the pass repeatedly, and each
+            // cancellation was being caught below and logged as ERROR.)
+            throw c
         } catch (t: Throwable) {
             Log.w(LOG_TAG, "classify failed for ${item.id}", t)
             Result(state = State.ERROR)
@@ -890,6 +898,10 @@ object BankNotificationClassifier {
         val model = Generation.getClient()
         val response = model.generateContent(prompt)
         response.candidates.firstOrNull()?.text
+    } catch (c: CancellationException) {
+        // Don't swallow cancellation as a null extract — let it propagate so the pass ends
+        // cleanly instead of continuing and recording a misleading result.
+        throw c
     } catch (t: Throwable) {
         Log.w(LOG_TAG, "generate failed", t)
         null
