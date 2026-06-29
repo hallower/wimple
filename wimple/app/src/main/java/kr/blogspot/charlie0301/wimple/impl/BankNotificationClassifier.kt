@@ -243,6 +243,8 @@ object BankNotificationClassifier {
     private val DIGIT_RUN_REGEX = Regex("""\d+""")
     private val MASKED_CARD_REGEX = Regex("""\d\*\d\*""")
     private val LEADING_HANGUL_REGEX = Regex("""^[가-힣]+""")
+    // Task 2: 알림 본문에서 3자 이상 한글 단어 추출 — 계좌명 역방향 매칭에 사용
+    private val HANGUL_WORD_REGEX = Regex("""[가-힣]{3,}""")
 
     private fun accountNumberFragments(title: String): List<String> {
         val out = ArrayList<String>()
@@ -282,6 +284,21 @@ object BankNotificationClassifier {
         pool.firstOrNull { acc -> accountNumberFragments(acc.title).any { numberFragmentAppears(text, it) } }
 
     /**
+     * Task 2: 알림 텍스트에서 한글 단어(3자+)를 추출해 계좌 제목의 뱅크 토큰과 교차 매칭.
+     * 계좌 번호가 알림에 명시되지 않아도 "하나은행 이체", "카카오뱅크 입금" 등의 표현으로
+     * 계좌를 특정할 수 있도록 하는 3차 폴백이다.
+     * 오탐 방지를 위해 계좌 토큰이 텍스트에 포함되는 방향(단방향)만 허용한다.
+     */
+    private fun resolveAccountByHangulToken(text: String, pool: List<Account>): Account? {
+        val textWords = HANGUL_WORD_REGEX.findAll(text).map { it.value }.toList()
+        if (textWords.isEmpty()) return null
+        return pool.firstOrNull { acc ->
+            val tokens = accountBankTokens(acc.title)
+            tokens.isNotEmpty() && textWords.any { word -> tokens.any { tok -> word.contains(tok) } }
+        }
+    }
+
+    /**
      * Detect a transfer between two of the user's own asset/liability accounts. Returns a
      * suggestion-only [Result] (State.AMBIGUOUS, never READY) or null to fall through to the AI
      * similarity step. Fires only when the notifying account resolves by number AND a DIFFERENT
@@ -296,7 +313,11 @@ object BankNotificationClassifier {
     ): Result? {
         val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
         if (pool.size < 2) return null
-        val source = resolveAccountByNumber(item.text, pool) ?: return null
+        // Task 2: 계좌 매칭 개선 — 본문 → 제목 → 한글 토큰 순으로 폴백
+        val source = resolveAccountByNumber(item.text, pool)
+            ?: resolveAccountByNumber(item.title, pool)
+            ?: resolveAccountByHangulToken("${item.title} ${item.text}", pool)
+            ?: return null
         // The extract prompt strips bank/card names from `merchant`, so look for the
         // counterparty's bank token across title + body + merchant, not merchant alone.
         val combined = "${item.title} ${item.text} ${extracted.merchant}"
@@ -304,6 +325,9 @@ object BankNotificationClassifier {
             acc.id != source.id && accountBankTokens(acc.title).any { combined.contains(it) }
         } ?: pool.firstOrNull { acc ->
             acc.id != source.id && accountNumberFragments(acc.title).any { numberFragmentAppears(item.text, it) }
+        } ?: pool.firstOrNull { acc ->
+            // Task 2: 상대 계좌도 한글 토큰으로 폴백
+            acc.id != source.id && resolveAccountByHangulToken(combined, listOf(acc)) != null
         } ?: return null
 
         val markerSrc = "${item.title} ${item.text}"
