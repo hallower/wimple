@@ -13,6 +13,7 @@ import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +22,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.impl.BankNotificationClassifier
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
+import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.model.Item
+import java.util.Calendar
 
 /**
  * Phase 2 review queue screen, extended in Phase 4 to drive the AI cascade. On entry every
@@ -183,6 +187,94 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
+
+    // ── Task 1: 수동 월별거래 연계 ──────────────────────────────────────────────
+
+    /**
+     * 월별 거래 목록을 다이얼로그로 표시하고 사용자가 선택한 항목의 계좌 정보를
+     * 해당 알림 행에 적용한다. 금액은 기존 분류 결과 또는 본문 추출 값을 우선 사용한다.
+     * 선택 후 행은 READY(금액 있음) 또는 AMBIGUOUS(금액 없음) 상태로 갱신된다.
+     */
+    private fun showMonthlyLinkPicker(item: LocalReviewQueue.ReviewItem) {
+        val monthlies = WimpleImpl.getInstance()?.monthlyItemDBHandler?.allItems.orEmpty()
+            .sortedBy { mi -> monthlyDayOfMonth(mi.date ?: 0L) }
+        if (monthlies.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.bank_noti_review_monthly_link_dialog_title)
+                .setMessage(R.string.bank_noti_review_monthly_link_empty)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+        val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
+        val labels = monthlies.map { mi ->
+            val lTitle = accounts.firstOrNull { it.id == mi.leftAccountID }?.title ?: mi.leftAccountID
+            val rTitle = accounts.firstOrNull { it.id == mi.rightAccountID }?.title ?: mi.rightAccountID
+            val dueDay = monthlyDayOfMonth(mi.date ?: 0L)
+            val amt = mi.amount?.toLong() ?: 0L
+            getString(R.string.bank_noti_review_monthly_link_item_format, mi.item, amt, dueDay) +
+                "\n  $lTitle ← $rTitle"
+        }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.bank_noti_review_monthly_link_dialog_title)
+            .setItems(labels) { _, which -> applyMonthlyLink(item, monthlies[which]) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun applyMonthlyLink(item: LocalReviewQueue.ReviewItem, mi: Item) {
+        val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
+        val lAcc = accounts.firstOrNull { it.id == mi.leftAccountID }
+        val rAcc = accounts.firstOrNull { it.id == mi.rightAccountID }
+        if (lAcc == null || rAcc == null) {
+            Toast.makeText(this, R.string.bank_noti_review_confirm_skip_invalid, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // 금액: 기존 분류 결과 → 본문 추출 순으로 시도
+        val existingAmt = BankNotificationClassifier.Result.fromJson(item.classificationJson)?.amount
+        val amount = existingAmt?.takeIf { it > 0.0 }
+            ?: BankNotificationClassifier.extractAmountFromText("${item.title}\n${item.text}")
+
+        val kind = monthlyKindFromTypes(mi.leftAccount, mi.rightAccount)
+        val state = if (amount != null && amount > 0.0) BankNotificationClassifier.State.READY
+                    else BankNotificationClassifier.State.AMBIGUOUS
+
+        val result = BankNotificationClassifier.Result(
+            state = state,
+            kind = kind,
+            merchant = mi.item.ifBlank { null },
+            amount = amount,
+            leftAccountId = lAcc.id,
+            leftAccountTitle = lAcc.title,
+            rightAccountId = rAcc.id,
+            rightAccountTitle = rAcc.title,
+            source = BankNotificationClassifier.Source.MONTHLY,
+            confidence = 1.0
+        )
+        LocalReviewQueue.setClassification(this, item.id, result.toJson())
+        if (amount == null || amount <= 0.0) {
+            Toast.makeText(this, R.string.bank_noti_review_monthly_link_no_amount, Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, R.string.bank_noti_review_monthly_link_applied, Toast.LENGTH_SHORT).show()
+        }
+        refresh()
+    }
+
+    /** Item의 좌·우 계정 타입으로 kind 결정 (분류기와 동일 로직) */
+    private fun monthlyKindFromTypes(leftType: String?, rightType: String?): String {
+        val l = leftType.orEmpty(); val r = rightType.orEmpty()
+        return when {
+            l == "income" || r == "income" -> "income"
+            l == "expenses" || r == "expenses" -> "expense"
+            else -> "transfer"
+        }
+    }
+
+    private fun monthlyDayOfMonth(epochMs: Long): Int =
+        Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_MONTH)
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Hand off to manual entry. Attaches everything the cached classifier output knows so
@@ -348,6 +440,10 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             }
             view.findViewById<Button>(R.id.btn_manual_entry).setOnClickListener {
                 openManualEntry(item)
+            }
+            // Task 1: 월별연결 버튼
+            view.findViewById<Button>(R.id.btn_monthly_link).setOnClickListener {
+                showMonthlyLinkPicker(item)
             }
 
             applyClassificationToCard(view, item)

@@ -99,6 +99,15 @@
             android:text="@string/bank_noti_review_retry"
             android:visibility="gone" />
 
+        <!-- Task 1: 수동 월별거래 연계 버튼 -->
+        <Button
+            android:id="@+id/btn_monthly_link"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/bank_noti_review_monthly_link" />
+
         <Button
             android:id="@+id/btn_manual_entry"
             style="?attr/borderlessButtonStyle"
