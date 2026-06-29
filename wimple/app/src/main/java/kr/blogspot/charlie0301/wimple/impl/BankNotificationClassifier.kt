@@ -320,7 +320,7 @@ object BankNotificationClassifier {
             ?: return null
         // The extract prompt strips bank/card names from `merchant`, so look for the
         // counterparty's bank token across title + body + merchant, not merchant alone.
-        val combined = "${item.title} ${item.text} ${extracted.merchant}"
+        val combined = "${item.title} ${item.text} ${extracted.merchant.orEmpty()}"
         val counterparty = pool.firstOrNull { acc ->
             acc.id != source.id && accountBankTokens(acc.title).any { combined.contains(it) }
         } ?: pool.firstOrNull { acc ->
@@ -465,6 +465,27 @@ object BankNotificationClassifier {
      * monthly item's canonical account pair + the notification's actual amount. Multiple
      * candidates or none → null (fall through). The matched item's accounts must still be live.
      */
+    /**
+     * Maps known banking app packages to a short bank keyword that should appear in at least
+     * one account title of any monthly item associated with that bank. Used by detectMonthly
+     * to reject cross-bank false positives (e.g. 카카오뱅크 notification matching a
+     * 새마을금고 monthly item when neither account involves 카카오뱅크).
+     */
+    private fun bankKeywordFromPackage(pkg: String): String? = when {
+        "kakaobank" in pkg  -> "카카오"
+        "hanabank" in pkg   -> "하나"
+        "smg" in pkg        -> "새마을"
+        "kbcard" in pkg || "kbstar" in pkg -> "KB"
+        "shinhan" in pkg    -> "신한"
+        "wooribank" in pkg || "woori" in pkg -> "우리"
+        "nonghyup" in pkg || ".nh." in pkg  -> "농협"
+        "ibk" in pkg        -> "IBK"
+        "scbank" in pkg     -> "SC"
+        "busanbank" in pkg  -> "부산"
+        "dgb" in pkg        -> "대구"
+        else -> null
+    }
+
     private fun detectMonthly(
         item: LocalReviewQueue.ReviewItem,
         extracted: ExtractedFields,
@@ -474,20 +495,46 @@ object BankNotificationClassifier {
         val monthlies: Collection<Item> =
             WimpleImpl.getInstance()?.monthlyItemDBHandler?.allItems.orEmpty()
         if (monthlies.isEmpty()) return null
+
+        // Skip MONTHLY for self-transfer notifications: "A → B" format indicates money moving
+        // between the user's own accounts (e.g. 세이프박스 savings, 입출금통장 sweeps).
+        // These coincidentally match monthly items when amounts happen to be equal.
+        val combined = "${item.title} ${item.text}"
+        if (combined.contains("→")) {
+            stages.add(
+                AiClassificationLog.Stage(
+                    "monthly_precheck",
+                    "text contains '→'",
+                    "SKIP — self-transfer pattern; not a regular billing notification"
+                )
+            )
+            return null
+        }
+
         val notiDay = dayOfMonth(item.time)
+        val appBankKeyword = bankKeywordFromPackage(item.packageName)
         val matches = monthlies.filter { mi ->
             val amt = mi.amount ?: 0.0
             val due = mi.date ?: 0L
-            amt > 0.0 && due > 0L &&
-                dayDiffWrap(notiDay, dayOfMonth(due)) <= MONTHLY_DATE_WINDOW_DAYS &&
-                abs(amt - extracted.amount) <= max(amt, extracted.amount) * MONTHLY_AMOUNT_TOLERANCE
+            if (!(amt > 0.0 && due > 0L)) return@filter false
+            if (dayDiffWrap(notiDay, dayOfMonth(due)) > MONTHLY_DATE_WINDOW_DAYS) return@filter false
+            if (abs(amt - extracted.amount) > max(amt, extracted.amount) * MONTHLY_AMOUNT_TOLERANCE) return@filter false
+            // Bank-app guard: if we can identify the notification's bank, at least one of the
+            // monthly item's accounts must mention that bank. Prevents 카카오뱅크 notifications
+            // from matching 새마을금고-only monthly items when amounts coincidentally agree.
+            if (appBankKeyword != null) {
+                val lTitle = accounts.firstOrNull { it.id == mi.leftAccountID }?.title.orEmpty()
+                val rTitle = accounts.firstOrNull { it.id == mi.rightAccountID }?.title.orEmpty()
+                if (!lTitle.contains(appBankKeyword) && !rTitle.contains(appBankKeyword)) return@filter false
+            }
+            true
         }
         if (matches.isEmpty()) return null
         if (matches.size > 1) {
             stages.add(
                 AiClassificationLog.Stage(
                     "monthly_match",
-                    "notiDay=$notiDay amount=${extracted.amount.toLong()}",
+                    "notiDay=$notiDay amount=${extracted.amount.toLong()} appBank=$appBankKeyword",
                     "AMBIGUOUS — ${matches.size} monthly candidates; skipping auto-match"
                 )
             )
@@ -499,7 +546,7 @@ object BankNotificationClassifier {
         stages.add(
             AiClassificationLog.Stage(
                 "monthly_match",
-                "notiDay=$notiDay amount=${extracted.amount.toLong()}",
+                "notiDay=$notiDay amount=${extracted.amount.toLong()} appBank=$appBankKeyword",
                 "MATCH '${mi.item}' (due day ${dayOfMonth(mi.date ?: 0L)}, plan ${mi.amount?.toLong()}) → READY"
             )
         )
@@ -698,7 +745,8 @@ object BankNotificationClassifier {
 
         // Step 2: mapping lookup.
         val mappingHandler = MerchantMappingDBHandler(ctx)
-        val mapping = mappingHandler.find(extracted.merchant, extracted.kind)
+        val mapping = extracted.merchant?.takeIf { it.isNotBlank() }
+            ?.let { mappingHandler.find(it, extracted.kind) }
         // Resolve account liveness once so the dev log and the decision branch agree on the
         // same view of the cache (cachedAccounts is a snapshot already by .orEmpty() above).
         val mappingLAcc = mapping?.let { m -> accounts.firstOrNull { it.id == m.lAccountId } }
@@ -805,7 +853,7 @@ object BankNotificationClassifier {
 
     // -------------------- AI: extract --------------------
 
-    private data class ExtractedFields(val kind: String, val merchant: String, val amount: Double)
+    private data class ExtractedFields(val kind: String, val merchant: String?, val amount: Double)
 
     private suspend fun extractFields(
         ctx: Context,
@@ -887,33 +935,39 @@ object BankNotificationClassifier {
         // Prefer Korean (what we asked for) but accept English too — the model occasionally
         // regresses to the schema literal even when the rest of the prompt is Korean.
         val kind = json.optStringOrNull("kind")?.let { parseKindLabel(it) } ?: return null
-        val merchant = json.optStringOrNull("merchant")?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val rawMerchant = json.optStringOrNull("merchant")?.trim()?.takeIf { it.isNotEmpty() }
         val amount = if (json.has("amount")) json.optDouble("amount", -1.0) else -1.0
         if (amount <= 0.0) return null
 
-        // Grounding check: every field the model returned must trace back to the
-        // source text. Without this, near-empty bodies (e.g. "바로 확인해보세요.")
-        // produce fully-fabricated tuples that mapping_lookup then turns into
-        // confidence-1.0 fake transactions. Amount is checked strictly (exact
-        // numeric match anywhere in title+body); merchant is lenient (any 2+ char
-        // token of the extracted name appears in the source) so legitimate AI
-        // normalization like "GS25강남점" → "GS25 강남점" still passes.
+        // Grounding check: extracted fields must trace back to the source text.
+        // Amount is mandatory — a hallucinated amount is always fatal and the item
+        // is left UNPARSED for manual review.
+        // Merchant is best-effort: when the AI invents a name not in the source
+        // (common in non-financial or sparse notifications), we null it out rather
+        // than aborting, so detectTransfer / detectPairedTransfer can still run on
+        // the grounded amount.
         val haystack = "${item.title} ${item.text}"
-        val groundedAmount = amountAppearsInSource(amount, haystack)
-        val groundedMerchant = merchantAppearsInSource(merchant, haystack)
-        if (!groundedAmount || !groundedMerchant) {
-            val missing = buildList {
-                if (!groundedAmount) add("amount=${amount.toLong()}")
-                if (!groundedMerchant) add("merchant=\"$merchant\"")
-            }
+        if (!amountAppearsInSource(amount, haystack)) {
             stages.add(
                 AiClassificationLog.Stage(
                     "grounding_check",
-                    "amount=${amount.toLong()} merchant=\"$merchant\"",
-                    "FAIL — ${missing.joinToString(", ")} not found in source; treating as UNPARSED"
+                    "amount=${amount.toLong()} merchant=\"${rawMerchant.orEmpty()}\"",
+                    "FAIL — amount=${amount.toLong()} not found in source; treating as UNPARSED"
                 )
             )
             return null
+        }
+        val merchant: String? = if (rawMerchant == null || merchantAppearsInSource(rawMerchant, haystack)) {
+            rawMerchant
+        } else {
+            stages.add(
+                AiClassificationLog.Stage(
+                    "grounding_check",
+                    "merchant=\"$rawMerchant\"",
+                    "merchant not found in source; nulled — amount grounded, cascade continues"
+                )
+            )
+            null
         }
 
         return ExtractedFields(kind, merchant, amount)
@@ -968,7 +1022,7 @@ object BankNotificationClassifier {
             append("- 금액이 3배 이상 다르면 high → medium, medium → low 로 한 단계 낮춤.\n\n")
             append("새 알림:\n")
             append("- 분류: ").append(kindToKorean(extracted.kind)).append('\n')
-            append("- 가맹점: ").append(extracted.merchant).append('\n')
+            if (!extracted.merchant.isNullOrBlank()) append("- 가맹점: ").append(extracted.merchant).append('\n')
             append("- 금액: ").append(extracted.amount.toLong()).append('\n')
             append("- 원문: ").append(item.text).append("\n\n")
             append("후보 과거 거래 (JSON 배열, 같은 형식의 id 를 그대로 응답에 사용):\n")
@@ -1044,7 +1098,7 @@ object BankNotificationClassifier {
         max: Int
     ): List<Entry> {
         if (entries.isEmpty()) return emptyList()
-        val merchantTokens = tokenize(extracted.merchant)
+        val merchantTokens = extracted.merchant?.let { tokenize(it) }.orEmpty()
         val target = extracted.amount
 
         return entries.asSequence()

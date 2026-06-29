@@ -63,6 +63,11 @@ class BankNotificationListener : NotificationListenerService() {
 
         if (title.isBlank() && text.isBlank()) return
 
+        // Drop non-financial notifications (news, rate alerts, promotions) before they enter
+        // the review queue and waste 7+ seconds of on-device AI time. Require at least one
+        // Korean financial keyword AND a number-with-원 pattern in the combined text.
+        if (localReviewOn && !looksLikeTransaction(title, text)) return
+
         // Resolve the source app's user-facing label (e.g. "카카오뱅크") at capture time so the
         // forwarded payload carries it even if the app is later uninstalled. Falls back to the
         // package name if the label can't be resolved.
@@ -163,6 +168,24 @@ class BankNotificationListener : NotificationListenerService() {
         // again. This replaces the old first-launch BiometricOnboarding popup as the app's
         // entry-time disclosure surface.
         const val KEY_BANK_NOTI_LOCAL_REVIEW_INFO_SHOWN = "pref_bankNotiLocalReviewInfoShown"
+
+        /**
+         * Returns true only when the notification looks like a financial transaction.
+         * Requires both:
+         *  - a Korean banking keyword (출금, 입금, 결제, 이체, 승인, 납부)
+         *  - a number followed by 원 (e.g. "21,000원")
+         * Exchange-rate alerts, brokerage news, and promotional pushes all fail this check
+         * and are silently dropped before entering the review queue.
+         */
+        private val TRANSACTION_KEYWORD_REGEX =
+            Regex("""출금|입금|결제|이체|송금|승인|납부|지출|적립|환급""")
+        private val AMOUNT_PATTERN_REGEX = Regex("""\d[\d,]*원""")
+
+        fun looksLikeTransaction(title: String, text: String): Boolean {
+            val combined = "$title $text"
+            return TRANSACTION_KEYWORD_REGEX.containsMatchIn(combined) &&
+                AMOUNT_PATTERN_REGEX.containsMatchIn(combined)
+        }
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {
             val flat = android.provider.Settings.Secure.getString(
