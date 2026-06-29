@@ -13,6 +13,7 @@ import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -145,6 +146,9 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             R.id.menu_confirm_all_ready -> {
                 confirmAllReady(); true
             }
+            R.id.menu_show_transfers -> {
+                showTransferHistoryDialog(); true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -273,6 +277,47 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
     private fun monthlyDayOfMonth(epochMs: Long): Int =
         Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_MONTH)
+
+    // ── Task 3b: 기존 이체 내역 보기 ────────────────────────────────────────────
+
+    /**
+     * 캐시된 거래 중 좌·우 계정이 모두 자산/부채 타입인 항목(= 계좌이체)을 다이얼로그로
+     * 표시한다. 사용자가 이체 패턴을 파악해 수동 분류 시 참고용으로 활용한다.
+     */
+    private fun showTransferHistoryDialog() {
+        val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
+        val transfers = entries.filter { e ->
+            val l = e.leftAccount.orEmpty()
+            val r = e.rightAccount.orEmpty()
+            (l == "assets" || l == "liabilities") && (r == "assets" || r == "liabilities")
+        }.sortedByDescending { it.date }
+
+        if (transfers.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.bank_noti_review_transfer_history_title)
+                .setMessage(R.string.bank_noti_review_transfer_history_empty)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+
+        val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
+        val labels = transfers.take(50).map { e ->
+            val lTitle = accounts.firstOrNull { it.id == e.leftAccountID }?.title ?: e.leftAccountID
+            val rTitle = accounts.firstOrNull { it.id == e.rightAccountID }?.title ?: e.rightAccountID
+            getString(
+                R.string.bank_noti_review_transfer_history_item_format,
+                e.item.orEmpty(), e.amount?.toLong() ?: 0L, lTitle, rTitle
+            )
+        }.toTypedArray()
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, labels)
+        AlertDialog.Builder(this)
+            .setTitle("${getString(R.string.bank_noti_review_transfer_history_title)} (${transfers.size}건)")
+            .setAdapter(adapter, null)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -449,6 +494,31 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             applyClassificationToCard(view, item)
             applyConfirmButton(view, item)
             applyRetryButton(view, item)
+            applyPairedTransferHint(view, item)
+        }
+
+        /**
+         * Task 3a: 큐 내에 이 알림과 금액 거의 동일하고 시각 차이 10분 이내인 다른 알림이
+         * 있으면 이체 가능성 힌트 TextView를 표시한다.
+         */
+        private fun applyPairedTransferHint(view: View, item: LocalReviewQueue.ReviewItem) {
+            val hintView = view.findViewById<TextView>(R.id.tv_paired_transfer_hint)
+            val itemAmt = BankNotificationClassifier.extractAmountFromText(
+                "${item.title}\n${item.text}"
+            ) ?: run { hintView.visibility = View.GONE; return }
+
+            val queue = LocalReviewQueue.getAll(this@BankNotificationReviewActivity)
+            val hasPair = queue.any { other ->
+                if (other.id == item.id) return@any false
+                val diff = kotlin.math.abs(other.time - item.time)
+                if (diff > 10 * 60 * 1000L) return@any false
+                val otherAmt = BankNotificationClassifier.extractAmountFromText(
+                    "${other.title}\n${other.text}"
+                ) ?: return@any false
+                val max = maxOf(itemAmt, otherAmt)
+                max > 0.0 && kotlin.math.abs(itemAmt - otherAmt) / max <= 0.01
+            }
+            hintView.visibility = if (hasPair) View.VISIBLE else View.GONE
         }
 
         /**

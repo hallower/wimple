@@ -73,6 +73,21 @@
         android:textColor="@color/md_theme_on_surface_variant"
         android:textSize="10sp" />
 
+    <!-- Task 3a: 동일 금액·비슷한 시각 이중 알림 → 이체 가능성 힌트 -->
+    <TextView
+        android:id="@+id/tv_paired_transfer_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textSize="12sp"
+        android:textColor="@color/md_theme_primary"
+        android:text="@string/bank_noti_review_paired_transfer_hint"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

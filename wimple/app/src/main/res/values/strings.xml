@@ -352,4 +352,11 @@
     <string name="bank_noti_review_monthly_link_item_format">%1$s  %2$,d원  (매월 %3$d일)</string>
     <string name="bank_noti_review_monthly_link_no_amount">금액을 인식할 수 없어 계좌만 연결했습니다. 수동 입력으로 금액을 확인하세요.</string>
     <string name="bank_noti_review_monthly_link_applied">월별 거래로 연결되었습니다. 확정 버튼으로 확정하세요.</string>
+
+    <!-- Task 3: 이체 인식 개선 -->
+    <string name="bank_noti_review_paired_transfer_hint">⇄ 비슷한 시각 동일 금액 알림 존재 — 이체 가능성 (수동 입력 권장)</string>
+    <string name="bank_noti_review_show_transfers">이체 내역 보기</string>
+    <string name="bank_noti_review_transfer_history_title">캐시된 계좌이체 내역</string>
+    <string name="bank_noti_review_transfer_history_empty">캐시된 계좌이체 내역이 없습니다.\n거래 내역을 새로고침하면 확인할 수 있습니다.</string>
+    <string name="bank_noti_review_transfer_history_item_format">%1$s  %2$,d원\n%3$s ← %4$s</string>
 </resources>

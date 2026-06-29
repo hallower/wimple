@@ -358,6 +358,79 @@ object BankNotificationClassifier {
         )
     }
 
+    // --- Task 3a: Cross-queue paired transfer detection --------------------------------
+    // 동일 큐 내 ±10분 / ±1% 금액의 알림 쌍을 이체로 추정한다.
+    // 계좌 번호·토큰으로 두 계좌를 특정할 수 있으면 계좌 쌍도 제안하고, 그렇지 않으면
+    // kind="transfer" AMBIGUOUS만 설정해 사용자가 수동 입력으로 완료하도록 유도한다.
+
+    private const val PAIRED_TRANSFER_WINDOW_MS = 10 * 60 * 1000L   // 10분
+    private const val PAIRED_TRANSFER_AMT_TOLERANCE = 0.01           // ±1%
+
+    private fun detectPairedTransfer(
+        ctx: android.content.Context,
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): Result? {
+        val queue = LocalReviewQueue.getAll(ctx)
+        val partner = queue.firstOrNull { other ->
+            other.id != item.id &&
+                kotlin.math.abs(other.time - item.time) <= PAIRED_TRANSFER_WINDOW_MS &&
+                run {
+                    val otherAmt = extractAmountFromText("${other.title}\n${other.text}") ?: return@run false
+                    kotlin.math.abs(otherAmt - extracted.amount) <=
+                        max(otherAmt, extracted.amount) * PAIRED_TRANSFER_AMT_TOLERANCE
+                }
+        } ?: return null
+
+        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        // 계좌 특정 시도: 양쪽 모두 resolve 되면 계좌 쌍까지 제안
+        val srcAcc = if (pool.size >= 2) resolveAccountByNumber(item.text, pool)
+            ?: resolveAccountByNumber(item.title, pool)
+            ?: resolveAccountByHangulToken("${item.title} ${item.text}", pool) else null
+        val dstAcc = if (pool.size >= 2 && srcAcc != null) resolveAccountByNumber(partner.text, pool.filter { it.id != srcAcc.id })
+            ?: resolveAccountByNumber(partner.title, pool.filter { it.id != srcAcc.id })
+            ?: resolveAccountByHangulToken("${partner.title} ${partner.text}", pool.filter { it.id != srcAcc.id }) else null
+
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn("${item.title} ${item.text}")
+        val inflow  = INFLOW_MARKER_REGEX.containsMatchIn("${item.title} ${item.text}")
+
+        stages.add(
+            AiClassificationLog.Stage(
+                "paired_transfer",
+                "item.time=${item.time} partner.id=${partner.id} partner.time=${partner.time}",
+                "PAIRED — same amount(±1%) within 10 min; src=${srcAcc?.title} dst=${dstAcc?.title}"
+            )
+        )
+
+        return if (srcAcc != null && dstAcc != null) {
+            val (left, right) = if (inflow && !outflow) srcAcc to dstAcc else dstAcc to srcAcc
+            Result(
+                state = State.AMBIGUOUS,
+                kind = "transfer",
+                merchant = extracted.merchant,
+                amount = extracted.amount,
+                leftAccountId = left.id,
+                leftAccountTitle = left.title,
+                rightAccountId = right.id,
+                rightAccountTitle = right.title,
+                source = Source.TRANSFER,
+                confidence = THRESHOLD_AMBIGUOUS
+            )
+        } else {
+            // 계좌 특정 불가 — kind만 transfer로 설정해 수동 입력 폼을 유도
+            Result(
+                state = State.AMBIGUOUS,
+                kind = "transfer",
+                merchant = extracted.merchant,
+                amount = extracted.amount,
+                source = Source.TRANSFER,
+                confidence = THRESHOLD_AMBIGUOUS
+            )
+        }
+    }
+
     // --- Monthly (recurring) transaction matching (방안 F) ------------------------------
     // The user pre-plans recurring transactions (관리비, 구독, 대출이자, 보험…) as Whooing
     // "monthly items", each carrying a due date, amount and a canonical left/right account
@@ -652,6 +725,10 @@ object BankNotificationClassifier {
         // Step 2.5: inter-account transfer detection (방안 D). Suggestion-only; runs only when
         // no confident mapping auto-confirmed above, so it never downgrades a good mapping.
         detectTransfer(item, extracted, accounts, stages)?.let { return@withContext it }
+
+        // Step 2.6 (Task 3a): 큐 내 동일금액·±10분 알림 쌍 → 이체 추정. 계좌번호·토큰으로
+        // 특정 가능하면 계좌 쌍까지 제안; 불가하면 kind=transfer AMBIGUOUS만 설정.
+        detectPairedTransfer(ctx, item, extracted, accounts, stages)?.let { return@withContext it }
 
         // Step 3: AI similarity.
         val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
