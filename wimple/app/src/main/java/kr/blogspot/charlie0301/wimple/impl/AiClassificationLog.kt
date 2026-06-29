@@ -26,7 +26,7 @@ object AiClassificationLog {
     private const val LOG_TAG = "AiClassificationLog"
     private const val PREFS_NAME = "wimple.ailog"
     private const val KEY_ENTRIES = "entries_json"
-    private const val MAX_ENTRIES = 30
+    private const val MAX_ENTRIES = 90
 
     data class Stage(val label: String, val prompt: String, val response: String?)
 
