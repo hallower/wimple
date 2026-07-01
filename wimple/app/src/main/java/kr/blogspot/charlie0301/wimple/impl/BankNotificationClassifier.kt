@@ -246,6 +246,15 @@ object BankNotificationClassifier {
     // Task 2: 알림 본문에서 3자 이상 한글 단어 추출 — 계좌명 역방향 매칭에 사용
     private val HANGUL_WORD_REGEX = Regex("""[가-힣]{3,}""")
 
+    // 이슈 1: AI merchant가 null일 때 알림 원문에서 직접 추출하는 금융 용어 목록.
+    // 우선순위 순서로 나열 — 가장 구체적인 용어를 먼저 검사한다.
+    private val BANKING_TERM_FALLBACK = listOf(
+        "결산이자", "이자수입", "이자", "배당금", "배당",
+        "캐시백", "적립금", "포인트적립", "환급금", "환급",
+        "수수료환급", "수수료", "보험료", "월급", "급여",
+        "용돈", "생활비", "퇴직금", "상여금", "성과급"
+    )
+
     private fun accountNumberFragments(title: String): List<String> {
         val out = ArrayList<String>()
         DIGIT_RUN_REGEX.findAll(title).forEach { if (it.value.length >= 3) out.add(it.value) }
@@ -970,7 +979,24 @@ object BankNotificationClassifier {
             null
         }
 
-        return ExtractedFields(kind, merchant, amount)
+        // Fallback: when AI merchant is null (omitted or grounding-rejected), scan the source
+        // text for known banking terms (이자, 배당금, 환급 …). This recovers merchant names like
+        // "결산이자" that the AI misclassifies as "이체" due to few-shot contamination.
+        val finalMerchant: String? = merchant ?: run {
+            val found = BANKING_TERM_FALLBACK.firstOrNull { term -> haystack.contains(term) }
+            if (found != null) {
+                stages.add(
+                    AiClassificationLog.Stage(
+                        "merchant_fallback",
+                        "scan for banking terms in source",
+                        "found \"$found\" — using as merchant"
+                    )
+                )
+            }
+            found
+        }
+
+        return ExtractedFields(kind, finalMerchant, amount)
     }
 
     // -------------------- AI: similarity --------------------
