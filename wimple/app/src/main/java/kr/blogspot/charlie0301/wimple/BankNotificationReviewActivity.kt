@@ -211,24 +211,6 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             }
         }
 
-        pager.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-            override fun getItemCount() = pages.size
-            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
-                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_ai_tutorial_page, parent, false)
-                v.layoutParams = android.view.ViewGroup.LayoutParams(
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {}
-            }
-            override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-                val page = pages[position]
-                holder.itemView.findViewById<TextView>(R.id.tutorial_icon).text = page.icon
-                holder.itemView.findViewById<TextView>(R.id.tutorial_title).text = page.title
-                holder.itemView.findViewById<TextView>(R.id.tutorial_desc).text = page.desc
-            }
-        }
-
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.tutorial_title)
             .setView(dialogView)
@@ -255,7 +237,30 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             }
         }
 
+        // Show the dialog first so ViewPager2's internal RecyclerView is fully measured
+        // before the adapter creates its first ViewHolder. Setting the adapter before show()
+        // causes onCreateViewHolder to run while the RecyclerView still has 0 dimensions,
+        // making all items 0px wide — they all appear stacked on the first "page" until
+        // the user swipes and forces a re-layout.
         dialog.show()
+
+        pager.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+            override fun getItemCount() = pages.size
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_ai_tutorial_page, parent, false)
+                v.layoutParams = android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {}
+            }
+            override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                val page = pages[position]
+                holder.itemView.findViewById<TextView>(R.id.tutorial_icon).text = page.icon
+                holder.itemView.findViewById<TextView>(R.id.tutorial_title).text = page.title
+                holder.itemView.findViewById<TextView>(R.id.tutorial_desc).text = page.desc
+            }
+        }
     }
 
     /**
