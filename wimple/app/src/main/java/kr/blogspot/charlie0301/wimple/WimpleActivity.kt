@@ -86,14 +86,18 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             fetchNotificationBadge()
         }
         refreshReviewQueueBadge()
+        // Read the post-picker flag BEFORE resumeIfPending so that if resumeIfPending itself
+        // launches the picker (and sets the flag), we don't consume it prematurely — the flag
+        // will be picked up on the next onResume after the picker returns.
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val postPickerPending = prefs.getBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false)
         // Finish a "user accepted AI suggestion but had to go grant notification access"
         // round-trip. No-op when no pending acceptance is recorded; otherwise checks the
         // current grant state and flips the local-review toggle if granted.
         LocalReviewSuggestion.resumeIfPending(this)
         // After the initial bank-app picker from the AI-suggestion enable flow, open the
         // review screen so the first-time tutorial fires immediately.
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        if (prefs.getBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false)) {
+        if (postPickerPending) {
             prefs.edit().putBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false).apply()
             startActivity(
                 Intent(this, BankNotificationReviewActivity::class.java)

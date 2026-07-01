@@ -232,6 +232,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.tutorial_title)
             .setView(dialogView)
+            .setCancelable(false)
             .create()
 
         pager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
@@ -250,6 +251,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                 pager.currentItem = pager.currentItem + 1
             } else {
                 dialog.dismiss()
+                finish()
             }
         }
 
