@@ -440,6 +440,93 @@ object BankNotificationClassifier {
         }
     }
 
+    // --- Step 2.7 (Issue 5): Account/card name and number direct matching ---------------
+    // detectTransfer/detectPairedTransfer가 실패한 후 AI 유사도 이전에 실행된다.
+    // 알림 텍스트에서 등록 계좌/카드의 이름 토큰이나 번호 접미사가 발견되면 AMBIGUOUS
+    // 결과를 반환해 AI 유사도가 잘못된 계좌를 고르는 상황을 방지한다.
+    // 1-account case: 명시된 계좌를 LEFT에 배치하고 반대 쪽은 사용자 확인에 맡긴다.
+    // 2-account case: detectTransfer와 동일한 출/입금 방향 로직으로 양쪽을 배치한다.
+
+    private fun detectByAccountDirect(
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): Result? {
+        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        if (pool.isEmpty()) return null
+
+        val haystack = "${item.title} ${item.text}"
+
+        fun scoreAccount(acc: Account): Double {
+            if (haystack.contains(acc.title)) return 1.0
+            val tokens = accountBankTokens(acc.title)
+            if (tokens.isNotEmpty() && tokens.any { haystack.contains(it) }) return 0.85
+            val frags = accountNumberFragments(acc.title)
+            if (frags.isNotEmpty() && frags.any { numberFragmentAppears(haystack, it) }) return 0.8
+            return 0.0
+        }
+
+        data class Hit(val acc: Account, val score: Double)
+
+        val hits = pool.map { Hit(it, scoreAccount(it)) }
+            .filter { it.score >= 0.8 }
+            .sortedByDescending { it.score }
+
+        if (hits.isEmpty()) {
+            stages.add(AiClassificationLog.Stage(
+                "account_direct", "name+number scan (pool=${pool.size})", "no match"
+            ))
+            return null
+        }
+
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(haystack)
+        val inflow = INFLOW_MARKER_REGEX.containsMatchIn(haystack)
+        if (!outflow && !inflow) {
+            stages.add(AiClassificationLog.Stage(
+                "account_direct",
+                "match: ${hits.first().acc.title} (${hits.first().score})",
+                "no direction marker — skip"
+            ))
+            return null
+        }
+
+        val hitAccounts = hits.map { it.acc }
+        val left: Account?
+        val right: Account?
+        if (hits.size >= 2) {
+            // 두 계좌 모두 매칭 — detectTransfer와 동일 방향 로직 적용.
+            // 번호로 매칭된 계좌 = 알림을 보낸 은행 자체 계좌(source), 나머지 = 상대방.
+            val src = resolveAccountByNumber(haystack, hitAccounts) ?: hits.first().acc
+            val cp = hitAccounts.firstOrNull { it.id != src.id }
+            if (inflow && !outflow) { left = src; right = cp } else { left = cp; right = src }
+        } else {
+            // 계좌 한 개만 매칭 — 해당 계좌를 LEFT(차변/대상)에 배치.
+            // 반대편(출처 또는 수입 계좌)은 사용자가 확인 시 입력한다.
+            left = hits.first().acc
+            right = null
+        }
+
+        stages.add(AiClassificationLog.Stage(
+            "account_direct",
+            "matches: ${hits.joinToString { "${it.acc.title}(${it.score})" }}",
+            "AMBIGUOUS left=${left?.title ?: "?"} right=${right?.title ?: "?"}"
+        ))
+
+        return Result(
+            state = State.AMBIGUOUS,
+            kind = extracted.kind,
+            merchant = extracted.merchant,
+            amount = extracted.amount,
+            leftAccountId = left?.id,
+            leftAccountTitle = left?.title,
+            rightAccountId = right?.id,
+            rightAccountTitle = right?.title,
+            source = Source.ACCOUNT_DIRECT,
+            confidence = hits.first().score
+        )
+    }
+
     // --- Monthly (recurring) transaction matching (방안 F) ------------------------------
     // The user pre-plans recurring transactions (관리비, 구독, 대출이자, 보험…) as Whooing
     // "monthly items", each carrying a due date, amount and a canonical left/right account
@@ -613,7 +700,7 @@ object BankNotificationClassifier {
     }
 
     enum class State { READY, AMBIGUOUS, UNPARSED, ERROR }
-    enum class Source { MAPPING, AI_SIMILARITY, TRANSFER, MONTHLY, NONE }
+    enum class Source { MAPPING, AI_SIMILARITY, TRANSFER, MONTHLY, ACCOUNT_DIRECT, NONE }
 
     data class Result(
         val state: State,
@@ -786,6 +873,10 @@ object BankNotificationClassifier {
         // Step 2.6 (Task 3a): 큐 내 동일금액·±10분 알림 쌍 → 이체 추정. 계좌번호·토큰으로
         // 특정 가능하면 계좌 쌍까지 제안; 불가하면 kind=transfer AMBIGUOUS만 설정.
         detectPairedTransfer(ctx, item, extracted, accounts, stages)?.let { return@withContext it }
+
+        // Step 2.7 (Issue 5): 알림 텍스트에서 등록 계좌/카드 이름·번호 직접 매칭.
+        // AI 유사도가 잘못된 계좌를 고르기 전에 명시된 계좌를 먼저 특정한다.
+        detectByAccountDirect(item, extracted, accounts, stages)?.let { return@withContext it }
 
         // Step 3: AI similarity.
         val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()

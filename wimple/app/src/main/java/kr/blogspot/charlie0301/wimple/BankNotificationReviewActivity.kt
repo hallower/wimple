@@ -623,6 +623,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                         " · ${getString(R.string.bank_noti_review_source_transfer)}"
                     BankNotificationClassifier.Source.MONTHLY ->
                         " · ${getString(R.string.bank_noti_review_source_monthly)}"
+                    BankNotificationClassifier.Source.ACCOUNT_DIRECT ->
+                        " · 직접매칭"
                     BankNotificationClassifier.Source.NONE -> ""
                 }
                 accountPair.text = pair + sourceTag
