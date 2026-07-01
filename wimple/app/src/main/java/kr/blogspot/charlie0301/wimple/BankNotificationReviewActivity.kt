@@ -368,20 +368,38 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             return
         }
         val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
-        val labels = monthlies.map { mi ->
-            val lTitle = accounts.firstOrNull { it.id == mi.leftAccountID }?.title ?: mi.leftAccountID
-            val rTitle = accounts.firstOrNull { it.id == mi.rightAccountID }?.title ?: mi.rightAccountID
-            val dueDay = monthlyDayOfMonth(mi.date ?: 0L)
-            val amt = mi.amount?.toLong() ?: 0L
-            getString(R.string.bank_noti_review_monthly_link_item_format, mi.item, amt, dueDay) +
-                "\n  $lTitle ← $rTitle"
-        }.toTypedArray()
 
-        AlertDialog.Builder(this)
+        val listView = android.widget.ListView(this)
+        listView.adapter = object : android.widget.ArrayAdapter<Any>(this, 0, monthlies) {
+            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                val mi = monthlies[position]
+                val v = convertView ?: LayoutInflater.from(context)
+                    .inflate(R.layout.item_monthly_link_picker, parent, false)
+                val lTitle = accounts.firstOrNull { it.id == mi.leftAccountID }?.title ?: mi.leftAccountID
+                val rTitle = accounts.firstOrNull { it.id == mi.rightAccountID }?.title ?: mi.rightAccountID
+                val dueDay = monthlyDayOfMonth(mi.date ?: 0L)
+                val amt = mi.amount?.toLong() ?: 0L
+                v.findViewById<android.widget.TextView>(R.id.monthly_item_name).text = mi.item
+                v.findViewById<android.widget.TextView>(R.id.monthly_item_amount).text =
+                    if (amt > 0L) "%,d원".format(amt) else ""
+                v.findViewById<android.widget.TextView>(R.id.monthly_item_left).text = lTitle
+                v.findViewById<android.widget.TextView>(R.id.monthly_item_right).text = rTitle
+                v.findViewById<android.widget.TextView>(R.id.monthly_item_day).text =
+                    getString(R.string.bank_noti_review_monthly_day_format, dueDay)
+                return v
+            }
+        }
+
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.bank_noti_review_monthly_link_dialog_title)
-            .setItems(labels) { _, which -> applyMonthlyLink(item, monthlies[which]) }
+            .setView(listView)
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .create()
+        listView.setOnItemClickListener { _, _, which, _ ->
+            dialog.dismiss()
+            applyMonthlyLink(item, monthlies[which])
+        }
+        dialog.show()
     }
 
     private fun applyMonthlyLink(item: LocalReviewQueue.ReviewItem, mi: Item) {

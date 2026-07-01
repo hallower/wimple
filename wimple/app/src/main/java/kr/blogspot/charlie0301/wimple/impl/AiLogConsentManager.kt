@@ -3,9 +3,14 @@ package kr.blogspot.charlie0301.wimple.impl
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Manages the opt-in dialog for emailing AI classification diagnostic logs.
@@ -103,12 +108,32 @@ object AiLogConsentManager {
      */
     fun buildEmailIntent(ctx: Context): Intent {
         val logJson = AiClassificationLog.exportJson(ctx)
-        val body = buildEmailBody(logJson)
-        return Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:")
+        val zipUri = writeLogZip(ctx, logJson)
+        val body = buildEmailBody()
+        return Intent(Intent.ACTION_SEND).apply {
+            type = "message/rfc822"
             putExtra(Intent.EXTRA_EMAIL, arrayOf(DEVELOPER_EMAIL))
             putExtra(Intent.EXTRA_SUBJECT, EMAIL_SUBJECT)
             putExtra(Intent.EXTRA_TEXT, body)
+            if (zipUri != null) {
+                putExtra(Intent.EXTRA_STREAM, zipUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+    }
+
+    private fun writeLogZip(ctx: Context, logJson: String): Uri? {
+        return try {
+            val dir = File(ctx.cacheDir, "ai_log_exports").also { it.mkdirs() }
+            val zipFile = File(dir, "wimple_ai_log.zip")
+            ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+                zos.putNextEntry(ZipEntry("wimple_ai_log.json"))
+                zos.write(logJson.toByteArray(Charsets.UTF_8))
+                zos.closeEntry()
+            }
+            FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", zipFile)
+        } catch (_: Exception) {
+            null
         }
     }
 
@@ -124,10 +149,10 @@ object AiLogConsentManager {
         }
     }
 
-    private fun buildEmailBody(logJson: String): String = """
+    private fun buildEmailBody(): String = """
 [사용자 동의 및 개인정보 처리 안내]
 
-본 이메일에는 Wimple 앱의 AI 자동 분류 진단 로그가 포함되어 있습니다.
+본 이메일에는 Wimple 앱의 AI 자동 분류 진단 로그가 첨부 파일(zip)로 포함되어 있습니다.
 
 ■ 수집 목적: AI 분류 정확도 개선
 ■ 수집 항목: 은행 앱 알림 제목·본문(텍스트), AI 처리 단계별 로그
@@ -135,11 +160,6 @@ object AiLogConsentManager {
 ■ 제공 대상: 앱 개발자(개인) 외 제3자에게 제공하지 않음
 
 위 내용을 확인하고 사용자가 직접 이 이메일을 전송하는 것으로 동의에 갈음합니다.
-
-─────────────────────────────────────────
-[AI 분류 로그 JSON]
-─────────────────────────────────────────
-$logJson
 """.trimIndent()
 
     private const val DEVELOPER_EMAIL = "hallower@gmail.com"

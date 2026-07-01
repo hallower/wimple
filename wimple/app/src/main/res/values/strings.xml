@@ -353,6 +353,7 @@
     <string name="bank_noti_review_monthly_link_dialog_title">연결할 월별 거래 선택</string>
     <string name="bank_noti_review_monthly_link_empty">등록된 월별 거래가 없습니다.\n가계부에서 월별 거래를 먼저 등록하세요.</string>
     <string name="bank_noti_review_monthly_link_item_format">%1$s  %2$,d원  (매월 %3$d일)</string>
+    <string name="bank_noti_review_monthly_day_format">매월 %d일</string>
     <string name="bank_noti_review_monthly_link_no_amount">금액을 인식할 수 없어 계좌만 연결했습니다. 수동 입력으로 금액을 확인하세요.</string>
     <string name="bank_noti_review_monthly_link_applied">월별 거래로 연결되었습니다. 확정 버튼으로 확정하세요.</string>
 
