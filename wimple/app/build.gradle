@@ -81,6 +81,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.biometric:biometric:1.1.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
 
     // On-device Gemini Nano via ML Kit GenAI Prompt API. Used by the local review queue
     // (BankNotificationLocalReview design) for availability gating in Phase 1's settings,

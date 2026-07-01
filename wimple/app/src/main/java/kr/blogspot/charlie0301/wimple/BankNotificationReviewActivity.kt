@@ -104,6 +104,121 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         refreshDualUseBanner()
         refresh()
         startClassificationPass()
+        maybeShowTutorial()
+    }
+
+    private fun maybeShowTutorial() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (prefs.getBoolean(KEY_AI_REVIEW_TUTORIAL_SHOWN, false)) return
+        prefs.edit().putBoolean(KEY_AI_REVIEW_TUTORIAL_SHOWN, true).apply()
+        showTutorialDialog()
+    }
+
+    private fun showTutorialDialog() {
+        data class TutorialPage(val icon: String, val title: String, val desc: String)
+
+        val pages = listOf(
+            TutorialPage(
+                getString(R.string.tutorial_page1_icon),
+                getString(R.string.tutorial_page1_title),
+                getString(R.string.tutorial_page1_desc)
+            ),
+            TutorialPage(
+                getString(R.string.tutorial_page2_icon),
+                getString(R.string.tutorial_page2_title),
+                getString(R.string.tutorial_page2_desc)
+            ),
+            TutorialPage(
+                getString(R.string.tutorial_page3_icon),
+                getString(R.string.tutorial_page3_title),
+                getString(R.string.tutorial_page3_desc)
+            ),
+            TutorialPage(
+                getString(R.string.tutorial_page4_icon),
+                getString(R.string.tutorial_page4_title),
+                getString(R.string.tutorial_page4_desc)
+            ),
+            TutorialPage(
+                getString(R.string.tutorial_page5_icon),
+                getString(R.string.tutorial_page5_title),
+                getString(R.string.tutorial_page5_desc)
+            )
+        )
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ai_tutorial, null)
+        val pager = dialogView.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.tutorial_pager)
+        val indicatorLayout = dialogView.findViewById<android.widget.LinearLayout>(R.id.page_indicator_layout)
+        val btnPrev = dialogView.findViewById<Button>(R.id.btn_tutorial_prev)
+        val btnNext = dialogView.findViewById<Button>(R.id.btn_tutorial_next)
+
+        // Build dot indicators
+        val density = resources.displayMetrics.density
+        val dotSize = (8 * density).toInt()
+        val dotMargin = (4 * density).toInt()
+        val dots = pages.indices.map { i ->
+            android.view.View(this).also { dot ->
+                val params = android.widget.LinearLayout.LayoutParams(dotSize, dotSize)
+                params.setMargins(dotMargin, 0, dotMargin, 0)
+                dot.layoutParams = params
+                dot.background = android.graphics.drawable.GradientDrawable().also { d ->
+                    d.shape = android.graphics.drawable.GradientDrawable.OVAL
+                    d.setColor(
+                        if (i == 0) getColor(R.color.md_theme_primary)
+                        else getColor(R.color.md_theme_outline_variant)
+                    )
+                }
+                indicatorLayout.addView(dot)
+            }
+        }
+
+        fun updateDots(current: Int) {
+            dots.forEachIndexed { i, dot ->
+                (dot.background as? android.graphics.drawable.GradientDrawable)?.setColor(
+                    if (i == current) getColor(R.color.md_theme_primary)
+                    else getColor(R.color.md_theme_outline_variant)
+                )
+            }
+        }
+
+        pager.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+            override fun getItemCount() = pages.size
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_ai_tutorial_page, parent, false)
+                return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {}
+            }
+            override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                val page = pages[position]
+                holder.itemView.findViewById<TextView>(R.id.tutorial_icon).text = page.icon
+                holder.itemView.findViewById<TextView>(R.id.tutorial_title).text = page.title
+                holder.itemView.findViewById<TextView>(R.id.tutorial_desc).text = page.desc
+            }
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.tutorial_title)
+            .setView(dialogView)
+            .create()
+
+        pager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateDots(position)
+                btnPrev.visibility = if (position > 0) View.VISIBLE else View.INVISIBLE
+                btnNext.text = getString(
+                    if (position == pages.lastIndex) R.string.tutorial_btn_start else R.string.tutorial_btn_next
+                )
+            }
+        })
+
+        btnPrev.setOnClickListener { pager.currentItem = pager.currentItem - 1 }
+        btnNext.setOnClickListener {
+            if (pager.currentItem < pages.lastIndex) {
+                pager.currentItem = pager.currentItem + 1
+            } else {
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 
     /**
@@ -656,5 +771,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         private const val STATE_COLOR_AMBIGUOUS = 0xFFEF6C00.toInt() // orange 800
         private const val STATE_COLOR_UNPARSED = 0xFF6A1B9A.toInt()  // purple 800
         private const val STATE_COLOR_ERROR = 0xFFC62828.toInt()     // red 800
+
+        private const val KEY_AI_REVIEW_TUTORIAL_SHOWN = "pref_aiReviewTutorialShown"
     }
 }
