@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple
 
 import android.app.AlertDialog
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -173,14 +174,33 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
         val forwardOn = prefs.getBoolean(BankNotificationListener.KEY_BANK_NOTI_FORWARD, false)
         if (!forwardOn) {
             toggle.isChecked = true
+            maybeShowAppPickerForAiEnable(ctx, prefs)
             return
         }
         AlertDialog.Builder(ctx)
             .setTitle(R.string.bank_noti_local_review_dual_warning_title)
             .setMessage(R.string.bank_noti_local_review_dual_warning_message)
-            .setPositiveButton(android.R.string.ok) { _, _ -> toggle.isChecked = true }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                toggle.isChecked = true
+                maybeShowAppPickerForAiEnable(ctx, prefs)
+            }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    /**
+     * 외부입력(forward) 없이 AI 분류 베타만 처음 켤 때 금융앱 선택창을 띄운다.
+     * KEY_BANK_NOTI_APPS가 이미 채워져 있으면 (외부입력 플로우를 먼저 거친 경우) 스킵한다.
+     */
+    private fun maybeShowAppPickerForAiEnable(ctx: Context, prefs: android.content.SharedPreferences) {
+        val apps = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+        if (apps.isNotEmpty()) return
+        Toast.makeText(ctx, R.string.bank_noti_picker_opening, Toast.LENGTH_SHORT).show()
+        prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true).apply()
+        startActivity(
+            Intent(ctx, BankAppPickerActivity::class.java)
+                .putExtra(BankAppPickerActivity.EXTRA_FINANCE_FILTER, true)
+        )
     }
 
     private fun showNotificationAccessGuideDialog(ctx: android.content.Context) {

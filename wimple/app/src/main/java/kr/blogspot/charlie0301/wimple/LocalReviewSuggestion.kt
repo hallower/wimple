@@ -135,6 +135,17 @@ object LocalReviewSuggestion {
             R.string.local_review_suggestion_enabled,
             Toast.LENGTH_SHORT
         ).show()
+        // 앱 선택 없이 AI 분류 베타만 켠 경우 금융앱 선택창을 띄워 KEY_BANK_NOTI_APPS를 채운다.
+        // 이미 외부입력 플로우를 거쳐 앱이 선택돼 있으면 스킵한다.
+        val apps = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+        if (apps.isEmpty()) {
+            Toast.makeText(activity, R.string.bank_noti_picker_opening, Toast.LENGTH_SHORT).show()
+            prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true).apply()
+            activity.startActivity(
+                Intent(activity, BankAppPickerActivity::class.java)
+                    .putExtra(BankAppPickerActivity.EXTRA_FINANCE_FILTER, true)
+            )
+        }
     }
 
     private fun showAccessGuideDialog(activity: AppCompatActivity) {
