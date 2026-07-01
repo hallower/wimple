@@ -21,14 +21,24 @@ android {
         applicationId "com.blogspot.charlie0301"
         minSdkVersion 26
         targetSdkVersion 35
-        versionCode 56
-        versionName "1.0.56"
+        versionCode 57
+        versionName "1.0.57"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "WIMPLE_APP_SECRET", "\"${wimpleAppSecret}\""
     }
+    signingConfigs {
+        release {
+            storeFile file(project.findProperty('storeFile') ?: 'C:/_csk/csk/csk_upload.jks')
+            storePassword project.findProperty('storePassword') ?: ''
+            keyAlias project.findProperty('keyAlias') ?: 'csk'
+            keyPassword project.findProperty('keyPassword') ?: ''
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
