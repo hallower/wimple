@@ -3,44 +3,93 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="4dp">
 
-    <!-- State badge (READY / AMBIGUOUS / UNPARSED / classifying / error). The badge text and
-         tint are set programmatically per-row from the cached classification. -->
-    <TextView
-        android:id="@+id/state_badge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="?attr/colorPrimary" />
-
-    <!-- AI-extracted "거래명 / 금액원" — visible once classification has produced fields.
-         When classification is still pending or yielded nothing, this row is hidden. -->
-    <TextView
-        android:id="@+id/extracted_line"
+    <!-- Header row: state badge on the left, notification time on the right -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <!-- "<좌> ← <우>" suggested account pair, plus a small source tag (learned vs AI). Hidden
-         until the cascade resolves to a usable suggestion. -->
+        <TextView
+            android:id="@+id/state_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="?attr/colorPrimary" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/noti_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/md_theme_on_surface_variant"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+    <!-- AI-extracted amount + merchant: prominent display.
+         Visible once classification has produced extracted fields. -->
+    <LinearLayout
+        android:id="@+id/extracted_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/extracted_line"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/md_theme_on_surface" />
+
+    </LinearLayout>
+
+    <!-- "<좌> ← <우>" suggested account pair + source tag. -->
     <TextView
         android:id="@+id/account_pair_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:textSize="13sp"
+        android:textColor="@color/md_theme_primary"
         android:visibility="gone" />
 
+    <!-- Task 3a: 동일 금액·비슷한 시각 이중 알림 → 이체 가능성 힌트 -->
+    <TextView
+        android:id="@+id/tv_paired_transfer_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:textSize="12sp"
+        android:textColor="@color/md_theme_primary"
+        android:text="@string/bank_noti_review_paired_transfer_hint"
+        android:visibility="gone" />
+
+    <!-- Thin separator before raw notification text -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -48,50 +97,30 @@
         android:layout_marginBottom="6dp"
         android:background="@color/md_theme_outline_variant" />
 
-    <!-- Original notification title (e.g., "[카카오뱅크] 출금"). -->
+    <!-- Raw notification body — smaller, secondary-colour text -->
     <TextView
         android:id="@+id/noti_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="bold"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:textColor="@color/md_theme_on_surface_variant" />
 
     <TextView
         android:id="@+id/noti_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="12sp"
-        android:textColor="@color/md_theme_on_surface_variant" />
-
-    <TextView
-        android:id="@+id/noti_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="1dp"
+        android:textSize="11sp"
         android:textColor="@color/md_theme_on_surface_variant"
-        android:textSize="10sp" />
+        android:maxLines="2"
+        android:ellipsize="end" />
 
-    <!-- Task 3a: 동일 금액·비슷한 시각 이중 알림 → 이체 가능성 힌트 -->
-    <TextView
-        android:id="@+id/tv_paired_transfer_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:textSize="12sp"
-        android:textColor="@color/md_theme_primary"
-        android:text="@string/bank_noti_review_paired_transfer_hint"
-        android:visibility="gone" />
-
+    <!-- Action buttons row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="4dp"
         android:gravity="end"
         android:orientation="horizontal">
 
@@ -102,15 +131,13 @@
             android:layout_height="wrap_content"
             android:text="@string/bank_noti_review_dismiss" />
 
-        <!-- Visible only on UNPARSED / ERROR rows. Clears the cached classification so the
-             next pass re-runs inference; useful when the first attempt failed because AICore
-             was warming up or candidate pool was thin. -->
+        <!-- Visible only on UNPARSED / ERROR rows. -->
         <Button
             android:id="@+id/btn_retry"
             style="?attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:text="@string/bank_noti_review_retry"
             android:visibility="gone" />
 
@@ -120,7 +147,7 @@
             style="?attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:text="@string/bank_noti_review_monthly_link" />
 
         <Button
@@ -128,16 +155,16 @@
             style="?attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:text="@string/bank_noti_review_manual_entry" />
 
-        <!-- Visible only on READY rows; the activity unhides it once classification lands. -->
+        <!-- Visible only on READY rows. -->
         <Button
             android:id="@+id/btn_confirm"
             style="?attr/buttonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:text="@string/bank_noti_review_confirm"
             android:visibility="gone" />
 

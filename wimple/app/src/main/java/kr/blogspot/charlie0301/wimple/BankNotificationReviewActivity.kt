@@ -566,6 +566,7 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
         private fun applyClassificationToCard(view: View, item: LocalReviewQueue.ReviewItem) {
             val badge = view.findViewById<TextView>(R.id.state_badge)
+            val extractedSection = view.findViewById<View>(R.id.extracted_section)
             val extracted = view.findViewById<TextView>(R.id.extracted_line)
             val accountPair = view.findViewById<TextView>(R.id.account_pair_line)
 
@@ -574,13 +575,13 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             // Three display modes:
             //  - Pending (no cached JSON yet): "Checking…" badge, extracted/pair hidden.
             //  - Result with extracted fields: show badge + merchant·amount line + suggested
-            //    account pair (if the cascade resolved one).
+            //    account pair (if the cascade resolved one or both accounts).
             //  - Result with no extracted fields: show state badge only (e.g., UNPARSED on
             //    novel notification with no candidates).
             if (item.classificationJson == null) {
                 badge.text = getString(R.string.bank_noti_review_state_classifying)
-                badge.setBackgroundColor(STATE_COLOR_NEUTRAL)
-                extracted.visibility = View.GONE
+                setBadgePill(badge, STATE_COLOR_NEUTRAL)
+                extractedSection?.visibility = View.GONE
                 accountPair.visibility = View.GONE
                 return
             }
@@ -596,24 +597,27 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                     getString(R.string.bank_noti_review_state_error) to STATE_COLOR_ERROR
             }
             badge.text = label
-            badge.setBackgroundColor(color)
+            setBadgePill(badge, color)
 
             if (result != null && result.merchant != null && result.amount != null) {
                 val amountStr = getString(
                     R.string.bank_noti_review_amount_format,
                     result.amount.toLong()
                 )
-                extracted.text = "${result.merchant}    $amountStr"
-                extracted.visibility = View.VISIBLE
+                extracted.text = "${result.merchant}  $amountStr"
+                extractedSection?.visibility = View.VISIBLE
             } else {
-                extracted.visibility = View.GONE
+                extractedSection?.visibility = View.GONE
             }
 
-            if (result != null && result.leftAccountTitle != null && result.rightAccountTitle != null) {
-                val pair = getString(
-                    R.string.bank_noti_review_account_pair,
-                    result.leftAccountTitle, result.rightAccountTitle
-                )
+            // Show account pair when at least one side is resolved.
+            // "?" is shown on the unknown side so the user knows one side was identified.
+            val hasAnyAccount = result != null &&
+                (result.leftAccountTitle != null || result.rightAccountTitle != null)
+            if (hasAnyAccount) {
+                val left = result!!.leftAccountTitle ?: "?"
+                val right = result.rightAccountTitle ?: "?"
+                val pair = getString(R.string.bank_noti_review_account_pair, left, right)
                 val sourceTag = when (result.source) {
                     BankNotificationClassifier.Source.MAPPING ->
                         " · ${getString(R.string.bank_noti_review_source_mapping)}"
@@ -632,6 +636,14 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             } else {
                 accountPair.visibility = View.GONE
             }
+        }
+
+        private fun setBadgePill(badge: TextView, color: Int) {
+            val density = badge.context.resources.displayMetrics.density
+            val drawable = android.graphics.drawable.GradientDrawable()
+            drawable.cornerRadius = density * 20f
+            drawable.setColor(color)
+            badge.background = drawable
         }
     }
 

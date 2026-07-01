@@ -86,7 +86,18 @@ public class EntryItemView extends LinearLayout {
 
             date.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface_variant));
             title.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface));
-            amount.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.md_theme_on_surface));
+            // Color the amount by transaction type: expense=red, income=green, transfer=blue
+            String leftType = item.getLeftAccount();
+            String rightType = item.getRightAccount();
+            int amountColorRes;
+            if (leftType.startsWith("e") || rightType.startsWith("e")) {
+                amountColorRes = R.color.text_red;
+            } else if (leftType.startsWith("i") || rightType.startsWith("i")) {
+                amountColorRes = R.color.text_green;
+            } else {
+                amountColorRes = R.color.text_blue;
+            }
+            amount.setTextColor(androidx.core.content.ContextCompat.getColor(context, amountColorRes));
         } else {
             /*
 			background.setBackgroundResource(R.drawable.gray_box);
