@@ -105,6 +105,34 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         refresh()
         startClassificationPass()
         maybeShowTutorial()
+        maybeShowLogConsentDialog()
+    }
+
+    private fun maybeShowLogConsentDialog() {
+        val mgr = kr.blogspot.charlie0301.wimple.impl.AiLogConsentManager
+        if (!mgr.shouldPrompt(this)) return
+        mgr.markShown(this)
+
+        // Preview: show the first 300 chars of the log to the user before asking
+        val logPreview = kr.blogspot.charlie0301.wimple.impl.AiClassificationLog
+            .exportJson(this).take(300) + "\n…"
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.ai_log_consent_title))
+            .setMessage(getString(R.string.ai_log_consent_message, logPreview))
+            .setPositiveButton(R.string.ai_log_consent_agree) { _, _ ->
+                val intent = mgr.buildEmailIntent(this)
+                if (intent.resolveActivity(packageManager) != null) {
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, R.string.ai_log_consent_no_email_app, Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNeutralButton(R.string.ai_log_consent_skip_once, null)
+            .setNegativeButton(R.string.ai_log_consent_never) { _, _ ->
+                mgr.neverAsk(this)
+            }
+            .show()
     }
 
     private fun maybeShowTutorial() {
@@ -595,6 +623,8 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                 DateFormat.format("yyyy-MM-dd HH:mm:ss", item.time)
 
             view.findViewById<Button>(R.id.btn_dismiss).setOnClickListener {
+                kr.blogspot.charlie0301.wimple.impl.AiLogConsentManager
+                    .recordDismissal(this@BankNotificationReviewActivity)
                 LocalReviewQueue.removeById(this@BankNotificationReviewActivity, item.id)
                 refresh()
             }
