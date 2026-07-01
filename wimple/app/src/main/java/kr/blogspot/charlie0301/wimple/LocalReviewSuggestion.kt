@@ -140,7 +140,10 @@ object LocalReviewSuggestion {
         val apps = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
         if (apps.isEmpty()) {
             Toast.makeText(activity, R.string.bank_noti_picker_opening, Toast.LENGTH_SHORT).show()
-            prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true).apply()
+            prefs.edit()
+                .putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true)
+                .putBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, true)
+                .apply()
             activity.startActivity(
                 Intent(activity, BankAppPickerActivity::class.java)
                     .putExtra(BankAppPickerActivity.EXTRA_FINANCE_FILTER, true)

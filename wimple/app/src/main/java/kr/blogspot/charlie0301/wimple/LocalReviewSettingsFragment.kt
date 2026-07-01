@@ -4,14 +4,21 @@ import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.preference.CheckBoxPreference
+import androidx.preference.ListPreference
+import androidx.preference.MultiSelectListPreference
+import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import kr.blogspot.charlie0301.wimple.impl.BankNotifications
 import kr.blogspot.charlie0301.wimple.impl.util.GenAiAvailability
 
 /**
@@ -35,11 +42,79 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.settings_local_review)
+        findPreference<Preference>(BankNotificationListener.KEY_BANK_NOTI_ADD_APP)
+            ?.setOnPreferenceClickListener {
+                startActivity(Intent(context, BankAppPickerActivity::class.java))
+                false
+            }
+        refreshBankAppEntries()
+    }
+
+    private fun refreshBankAppEntries() {
+        val ctx = context ?: return
+        val appsPref = findPreference<MultiSelectListPreference>(
+            BankNotificationListener.KEY_BANK_NOTI_APPS) ?: return
+
+        val customValues = BankNotifications.getCustomApps(ctx)
+        val pm = ctx.packageManager
+        val customEntries = customValues.map { pkg ->
+            try {
+                val info = pm.getApplicationInfo(pkg, 0)
+                pm.getApplicationLabel(info).toString()
+            } catch (_: PackageManager.NameNotFoundException) {
+                pkg
+            }
+        }
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val sortOrder = prefs.getString(BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER, "added")
+        val sorted = ArrayList<Pair<String, String>>(customEntries.size)
+        when (sortOrder) {
+            "name" -> {
+                for (i in customEntries.indices) sorted.add(customEntries[i] to customValues[i])
+                sorted.sortBy { it.first.lowercase() }
+            }
+            else -> {
+                for (i in customEntries.indices.reversed()) sorted.add(customEntries[i] to customValues[i])
+            }
+        }
+
+        appsPref.entries = sorted.map { it.first }.toTypedArray()
+        appsPref.entryValues = sorted.map { it.second }.toTypedArray()
+
+        val monitored = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+        if (appsPref.values != monitored) {
+            appsPref.values = HashSet(monitored)
+        }
+
+        appsPref.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
+            @Suppress("UNCHECKED_CAST")
+            val newSelected = (newValue as? Set<String>) ?: return@OnPreferenceChangeListener true
+            val oldSelected = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
+            val removed = oldSelected - newSelected
+            if (removed.isEmpty()) return@OnPreferenceChangeListener true
+
+            val updated = BankNotifications.getCustomApps(ctx).toMutableList()
+            updated.removeAll(removed)
+            BankNotifications.setCustomApps(ctx, updated)
+
+            Handler(Looper.getMainLooper()).post { refreshBankAppEntries() }
+            true
+        }
+
+        val sortPref = findPreference<ListPreference>(BankNotificationListener.KEY_BANK_NOTI_SORT_ORDER)
+        if (sortPref != null && sortPref.onPreferenceChangeListener == null) {
+            sortPref.onPreferenceChangeListener = OnPreferenceChangeListener { _, _ ->
+                Handler(Looper.getMainLooper()).post { refreshBankAppEntries() }
+                true
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
         applyState()
+        refreshBankAppEntries()
         // Kick a fresh availability check on every entry — cheap binder call into AICore.
         // When it completes we re-apply state so DOWNLOADABLE / DOWNLOADING / AVAILABLE
         // resolve to the right summary even if the cached value was stale.
@@ -60,6 +135,15 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             if (toggle != null && !toggle.isChecked) {
                 advanceFromAccess(ctx, prefs, toggle)
             }
+        }
+        // After the initial bank-app picker launched from the AI-enable flow, navigate to the
+        // review screen so the first-time tutorial fires immediately.
+        if (prefs.getBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false)) {
+            prefs.edit().putBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false).apply()
+            startActivity(
+                Intent(ctx, BankNotificationReviewActivity::class.java)
+                    .putExtra(BankNotificationReviewActivity.EXTRA_SHOW_TUTORIAL, true)
+            )
         }
     }
 
@@ -196,7 +280,10 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
         val apps = prefs.getStringSet(BankNotificationListener.KEY_BANK_NOTI_APPS, emptySet()) ?: emptySet()
         if (apps.isNotEmpty()) return
         Toast.makeText(ctx, R.string.bank_noti_picker_opening, Toast.LENGTH_SHORT).show()
-        prefs.edit().putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true).apply()
+        prefs.edit()
+            .putBoolean(BankNotificationListener.KEY_BANK_NOTI_INITIAL_PICKER_DONE, true)
+            .putBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, true)
+            .apply()
         startActivity(
             Intent(ctx, BankAppPickerActivity::class.java)
                 .putExtra(BankAppPickerActivity.EXTRA_FINANCE_FILTER, true)

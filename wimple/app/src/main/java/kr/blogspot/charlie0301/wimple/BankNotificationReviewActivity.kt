@@ -136,6 +136,9 @@ class BankNotificationReviewActivity : AppCompatActivity() {
     }
 
     private fun maybeShowTutorial() {
+        if (!intent.getBooleanExtra(EXTRA_SHOW_TUTORIAL, false)) return
+        // Consume the extra so rotation / back-stack re-entry doesn't re-trigger.
+        intent.removeExtra(EXTRA_SHOW_TUTORIAL)
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         if (prefs.getBoolean(KEY_AI_REVIEW_TUTORIAL_SHOWN, false)) return
         prefs.edit().putBoolean(KEY_AI_REVIEW_TUTORIAL_SHOWN, true).apply()
@@ -212,6 +215,10 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             override fun getItemCount() = pages.size
             override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
                 val v = LayoutInflater.from(parent.context).inflate(R.layout.item_ai_tutorial_page, parent, false)
+                v.layoutParams = android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                )
                 return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {}
             }
             override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
@@ -803,5 +810,6 @@ class BankNotificationReviewActivity : AppCompatActivity() {
         private const val STATE_COLOR_ERROR = 0xFFC62828.toInt()     // red 800
 
         private const val KEY_AI_REVIEW_TUTORIAL_SHOWN = "pref_aiReviewTutorialShown"
+        const val EXTRA_SHOW_TUTORIAL = "show_tutorial"
     }
 }

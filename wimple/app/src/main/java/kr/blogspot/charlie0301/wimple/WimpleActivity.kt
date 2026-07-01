@@ -90,6 +90,16 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         // round-trip. No-op when no pending acceptance is recorded; otherwise checks the
         // current grant state and flips the local-review toggle if granted.
         LocalReviewSuggestion.resumeIfPending(this)
+        // After the initial bank-app picker from the AI-suggestion enable flow, open the
+        // review screen so the first-time tutorial fires immediately.
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (prefs.getBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false)) {
+            prefs.edit().putBoolean(BankNotificationListener.KEY_LOCAL_REVIEW_POST_PICKER_PENDING, false).apply()
+            startActivity(
+                Intent(this, BankNotificationReviewActivity::class.java)
+                    .putExtra(BankNotificationReviewActivity.EXTRA_SHOW_TUTORIAL, true)
+            )
+        }
     }
 
     private fun refreshReviewQueueBadge() {

@@ -172,6 +172,9 @@
     <string name="bank_noti_enable_summary">은행·카드 앱의 알림을 감지해 거래내역을 후잉으로 전달합니다. 알림 접근 권한이 필요합니다.</string>
     <string name="bank_noti_apps_title">감지할 은행·카드 앱</string>
     <string name="bank_noti_apps_summary">알림을 수집할 앱을 선택하세요.</string>
+    <string name="local_review_apps_pref_title">감지할 은행·카드 앱</string>
+    <string name="local_review_apps_pref_none">선택된 앱 없음 · 탭하여 설정</string>
+    <string name="local_review_apps_pref_count">%d개 앱 감지 중 · 탭하여 편집</string>
     <string name="bank_noti_threshold_title">전송 전 모을 알림 개수</string>
     <string name="bank_noti_threshold_summary">지정한 개수만큼 쌓이면 후잉으로 자동 전달합니다. (최소 2개)</string>
     <string name="bank_noti_toast_title">알림 수집 시 토스트 표시</string>

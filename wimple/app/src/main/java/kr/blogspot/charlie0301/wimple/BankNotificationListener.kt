@@ -161,6 +161,10 @@ class BankNotificationListener : NotificationListenerService() {
         const val KEY_BANK_NOTI_ACCESS_REQUESTED = "pref_bankNotiAccessRequested"
         const val KEY_BANK_NOTI_SORT_ORDER = "pref_bankNotiSortOrder"
         const val KEY_BANK_NOTI_INITIAL_PICKER_DONE = "pref_bankNotiInitialPickerDone"
+        // Set when the initial bank-app picker is launched from the AI-classification enable
+        // flow. Cleared by the first onResume that sees it, which then navigates to
+        // BankNotificationReviewActivity so the tutorial dialog fires immediately.
+        const val KEY_LOCAL_REVIEW_POST_PICKER_PENDING = "pref_localReviewPostPickerPending"
         const val KEY_BANK_NOTI_LOCAL_REVIEW = "pref_bankNotiLocalReview"
         // One-shot — set after the user acknowledges the on-device-AI data-handling notice
         // shown the first time KEY_BANK_NOTI_LOCAL_REVIEW is turned on. Cleared on logout
