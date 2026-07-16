@@ -5,9 +5,13 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Encapsulates all floating-action-button behavior previously living in [WimpleActivity]:
@@ -132,6 +136,38 @@ class FloatingActionButtonController(
         )
     }
 
+    /**
+     * Allowed range for the FAB's top-left corner, as [minX, minY, maxX, maxY], shrunk inward
+     * from the raw parent bounds by system bars + system gesture + display cutout insets.
+     *
+     * Needed because targetSdk 35 forces edge-to-edge: the CoordinatorLayout now measures the
+     * full display area, so clamping against raw parent width/height (the old behavior) lets
+     * the FAB land flush against the physical screen edge. On large unfolded screens (Z Fold 7
+     * main display) that edge strip is the system back-gesture zone, which steals the touch-down
+     * before the FAB's OnTouchListener ever sees it — the button renders but can't be tapped,
+     * exactly the "폴드 7에서 화면 테두리에 위치해서 사용을 못한다" report. Insetting the
+     * draggable/save/restore range keeps the FAB out of that zone entirely, on any screen size.
+     */
+    private fun dragBounds(parent: ViewGroup): FloatArray {
+        val insets = ViewCompat.getRootWindowInsets(fab)?.getInsets(
+            WindowInsetsCompat.Type.systemBars() or
+                WindowInsetsCompat.Type.systemGestures() or
+                WindowInsetsCompat.Type.displayCutout()
+        )
+        val left = insets?.left ?: 0
+        val top = insets?.top ?: 0
+        val right = insets?.right ?: 0
+        val bottom = insets?.bottom ?: 0
+
+        val minX = left.toFloat()
+        val minY = top.toFloat()
+        // If insets are wider than the parent itself (e.g. a transient 0-size layout pass),
+        // fall back to the un-inset bound rather than producing a negative-width range.
+        val maxX = max(minX, (parent.width - right - fab.width).toFloat())
+        val maxY = max(minY, (parent.height - bottom - fab.height).toFloat())
+        return floatArrayOf(minX, minY, maxX, maxY)
+    }
+
     private fun makeDraggable() {
         var dX = 0f
         var dY = 0f
@@ -161,10 +197,9 @@ class FloatingActionButtonController(
                     }
                     if (isDragging) {
                         val parent = view.parent as ViewGroup
-                        view.x = (event.rawX + dX)
-                            .coerceIn(0f, (parent.width - view.width).toFloat())
-                        view.y = (event.rawY + dY)
-                            .coerceIn(0f, (parent.height - view.height).toFloat())
+                        val bounds = dragBounds(parent)
+                        view.x = (event.rawX + dX).coerceIn(bounds[0], bounds[2])
+                        view.y = (event.rawY + dY).coerceIn(bounds[1], bounds[3])
                     }
                     isDragging
                 }
@@ -246,10 +281,16 @@ class FloatingActionButtonController(
      */
     private fun savePosition(x: Float, y: Float) {
         val parent = fab.parent as? ViewGroup
-        val pw = parent?.width?.toFloat() ?: 0f
-        val ph = parent?.height?.toFloat() ?: 0f
-        val clampedX = if (pw > 0f) x.coerceIn(0f, pw - fab.width) else x
-        val clampedY = if (ph > 0f) y.coerceIn(0f, ph - fab.height) else y
+        val clampedX: Float
+        val clampedY: Float
+        if (parent != null && parent.width > 0 && parent.height > 0) {
+            val bounds = dragBounds(parent)
+            clampedX = x.coerceIn(bounds[0], bounds[2])
+            clampedY = y.coerceIn(bounds[1], bounds[3])
+        } else {
+            clampedX = x
+            clampedY = y
+        }
 
         val (keyX, keyY) = positionKeysForCurrentConfig()
         PreferenceManager.getDefaultSharedPreferences(activity).edit()
@@ -282,20 +323,23 @@ class FloatingActionButtonController(
                 .apply()
         }
 
+        val bounds = dragBounds(parent)
         if (prefs.contains(keyX)) {
             val savedX = prefs.getFloat(keyX, 0f)
             val savedY = prefs.getFloat(keyY, 0f)
-            fab.x = savedX.coerceIn(0f, pw - fab.width)
-            fab.y = savedY.coerceIn(0f, ph - fab.height)
+            fab.x = savedX.coerceIn(bounds[0], bounds[2])
+            fab.y = savedY.coerceIn(bounds[1], bounds[3])
         } else {
             // No saved coords for this fold state. Reset to the layout's intent —
             // bottom-end with fab_margin — since the FAB has a manual x/y carried
             // over from the OTHER state and would otherwise sit at coordinates
             // that were correct for those bounds but are now off-screen or in
-            // the middle of the smaller layout.
+            // the middle of the smaller layout. Also kept clear of system bar /
+            // gesture / cutout insets, so the default spot is never inside the
+            // edge back-gesture zone on large edge-to-edge screens.
             val margin = activity.resources.getDimensionPixelSize(R.dimen.fab_margin).toFloat()
-            fab.x = pw - fab.width - margin
-            fab.y = ph - fab.height - margin
+            fab.x = min(bounds[2], pw - fab.width - margin).coerceAtLeast(bounds[0])
+            fab.y = min(bounds[3], ph - fab.height - margin).coerceAtLeast(bounds[1])
         }
     }
 

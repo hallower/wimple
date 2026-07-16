@@ -27,10 +27,16 @@ Wimple 코드를 이해하려면 [whooing.com](https://whooing.com) 의 데이�
 | `what` 값 | 한글 | 용도 |
 |---|---|---|
 | `assets` | 자산 | 현금, 통장, 주식, 부동산 등 보유 자원 |
-| `debts` | 부채 | 카드빚, 대출 등 갚아야 할 돈 |
+| `liabilities` | 부채 | 카드빚, 대출 등 갚아야 할 돈 |
 | `capital` | 자본 | 순자산 (자산 - 부채) — 보통 "이월" 계정 |
 | `income` | 수익 | 월급, 이자 등 들어오는 돈 |
 | `expenses` | 비용 | 식비, 교통비 등 나가는 돈 |
+
+> 부채 카테고리의 실제 wire 값은 `liabilities`다 (단말 DB/API 응답 실측 확인,
+> 2026-07-16). "debts"라는 표기는 이 문서의 과거 오기 — 실제 코드에서
+> `liabilities`가 아닌 `debts`로 비교하면 부채/카드 계좌가 전혀 매칭되지
+> 않는다 ([BankNotificationClassifier.kt](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/BankNotificationClassifier.kt)
+> 계좌 직접 매칭 로직에서 실제로 발생했던 버그).
 
 > 주의: API 응답은 `incomes` / `expenses` 같은 **복수형**으로 옴. Wimple 코드는
 > `account.getWhat()` (또는 Account 모델 `what` 필드)로 비교.
@@ -72,7 +78,7 @@ Wimple 위젯이 일별 수익·지출을 집계할 때 쓰는 룰
 | 비용 지출 (식비 등) | `expenses` | `assets` | **+expense** |
 | 비용 환불 | `assets` | `expenses` | **-expense** |
 | 자산 ↔ 자산 (이체) | `assets` | `assets` | 무시 |
-| 부채 상환 | `debts` | `assets` | 무시 |
+| 부채 상환 | `liabilities` | `assets` | 무시 |
 | 그 외 (자본 조정 등) | — | — | 무시 |
 
 `pl.json_array` (서버 측 손익 집계) 와 동일한 결과를 클라이언트에서 재현하기 위한

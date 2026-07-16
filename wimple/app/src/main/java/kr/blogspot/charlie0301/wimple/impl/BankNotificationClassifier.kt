@@ -2,6 +2,7 @@ package kr.blogspot.charlie0301.wimple.impl
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.mlkit.genai.prompt.Generation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -121,10 +122,19 @@ object BankNotificationClassifier {
             val v = m.groupValues[1].replace(",", "").toDoubleOrNull()
             if (v != null && v > 0.0) return v
         }
+        // Overseas-transaction notifications ("금액 KRW83,300") state the amount with a
+        // leading "KRW" currency code instead of a trailing "원" — the pattern above never
+        // matches those bodies, so this notification type silently fell through to no amount
+        // at all. Fall back to a currency-code-prefixed match.
+        KRW_PREFIXED_AMOUNT_REGEX.find(text)?.let { m ->
+            val v = m.groupValues[1].replace(",", "").toDoubleOrNull()
+            if (v != null && v > 0.0) return v
+        }
         return null
     }
 
     private val AMOUNT_REGEX = Regex("""(\d{1,3}(?:,\d{3})+|\d+)\s*원""")
+    private val KRW_PREFIXED_AMOUNT_REGEX = Regex("""KRW\s*(\d{1,3}(?:,\d{3})+|\d+)""")
 
     // Labels marking a "원" figure as a balance / cumulative total / limit rather than the
     // transaction amount. Checked in the text immediately preceding the matched number.
@@ -136,11 +146,13 @@ object BankNotificationClassifier {
         return BALANCE_LABEL_REGEX.containsMatchIn(haystack.substring(from, numStart))
     }
 
-    // KRW-suffixed pattern above doesn't cover JPY/USD-prefixed bodies that hana
-    // card issues for overseas transactions. Used only by the prefilter to detect
-    // the presence of *any* monetary amount; the regex group set is intentionally
-    // limited to the currency codes seen on this device's bank notifications.
-    private val FOREIGN_AMOUNT_REGEX = Regex("""(?:USD|JPY|EUR|CNY|GBP)\s*\d[\d,]*""")
+    // "...원"-suffixed pattern above doesn't cover currency-code-prefixed bodies that hana
+    // card issues for overseas transactions — either the foreign-currency amount
+    // ("USD 62.99") or the KRW-converted amount stated as "금액 KRW83,300" (no "원").
+    // Used only by the prefilter to detect the presence of *any* monetary amount; the
+    // regex group set is intentionally limited to the currency codes seen on this
+    // device's bank notifications.
+    private val FOREIGN_AMOUNT_REGEX = Regex("""(?:USD|JPY|EUR|CNY|GBP|KRW)\s*\d[\d,]*""")
 
     // Plain integer groups (with optional comma grouping). Used by the grounding
     // check to verify the AI's extracted amount actually appears somewhere in the
@@ -164,9 +176,16 @@ object BankNotificationClassifier {
         "기준환율 안내",
         "카드 청구서가 도착",
         "청구서를 지금 바로 확인",
-        "결제 금액 할인",
-        "매출취소"
+        "결제 금액 할인"
     )
+
+    // "매출취소" used to sit in NON_TX_PHRASES, but real device captures showed it also
+    // appears in genuine refund-deposit notifications ("입금 2,967원 하나매출취소 잔액
+    // 9,254원") — those carry an explicit 입금/출금 marker and a grounded amount, so
+    // they're real transactions, not the marketing-style "매출취소 안내" push the phrase
+    // was meant to catch. Suppressed via [nonTransactionReason] only when no direction
+    // marker accompanies it.
+    private const val MAECHUL_CHWISO_PHRASE = "매출취소"
 
     /**
      * Cheap structural check applied before any AI call. Returns a short reason
@@ -179,7 +198,8 @@ object BankNotificationClassifier {
      *      like "JPY 1,800". Absent → not a transaction.
      *   2. **Known non-transaction phrases.** See [NON_TX_PHRASES].
      */
-    private fun nonTransactionReason(title: String, text: String): String? {
+    @VisibleForTesting
+    internal fun nonTransactionReason(title: String, text: String): String? {
         val combined = "$title $text"
         if (!AMOUNT_REGEX.containsMatchIn(combined)
             && !FOREIGN_AMOUNT_REGEX.containsMatchIn(combined)
@@ -188,6 +208,12 @@ object BankNotificationClassifier {
         }
         val phrase = NON_TX_PHRASES.firstOrNull { combined.contains(it) }
         if (phrase != null) return "matches non-transaction phrase \"$phrase\""
+        if (combined.contains(MAECHUL_CHWISO_PHRASE) &&
+            !OUTFLOW_MARKER_REGEX.containsMatchIn(combined) &&
+            !INFLOW_MARKER_REGEX.containsMatchIn(combined)
+        ) {
+            return "matches non-transaction phrase \"$MAECHUL_CHWISO_PHRASE\" (no direction marker)"
+        }
         // A real transaction always names the movement (입금/출금/결제/승인/이체/충전/취소…) or
         // shows an account→account arrow. Price/FX/news alerts carry a "...원" figure but none
         // of these and would otherwise reach extract + mapping and become a confident fake
@@ -314,13 +340,14 @@ object BankNotificationClassifier {
      * own account is named (by bank token or a second account number) — the high-precision
      * subset.
      */
-    private fun detectTransfer(
+    @VisibleForTesting
+    internal fun detectTransfer(
         item: LocalReviewQueue.ReviewItem,
         extracted: ExtractedFields,
         accounts: Collection<Account>,
         stages: MutableList<AiClassificationLog.Stage>
     ): Result? {
-        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
         if (pool.size < 2) return null
         // Task 2: 계좌 매칭 개선 — 본문 → 제목 → 한글 토큰 순으로 폴백
         val source = resolveAccountByNumber(item.text, pool)
@@ -393,7 +420,7 @@ object BankNotificationClassifier {
                 }
         } ?: return null
 
-        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
         // 계좌 특정 시도: 양쪽 모두 resolve 되면 계좌 쌍까지 제안
         val srcAcc = if (pool.size >= 2) resolveAccountByNumber(item.text, pool)
             ?: resolveAccountByNumber(item.title, pool)
@@ -447,13 +474,14 @@ object BankNotificationClassifier {
     // 1-account case: 명시된 계좌를 LEFT에 배치하고 반대 쪽은 사용자 확인에 맡긴다.
     // 2-account case: detectTransfer와 동일한 출/입금 방향 로직으로 양쪽을 배치한다.
 
-    private fun detectByAccountDirect(
+    @VisibleForTesting
+    internal fun detectByAccountDirect(
         item: LocalReviewQueue.ReviewItem,
         extracted: ExtractedFields,
         accounts: Collection<Account>,
         stages: MutableList<AiClassificationLog.Stage>
     ): Result? {
-        val pool = accounts.filter { it.type == "assets" || it.type == "liabilities" }
+        val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
         if (pool.isEmpty()) return null
 
         val haystack = "${item.title} ${item.text}"
@@ -953,7 +981,8 @@ object BankNotificationClassifier {
 
     // -------------------- AI: extract --------------------
 
-    private data class ExtractedFields(val kind: String, val merchant: String?, val amount: Double)
+    @VisibleForTesting
+    internal data class ExtractedFields(val kind: String, val merchant: String?, val amount: Double)
 
     private suspend fun extractFields(
         ctx: Context,
