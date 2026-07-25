@@ -114,7 +114,32 @@ class BankNotificationClassifierTest {
         assertNotNull(result)
         assertEquals(BankNotificationClassifier.Source.ACCOUNT_DIRECT, result!!.source)
         assertEquals(BankNotificationClassifier.State.AMBIGUOUS, result.state)
-        assertEquals("x398", result.leftAccountId)
+        // Expense (outflow marker "결제"): the card is r_account (대변); l_account is the
+        // expense category, left for the user to fill in on the review form.
+        assertNull(result.leftAccountId)
+        assertEquals("x398", result.rightAccountId)
+    }
+
+    @Test
+    fun detectByAccountDirect_singleAccountIncome_placesAccountOnLeft() {
+        // Income (inflow marker "입금"): the account is l_account (차변); r_account is the
+        // income category, left for the user to fill in on the review form.
+        val item = LocalReviewQueue.ReviewItem(
+            id = "1", time = 0L, packageName = "com.smg.spbs", appLabel = "MG새마을금고",
+            title = "",
+            text = "[입금] 172,360원 3827-1012-****-6 잔액 172,360원 07/08 02:06 보너스"
+        )
+        val extracted = extractedFields("income", "3827-1012-****-6", 172360.0)
+        val accounts = listOf(account("assets", "x4", "새마을금고3827"))
+
+        val result = BankNotificationClassifier.detectByAccountDirect(
+            item, extracted, accounts, mutableListOf()
+        )
+
+        assertNotNull(result)
+        assertEquals(BankNotificationClassifier.Source.ACCOUNT_DIRECT, result!!.source)
+        assertEquals(BankNotificationClassifier.State.AMBIGUOUS, result.state)
+        assertEquals("x4", result.leftAccountId)
         assertNull(result.rightAccountId)
     }
 

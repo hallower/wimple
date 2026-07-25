@@ -529,10 +529,18 @@ object BankNotificationClassifier {
             val cp = hitAccounts.firstOrNull { it.id != src.id }
             if (inflow && !outflow) { left = src; right = cp } else { left = cp; right = src }
         } else {
-            // 계좌 한 개만 매칭 — 해당 계좌를 LEFT(차변/대상)에 배치.
-            // 반대편(출처 또는 수입 계좌)은 사용자가 확인 시 입력한다.
-            left = hits.first().acc
-            right = null
+            // 계좌 한 개만 매칭 — 지출/수입 방향에 따라 좌우를 정한다. Whooing 복식부기 규칙상
+            // 지출은 l_account="expenses"/r_account="assets|liabilities", 수입은 그 반대이므로
+            // 매칭된 계좌(자산/부채)는 지출일 때 오른쪽(대변), 수입일 때 왼쪽(차변)에 와야 한다.
+            // 반대편(카테고리 또는 출처 계좌)은 사용자가 확인 시 입력한다.
+            val acc = hits.first().acc
+            if (inflow && !outflow) {
+                left = acc
+                right = null
+            } else {
+                left = null
+                right = acc
+            }
         }
 
         stages.add(AiClassificationLog.Stage(
