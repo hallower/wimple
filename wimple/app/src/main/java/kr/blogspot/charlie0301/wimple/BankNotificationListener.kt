@@ -176,19 +176,28 @@ class BankNotificationListener : NotificationListenerService() {
         /**
          * Returns true only when the notification looks like a financial transaction.
          * Requires both:
-         *  - a Korean banking keyword (출금, 입금, 결제, 이체, 승인, 납부)
-         *  - a number followed by 원 (e.g. "21,000원")
+         *  - a Korean banking keyword (출금, 입금, 결제, 이체, 승인, 납부, 신용, 일시불…)
+         *  - an amount, either 원-suffixed (e.g. "21,000원") or KRW-prefixed (e.g. "KRW83,300"
+         *    — the format Hana Card's overseas-payment SMS uses instead of a trailing 원)
          * Exchange-rate alerts, brokerage news, and promotional pushes all fail this check
          * and are silently dropped before entering the review queue.
          */
         private val TRANSACTION_KEYWORD_REGEX =
-            Regex("""출금|입금|결제|이체|송금|승인|납부|지출|적립|환급""")
+            Regex("""출금|입금|결제|이체|송금|승인|납부|지출|적립|환급|신용|일시불""")
         private val AMOUNT_PATTERN_REGEX = Regex("""\d[\d,]*원""")
+        private val KRW_PREFIXED_AMOUNT_REGEX = Regex("""KRW\s*\d[\d,]*""")
+        // Legally-mandated ad label (정보통신망법) on Korean marketing push/SMS. Without this,
+        // a promo notification quoting a price (e.g. "(광고)원데이20 멀티비타민 미네랄 2,900원")
+        // plus incidental wording like "적립식" (matching the "적립" keyword above) passed both
+        // checks and reached the review queue as a fully-hallucinated fake expense.
+        private const val AD_LABEL = "(광고)"
 
         fun looksLikeTransaction(title: String, text: String): Boolean {
             val combined = "$title $text"
+            if (combined.contains(AD_LABEL)) return false
             return TRANSACTION_KEYWORD_REGEX.containsMatchIn(combined) &&
-                AMOUNT_PATTERN_REGEX.containsMatchIn(combined)
+                (AMOUNT_PATTERN_REGEX.containsMatchIn(combined) ||
+                    KRW_PREFIXED_AMOUNT_REGEX.containsMatchIn(combined))
         }
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {

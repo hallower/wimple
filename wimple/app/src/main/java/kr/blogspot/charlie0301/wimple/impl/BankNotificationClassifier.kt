@@ -176,7 +176,12 @@ object BankNotificationClassifier {
         "기준환율 안내",
         "카드 청구서가 도착",
         "청구서를 지금 바로 확인",
-        "결제 금액 할인"
+        "결제 금액 할인",
+        // Legally-mandated ad label (정보통신망법) on Korean marketing push/SMS — e.g.
+        // "(광고)원데이20 멀티비타민 미네랄 2,900원". Without this, a promo price tag plus
+        // the word "적립식" (savings-style investing) matching the "적립" TX keyword let one
+        // through as a fully-hallucinated fake expense in the dev log.
+        "(광고)"
     )
 
     // "매출취소" used to sit in NON_TX_PHRASES, but real device captures showed it also
@@ -245,7 +250,8 @@ object BankNotificationClassifier {
      * a direction-flipped row out of READY — the user's own ledger treats 출금 as expense or
      * transfer (never income), so an 출금→income extraction is always wrong.
      */
-    private fun directionConflicts(title: String, text: String, kind: String): Boolean {
+    @VisibleForTesting
+    internal fun directionConflicts(title: String, text: String, kind: String): Boolean {
         val combined = "$title $text"
         val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(combined)
         val inflow = INFLOW_MARKER_REGEX.containsMatchIn(combined)
@@ -254,6 +260,21 @@ object BankNotificationClassifier {
             "expense" -> inflow && !outflow
             else -> false
         }
+    }
+
+    /**
+     * Returns [kind] unchanged unless it [directionConflicts] with an explicit marker in the
+     * notification, in which case the marker wins — e.g. a 카드 "…승인" charge the model
+     * mislabels "수입" is corrected to "expense" (신한카드 승인 alerts flip this way in
+     * roughly a third of real dev-log captures). Used once in [doClassify] so every downstream
+     * suggestion (account-direct, AI similarity, the manual-review pre-fill) sees the
+     * corrected kind instead of only blocking the mapping auto-confirm.
+     */
+    @VisibleForTesting
+    internal fun correctedKind(title: String, text: String, kind: String): String {
+        if (!directionConflicts(title, text, kind)) return kind
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn("$title $text")
+        return if (outflow) "expense" else "income"
     }
 
     // --- Inter-account transfer detection (방안 D) --------------------------------------
@@ -855,20 +876,26 @@ object BankNotificationClassifier {
             return@withContext Result(state = State.UNPARSED)
         }
 
-        val extracted = extractFields(ctx, item, stages)
+        val rawExtracted = extractFields(ctx, item, stages)
             ?: return@withContext Result(state = State.UNPARSED)
 
         // The extracted kind sometimes flips against an explicit 입금/출금 marker (the small
-        // model mislabels, or copies a shot's kind). The user's ledger never books an 출금 as
-        // income, so a conflicting kind must not reach a confidence-1.0 mapping short-circuit
-        // or a READY similarity row — route it to manual review instead.
-        val dirConflict = directionConflicts(item.title, item.text, extracted.kind)
+        // model mislabels, or copies a shot's kind) — seen most often on 신한카드 "…승인"
+        // notifications, where the model mislabels the card charge as income roughly a third
+        // of the time. The user's ledger never books an 출금 as income, so on conflict we
+        // overwrite kind with the direction the marker actually states (see [correctedKind]),
+        // rather than just blocking the mapping short-circuit and letting every later stage
+        // (account-direct, AI similarity, the manual-review pre-fill) keep showing the wrong
+        // label.
+        val fixedKind = correctedKind(item.title, item.text, rawExtracted.kind)
+        val dirConflict = fixedKind != rawExtracted.kind
+        val extracted = if (dirConflict) rawExtracted.copy(kind = fixedKind) else rawExtracted
         if (dirConflict) {
             stages.add(
                 AiClassificationLog.Stage(
                     "direction_check",
-                    "kind=\"${extracted.kind}\" vs 입금/출금 markers in source",
-                    "CONFLICT — extracted kind contradicts the direction marker; blocking auto-confirm"
+                    "kind=\"${rawExtracted.kind}\" vs 입금/출금 markers in source",
+                    "CONFLICT — corrected kind \"${rawExtracted.kind}\" → \"${extracted.kind}\" to match direction marker"
                 )
             )
         }

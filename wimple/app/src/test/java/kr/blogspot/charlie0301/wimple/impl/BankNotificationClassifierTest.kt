@@ -90,6 +90,40 @@ class BankNotificationClassifierTest {
         assertNotNull(reason)
     }
 
+    @Test
+    fun nonTransactionReason_adLabeledPromoWithPriceAndSavingsWord_isFiltered() {
+        // Real dev-log misfire: a card-app marketing push, legally labeled "(광고)" under
+        // 정보통신망법, quoting a promo price ("2,900원" satisfies AMOUNT_REGEX) with the word
+        // "적립식" ("savings-style investing") incidentally containing the TX_KEYWORD "적립".
+        // Both signals passed before the "(광고)" phrase was added, producing a fully
+        // hallucinated fake expense downstream.
+        val reason = BankNotificationClassifier.nonTransactionReason(
+            title = "(광고)원데이20 멀티비타민 미네랄 2,900원 (선착순 100명)",
+            text = "하루 한 정으로 건강도 적립식 투자 시작\n☞  지금 바로 우리WON마켓 특가 확인"
+        )
+        assertNotNull(reason)
+    }
+
+    // -------------------- directionConflicts / correctedKind --------------------
+
+    @Test
+    fun correctedKind_shinhanCardApprovalMislabeledIncome_isCorrectedToExpense() {
+        // Real dev-log pattern: the small on-device model mislabels 신한카드 "…승인" card
+        // charges as "income" in roughly a third of real captures, even though "승인" is an
+        // unambiguous outflow marker. The corrected kind must flow to every downstream
+        // suggestion, not just block the mapping short-circuit.
+        val title = "[신한카드]"
+        val text = "[신한카드(0991)승인] 박*제\n- 승인금액: 58,450원(일시불)\n- 승인일시: 07/29 19:14\n" +
+            "- 가맹점명: (주)서울에너지 서인 \n- 누적금액: 1,586,440원\n\n[신한카드 1544-7000]"
+        assertEquals("expense", BankNotificationClassifier.correctedKind(title, text, "income"))
+    }
+
+    @Test
+    fun correctedKind_noConflict_returnsKindUnchanged() {
+        val text = "[신한카드(0991)승인] 박*제\n- 승인금액: 4,900원(일시불)\n- 가맹점명: 나이스인프라"
+        assertEquals("expense", BankNotificationClassifier.correctedKind("", text, "expense"))
+    }
+
     // -------------------- detectByAccountDirect --------------------
 
     @Test
