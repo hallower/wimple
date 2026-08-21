@@ -939,34 +939,49 @@ object BankNotificationClassifier {
 
         // Step 2.7 (Issue 5): 알림 텍스트에서 등록 계좌/카드 이름·번호 직접 매칭.
         // AI 유사도가 잘못된 계좌를 고르기 전에 명시된 계좌를 먼저 특정한다.
-        detectByAccountDirect(item, extracted, accounts, stages)?.let { return@withContext it }
+        val accountDirectResult = detectByAccountDirect(item, extracted, accounts, stages)
+        if (accountDirectResult != null) {
+            val needsLeft = accountDirectResult.leftAccountId == null
+            val needsRight = accountDirectResult.rightAccountId == null
+            if (!needsLeft && !needsRight) {
+                // Both sides already identified (e.g. own-account transfer) — nothing left
+                // to infer, no need to spend an AI call.
+                return@withContext accountDirectResult
+            }
 
-        // Step 3: AI similarity.
-        val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
-        val candidates = pickCandidates(entries, extracted, MAX_CANDIDATES)
-        stages.add(
-            AiClassificationLog.Stage(
-                "candidates",
-                "pickCandidates(pool=${entries.size}, max=$MAX_CANDIDATES) " +
-                    "filter: token-overlap(merchant=\"${extracted.merchant}\") + amount near ${extracted.amount.toLong()}",
-                describeCandidates(entries.size, candidates)
+            // Only the bank/card side is known; the expense/income category (the other
+            // side) is still open. Previously the cascade returned here directly, so the
+            // category never got a guess and the review screen showed "?" for it even
+            // though AI similarity — the only stage that infers a category — was never
+            // given the chance to run. Run it now and fill in just the missing side,
+            // keeping the account-direct side (matched by name/number in the text) as-is.
+            val similar = findSimilarityMatch(item, extracted, accounts, stages)
+            val categoryAcc = similar?.let { if (needsLeft) it.leftAccount else it.rightAccount }
+            stages.add(
+                AiClassificationLog.Stage(
+                    "account_direct_category_fill",
+                    "missing side=${if (needsLeft) "left" else "right"}",
+                    if (categoryAcc != null) "filled with ${categoryAcc.title} (similarity=${similar?.confidence})"
+                    else "no similarity match — leaving unresolved side as \"?\""
+                )
             )
-        )
-        if (candidates.isEmpty()) return@withContext extractedOnly(extracted, State.UNPARSED)
+            if (categoryAcc == null) return@withContext accountDirectResult
 
-        val match = aiSimilarity(item, extracted, candidates, stages)
+            return@withContext accountDirectResult.copy(
+                leftAccountId = if (needsLeft) categoryAcc.id else accountDirectResult.leftAccountId,
+                leftAccountTitle = if (needsLeft) categoryAcc.title else accountDirectResult.leftAccountTitle,
+                rightAccountId = if (needsRight) categoryAcc.id else accountDirectResult.rightAccountId,
+                rightAccountTitle = if (needsRight) categoryAcc.title else accountDirectResult.rightAccountTitle
+            )
+        }
+
+        // Step 3: AI similarity (no registered account matched the notification at all).
+        val similar = findSimilarityMatch(item, extracted, accounts, stages)
             ?: return@withContext extractedOnly(extracted, State.UNPARSED)
-
-        val candidateEntry = candidates.firstOrNull { it.id == match.bestMatchEntryId }
-            ?: return@withContext extractedOnly(extracted, State.UNPARSED)
-
-        val lAcc = accounts.firstOrNull { it.id == candidateEntry.leftAccountID }
-        val rAcc = accounts.firstOrNull { it.id == candidateEntry.rightAccountID }
-        if (lAcc == null || rAcc == null) return@withContext extractedOnly(extracted, State.UNPARSED)
 
         var state = when {
-            match.confidence >= THRESHOLD_READY -> State.READY
-            match.confidence >= THRESHOLD_AMBIGUOUS -> State.AMBIGUOUS
+            similar.confidence >= THRESHOLD_READY -> State.READY
+            similar.confidence >= THRESHOLD_AMBIGUOUS -> State.AMBIGUOUS
             else -> State.UNPARSED
         }
         // A direction-conflicting row never auto-confirms — demote READY so the user reviews
@@ -978,14 +993,52 @@ object BankNotificationClassifier {
             kind = extracted.kind,
             merchant = extracted.merchant,
             amount = extracted.amount,
-            leftAccountId = lAcc.id,
-            leftAccountTitle = lAcc.title,
-            rightAccountId = rAcc.id,
-            rightAccountTitle = rAcc.title,
+            leftAccountId = similar.leftAccount.id,
+            leftAccountTitle = similar.leftAccount.title,
+            rightAccountId = similar.rightAccount.id,
+            rightAccountTitle = similar.rightAccount.title,
             source = Source.AI_SIMILARITY,
-            confidence = match.confidence,
-            bestMatchEntryId = candidateEntry.id
+            confidence = similar.confidence,
+            bestMatchEntryId = similar.entry.id
         )
+    }
+
+    private data class SimilarityMatch(
+        val entry: Entry,
+        val leftAccount: Account,
+        val rightAccount: Account,
+        val confidence: Double
+    )
+
+    /**
+     * Runs candidate selection + AI similarity and resolves the winning entry's account pair
+     * against the live account cache. Shared by the "no account matched at all" path and the
+     * "account matched but the category side is still open" path (Step 2.7 fallthrough) so
+     * both get the same category-inference behavior.
+     */
+    private suspend fun findSimilarityMatch(
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): SimilarityMatch? {
+        val entries = WimpleImpl.getInstance()?.cachedEntries.orEmpty()
+        val candidates = pickCandidates(entries, extracted, MAX_CANDIDATES)
+        stages.add(
+            AiClassificationLog.Stage(
+                "candidates",
+                "pickCandidates(pool=${entries.size}, max=$MAX_CANDIDATES) " +
+                    "filter: token-overlap(merchant=\"${extracted.merchant}\") + amount near ${extracted.amount.toLong()}",
+                describeCandidates(entries.size, candidates)
+            )
+        )
+        if (candidates.isEmpty()) return null
+
+        val match = aiSimilarity(item, extracted, candidates, stages) ?: return null
+        val candidateEntry = candidates.firstOrNull { it.id == match.bestMatchEntryId } ?: return null
+        val lAcc = accounts.firstOrNull { it.id == candidateEntry.leftAccountID } ?: return null
+        val rAcc = accounts.firstOrNull { it.id == candidateEntry.rightAccountID } ?: return null
+        return SimilarityMatch(candidateEntry, lAcc, rAcc, match.confidence)
     }
 
     private fun mappingResult(
