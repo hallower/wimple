@@ -22,11 +22,14 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.databinding.ActivityWimpleBinding
+import kr.blogspot.charlie0301.wimple.impl.ClassificationBackupManager
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WhooingNotifications
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
@@ -85,6 +88,9 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
             hasFetchedNotifications = true
             fetchNotificationBadge()
         }
+        // Task 5: opportunistic periodic backup — no-ops unless a day has passed since the
+        // last check and there's learned data to save, so this is cheap on every resume.
+        lifecycleScope.launch { ClassificationBackupManager.backupIfDue(this@WimpleActivity) }
         refreshReviewQueueBadge()
         // Read the post-picker flag BEFORE resumeIfPending so that if resumeIfPending itself
         // launches the picker (and sets the flag), we don't consume it prematurely — the flag
