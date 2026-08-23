@@ -309,6 +309,8 @@
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
     <!-- Last-resort label when every category inference fallback failed (similarity/keyword/AI) -->
     <string name="bank_noti_review_category_unresolved">미정</string>
+    <!-- Task 4: shown while re-deriving a text-based suggestion after rejecting a monthly-item auto-match -->
+    <string name="bank_noti_review_reclassifying">알림 문구를 다시 분석하는 중…</string>
     <string name="bank_noti_review_source_mapping">학습된 매핑</string>
     <string name="bank_noti_review_source_ai">AI 추천</string>
     <string name="bank_noti_review_source_transfer">계좌간 이체</string>

@@ -922,11 +922,29 @@ object BankNotificationClassifier {
      * Activity coroutine. Background callers will hit `BACKGROUND_USE_BLOCKED` from ML Kit
      * and end up with [State.ERROR].
      */
-    suspend fun classify(ctx: Context, item: LocalReviewQueue.ReviewItem): Result {
+    suspend fun classify(ctx: Context, item: LocalReviewQueue.ReviewItem): Result =
+        classifyInternal(ctx, item, skipMonthly = false)
+
+    /**
+     * Task 4: re-run the cascade with the monthly-item match (Step 2.4, [detectMonthly])
+     * disabled, so a user who explicitly rejects a [Source.MONTHLY] auto-match and asks to
+     * enter the row by hand gets a suggestion derived from the notification text itself
+     * (mapping → transfer → account-direct → AI similarity) instead of the monthly item's
+     * fixed account pair leaking into the manual-entry prefill. Not used on the main
+     * classification pass — only called on demand when the user overrides a monthly match.
+     */
+    suspend fun classifyForManualEntry(ctx: Context, item: LocalReviewQueue.ReviewItem): Result =
+        classifyInternal(ctx, item, skipMonthly = true)
+
+    private suspend fun classifyInternal(
+        ctx: Context,
+        item: LocalReviewQueue.ReviewItem,
+        skipMonthly: Boolean
+    ): Result {
         val started = System.currentTimeMillis()
         val stages = mutableListOf<AiClassificationLog.Stage>()
         val result = try {
-            doClassify(ctx, item, stages)
+            doClassify(ctx, item, stages, skipMonthly)
         } catch (c: CancellationException) {
             // The review screen cancels the in-flight pass on pause / retry. A cancelled run
             // is NOT a failure — rethrow so it isn't recorded as a State.ERROR log entry. (This
@@ -959,7 +977,8 @@ object BankNotificationClassifier {
     private suspend fun doClassify(
         ctx: Context,
         item: LocalReviewQueue.ReviewItem,
-        stages: MutableList<AiClassificationLog.Stage>
+        stages: MutableList<AiClassificationLog.Stage>,
+        skipMonthly: Boolean = false
     ): Result = withContext(Dispatchers.IO) {
         // Pre-filter: skip notifications that aren't transactions before any AI call.
         // The monitored bank apps interleave real transaction alerts with marketing,
@@ -1030,8 +1049,12 @@ object BankNotificationClassifier {
 
         // Step 2.4: monthly (recurring) match (방안 F). The user's monthly items carry the
         // canonical account pair, so a due-day + amount match is authoritative — checked before
-        // the transfer heuristic and AI similarity.
-        detectMonthly(item, extracted, accounts, stages)?.let { return@withContext it }
+        // the transfer heuristic and AI similarity. Skipped when the caller explicitly wants a
+        // text-only re-classification (Task 4: manual-entry override of a rejected monthly
+        // match) so the fixed monthly account pair can't resurface.
+        if (!skipMonthly) {
+            detectMonthly(item, extracted, accounts, stages)?.let { return@withContext it }
+        }
 
         // Step 2.5: inter-account transfer detection (방안 D). Suggestion-only; runs only when
         // no confident mapping auto-confirmed above, so it never downgrades a good mapping.

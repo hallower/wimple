@@ -294,6 +294,7 @@
     <string name="bank_noti_review_amount_format">%1$,d KRW</string>
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
     <string name="bank_noti_review_category_unresolved">Unset</string>
+    <string name="bank_noti_review_reclassifying">Re-analyzing notification text…</string>
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
     <string name="bank_noti_review_source_transfer">Account transfer</string>

@@ -506,12 +506,36 @@ class BankNotificationReviewActivity : AppCompatActivity() {
      * UNPARSED rows or those missing fields fall back gracefully: only the keys we know go
      * onto the intent, and the form ignores any subset that's not present.
      */
-    private fun openManualEntry(item: LocalReviewQueue.ReviewItem) {
+    /**
+     * Task 4: re-derive a suggestion from the notification text alone (skipping the monthly-
+     * item match) and hand off to [openManualEntry] with it, instead of the cached MONTHLY
+     * result. Runs a fresh on-device LLM pass, so it's only triggered on demand — not for
+     * every row — when the user explicitly overrides a monthly auto-match.
+     */
+    private fun reclassifyForManualEntry(item: LocalReviewQueue.ReviewItem, onDone: () -> Unit) {
+        Toast.makeText(this, R.string.bank_noti_review_reclassifying, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val textBased = try {
+                BankNotificationClassifier.classifyForManualEntry(this@BankNotificationReviewActivity, item)
+            } catch (c: kotlinx.coroutines.CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                null
+            }
+            onDone()
+            openManualEntry(item, overrideResult = textBased)
+        }
+    }
+
+    private fun openManualEntry(
+        item: LocalReviewQueue.ReviewItem,
+        overrideResult: BankNotificationClassifier.Result? = null
+    ) {
         val intent = Intent(this, WimpleActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(WimpleActivity.EXTRA_OPEN_MENU, R.id.menu_transaction_insert)
 
-        val result = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+        val result = overrideResult ?: BankNotificationClassifier.Result.fromJson(item.classificationJson)
         if (result != null) {
             result.merchant?.takeIf { it.isNotBlank() }?.let {
                 intent.putExtra(WimpleActivity.EXTRA_PREFILL_TITLE, it)
@@ -660,8 +684,17 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                 LocalReviewQueue.removeById(this@BankNotificationReviewActivity, item.id)
                 refresh()
             }
-            view.findViewById<Button>(R.id.btn_manual_entry).setOnClickListener {
-                openManualEntry(item)
+            view.findViewById<Button>(R.id.btn_manual_entry).setOnClickListener { btn ->
+                val cached = BankNotificationClassifier.Result.fromJson(item.classificationJson)
+                if (cached?.source == BankNotificationClassifier.Source.MONTHLY) {
+                    // Task 4: the user is explicitly rejecting the monthly-item auto-match —
+                    // don't let its fixed account pair leak into the manual form. Re-derive a
+                    // suggestion from the notification text alone.
+                    btn.isEnabled = false
+                    reclassifyForManualEntry(item) { btn.isEnabled = true }
+                } else {
+                    openManualEntry(item)
+                }
             }
             // Task 1: 월별연결 버튼
             view.findViewById<Button>(R.id.btn_monthly_link).setOnClickListener {
