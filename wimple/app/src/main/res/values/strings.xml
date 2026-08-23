@@ -234,6 +234,17 @@
     <string name="terms_disagree">거부</string>
     <string name="terms_exit_message">약관에 동의하지 않으면 앱을 사용할 수 없습니다.</string>
 
+    <!-- Task 6: 최초 설치 시 분류 학습 데이터 백업 발견 안내 -->
+    <string name="backup_restore_prompt_title">이전 백업 발견</string>
+    <string name="backup_restore_prompt_message">이전에 학습된 자동분류 데이터 백업을 발견했습니다. 지금 복원하시겠습니까?</string>
+    <string name="backup_restore_prompt_restore">복원</string>
+    <string name="backup_restore_prompt_skip">건너뛰기</string>
+    <string name="backup_restoring_status">백업 복원 중…</string>
+    <string name="backup_delete_prompt_title">사용할 수 없는 백업 발견</string>
+    <string name="backup_delete_prompt_message">이 기기는 AI 자동분류를 지원하지 않아 이전 백업 파일을 사용할 수 없습니다. 삭제할까요?</string>
+    <string name="backup_delete_prompt_delete">삭제</string>
+    <string name="backup_delete_prompt_keep">보관</string>
+
     <string name="bank_noti_unsupported_title_pref">인식되지 않은 알림 보기</string>
     <string name="bank_noti_unsupported_summary">후잉이 인식하지 못해 전송되지 않은 알림을 확인·재전송·삭제합니다.</string>
     <string name="bank_noti_unsupported_title">인식되지 않은 알림</string>

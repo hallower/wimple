@@ -228,6 +228,16 @@
     <string name="terms_disagree">Decline</string>
     <string name="terms_exit_message">You must agree to the terms to use this app.</string>
 
+    <string name="backup_restore_prompt_title">Previous backup found</string>
+    <string name="backup_restore_prompt_message">Found a backup of previously learned classification data. Restore it now?</string>
+    <string name="backup_restore_prompt_restore">Restore</string>
+    <string name="backup_restore_prompt_skip">Skip</string>
+    <string name="backup_restoring_status">Restoring backup…</string>
+    <string name="backup_delete_prompt_title">Unusable backup found</string>
+    <string name="backup_delete_prompt_message">This device doesn\'t support on-device AI classification, so the previous backup file can\'t be used. Delete it?</string>
+    <string name="backup_delete_prompt_delete">Delete</string>
+    <string name="backup_delete_prompt_keep">Keep</string>
+
     <string name="bank_noti_unsupported_title_pref">View Unrecognized Notifications</string>
     <string name="bank_noti_unsupported_summary">Review, resend, or delete notifications Whooing could not parse.</string>
     <string name="bank_noti_unsupported_title">Unrecognized Notifications</string>

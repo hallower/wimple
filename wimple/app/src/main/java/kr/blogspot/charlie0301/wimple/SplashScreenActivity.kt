@@ -23,11 +23,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.databinding.ActivitySplashScreenBinding
+import kr.blogspot.charlie0301.wimple.impl.ClassificationBackupManager
 import kr.blogspot.charlie0301.wimple.impl.IWimpleResponseListener
 import kr.blogspot.charlie0301.wimple.impl.IWimpleStatusListener
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
+import kr.blogspot.charlie0301.wimple.impl.util.GenAiAvailability
 import kr.blogspot.charlie0301.wimple.model.*
 import java.util.*
 import java.util.concurrent.Executors
@@ -85,7 +89,7 @@ class SplashScreenActivity : AppCompatActivity() {
         if (!settings.getBoolean(KEY_TERMS_AGREED, false)) {
             showTermsDialog()
         } else {
-            proceedWithAuth()
+            checkBackupRestoreThenProceed()
         }
 
         val cookieManager = CookieManager.getInstance()
@@ -126,7 +130,7 @@ class SplashScreenActivity : AppCompatActivity() {
             .setCancelable(false)
             .setPositiveButton(R.string.terms_agree) { _, _ ->
                 settings.edit().putBoolean(KEY_TERMS_AGREED, true).apply()
-                proceedWithAuth()
+                checkBackupRestoreThenProceed()
             }
             .setNegativeButton(R.string.terms_disagree) { _, _ ->
                 exitApplication(getString(R.string.terms_exit_message))
@@ -135,6 +139,70 @@ class SplashScreenActivity : AppCompatActivity() {
 
         dialog.show()
         dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    /**
+     * Task 6: first-install-only check (guarded by [KEY_BACKUP_FIRST_RUN_CHECKED], set
+     * regardless of outcome so this never runs twice) for a classification-data backup left
+     * behind by a previous install (see [ClassificationBackupManager]). AI-usable devices are
+     * offered a restore; devices that can't use on-device AI are offered to delete the
+     * now-useless orphan file. Either path always falls through to [proceedWithAuth].
+     */
+    private fun checkBackupRestoreThenProceed() {
+        if (settings.getBoolean(KEY_BACKUP_FIRST_RUN_CHECKED, false)) {
+            proceedWithAuth()
+            return
+        }
+        settings.edit().putBoolean(KEY_BACKUP_FIRST_RUN_CHECKED, true).apply()
+
+        if (ClassificationBackupManager.storageSupport() != ClassificationBackupManager.StorageSupport.SUPPORTED) {
+            proceedWithAuth()
+            return
+        }
+        val backupUri = ClassificationBackupManager.findExistingBackupUri(applicationContext)
+        if (backupUri == null) {
+            proceedWithAuth()
+            return
+        }
+        GenAiAvailability.refresh(applicationContext) { status ->
+            if (GenAiAvailability.isUsable(status)) {
+                showBackupRestorePrompt(backupUri)
+            } else {
+                showOrphanBackupDeletePrompt()
+            }
+        }
+    }
+
+    private fun showBackupRestorePrompt(uri: Uri) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.backup_restore_prompt_title)
+            .setMessage(R.string.backup_restore_prompt_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.backup_restore_prompt_restore) { _, _ ->
+                lifecycleScope.launch {
+                    sm(CommandID.SHOW_STATUS, getString(R.string.backup_restoring_status))
+                    val json = ClassificationBackupManager.readBackupJson(applicationContext, uri)
+                    json?.let { ClassificationBackupManager.restore(applicationContext, it) }
+                    proceedWithAuth()
+                }
+            }
+            .setNegativeButton(R.string.backup_restore_prompt_skip) { _, _ -> proceedWithAuth() }
+            .show()
+    }
+
+    private fun showOrphanBackupDeletePrompt() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.backup_delete_prompt_title)
+            .setMessage(R.string.backup_delete_prompt_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.backup_delete_prompt_delete) { _, _ ->
+                lifecycleScope.launch {
+                    ClassificationBackupManager.deleteBackup(applicationContext)
+                    proceedWithAuth()
+                }
+            }
+            .setNegativeButton(R.string.backup_delete_prompt_keep) { _, _ -> proceedWithAuth() }
+            .show()
     }
 
     private fun proceedWithAuth() {
@@ -477,6 +545,9 @@ class SplashScreenActivity : AppCompatActivity() {
 
         private const val LOG_TAG = "SplashScreenActivity"
         private const val KEY_TERMS_AGREED = "terms_agreed"
+        // Task 6: guards the one-time first-install backup restore/delete prompt so it never
+        // fires again on later launches, regardless of which branch the user picked.
+        private const val KEY_BACKUP_FIRST_RUN_CHECKED = "backup_first_run_checked"
         private var mainHandler: Handler? = null
 
         // binding.webview for Login
