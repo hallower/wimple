@@ -198,6 +198,59 @@ class ExtractionExampleDBHandlerTest {
         )
     }
 
+    // -------------------- restore (Task 5: 백업/복원) --------------------
+
+    @Test
+    fun restore_insertsNewRowFaithfullyWithoutBumpingHitCount() {
+        handler.restore(
+            ExtractionExampleDBHandler.Example(
+                notificationText = "[KB카드] GS25 강남점 12,000원 출금",
+                kind = "expense", merchant = "GS25 강남점", amount = 12000L,
+                lastUsed = 5000L, hitCount = 7, notificationTitle = "[KB카드]"
+            )
+        )
+
+        val all = handler.findAll()
+        assertEquals(1, all.size)
+        assertEquals(5000L, all[0].lastUsed)
+        assertEquals(7, all[0].hitCount)
+    }
+
+    @Test
+    fun restore_doesNotOverwriteWhenLocalHitCountIsHigherOrEqual() {
+        handler.upsert("body", "expense", "Local", 100L, now = 9000L)
+        handler.upsert("body", "expense", "Local", 100L, now = 9000L) // hit_count 2
+
+        handler.restore(
+            ExtractionExampleDBHandler.Example(
+                notificationText = "body", kind = "expense",
+                merchant = "Backup", amount = 999L,
+                lastUsed = 1000L, hitCount = 1
+            )
+        )
+
+        val ex = handler.findAll()[0]
+        assertEquals("Local", ex.merchant)
+        assertEquals(2, ex.hitCount)
+    }
+
+    @Test
+    fun restore_overwritesWhenBackupHitCountIsHigher() {
+        handler.upsert("body", "expense", "Local", 100L, now = 1000L)
+
+        handler.restore(
+            ExtractionExampleDBHandler.Example(
+                notificationText = "body", kind = "expense",
+                merchant = "Backup", amount = 999L,
+                lastUsed = 5000L, hitCount = 7
+            )
+        )
+
+        val ex = handler.findAll()[0]
+        assertEquals("Backup", ex.merchant)
+        assertEquals(7, ex.hitCount)
+    }
+
     @Test
     fun clear_emptiesTable() {
         handler.upsert("a", "expense", "A", 100L)

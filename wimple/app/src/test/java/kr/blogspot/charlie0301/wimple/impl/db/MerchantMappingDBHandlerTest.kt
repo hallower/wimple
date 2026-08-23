@@ -186,6 +186,65 @@ class MerchantMappingDBHandlerTest {
         assertEquals(listOf("b", "c", "a"), all.map { it.merchantNorm })
     }
 
+    // -------------------- restore (Task 5: 백업/복원) --------------------
+
+    @Test
+    fun restore_insertsNewRowFaithfullyWithoutBumpingHitCount() {
+        handler.restore(
+            MerchantMappingDBHandler.Mapping(
+                merchantNorm = "gs25 강남점", kind = "expense",
+                lAccountType = "expenses", lAccountId = "x101",
+                rAccountType = "assets", rAccountId = "x201",
+                lastUsed = 5000L, hitCount = 7
+            )
+        )
+
+        val found = handler.find("GS25 강남점", "expense")
+        assertNotNull(found)
+        assertEquals(5000L, found!!.lastUsed)
+        assertEquals(7, found.hitCount)
+    }
+
+    @Test
+    fun restore_doesNotOverwriteWhenLocalHitCountIsHigherOrEqual() {
+        // Locally learned more (hit_count 5) since the backup (hit_count 2) was taken.
+        handler.upsert("GS25 강남점", "expense", "expenses", "x999", "assets", "x888", now = 9000L)
+        repeat(4) { handler.upsert("GS25 강남점", "expense", "expenses", "x999", "assets", "x888", now = 9000L) }
+        assertEquals(5, handler.find("GS25 강남점", "expense")!!.hitCount)
+
+        handler.restore(
+            MerchantMappingDBHandler.Mapping(
+                merchantNorm = "gs25 강남점", kind = "expense",
+                lAccountType = "expenses", lAccountId = "x101",
+                rAccountType = "assets", rAccountId = "x201",
+                lastUsed = 1000L, hitCount = 2
+            )
+        )
+
+        val found = handler.find("GS25 강남점", "expense")!!
+        assertEquals("x999", found.lAccountId)
+        assertEquals(5, found.hitCount)
+    }
+
+    @Test
+    fun restore_overwritesWhenBackupHitCountIsHigher() {
+        handler.upsert("GS25 강남점", "expense", "expenses", "x999", "assets", "x888", now = 1000L)
+        assertEquals(1, handler.find("GS25 강남점", "expense")!!.hitCount)
+
+        handler.restore(
+            MerchantMappingDBHandler.Mapping(
+                merchantNorm = "gs25 강남점", kind = "expense",
+                lAccountType = "expenses", lAccountId = "x101",
+                rAccountType = "assets", rAccountId = "x201",
+                lastUsed = 5000L, hitCount = 7
+            )
+        )
+
+        val found = handler.find("GS25 강남점", "expense")!!
+        assertEquals("x101", found.lAccountId)
+        assertEquals(7, found.hitCount)
+    }
+
     @Test
     fun clear_emptiesTable() {
         handler.upsert("GS25 강남점", "expense", "expenses", "x101", "assets", "x201")

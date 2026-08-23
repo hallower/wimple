@@ -32,4 +32,21 @@
         android:summary="@string/bank_noti_sort_summary"
         android:title="@string/bank_noti_sort_title" />
 
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        android:dependency="pref_bankNotiLocalReview"
+        android:title="@string/bank_noti_backup_category_title">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            android:key="pref_bankNotiBackupNow"
+            android:title="@string/bank_noti_backup_now_title" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            android:key="pref_bankNotiBackupRestore"
+            android:title="@string/bank_noti_backup_restore_title" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

@@ -295,6 +295,20 @@
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
     <string name="bank_noti_review_category_unresolved">Unset</string>
     <string name="bank_noti_review_reclassifying">Re-analyzing notification text…</string>
+
+    <string name="bank_noti_backup_category_title">Classification learning data backup</string>
+    <string name="bank_noti_backup_now_title">Back up now</string>
+    <string name="bank_noti_backup_summary_never">Never backed up · tap to back up now</string>
+    <string name="bank_noti_backup_summary_last">Last backup: %1$s · tap to back up again</string>
+    <string name="bank_noti_backup_summary_unsupported">Not supported on this device (requires Android 10+)</string>
+    <string name="bank_noti_backup_now_success">Backup saved</string>
+    <string name="bank_noti_backup_now_failed">Backup failed</string>
+    <string name="bank_noti_backup_restore_title">Restore from backup</string>
+    <string name="bank_noti_backup_restore_none_found">No backup found</string>
+    <string name="bank_noti_backup_restore_confirm_title">Restore backup</string>
+    <string name="bank_noti_backup_restore_confirm_message">Merge the learning data from the last backup (%1$s) into this device. Anything already learned here is kept. Continue?</string>
+    <string name="bank_noti_backup_restore_result">Restored %1$d merchant mappings and %2$d examples</string>
+    <string name="bank_noti_backup_restore_failed">Restore failed</string>
     <string name="bank_noti_review_source_mapping">Learned mapping</string>
     <string name="bank_noti_review_source_ai">AI suggestion</string>
     <string name="bank_noti_review_source_transfer">Account transfer</string>

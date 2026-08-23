@@ -134,6 +134,46 @@ class ExtractionExampleDBHandler @JvmOverloads constructor(
         return out
     }
 
+    /**
+     * Restore-only write used by [kr.blogspot.charlie0301.wimple.impl.ClassificationBackupManager]:
+     * writes every field exactly as given (including hit_count/last_used) via INSERT OR REPLACE,
+     * unlike [upsert] which always bumps hit_count by 1. Merges rather than clobbers — a row
+     * already present locally with an equal-or-higher hit_count is left alone, so restoring an
+     * older backup can't erase examples confirmed more recently than the backup.
+     */
+    @Synchronized
+    fun restore(example: Example) {
+        val norm = normalizeBody(example.notificationText)
+        if (norm.isBlank() || example.kind.isBlank() || example.merchant.isBlank() || example.amount <= 0L) return
+        val existing = findByNormAndKind(norm, example.kind)
+        if (existing != null && existing.hitCount >= example.hitCount) return
+        val db = helper.writableDatabase
+        db.insertWithOnConflict(
+            TABLE_NAME, null,
+            ContentValues().apply {
+                put(COL_TEXT_NORM, norm)
+                put(COL_KIND, example.kind)
+                put(COL_TEXT, example.notificationText.trim().take(MAX_TEXT_LEN))
+                put(COL_TITLE, example.notificationTitle.trim().take(MAX_TITLE_LEN))
+                put(COL_MERCHANT, example.merchant)
+                put(COL_AMOUNT, example.amount)
+                put(COL_LAST_USED, example.lastUsed)
+                put(COL_HIT_COUNT, example.hitCount)
+            },
+            SQLiteDatabase.CONFLICT_REPLACE
+        )
+        if (existing == null) evictOverflow(db)
+    }
+
+    private fun findByNormAndKind(norm: String, kind: String): Example? {
+        if (norm.isBlank() || kind.isBlank()) return null
+        helper.readableDatabase.query(
+            TABLE_NAME, null,
+            "$COL_TEXT_NORM = ? AND $COL_KIND = ?",
+            arrayOf(norm, kind), null, null, null, "1"
+        ).use { c -> return if (c.moveToFirst()) cursorToExample(c) else null }
+    }
+
     fun count(): Int {
         helper.readableDatabase.query(
             TABLE_NAME, arrayOf("COUNT(*)"), null, null, null, null, null

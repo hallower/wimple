@@ -10,7 +10,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
@@ -18,7 +20,9 @@ import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.impl.BankNotifications
+import kr.blogspot.charlie0301.wimple.impl.ClassificationBackupManager
 import kr.blogspot.charlie0301.wimple.impl.util.GenAiAvailability
 
 /**
@@ -48,7 +52,100 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
                 false
             }
         refreshBankAppEntries()
+        wireBackupPreferences()
     }
+
+    // -------------------- Task 5: 분류 학습 데이터 백업/복원 --------------------
+
+    private fun wireBackupPreferences() {
+        findPreference<Preference>(KEY_BACKUP_NOW)?.setOnPreferenceClickListener {
+            triggerBackupNow()
+            true
+        }
+        findPreference<Preference>(KEY_BACKUP_RESTORE)?.setOnPreferenceClickListener {
+            triggerBackupRestore()
+            true
+        }
+    }
+
+    private fun triggerBackupNow() {
+        val ctx = context ?: return
+        if (ClassificationBackupManager.storageSupport() != ClassificationBackupManager.StorageSupport.SUPPORTED) {
+            Toast.makeText(ctx, R.string.bank_noti_backup_summary_unsupported, Toast.LENGTH_LONG).show()
+            return
+        }
+        lifecycleScope.launch {
+            val ok = ClassificationBackupManager.backupNow(ctx)
+            if (!isAdded) return@launch
+            Toast.makeText(
+                ctx,
+                if (ok) R.string.bank_noti_backup_now_success else R.string.bank_noti_backup_now_failed,
+                Toast.LENGTH_SHORT
+            ).show()
+            refreshBackupSummary()
+        }
+    }
+
+    private fun triggerBackupRestore() {
+        val ctx = context ?: return
+        if (ClassificationBackupManager.storageSupport() != ClassificationBackupManager.StorageSupport.SUPPORTED) {
+            Toast.makeText(ctx, R.string.bank_noti_backup_summary_unsupported, Toast.LENGTH_LONG).show()
+            return
+        }
+        val uri = ClassificationBackupManager.findExistingBackupUri(ctx)
+        if (uri == null) {
+            Toast.makeText(ctx, R.string.bank_noti_backup_restore_none_found, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val timestamp = ClassificationBackupManager.lastBackupTimestamp(ctx)
+        val whenText = timestamp?.let { formatBackupTimestamp(ctx, it) } ?: "-"
+        AlertDialog.Builder(ctx)
+            .setTitle(R.string.bank_noti_backup_restore_confirm_title)
+            .setMessage(getString(R.string.bank_noti_backup_restore_confirm_message, whenText))
+            .setPositiveButton(android.R.string.ok) { _, _ -> performRestore(ctx, uri) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun performRestore(ctx: Context, uri: android.net.Uri) {
+        lifecycleScope.launch {
+            val json = ClassificationBackupManager.readBackupJson(ctx, uri)
+            val result = json?.let { ClassificationBackupManager.restore(ctx, it) }
+            if (!isAdded) return@launch
+            if (result == null) {
+                Toast.makeText(ctx, R.string.bank_noti_backup_restore_failed, Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(
+                    ctx,
+                    getString(
+                        R.string.bank_noti_backup_restore_result,
+                        result.mappingsRestored, result.examplesRestored
+                    ),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun refreshBackupSummary() {
+        val ctx = context ?: return
+        val pref = findPreference<Preference>(KEY_BACKUP_NOW) ?: return
+        if (ClassificationBackupManager.storageSupport() != ClassificationBackupManager.StorageSupport.SUPPORTED) {
+            pref.isEnabled = false
+            pref.summary = ctx.getString(R.string.bank_noti_backup_summary_unsupported)
+            return
+        }
+        pref.isEnabled = true
+        val timestamp = ClassificationBackupManager.lastBackupTimestamp(ctx)
+        pref.summary = if (timestamp == null) {
+            ctx.getString(R.string.bank_noti_backup_summary_never)
+        } else {
+            ctx.getString(R.string.bank_noti_backup_summary_last, formatBackupTimestamp(ctx, timestamp))
+        }
+    }
+
+    private fun formatBackupTimestamp(ctx: Context, epochMs: Long): String =
+        DateFormat.format("yyyy-MM-dd HH:mm", epochMs).toString()
 
     private fun refreshBankAppEntries() {
         val ctx = context ?: return
@@ -115,6 +212,7 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
         super.onResume()
         applyState()
         refreshBankAppEntries()
+        refreshBackupSummary()
         // Kick a fresh availability check on every entry — cheap binder call into AICore.
         // When it completes we re-apply state so DOWNLOADABLE / DOWNLOADING / AVAILABLE
         // resolve to the right summary even if the cached value was stale.
@@ -334,5 +432,10 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
         } catch (_: Exception) {
             Toast.makeText(ctx, R.string.bank_noti_access_settings_open_failed, Toast.LENGTH_LONG).show()
         }
+    }
+
+    companion object {
+        private const val KEY_BACKUP_NOW = "pref_bankNotiBackupNow"
+        private const val KEY_BACKUP_RESTORE = "pref_bankNotiBackupRestore"
     }
 }

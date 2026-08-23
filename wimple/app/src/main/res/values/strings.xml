@@ -311,6 +311,21 @@
     <string name="bank_noti_review_category_unresolved">미정</string>
     <!-- Task 4: shown while re-deriving a text-based suggestion after rejecting a monthly-item auto-match -->
     <string name="bank_noti_review_reclassifying">알림 문구를 다시 분석하는 중…</string>
+
+    <!-- Task 5: 분류 학습 데이터 백업/복원 설정 -->
+    <string name="bank_noti_backup_category_title">분류 학습 데이터 백업</string>
+    <string name="bank_noti_backup_now_title">지금 백업</string>
+    <string name="bank_noti_backup_summary_never">백업한 적 없음 · 탭하여 지금 백업</string>
+    <string name="bank_noti_backup_summary_last">마지막 백업: %1$s · 탭하여 다시 백업</string>
+    <string name="bank_noti_backup_summary_unsupported">이 기기에서는 지원되지 않습니다 (Android 10 이상 필요)</string>
+    <string name="bank_noti_backup_now_success">백업을 저장했습니다</string>
+    <string name="bank_noti_backup_now_failed">백업 저장에 실패했습니다</string>
+    <string name="bank_noti_backup_restore_title">백업에서 복원</string>
+    <string name="bank_noti_backup_restore_none_found">발견된 백업이 없습니다</string>
+    <string name="bank_noti_backup_restore_confirm_title">백업 복원</string>
+    <string name="bank_noti_backup_restore_confirm_message">마지막 백업(%1$s)의 학습 데이터를 이 기기에 병합합니다. 이미 학습된 내용은 지워지지 않습니다. 계속할까요?</string>
+    <string name="bank_noti_backup_restore_result">가맹점 매핑 %1$d건, 예시 %2$d건을 복원했습니다</string>
+    <string name="bank_noti_backup_restore_failed">백업 복원에 실패했습니다</string>
     <string name="bank_noti_review_source_mapping">학습된 매핑</string>
     <string name="bank_noti_review_source_ai">AI 추천</string>
     <string name="bank_noti_review_source_transfer">계좌간 이체</string>

@@ -107,6 +107,35 @@ class MerchantMappingDBHandler(context: Context) {
         }
     }
 
+    /**
+     * Restore-only write used by [kr.blogspot.charlie0301.wimple.impl.ClassificationBackupManager]:
+     * writes every field exactly as given (including hit_count/last_used) via INSERT OR REPLACE,
+     * unlike [upsert] which always bumps hit_count by 1. Merges rather than clobbers — a row
+     * already present locally with an equal-or-higher hit_count (i.e. learned more recently
+     * than the backup) is left alone, so restoring an older backup can't erase newer learning.
+     */
+    @Synchronized
+    fun restore(mapping: Mapping) {
+        val key = normalize(mapping.merchantNorm)
+        if (key.isBlank() || mapping.kind.isBlank()) return
+        val existing = find(key, mapping.kind)
+        if (existing != null && existing.hitCount >= mapping.hitCount) return
+        helper.writableDatabase.insertWithOnConflict(
+            TABLE_NAME, null,
+            ContentValues().apply {
+                put(COL_MERCHANT_NORM, key)
+                put(COL_KIND, mapping.kind)
+                put(COL_L_TYPE, mapping.lAccountType)
+                put(COL_L_ID, mapping.lAccountId)
+                put(COL_R_TYPE, mapping.rAccountType)
+                put(COL_R_ID, mapping.rAccountId)
+                put(COL_LAST_USED, mapping.lastUsed)
+                put(COL_HIT_COUNT, mapping.hitCount)
+            },
+            SQLiteDatabase.CONFLICT_REPLACE
+        )
+    }
+
     fun findAll(): List<Mapping> {
         val out = ArrayList<Mapping>()
         helper.readableDatabase.query(
