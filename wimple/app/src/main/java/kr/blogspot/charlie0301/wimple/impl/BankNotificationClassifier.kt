@@ -1089,6 +1089,11 @@ object BankNotificationClassifier {
             val similar = findSimilarityMatch(item, extracted, accounts, stages)
             var categoryAcc = similar?.let { if (needsLeft) it.leftAccount else it.rightAccount }
             var fillMethod = if (categoryAcc != null) "similarity=${similar?.confidence}" else null
+            // Task 7: only a same-merchant similarity match at READY-grade confidence is
+            // trustworthy enough to skip human review entirely — the keyword dictionary and
+            // AI category guess below are lower-precision and always leave the row AMBIGUOUS.
+            val filledByHighConfidenceSimilarity =
+                categoryAcc != null && (similar?.confidence ?: 0.0) >= THRESHOLD_READY
 
             if (categoryAcc == null) {
                 val haystack = "${item.title} ${item.text}"
@@ -1100,17 +1105,33 @@ object BankNotificationClassifier {
                 if (categoryAcc != null) fillMethod = "AI category classification"
             }
 
+            // Task 7: promote to READY (one-tap confirm) when the account side matched with
+            // READY-grade confidence (the candidate pool is already filtered to ≥0.8, same as
+            // THRESHOLD_READY) AND the category side came from a high-confidence similarity
+            // match — not the keyword/AI fallbacks, which have no comparable confidence signal.
+            // A direction conflict never promotes, matching the AI_SIMILARITY and MAPPING paths
+            // elsewhere in this cascade. Real device log evidence: every ACCOUNT_DIRECT row this
+            // condition would have covered was a fully-correct classification that otherwise had
+            // no one-tap path and required the full manual-entry form regardless.
+            val promoteToReady = !dirConflict &&
+                filledByHighConfidenceSimilarity &&
+                accountDirectResult.confidence >= THRESHOLD_READY
+
             stages.add(
                 AiClassificationLog.Stage(
                     "account_direct_category_fill",
                     "missing side=${if (needsLeft) "left" else "right"}",
-                    if (categoryAcc != null) "filled with ${categoryAcc.title} ($fillMethod)"
-                    else "all category fallbacks failed — leaving unresolved side unset"
+                    when {
+                        categoryAcc == null -> "all category fallbacks failed — leaving unresolved side unset"
+                        promoteToReady -> "filled with ${categoryAcc.title} ($fillMethod) — promoted to READY"
+                        else -> "filled with ${categoryAcc.title} ($fillMethod)"
+                    }
                 )
             )
             if (categoryAcc == null) return@withContext accountDirectResult
 
             return@withContext accountDirectResult.copy(
+                state = if (promoteToReady) State.READY else accountDirectResult.state,
                 leftAccountId = if (needsLeft) categoryAcc.id else accountDirectResult.leftAccountId,
                 leftAccountTitle = if (needsLeft) categoryAcc.title else accountDirectResult.leftAccountTitle,
                 rightAccountId = if (needsRight) categoryAcc.id else accountDirectResult.rightAccountId,
