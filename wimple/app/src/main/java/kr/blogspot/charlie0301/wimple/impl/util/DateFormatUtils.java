@@ -58,6 +58,29 @@ public class DateFormatUtils {
         return getServerDateFormat().format(today);
     }
 
+    /**
+     * Day-of-month component of an epoch-millis timestamp. Shared by the bank-notification
+     * monthly-item matcher and the monthly-item list ordering so both read "due day" the
+     * same way.
+     */
+    public static final int dayOfMonth(long epochMs) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(epochMs);
+        return cal.get(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * Day-of-month distance treating the month as a 31-slot circle, so due-day 1 and
+     * due-day 31 are 1 apart instead of 30 — a plain |a-b| would otherwise rank a
+     * tomorrow-if-wrapped due date as the furthest possible match instead of the nearest.
+     * Shared by the bank-notification monthly-item matcher (due-day ±window match) and the
+     * monthly-item list ordering (closest-to-today-first display).
+     */
+    public static final int dayDiffWrap(int a, int b) {
+        int d = Math.abs(a - b);
+        return Math.min(d, 31 - d);
+    }
+
     public static final String getCurrentDateStringForSMS() {
         Long today = Calendar.getInstance().getTimeInMillis();
         return getSMSDateFormat().format(today);
@@ -153,15 +176,6 @@ public class DateFormatUtils {
 
         cal.add(Calendar.MONTH, -1);
         return getServerDateString(cal.getTimeInMillis());
-    }
-
-    public static final Long getDifferenceDays(Long date) {
-        Calendar thatDay = Calendar.getInstance();
-        thatDay.setTime(new Date(date));
-        Calendar today = Calendar.getInstance();
-
-        long diff = thatDay.getTimeInMillis() - today.getTimeInMillis();
-        return (diff / (24 * 60 * 60 * 1000));
     }
 
 

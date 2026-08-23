@@ -9,12 +9,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kr.blogspot.charlie0301.wimple.impl.db.ExtractionExampleDBHandler
 import kr.blogspot.charlie0301.wimple.impl.db.MerchantMappingDBHandler
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.Account
 import kr.blogspot.charlie0301.wimple.model.Entry
 import kr.blogspot.charlie0301.wimple.model.Item
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Calendar
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -701,14 +701,11 @@ object BankNotificationClassifier {
     private const val MONTHLY_DATE_WINDOW_DAYS = 2
     private const val MONTHLY_AMOUNT_TOLERANCE = 0.05
 
-    private fun dayOfMonth(epochMs: Long): Int =
-        Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_MONTH)
+    // dayOfMonth / dayDiffWrap moved to DateFormatUtils so the monthly-item list ordering
+    // (TransactionListFragment) can share the exact same circular-day metric.
+    private fun dayOfMonth(epochMs: Long): Int = DateFormatUtils.dayOfMonth(epochMs)
 
-    // Day-of-month distance with month wraparound so due-day 1 vs notification-day 30 is near.
-    private fun dayDiffWrap(a: Int, b: Int): Int {
-        val d = abs(a - b)
-        return minOf(d, 31 - d)
-    }
+    private fun dayDiffWrap(a: Int, b: Int): Int = DateFormatUtils.dayDiffWrap(a, b)
 
     private fun kindFromAccountTypes(leftType: String?, rightType: String?): String {
         val l = leftType.orEmpty(); val r = rightType.orEmpty()

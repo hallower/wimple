@@ -19,7 +19,6 @@ import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
 import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.Entry
 import kr.blogspot.charlie0301.wimple.model.Item
-import kr.blogspot.charlie0301.wimple.model.Item.DateAscCompare
 import kr.blogspot.charlie0301.wimple.widget.ItemListView
 import kr.blogspot.charlie0301.wimple.widget.entry.EntryItemListAdapter
 import java.util.*
@@ -294,27 +293,19 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                 entryAdapter.removeAllMonthlyItem()
 
                 @Suppress("UNCHECKED_CAST") val list = obj as ArrayList<Item>
-                Collections.sort(list, DateAscCompare())
+                // Circular day-of-month distance from today, so an item due day 1 ranks near
+                // an item due day 31 instead of at opposite ends of a plain date sort — same
+                // metric BankNotificationClassifier.detectMonthly uses to match notifications.
+                val today = DateFormatUtils.dayOfMonth(System.currentTimeMillis())
+                val closestFirst = list.sortedBy { item ->
+                    DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
+                }
 
-                var counts = if (monthlyDisplayItemsNumbers > list.size) list.size else monthlyDisplayItemsNumbers
+                val counts = if (monthlyDisplayItemsNumbers > closestFirst.size) closestFirst.size else monthlyDisplayItemsNumbers
 
-                for (item in list) {
-                    if (counts <= 0)
-                        break
-
-                    val monthlyDisplayAllowingDays = 10L
-                    if (monthlyDisplayAllowingDays < DateFormatUtils.getDifferenceDays(item.date)) {
-                        Log.d(LOG_TAG, "Skip Monthly item - " + item.item + ", " + Date(item.date!!).toString())
-                        break
-                    }
-                    counts -= 1
+                for (item in closestFirst.take(counts)) {
                     entryAdapter.addItem(item)
                     Log.d(LOG_TAG, "Adding Monthly item - ${item.id} - ${item.item} ${Date(item.date!!)}")
-                    /*
-                    for(i in 0 until item.values.size()){
-                        Log.e(LOG_TAG, "${item.columns.get(i)} - ${item.getValue(i)}")
-                    }
-                    */
                 }
 
                 entryAdapter.notifyDataSetChanged()

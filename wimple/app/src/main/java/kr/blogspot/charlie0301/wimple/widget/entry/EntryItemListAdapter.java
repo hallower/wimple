@@ -8,11 +8,12 @@ import android.widget.BaseAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.Entry;
 import kr.blogspot.charlie0301.wimple.model.Item;
-import kr.blogspot.charlie0301.wimple.model.Item.DateDescCompare;
 
 public class EntryItemListAdapter extends BaseAdapter {
 
@@ -170,7 +171,32 @@ public class EntryItemListAdapter extends BaseAdapter {
 
 
     private void sortByDate() {
-        Collections.sort(items, new DateDescCompare());
+        Collections.sort(items, new MonthlyAwareDateCompare());
+    }
+
+    /**
+     * Regular entries keep the existing newest-first order (dateValue descending). Monthly
+     * ("9"-prefixed dateValue) items still group above all entries as before, but are ordered
+     * among themselves by circular day-of-month distance from today instead of raw calendar
+     * date — so an item due within a few days of today (either side, and wrapping day 31 to
+     * day 1) surfaces at the top instead of whichever happens to carry the latest date string.
+     */
+    private static class MonthlyAwareDateCompare implements Comparator<Item> {
+        @Override
+        public int compare(Item lhs, Item rhs) {
+            boolean lhsMonthly = lhs.getDateValue().startsWith("9");
+            boolean rhsMonthly = rhs.getDateValue().startsWith("9");
+            if (lhsMonthly != rhsMonthly) {
+                return lhsMonthly ? -1 : 1;
+            }
+            if (!lhsMonthly) {
+                return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
+            }
+            int today = DateFormatUtils.dayOfMonth(System.currentTimeMillis());
+            int lhsDist = DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
+            int rhsDist = DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
+            return Integer.compare(lhsDist, rhsDist);
+        }
     }
 
 }
