@@ -221,4 +221,47 @@ class BankNotificationClassifierTest {
 
     private fun extractedFields(kind: String, merchant: String?, amount: Double) =
         BankNotificationClassifier.ExtractedFields(kind, merchant, amount)
+
+    // -------------------- inferCategoryByKeyword (Task: "?" 카테고리 제거) --------------
+
+    @Test
+    fun inferCategoryByKeyword_kepcoNotification_matchesUtilityCategory() {
+        val accounts = listOf(
+            account("expenses", "e1", "식비"),
+            account("expenses", "e2", "공과금"),
+            account("expenses", "e3", "교통")
+        )
+        val result = BankNotificationClassifier.inferCategoryByKeyword(
+            "[한국전력] 전기요금 7,508원 자동납부 되었습니다", "expense", accounts
+        )
+        assertEquals("e2", result?.id)
+    }
+
+    @Test
+    fun inferCategoryByKeyword_onlyMatchesAccountsOfRequestedKind() {
+        // A "공과금" account exists but is typed as income, not expense — must not match.
+        val accounts = listOf(account("income", "i1", "공과금"))
+        val result = BankNotificationClassifier.inferCategoryByKeyword(
+            "[한국전력] 전기요금 7,508원", "expense", accounts
+        )
+        assertNull(result)
+    }
+
+    @Test
+    fun inferCategoryByKeyword_noKeywordMatch_returnsNull() {
+        val accounts = listOf(account("expenses", "e1", "식비"))
+        val result = BankNotificationClassifier.inferCategoryByKeyword(
+            "완전히 알 수 없는 가맹점 결제", "expense", accounts
+        )
+        assertNull(result)
+    }
+
+    @Test
+    fun inferCategoryByKeyword_keywordMatchesButNoAccountTitleContainsIt_returnsNull() {
+        val accounts = listOf(account("expenses", "e1", "여행"))
+        val result = BankNotificationClassifier.inferCategoryByKeyword(
+            "스타벅스 강남점 4,500원 결제", "expense", accounts
+        )
+        assertNull(result)
+    }
 }

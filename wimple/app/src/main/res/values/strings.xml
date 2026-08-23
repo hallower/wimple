@@ -307,6 +307,8 @@
     <string name="bank_noti_review_amount_format">%1$,d원</string>
     <!-- "<좌> ← <우>" arrow indicates accounting direction (좌·우 항목) -->
     <string name="bank_noti_review_account_pair">%1$s ← %2$s</string>
+    <!-- Last-resort label when every category inference fallback failed (similarity/keyword/AI) -->
+    <string name="bank_noti_review_category_unresolved">미정</string>
     <string name="bank_noti_review_source_mapping">학습된 매핑</string>
     <string name="bank_noti_review_source_ai">AI 추천</string>
     <string name="bank_noti_review_source_transfer">계좌간 이체</string>

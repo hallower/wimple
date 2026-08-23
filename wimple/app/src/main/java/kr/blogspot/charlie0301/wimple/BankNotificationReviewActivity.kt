@@ -787,13 +787,17 @@ class BankNotificationReviewActivity : AppCompatActivity() {
                 extractedSection?.visibility = View.GONE
             }
 
-            // Show account pair when at least one side is resolved.
-            // "?" is shown on the unknown side so the user knows one side was identified.
+            // Show account pair when at least one side is resolved. The classifier's category
+            // fallback chain (similarity → keyword dictionary → AI classification against the
+            // user's own account list) fills the other side in almost all cases; this label is
+            // only a last resort for the rare case every fallback failed (e.g. the user has no
+            // matching category accounts at all).
             val hasAnyAccount = result != null &&
                 (result.leftAccountTitle != null || result.rightAccountTitle != null)
             if (hasAnyAccount) {
-                val left = result!!.leftAccountTitle ?: "?"
-                val right = result.rightAccountTitle ?: "?"
+                val unresolved = getString(R.string.bank_noti_review_category_unresolved)
+                val left = result!!.leftAccountTitle ?: unresolved
+                val right = result.rightAccountTitle ?: unresolved
                 val pair = getString(R.string.bank_noti_review_account_pair, left, right)
                 val sourceTag = when (result.source) {
                     BankNotificationClassifier.Source.MAPPING ->

@@ -584,6 +584,113 @@ object BankNotificationClassifier {
         )
     }
 
+    // --- Step 2.7b: text-based category inference (Task: "?" 카테고리 제거) --------------
+    // detectByAccountDirect가 계좌(은행/카드) 쪽만 특정하고 카테고리(지출/수입 계정) 쪽을
+    // 못 채웠을 때, findSimilarityMatch(과거 거래 유사도)까지 실패하면 이전에는 그대로
+    // "?"로 남겼다. 아래 두 폴백은 과거 거래 이력 없이 알림 문구 자체에서 카테고리를
+    // 추론한다: 먼저 저렴한 키워드 사전으로 시도하고, 그마저 실패하면 사용자의 카테고리
+    // 계정 목록을 후보로 준 AI 호출로 한 번 더 시도한다.
+
+    /** 카테고리 폴백에서 AI 추측을 받아들이는 최소 신뢰도. 결과는 항상 AMBIGUOUS로 남아
+     *  사용자가 검토하므로, high뿐 아니라 medium도 "?"보다는 유용하다. */
+    private const val CATEGORY_FILL_MIN_CONFIDENCE = CONFIDENCE_MEDIUM
+
+    // 알림 본문에 흔히 등장하는 가맹점/서비스 키워드 → 사용자의 카테고리 계정 제목에서
+    // 찾아볼 검색어 목록. 사용자가 계정 이름을 자유롭게 짓기 때문에 정확한 카테고리
+    // 이름을 알 수 없다 — 검색어가 계정 제목에 부분일치하면 그 계정을 채택한다.
+    // 우선순위 순서로 나열: 더 구체적인 패턴을 먼저 검사한다.
+    private val CATEGORY_KEYWORD_MAP: List<Pair<Regex, List<String>>> = listOf(
+        Regex("GS25|CU|세븐일레븐|이마트24|미니스톱|편의점") to listOf("편의점", "생활"),
+        Regex("스타벅스|이디야|투썸|커피|카페") to listOf("카페", "커피"),
+        Regex("배달의민족|요기요|쿠팡이츠|배달") to listOf("배달", "외식", "식비"),
+        Regex("이마트|홈플러스|롯데마트|코스트코|마트") to listOf("마트", "장보기", "생활"),
+        Regex("주유소|GS칼텍스|SK에너지|오일뱅크|현대오일") to listOf("주유", "차량", "교통"),
+        Regex("지하철|버스|택시|카카오\\s?T|티머니") to listOf("교통"),
+        Regex("넷플릭스|유튜브\\s?프리미엄|왓챠|디즈니\\+|멜론|스포티파이") to listOf("구독"),
+        Regex("병원|의원|약국|한의원") to listOf("의료", "병원", "약국"),
+        Regex("한국전력|전기요금|도시가스|수도요금|가스요금|관리비") to listOf("공과금", "관리비", "주거"),
+        Regex("KT|SKT|LG\\s?U\\+|통신비|알뜰폰") to listOf("통신"),
+        Regex("보험료|보험") to listOf("보험")
+    )
+
+    private fun categoryPool(kind: String, accounts: Collection<Account>): List<Account> {
+        val wanted = if (kind == "income") "income" else "expenses"
+        return accounts.filter { it.what == wanted }
+    }
+
+    @VisibleForTesting
+    internal fun inferCategoryByKeyword(
+        haystack: String,
+        kind: String,
+        accounts: Collection<Account>
+    ): Account? {
+        val pool = categoryPool(kind, accounts)
+        if (pool.isEmpty()) return null
+        for ((pattern, keywords) in CATEGORY_KEYWORD_MAP) {
+            if (!pattern.containsMatchIn(haystack)) continue
+            val hit = pool.firstOrNull { acc -> keywords.any { acc.title.contains(it) } }
+            if (hit != null) return hit
+        }
+        return null
+    }
+
+    /**
+     * Ask Gemini Nano to pick the best-fit category account directly from the user's own
+     * expense/income account list — no past-entry similarity required, so this also covers a
+     * brand-new merchant with zero transaction history. Result is a suggestion only (caller
+     * keeps the row AMBIGUOUS); confidence below [CATEGORY_FILL_MIN_CONFIDENCE] is discarded.
+     */
+    private suspend fun aiCategoryClassify(
+        item: LocalReviewQueue.ReviewItem,
+        extracted: ExtractedFields,
+        kind: String,
+        accounts: Collection<Account>,
+        stages: MutableList<AiClassificationLog.Stage>
+    ): Account? {
+        val pool = categoryPool(kind, accounts)
+        if (pool.isEmpty()) return null
+
+        val candidateBlock = JSONArray().apply {
+            pool.forEach { acc ->
+                put(JSONObject().apply {
+                    put("id", acc.id)
+                    put("title", acc.title)
+                })
+            }
+        }.toString()
+
+        val prompt = buildString {
+            append("한국어 은행 알림을 사용자의 ")
+            append(if (kind == "income") "수입" else "지출")
+            append(" 카테고리 목록 중 가장 알맞은 하나에 배정하세요. ")
+            append("과거 거래 기록은 없으니 가맹점·거래 내용만 보고 판단합니다.\n\n")
+            append("응답 스키마 (마크다운 코드 펜스나 설명 없이 JSON만):\n")
+            append("{\"category_id\":\"<후보 id 또는 빈 문자열>\",\"confidence\":\"high\"|\"medium\"|\"low\"}\n\n")
+            append("판정 규칙 (보수적으로 — 확실하지 않으면 low):\n")
+            append("- high/medium: 가맹점·거래 내용과 카테고리 이름이 의미상 명확히 연결됨.\n")
+            append("- low 또는 판단 불가: category_id 는 빈 문자열로.\n\n")
+            append("알림:\n")
+            if (!extracted.merchant.isNullOrBlank()) append("- 가맹점: ").append(extracted.merchant).append('\n')
+            append("- 금액: ").append(extracted.amount.toLong()).append('\n')
+            append("- 원문: ").append(item.text).append("\n\n")
+            append("카테고리 후보 (JSON 배열, 같은 형식의 id 를 그대로 응답에 사용):\n")
+            append(candidateBlock).append('\n')
+            append("JSON:")
+        }
+        val response = generate(prompt)
+        stages.add(AiClassificationLog.Stage("category_classify", prompt, response))
+        if (response == null) return null
+        val json = parseJson(response) ?: return null
+
+        val rawId = json.optStringOrNull("category_id") ?: return null
+        if (rawId.isBlank()
+            || rawId.equals("null", ignoreCase = true)
+            || rawId.equals("none", ignoreCase = true)) return null
+        val confidence = parseConfidenceLevel(json) ?: return null
+        if (confidence < CATEGORY_FILL_MIN_CONFIDENCE) return null
+        return pool.firstOrNull { it.id == rawId }
+    }
+
     // --- Monthly (recurring) transaction matching (방안 F) ------------------------------
     // The user pre-plans recurring transactions (관리비, 구독, 대출이자, 보험…) as Whooing
     // "monthly items", each carrying a due date, amount and a canonical left/right account
@@ -955,14 +1062,30 @@ object BankNotificationClassifier {
             // though AI similarity — the only stage that infers a category — was never
             // given the chance to run. Run it now and fill in just the missing side,
             // keeping the account-direct side (matched by name/number in the text) as-is.
+            // Three-step fallback chain, cheapest first: past-entry similarity → keyword
+            // dictionary → AI category classification against the user's own account list.
+            // Each step only runs if the previous one came up empty, so the common case
+            // (similarity hits) pays no extra cost.
             val similar = findSimilarityMatch(item, extracted, accounts, stages)
-            val categoryAcc = similar?.let { if (needsLeft) it.leftAccount else it.rightAccount }
+            var categoryAcc = similar?.let { if (needsLeft) it.leftAccount else it.rightAccount }
+            var fillMethod = if (categoryAcc != null) "similarity=${similar?.confidence}" else null
+
+            if (categoryAcc == null) {
+                val haystack = "${item.title} ${item.text}"
+                categoryAcc = inferCategoryByKeyword(haystack, extracted.kind, accounts)
+                if (categoryAcc != null) fillMethod = "keyword dictionary"
+            }
+            if (categoryAcc == null) {
+                categoryAcc = aiCategoryClassify(item, extracted, extracted.kind, accounts, stages)
+                if (categoryAcc != null) fillMethod = "AI category classification"
+            }
+
             stages.add(
                 AiClassificationLog.Stage(
                     "account_direct_category_fill",
                     "missing side=${if (needsLeft) "left" else "right"}",
-                    if (categoryAcc != null) "filled with ${categoryAcc.title} (similarity=${similar?.confidence})"
-                    else "no similarity match — leaving unresolved side as \"?\""
+                    if (categoryAcc != null) "filled with ${categoryAcc.title} ($fillMethod)"
+                    else "all category fallbacks failed — leaving unresolved side unset"
                 )
             )
             if (categoryAcc == null) return@withContext accountDirectResult
