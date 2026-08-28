@@ -21,8 +21,8 @@ android {
         applicationId "com.blogspot.charlie0301"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 59
-        versionName "1.0.59"
+        versionCode 60
+        versionName "1.0.60"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "WIMPLE_APP_SECRET", "\"${wimpleAppSecret}\""
