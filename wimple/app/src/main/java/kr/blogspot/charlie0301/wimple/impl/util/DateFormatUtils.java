@@ -95,6 +95,33 @@ public class DateFormatUtils {
         return ((to - from) % 31 + 31) % 31;
     }
 
+    /** How many days in the past a due day is still shown as "overdue" before the list treats
+     *  it as settled and rolls it over to next month's occurrence instead (see
+     *  {@link #dayNextOccurrenceOffset}). */
+    public static final int MONTHLY_OVERDUE_GRACE_DAYS = 3;
+
+    /**
+     * Signed day offset from today's day-of-month [today] to a monthly item's due day
+     * [dueDay], for slotting its next occurrence into the same chronological line as real
+     * ledger entries. A due day today or later this month keeps its natural positive
+     * difference (due day 30 when today is 28 → +2). A due day already past but by at most
+     * [MONTHLY_OVERDUE_GRACE_DAYS] stays a small negative number (due day 27 when today is 28
+     * → −1) — still shown, on the assumption it likely hasn't been entered yet. A due day
+     * overdue by MORE than the grace window is instead read as next month's occurrence,
+     * wrapping forward by 31 (due day 1 when today is 28 → −27, past the −3 grace cutoff, so
+     * becomes (1 − 28 + 31) = +4) — it no longer reads as "overdue", it reads as "next due in
+     * 4 days". Sorting a monthly list DESCENDING by this offset puts the furthest-future item
+     * at the top and the most-overdue-within-grace item at the bottom, right above where the
+     * real entries (newest-first) begin.
+     */
+    public static final int dayNextOccurrenceOffset(int today, int dueDay) {
+        int diff = dueDay - today;
+        if (diff < -MONTHLY_OVERDUE_GRACE_DAYS) {
+            diff += 31;
+        }
+        return diff;
+    }
+
     public static final String getCurrentDateStringForSMS() {
         Long today = Calendar.getInstance().getTimeInMillis();
         return getSMSDateFormat().format(today);

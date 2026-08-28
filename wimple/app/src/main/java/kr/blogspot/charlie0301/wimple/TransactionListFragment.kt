@@ -293,13 +293,15 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                 entryAdapter.removeAllMonthlyItem()
 
                 @Suppress("UNCHECKED_CAST") val list = obj as ArrayList<Item>
-                // Forward day-of-month rotation from today (today first, then tomorrow, …,
-                // wrapping day 31 to day 1, ending at yesterday) — matches the ordering
-                // EntryItemListAdapter's MonthlyAwareDateCompare applies for display, so the
-                // items selected here are the same ones that'll sort first on screen.
+                // Ascending by signed next-occurrence offset: overdue-within-grace and
+                // due-soon items (small/negative offsets) are kept preferentially over
+                // far-future ones when the list has to be capped at monthlyDisplayItemsNumbers.
+                // Final on-screen order is DESCENDING (handled by EntryItemListAdapter's
+                // MonthlyAwareDateCompare) — insertion order here doesn't need to match it,
+                // since addItem() re-sorts the whole list on every call.
                 val today = DateFormatUtils.dayOfMonth(System.currentTimeMillis())
                 val closestFirst = list.sortedBy { item ->
-                    DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
+                    DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
                 }
 
                 val counts = if (monthlyDisplayItemsNumbers > closestFirst.size) closestFirst.size else monthlyDisplayItemsNumbers

@@ -183,10 +183,12 @@ public class EntryItemListAdapter extends BaseAdapter {
      * Regular entries keep the existing newest-first order (dateValue descending), and always
      * sort entirely after every monthly item — this is a strict two-block grouping, not a
      * blended date sort, so monthly previews and recorded entries never interleave. Monthly
-     * ("9"-prefixed dateValue) items are ordered among themselves by forward day-of-month
-     * rotation from today (today first, then tomorrow, …, wrapping day 31 to day 1, ending at
-     * yesterday) so the block itself reads as a single ascending calendar sequence instead of
-     * jumping back and forth by distance.
+     * ("9"-prefixed dateValue) items are ordered among themselves by
+     * {@link DateFormatUtils#dayNextOccurrenceOffset} DESCENDING, so the furthest-future due
+     * date is at the top of the monthly block and the nearest one — today, or overdue within
+     * the grace window — sits at the bottom, immediately above where the real entries
+     * (newest-first) begin. Read top-to-bottom, the whole screen then reads as one continuous
+     * "later → sooner → most recent → oldest" line instead of two independently-ordered blocks.
      */
     private static class MonthlyAwareDateCompare implements Comparator<Item> {
         @Override
@@ -200,9 +202,9 @@ public class EntryItemListAdapter extends BaseAdapter {
                 return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
             }
             int today = DateFormatUtils.dayOfMonth(System.currentTimeMillis());
-            int lhsOffset = DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
-            int rhsOffset = DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
-            return Integer.compare(lhsOffset, rhsOffset);
+            int lhsOffset = DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
+            int rhsOffset = DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
+            return Integer.compare(rhsOffset, lhsOffset);
         }
     }
 

@@ -46,4 +46,40 @@ class DateFormatUtilsTest {
         assertEquals(1, DateFormatUtils.dayDiffWrap(1, 31))
         assertEquals(0, DateFormatUtils.dayDiffWrap(15, 15))
     }
+
+    // -------------------- dayNextOccurrenceOffset --------------------
+
+    @Test
+    fun dayNextOccurrenceOffset_matchesUserWorkedExample_today28() {
+        val today = 28
+        // 2일 > 1일 > 31일 > 30일 > 28일 > 27일 > 26일 — descending signed offset.
+        assertEquals(5, DateFormatUtils.dayNextOccurrenceOffset(today, 2))
+        assertEquals(4, DateFormatUtils.dayNextOccurrenceOffset(today, 1))
+        assertEquals(3, DateFormatUtils.dayNextOccurrenceOffset(today, 31))
+        assertEquals(2, DateFormatUtils.dayNextOccurrenceOffset(today, 30))
+        assertEquals(0, DateFormatUtils.dayNextOccurrenceOffset(today, 28))
+        assertEquals(-1, DateFormatUtils.dayNextOccurrenceOffset(today, 27))
+        assertEquals(-2, DateFormatUtils.dayNextOccurrenceOffset(today, 26))
+    }
+
+    @Test
+    fun dayNextOccurrenceOffset_sortingDescendingReproducesWorkedExample() {
+        val today = 28
+        val dueDays = listOf(26, 27, 28, 30, 31, 1, 2)
+        val sorted = dueDays.sortedByDescending { DateFormatUtils.dayNextOccurrenceOffset(today, it) }
+        assertEquals(listOf(2, 1, 31, 30, 28, 27, 26), sorted)
+    }
+
+    @Test
+    fun dayNextOccurrenceOffset_staysNegativeWithinGraceWindow() {
+        // Overdue by exactly the grace cutoff (3 days) still reads as "-3", not wrapped.
+        assertEquals(-3, DateFormatUtils.dayNextOccurrenceOffset(28, 25))
+    }
+
+    @Test
+    fun dayNextOccurrenceOffset_beyondGraceWindow_rollsOverToNextMonth() {
+        // Overdue by 4+ days is read as "next month's occurrence" instead — still a positive
+        // offset (3 days to month-end + 24 days into next month = 27), not a large negative one.
+        assertEquals(27, DateFormatUtils.dayNextOccurrenceOffset(28, 24))
+    }
 }
