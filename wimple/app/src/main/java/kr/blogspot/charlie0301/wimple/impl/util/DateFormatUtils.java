@@ -73,12 +73,26 @@ public class DateFormatUtils {
      * Day-of-month distance treating the month as a 31-slot circle, so due-day 1 and
      * due-day 31 are 1 apart instead of 30 — a plain |a-b| would otherwise rank a
      * tomorrow-if-wrapped due date as the furthest possible match instead of the nearest.
-     * Shared by the bank-notification monthly-item matcher (due-day ±window match) and the
-     * monthly-item list ordering (closest-to-today-first display).
+     * Used by the bank-notification monthly-item matcher for its symmetric due-day ±window
+     * match (a notification can land a day or two either side of the due date).
      */
     public static final int dayDiffWrap(int a, int b) {
         int d = Math.abs(a - b);
         return Math.min(d, 31 - d);
+    }
+
+    /**
+     * Forward-only rotation offset from day-of-month [from] to day-of-month [to], wrapping a
+     * 31-slot ring: 0 when to==from (today), increasing through the rest of the month, then
+     * continuing past the month boundary (day 31 → day 1) before finally reaching from-1
+     * (yesterday) at the highest offset, 30. Unlike [dayDiffWrap] this is NOT symmetric — it's
+     * "how many days forward from today, wrapping" rather than "how close either direction" —
+     * which is what a calendar-order monthly-item list wants: today first, then tomorrow, …,
+     * around through next month's first days, ending with yesterday last. Sorting ascending by
+     * this offset reproduces exactly that order.
+     */
+    public static final int dayForwardOffset(int from, int to) {
+        return ((to - from) % 31 + 31) % 31;
     }
 
     public static final String getCurrentDateStringForSMS() {

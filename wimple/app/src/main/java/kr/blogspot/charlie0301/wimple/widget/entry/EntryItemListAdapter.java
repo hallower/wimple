@@ -38,11 +38,16 @@ public class EntryItemListAdapter extends BaseAdapter {
         if (res > -1) {
             items.remove(res);
             items.add(res, it);
-            return;
         } else {
             items.add(it);
         }
 
+        // Always resort, including the update-in-place branch above — skipping it there used
+        // to rely on the list already being correctly ordered, which silently broke down
+        // whenever this call landed between two out-of-order full sorts (e.g. a resume that
+        // re-delivers already-known entries while newly-refreshed monthly items are still
+        // mid-update). Re-sorting a modest list on every add is cheap and removes that whole
+        // class of staleness.
         sortByDate();
     }
 
@@ -175,11 +180,13 @@ public class EntryItemListAdapter extends BaseAdapter {
     }
 
     /**
-     * Regular entries keep the existing newest-first order (dateValue descending). Monthly
-     * ("9"-prefixed dateValue) items still group above all entries as before, but are ordered
-     * among themselves by circular day-of-month distance from today instead of raw calendar
-     * date — so an item due within a few days of today (either side, and wrapping day 31 to
-     * day 1) surfaces at the top instead of whichever happens to carry the latest date string.
+     * Regular entries keep the existing newest-first order (dateValue descending), and always
+     * sort entirely after every monthly item — this is a strict two-block grouping, not a
+     * blended date sort, so monthly previews and recorded entries never interleave. Monthly
+     * ("9"-prefixed dateValue) items are ordered among themselves by forward day-of-month
+     * rotation from today (today first, then tomorrow, …, wrapping day 31 to day 1, ending at
+     * yesterday) so the block itself reads as a single ascending calendar sequence instead of
+     * jumping back and forth by distance.
      */
     private static class MonthlyAwareDateCompare implements Comparator<Item> {
         @Override
@@ -193,9 +200,9 @@ public class EntryItemListAdapter extends BaseAdapter {
                 return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
             }
             int today = DateFormatUtils.dayOfMonth(System.currentTimeMillis());
-            int lhsDist = DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
-            int rhsDist = DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
-            return Integer.compare(lhsDist, rhsDist);
+            int lhsOffset = DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
+            int rhsOffset = DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
+            return Integer.compare(lhsOffset, rhsOffset);
         }
     }
 

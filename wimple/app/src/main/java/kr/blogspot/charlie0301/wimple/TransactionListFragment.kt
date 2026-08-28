@@ -293,12 +293,13 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                 entryAdapter.removeAllMonthlyItem()
 
                 @Suppress("UNCHECKED_CAST") val list = obj as ArrayList<Item>
-                // Circular day-of-month distance from today, so an item due day 1 ranks near
-                // an item due day 31 instead of at opposite ends of a plain date sort — same
-                // metric BankNotificationClassifier.detectMonthly uses to match notifications.
+                // Forward day-of-month rotation from today (today first, then tomorrow, …,
+                // wrapping day 31 to day 1, ending at yesterday) — matches the ordering
+                // EntryItemListAdapter's MonthlyAwareDateCompare applies for display, so the
+                // items selected here are the same ones that'll sort first on screen.
                 val today = DateFormatUtils.dayOfMonth(System.currentTimeMillis())
                 val closestFirst = list.sortedBy { item ->
-                    DateFormatUtils.dayDiffWrap(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
+                    DateFormatUtils.dayForwardOffset(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
                 }
 
                 val counts = if (monthlyDisplayItemsNumbers > closestFirst.size) closestFirst.size else monthlyDisplayItemsNumbers

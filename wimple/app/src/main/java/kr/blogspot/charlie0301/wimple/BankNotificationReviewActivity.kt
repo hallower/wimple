@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kr.blogspot.charlie0301.wimple.impl.BankNotificationClassifier
 import kr.blogspot.charlie0301.wimple.impl.LocalReviewQueue
 import kr.blogspot.charlie0301.wimple.impl.WimpleImpl
+import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils
 import kr.blogspot.charlie0301.wimple.model.Item
 import java.util.Calendar
 
@@ -357,8 +358,11 @@ class BankNotificationReviewActivity : AppCompatActivity() {
      * 선택 후 행은 READY(금액 있음) 또는 AMBIGUOUS(금액 없음) 상태로 갱신된다.
      */
     private fun showMonthlyLinkPicker(item: LocalReviewQueue.ReviewItem) {
+        // Today's due-day is first, then forward through the rest of the month, wrapping
+        // day 31 to day 1, ending at yesterday — e.g. today=25: 25, 26, …, 31, 1, 2, …, 24.
+        val today = monthlyDayOfMonth(System.currentTimeMillis())
         val monthlies = WimpleImpl.getInstance()?.monthlyItemDBHandler?.allItems.orEmpty()
-            .sortedBy { mi -> monthlyDayOfMonth(mi.date ?: 0L) }
+            .sortedBy { mi -> DateFormatUtils.dayForwardOffset(today, monthlyDayOfMonth(mi.date ?: 0L)) }
         if (monthlies.isEmpty()) {
             AlertDialog.Builder(this)
                 .setTitle(R.string.bank_noti_review_monthly_link_dialog_title)
