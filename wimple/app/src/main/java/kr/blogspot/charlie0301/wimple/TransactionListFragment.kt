@@ -293,16 +293,14 @@ class TransactionListFragment : androidx.fragment.app.Fragment(), IWimpleFragmen
                 entryAdapter.removeAllMonthlyItem()
 
                 @Suppress("UNCHECKED_CAST") val list = obj as ArrayList<Item>
-                // Ascending by signed next-occurrence offset: overdue-within-grace and
-                // due-soon items (small/negative offsets) are kept preferentially over
-                // far-future ones when the list has to be capped at monthlyDisplayItemsNumbers.
-                // Final on-screen order is DESCENDING (handled by EntryItemListAdapter's
+                // Nearest-to-now first (by real timestamp, not day-of-month), so due-soon and
+                // recently-overdue items are kept preferentially over far-future ones when the
+                // list has to be capped at monthlyDisplayItemsNumbers. Final on-screen order is
+                // DESCENDING by the same real date (handled by EntryItemListAdapter's
                 // MonthlyAwareDateCompare) — insertion order here doesn't need to match it,
                 // since addItem() re-sorts the whole list on every call.
-                val today = DateFormatUtils.dayOfMonth(System.currentTimeMillis())
-                val closestFirst = list.sortedBy { item ->
-                    DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(item.date ?: 0L))
-                }
+                val now = System.currentTimeMillis()
+                val closestFirst = list.sortedBy { item -> kotlin.math.abs((item.date ?: 0L) - now) }
 
                 val counts = if (monthlyDisplayItemsNumbers > closestFirst.size) closestFirst.size else monthlyDisplayItemsNumbers
 

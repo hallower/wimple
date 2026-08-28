@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import kr.blogspot.charlie0301.wimple.impl.util.DateFormatUtils;
 import kr.blogspot.charlie0301.wimple.model.Entry;
 import kr.blogspot.charlie0301.wimple.model.Item;
 
@@ -183,12 +182,18 @@ public class EntryItemListAdapter extends BaseAdapter {
      * Regular entries keep the existing newest-first order (dateValue descending), and always
      * sort entirely after every monthly item — this is a strict two-block grouping, not a
      * blended date sort, so monthly previews and recorded entries never interleave. Monthly
-     * ("9"-prefixed dateValue) items are ordered among themselves by
-     * {@link DateFormatUtils#dayNextOccurrenceOffset} DESCENDING, so the furthest-future due
-     * date is at the top of the monthly block and the nearest one — today, or overdue within
-     * the grace window — sits at the bottom, immediately above where the real entries
-     * (newest-first) begin. Read top-to-bottom, the whole screen then reads as one continuous
-     * "later → sooner → most recent → oldest" line instead of two independently-ordered blocks.
+     * ("9"-prefixed dateValue) items are ordered among themselves by their real due-date
+     * timestamp DESCENDING, so the furthest-future occurrence is at the top of the monthly
+     * block and the nearest one (today, or still-unpaid and overdue) sits at the bottom,
+     * immediately above where the real entries (newest-first) begin.
+     *
+     * This deliberately compares the full {@link Item#getDate()} timestamp rather than just
+     * day-of-month: a monthly item's due date is already the server's resolved NEXT
+     * occurrence (year + month + day) — e.g. once this month's charge is entered, the item's
+     * date rolls forward to next month — so extracting day-of-month alone and reasoning about
+     * "today ± wraparound" both threw away information the data already had AND actively
+     * misread a same-day-number-next-month due date (e.g. 9/28 when today is 8/28) as due
+     * today. A plain timestamp compare has no such ambiguity.
      */
     private static class MonthlyAwareDateCompare implements Comparator<Item> {
         @Override
@@ -201,10 +206,7 @@ public class EntryItemListAdapter extends BaseAdapter {
             if (!lhsMonthly) {
                 return -1 * lhs.getDateValue().compareTo(rhs.getDateValue());
             }
-            int today = DateFormatUtils.dayOfMonth(System.currentTimeMillis());
-            int lhsOffset = DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(lhs.getDate()));
-            int rhsOffset = DateFormatUtils.dayNextOccurrenceOffset(today, DateFormatUtils.dayOfMonth(rhs.getDate()));
-            return Integer.compare(rhsOffset, lhsOffset);
+            return Long.compare(rhs.getDate(), lhs.getDate());
         }
     }
 
