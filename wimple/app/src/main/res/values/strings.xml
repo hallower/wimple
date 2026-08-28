@@ -325,6 +325,8 @@
 
     <!-- Task 5: 분류 학습 데이터 백업/복원 설정 -->
     <string name="bank_noti_backup_category_title">분류 학습 데이터 백업</string>
+    <string name="bank_noti_backup_enable_title">자동 백업 사용</string>
+    <string name="bank_noti_backup_enable_summary">켜면 하루 한 번 자동으로 백업하고, 아래 백업/복원 메뉴가 활성화됩니다. 기본값은 꺼짐입니다.</string>
     <string name="bank_noti_backup_now_title">지금 백업</string>
     <string name="bank_noti_backup_summary_never">백업한 적 없음 · 탭하여 지금 백업</string>
     <string name="bank_noti_backup_summary_last">마지막 백업: %1$s · 탭하여 다시 백업</string>

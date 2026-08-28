@@ -307,6 +307,8 @@
     <string name="bank_noti_review_reclassifying">Re-analyzing notification text…</string>
 
     <string name="bank_noti_backup_category_title">Classification learning data backup</string>
+    <string name="bank_noti_backup_enable_title">Enable automatic backup</string>
+    <string name="bank_noti_backup_enable_summary">When on, backs up once a day automatically and unlocks the backup/restore actions below. Off by default.</string>
     <string name="bank_noti_backup_now_title">Back up now</string>
     <string name="bank_noti_backup_summary_never">Never backed up · tap to back up now</string>
     <string name="bank_noti_backup_summary_last">Last backup: %1$s · tap to back up again</string>

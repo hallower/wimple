@@ -66,6 +66,27 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             triggerBackupRestore()
             true
         }
+        findPreference<CheckBoxPreference>(ClassificationBackupManager.KEY_BACKUP_ENABLED)
+            ?.onPreferenceChangeListener = OnPreferenceChangeListener { _, newValue ->
+                if (newValue as Boolean) {
+                    // Turning the toggle on shouldn't make the user wait up to a day for the
+                    // throttled periodic check to notice — back up right away so "저장 on시
+                    // 주기적으로 저장" reads as "starts now", not "starts sometime later".
+                    // Posted so it runs after the toggle's own value actually persists —
+                    // ClassificationBackupManager.isEnabled() would otherwise still read the
+                    // pre-change value inside this same listener callback.
+                    Handler(Looper.getMainLooper()).post {
+                        val ctx = context
+                        if (ctx != null) {
+                            lifecycleScope.launch {
+                                ClassificationBackupManager.backupNow(ctx)
+                                if (isAdded) refreshBackupSummary()
+                            }
+                        }
+                    }
+                }
+                true
+            }
     }
 
     private fun triggerBackupNow() {
@@ -135,7 +156,10 @@ class LocalReviewSettingsFragment : PreferenceFragmentCompat() {
             pref.summary = ctx.getString(R.string.bank_noti_backup_summary_unsupported)
             return
         }
-        pref.isEnabled = true
+        // Respect the opt-in toggle rather than unconditionally re-enabling — the preference
+        // framework's own dependency wiring already disables this when the toggle is off, but
+        // setting isEnabled=true here unconditionally would fight that on every refresh.
+        pref.isEnabled = ClassificationBackupManager.isEnabled(ctx)
         val timestamp = ClassificationBackupManager.lastBackupTimestamp(ctx)
         pref.summary = if (timestamp == null) {
             ctx.getString(R.string.bank_noti_backup_summary_never)

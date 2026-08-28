@@ -43,6 +43,15 @@ object ClassificationBackupManager {
     private const val KEY_LAST_BACKUP_CHECK = "pref_classificationBackupLastCheck"
     private const val BACKUP_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000L
 
+    /** Explicit opt-in gate — saving (manual or periodic) never runs unless the user has
+     *  turned this on in settings. Defaults off: no silent saving before the user asks for
+     *  it. Restore is NOT gated by this — reading a backup back in is a one-off explicit
+     *  action in its own right, on the settings screen or the first-install prompt. */
+    const val KEY_BACKUP_ENABLED = "pref_classificationBackupEnabled"
+
+    fun isEnabled(ctx: Context): Boolean =
+        PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(KEY_BACKUP_ENABLED, false)
+
     enum class StorageSupport { SUPPORTED, UNSUPPORTED_OS_VERSION }
 
     fun storageSupport(): StorageSupport =
@@ -51,8 +60,11 @@ object ClassificationBackupManager {
 
     // -------------------- export --------------------
 
-    /** Explicit "지금 백업" trigger from settings. Always writes, regardless of the throttle. */
+    /** Explicit "지금 백업" trigger from settings. Always writes, regardless of the throttle —
+     *  but still requires [isEnabled], since the button itself is dependency-disabled in the
+     *  UI until the user opts in; this is the backend-side half of that same rule. */
     suspend fun backupNow(ctx: Context): Boolean = withContext(Dispatchers.IO) {
+        if (!isEnabled(ctx)) return@withContext false
         if (storageSupport() != StorageSupport.SUPPORTED) return@withContext false
         val ok = writeBackup(ctx, buildBackupJson(ctx))
         if (ok) markBackedUpNow(ctx)
@@ -61,10 +73,12 @@ object ClassificationBackupManager {
 
     /**
      * Opportunistic periodic backup: call from a low-frequency app-open hook. No-ops unless
-     * more than [BACKUP_CHECK_INTERVAL_MS] has passed since the last check AND there's
-     * learned data to save, so a fresh/empty install doesn't write an empty file every day.
+     * the user has opted in ([isEnabled]), more than [BACKUP_CHECK_INTERVAL_MS] has passed
+     * since the last check, AND there's learned data to save, so a fresh/empty install
+     * doesn't write an empty file every day.
      */
     suspend fun backupIfDue(ctx: Context) {
+        if (!isEnabled(ctx)) return
         if (storageSupport() != StorageSupport.SUPPORTED) return
         val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
         val last = prefs.getLong(KEY_LAST_BACKUP_CHECK, 0L)

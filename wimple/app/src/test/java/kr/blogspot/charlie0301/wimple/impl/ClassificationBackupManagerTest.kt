@@ -35,6 +35,40 @@ class ClassificationBackupManagerTest {
     fun tearDown() {
         mappingHandler.clear()
         exampleHandler.clear()
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .remove(ClassificationBackupManager.KEY_BACKUP_ENABLED)
+            .apply()
+    }
+
+    // -------------------- explicit opt-in gate --------------------
+
+    @Test
+    fun isEnabled_defaultsToFalse() {
+        assertEquals(false, ClassificationBackupManager.isEnabled(context))
+    }
+
+    @Test
+    fun isEnabled_reflectsPreferenceValue() {
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putBoolean(ClassificationBackupManager.KEY_BACKUP_ENABLED, true)
+            .apply()
+        assertEquals(true, ClassificationBackupManager.isEnabled(context))
+    }
+
+    @Test
+    fun backupNow_noOpsWhenNotExplicitlyEnabled() = runBlocking {
+        mappingHandler.upsert("GS25 강남점", "expense", "expenses", "x101", "assets", "x201")
+
+        val result = ClassificationBackupManager.backupNow(context)
+
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun backupIfDue_doesNotThrowWhenNotEnabled() = runBlocking {
+        // Silent no-op is the whole point — must not throw regardless of storage support on
+        // whatever SDK level Robolectric simulates.
+        ClassificationBackupManager.backupIfDue(context)
     }
 
     @Test
