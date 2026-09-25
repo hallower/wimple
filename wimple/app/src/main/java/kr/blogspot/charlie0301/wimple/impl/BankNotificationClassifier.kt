@@ -181,7 +181,23 @@ object BankNotificationClassifier {
         "기준환율 안내",
         "카드 청구서가 도착",
         "청구서를 지금 바로 확인",
+        "이용대금명세서",
         "결제 금액 할인",
+        "결제예정금액",
+        "결제 예정 금액",
+        "청구예정",
+        // Transaction failure / rejection alerts — not real movements
+        "결제 실패",
+        "결제실패",
+        "승인거절",
+        "승인 거절",
+        "한도초과",
+        "잔액부족",
+        "잔액이 부족",
+        // Marketing / coupon pushes
+        "쿠폰 받아요",
+        "선착순 쿠폰",
+        "쿠폰 오픈",
         // Legally-mandated ad label (정보통신망법) on Korean marketing push/SMS — e.g.
         // "(광고)원데이20 멀티비타민 미네랄 2,900원". Without this, a promo price tag plus
         // the word "적립식" (savings-style investing) matching the "적립" TX keyword let one

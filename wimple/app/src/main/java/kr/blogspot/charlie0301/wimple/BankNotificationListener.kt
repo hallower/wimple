@@ -189,15 +189,16 @@ class BankNotificationListener : NotificationListenerService() {
         // Foreign currency amounts (e.g. "USD 29.99", "EUR 15.00") found in overseas card approval notifications.
         // Previously missing here, which caused overseas payments to be dropped before entering review queue.
         private val FOREIGN_AMOUNT_REGEX = Regex("""(?:USD|JPY|EUR|CNY|GBP|KRW)\s*\d[\d,.]*""")
-        // Legally-mandated ad label (정보통신망법) on Korean marketing push/SMS. Without this,
-        // a promo notification quoting a price (e.g. "(광고)원데이20 멀티비타민 미네랄 2,900원")
-        // plus incidental wording like "적립식" (matching the "적립" keyword above) passed both
-        // checks and reached the review queue as a fully-hallucinated fake expense.
-        private const val AD_LABEL = "(광고)"
+        // Phrases that indicate non-transaction notifications (ads, billing statements, failed transactions)
+        private val NON_TRANSACTION_PHRASES = listOf(
+            "(광고)", "결제 실패", "결제실패", "승인거절", "승인 거절", "한도초과",
+            "잔액부족", "잔액이 부족", "결제예정금액", "결제 예정 금액", "청구예정",
+            "이용대금명세서", "쿠폰 받아요", "선착순 쿠폰", "쿠폰 오픈"
+        )
 
         fun looksLikeTransaction(title: String, text: String): Boolean {
             val combined = "$title $text"
-            if (combined.contains(AD_LABEL)) return false
+            if (NON_TRANSACTION_PHRASES.any { combined.contains(it) }) return false
             return TRANSACTION_KEYWORD_REGEX.containsMatchIn(combined) &&
                 (AMOUNT_PATTERN_REGEX.containsMatchIn(combined) ||
                     KRW_PREFIXED_AMOUNT_REGEX.containsMatchIn(combined) ||
