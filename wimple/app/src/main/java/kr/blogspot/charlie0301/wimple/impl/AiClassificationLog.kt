@@ -58,15 +58,20 @@ object AiClassificationLog {
             val prefs = prefs(ctx)
             val arr = loadArray(prefs)
             arr.put(toJson(entry))
-            // Drop oldest until we're at cap. Cheap because we're already going through the
-            // whole array; rebuilding once per record is fine at this volume.
-            while (arr.length() > MAX_ENTRIES) {
+            // Drop oldest entries until we're within cap, then persist once.
+            // Previously this was a while-loop that called return inside the branch, which saved
+            // the trimmed array *without* the new entry and exited — so the 91st and every
+            // subsequent entry was silently dropped. The if/else below always includes the new
+            // entry: we trim first (producing a length-MAX_ENTRIES array with the new entry at
+            // the tail) then save. A single record() call adds at most one entry, so the loop
+            // ran at most once anyway; the explicit if is cleaner and avoids the early-exit trap.
+            if (arr.length() > MAX_ENTRIES) {
                 val trimmed = JSONArray()
                 for (i in 1 until arr.length()) trimmed.put(arr.get(i))
                 prefs.edit().putString(KEY_ENTRIES, trimmed.toString()).apply()
-                return
+            } else {
+                prefs.edit().putString(KEY_ENTRIES, arr.toString()).apply()
             }
-            prefs.edit().putString(KEY_ENTRIES, arr.toString()).apply()
         } catch (t: Throwable) {
             Log.w(LOG_TAG, "record failed", t)
         }
