@@ -138,8 +138,13 @@ object BankNotificationClassifier {
 
     // Labels marking a "원" figure as a balance / cumulative total / limit rather than the
     // transaction amount. Checked in the text immediately preceding the matched number.
-    private val BALANCE_LABEL_REGEX = Regex("누적|잔액|한도|이용가능|사용가능|가용")
-    private const val BALANCE_LABEL_LOOKBEHIND = 10
+    // "잔여" / "잔여한도" covers 일부 농협·우리은행 포맷("잔여한도 2,000,000원").
+    // "누적이용" covers 하나카드 본문 꼬리 ("누적이용금액 3,774,850원") — the broader "누적"
+    // already matches it, but the explicit entry documents the intent.
+    private val BALANCE_LABEL_REGEX = Regex("누적|잔액|한도|이용가능|사용가능|가용|잔여|잔여한도|누적이용")
+    // 15-char window instead of the previous 10: some bank bodies insert extra spaces between
+    // the label and the number ("잔액  234,567원"), which could push the label outside the old window.
+    private const val BALANCE_LABEL_LOOKBEHIND = 15
 
     private fun precededByBalanceLabel(haystack: String, numStart: Int): Boolean {
         val from = maxOf(0, numStart - BALANCE_LABEL_LOOKBEHIND)
