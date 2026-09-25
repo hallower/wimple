@@ -183,9 +183,12 @@ class BankNotificationListener : NotificationListenerService() {
          * and are silently dropped before entering the review queue.
          */
         private val TRANSACTION_KEYWORD_REGEX =
-            Regex("""출금|입금|결제|이체|송금|승인|납부|지출|적립|환급|신용|일시불""")
+            Regex("""출금|입금|결제|이체|송금|승인|납부|지출|적립|환급|신용|일시불|취소""")
         private val AMOUNT_PATTERN_REGEX = Regex("""\d[\d,]*원""")
         private val KRW_PREFIXED_AMOUNT_REGEX = Regex("""KRW\s*\d[\d,]*""")
+        // Foreign currency amounts (e.g. "USD 29.99", "EUR 15.00") found in overseas card approval notifications.
+        // Previously missing here, which caused overseas payments to be dropped before entering review queue.
+        private val FOREIGN_AMOUNT_REGEX = Regex("""(?:USD|JPY|EUR|CNY|GBP|KRW)\s*\d[\d,.]*""")
         // Legally-mandated ad label (정보통신망법) on Korean marketing push/SMS. Without this,
         // a promo notification quoting a price (e.g. "(광고)원데이20 멀티비타민 미네랄 2,900원")
         // plus incidental wording like "적립식" (matching the "적립" keyword above) passed both
@@ -197,7 +200,8 @@ class BankNotificationListener : NotificationListenerService() {
             if (combined.contains(AD_LABEL)) return false
             return TRANSACTION_KEYWORD_REGEX.containsMatchIn(combined) &&
                 (AMOUNT_PATTERN_REGEX.containsMatchIn(combined) ||
-                    KRW_PREFIXED_AMOUNT_REGEX.containsMatchIn(combined))
+                    KRW_PREFIXED_AMOUNT_REGEX.containsMatchIn(combined) ||
+                    FOREIGN_AMOUNT_REGEX.containsMatchIn(combined))
         }
 
         fun isNotificationAccessGranted(ctx: Context): Boolean {

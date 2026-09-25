@@ -295,8 +295,13 @@ object BankNotificationClassifier {
     private val DIGIT_RUN_REGEX = Regex("""\d+""")
     private val MASKED_CARD_REGEX = Regex("""\d\*\d\*""")
     private val LEADING_HANGUL_REGEX = Regex("""^[가-힣]+""")
-    // Task 2: 알림 본문에서 3자 이상 한글 단어 추출 — 계좌명 역방향 매칭에 사용
-    private val HANGUL_WORD_REGEX = Regex("""[가-힣]{3,}""")
+    // Task 2: 알림 본문에서 2자 이상 한글 단어 추출 — 계좌명 역방향 매칭에 사용 (수협, 농협 등 2자 금융사 포함)
+    private val HANGUL_WORD_REGEX = Regex("""[가-힣]{2,}""")
+    // 2자 단어 완화 시 오탐을 방지하기 위한 일반 금융/상태 단어 제외 목록
+    private val COMMON_NON_BANK_WORDS = setOf(
+        "입금", "출금", "결제", "승인", "이체", "송금", "잔액", "누적", "한도",
+        "통장", "계좌", "신용", "체크", "일시", "할부", "취소", "환급", "적립"
+    )
 
     // 이슈 1: AI merchant가 null일 때 알림 원문에서 직접 추출하는 금융 용어 목록.
     // 우선순위 순서로 나열 — 가장 구체적인 용어를 먼저 검사한다.
@@ -335,9 +340,10 @@ object BankNotificationClassifier {
     private fun accountBankTokens(title: String): List<String> {
         val lead = LEADING_HANGUL_REGEX.find(title)?.value ?: return emptyList()
         val out = ArrayList<String>()
-        if (lead.length >= 3) out.add(lead)
+        // 2자 이상 허용: "수협", "농협", "축협", "신협", "토스" 등 2글자 금융사 이름 지원
+        if (lead.length >= 2) out.add(lead)
         val stripped = lead.removeSuffix("주")
-        if (stripped.length >= 3 && stripped != lead) out.add(stripped)
+        if (stripped.length >= 2 && stripped != lead) out.add(stripped)
         return out
     }
 
@@ -345,13 +351,15 @@ object BankNotificationClassifier {
         pool.firstOrNull { acc -> accountNumberFragments(acc.title).any { numberFragmentAppears(text, it) } }
 
     /**
-     * Task 2: 알림 텍스트에서 한글 단어(3자+)를 추출해 계좌 제목의 뱅크 토큰과 교차 매칭.
-     * 계좌 번호가 알림에 명시되지 않아도 "하나은행 이체", "카카오뱅크 입금" 등의 표현으로
+     * Task 2: 알림 텍스트에서 한글 단어(2자+)를 추출해 계좌 제목의 뱅크 토큰과 교차 매칭.
+     * 계좌 번호가 알림에 명시되지 않아도 "수협카드 승인", "카카오뱅크 입금" 등의 표현으로
      * 계좌를 특정할 수 있도록 하는 3차 폴백이다.
      * 오탐 방지를 위해 계좌 토큰이 텍스트에 포함되는 방향(단방향)만 허용한다.
      */
     private fun resolveAccountByHangulToken(text: String, pool: List<Account>): Account? {
-        val textWords = HANGUL_WORD_REGEX.findAll(text).map { it.value }.toList()
+        val textWords = HANGUL_WORD_REGEX.findAll(text).map { it.value }
+            .filterNot { it in COMMON_NON_BANK_WORDS }
+            .toList()
         if (textWords.isEmpty()) return null
         return pool.firstOrNull { acc ->
             val tokens = accountBankTokens(acc.title)
