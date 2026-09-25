@@ -273,7 +273,13 @@ object BankNotificationClassifier {
      */
     @VisibleForTesting
     internal fun directionConflicts(title: String, text: String, kind: String): Boolean {
-        val combined = "$title $text"
+        // "세입금"(e.g. "서울시세입금") contains "입금" which falsely triggered the inflow regex
+        // on genuine tax payment card notifications. Mask it out before checking direction.
+        val combined = "$title $text".replace("세입금", "세금")
+        val isCancel = combined.contains("취소")
+        val isExplicitCardPayment = !isCancel && (title.contains("결제") || title.contains("승인") || text.contains("신용(일시불"))
+        if (isExplicitCardPayment && kind == "income") return true
+
         val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(combined)
         val inflow = INFLOW_MARKER_REGEX.containsMatchIn(combined)
         return when (kind) {
@@ -294,7 +300,12 @@ object BankNotificationClassifier {
     @VisibleForTesting
     internal fun correctedKind(title: String, text: String, kind: String): String {
         if (!directionConflicts(title, text, kind)) return kind
-        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn("$title $text")
+        val combined = "$title $text".replace("세입금", "세금")
+        val isCancel = combined.contains("취소")
+        val isExplicitCardPayment = !isCancel && (title.contains("결제") || title.contains("승인") || text.contains("신용(일시불"))
+        if (isExplicitCardPayment) return "expense"
+
+        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn(combined)
         return if (outflow) "expense" else "income"
     }
 
@@ -427,11 +438,11 @@ object BankNotificationClassifier {
             AiClassificationLog.Stage(
                 "transfer_detect",
                 "source=${source.title} counterparty=${counterparty.title} merchant=\"${extracted.merchant}\"",
-                "TRANSFER between own accounts — suggestion only (state=AMBIGUOUS)"
+                "TRANSFER between own accounts resolved -> READY"
             )
         )
         return Result(
-            state = State.AMBIGUOUS,
+            state = State.READY,
             kind = "transfer",
             merchant = extracted.merchant,
             amount = extracted.amount,
@@ -440,7 +451,7 @@ object BankNotificationClassifier {
             rightAccountId = right.id,
             rightAccountTitle = right.title,
             source = Source.TRANSFER,
-            confidence = THRESHOLD_AMBIGUOUS
+            confidence = 1.0
         )
     }
 
@@ -493,7 +504,7 @@ object BankNotificationClassifier {
         return if (srcAcc != null && dstAcc != null) {
             val (left, right) = if (inflow && !outflow) srcAcc to dstAcc else dstAcc to srcAcc
             Result(
-                state = State.AMBIGUOUS,
+                state = State.READY,
                 kind = "transfer",
                 merchant = extracted.merchant,
                 amount = extracted.amount,
@@ -502,7 +513,7 @@ object BankNotificationClassifier {
                 rightAccountId = right.id,
                 rightAccountTitle = right.title,
                 source = Source.TRANSFER,
-                confidence = THRESHOLD_AMBIGUOUS
+                confidence = 1.0
             )
         } else {
             // 계좌 특정 불가 — kind만 transfer로 설정해 수동 입력 폼을 유도
