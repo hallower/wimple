@@ -55,9 +55,9 @@ class OpenSourceLicensesActivity : AppCompatActivity() {
         Library("MPAndroidChart", "v3.0.1",
             "Copyright (C) Philipp Jahoda",
             "Apache License 2.0", "licenses/apache-2.0.txt"),
-        Library("Jersey Client", "1.19.3",
-            "Copyright (C) Oracle and/or its affiliates",
-            "CDDL 1.1 + GPL 2 w/ Classpath Exception", "licenses/cddl-1.1-gplv2-classpath.txt")
+        Library("OkHttp", "4.12.0",
+            "Copyright (C) 2019 Square, Inc.",
+            "Apache License 2.0", "licenses/apache-2.0.txt")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

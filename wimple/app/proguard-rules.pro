@@ -1,17 +1,24 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in C:\Users\csk\AppData\Local\Android\sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Wimple ProGuard / R8 optimization rules
 
-# Add any project specific keep options here:
+# WebView & JavascriptInterface for Whooing Web Authentication
+-keepattributes JavascriptInterface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class kr.blogspot.charlie0301.wimple.SplashScreenActivity$WebAppInterface { *; }
+-keepclassmembers class kr.blogspot.charlie0301.wimple.SplashScreenActivity$WebAppInterface {
+    public *;
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# MPAndroidChart uses reflection for animation and renderers
+-keep class com.github.mikephil.charting.** { *; }
+-dontwarn com.github.mikephil.charting.**
+
+# Custom UI widgets referenced in layouts
+-keep class kr.blogspot.charlie0301.wimple.widget.** { *; }
+
+# OkHttp & Okio
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+

@@ -8,6 +8,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+import java.io.File;
+
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
@@ -25,6 +27,6 @@ public class WimpleProfileStoreTest {
     public void getProfilePath_sanitizesEmailLikeUserId() {
         String path = store.getProfilePath("user@example.com");
 
-        assertTrue(path.endsWith("/user_example.com.bin"));
+        assertTrue(path.endsWith(File.separator + "user_example.com.bin") || path.endsWith("/user_example.com.bin"));
     }
 }

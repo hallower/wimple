@@ -79,7 +79,7 @@
 | [IWimpleImpl](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/IWimpleImpl.java) | 패키지 내부용 인터페이스 (Manager 클래스가 의존). |
 | [EntryManager](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/EntryManager.kt) | 거래 fetch / 등록 / 수정 / 삭제 task thread 모음. |
 | [ItemManager](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/ItemManager.kt) | 자주쓰는·최신·매월 item fetch task. |
-| [RestAPIInvoker](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/RestAPIInvoker.kt) | Jersey 1.x 기반 REST 클라이언트. `X-API-KEY` 헤더 생성, GET/POST/PUT/DELETE. |
+| [RestAPIInvoker](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/RestAPIInvoker.kt) | OkHttp 4.x 기반 REST 클라이언트. `X-API-KEY` 헤더 생성, GET/POST/PUT/DELETE. |
 | [RestResponseHandler](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/RestResponseHandler.kt) | 401·402·405 등 공통 에러 코드 처리 (재로그인, 한도 초과 화면). |
 | [BankNotifications](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/BankNotifications.kt) | 은행 알림 캐시 (stored / pending / rejected) + per-package 그룹 전송. |
 | [WhooingNotifications](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/WhooingNotifications.kt) | 툴바 알림 인디케이터용 `api/notifications.json` GET (PUT은 호출 X). |
@@ -110,10 +110,8 @@
 | [KoreanWordSearch](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/KoreanWordSearch.kt) | 자주 쓰는 거래 한글 초성 검색. |
 | [LocalFile](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/LocalFile.java) | 내부 저장소 read/write. |
 | [RemoteContent](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/RemoteContent.java) | URL → byte 다운로드 (프로필 사진 등). |
-| [SSLClientHelper](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/SSLClientHelper.java) | Jersey HTTPS 신뢰 정책 (전체 신뢰 — 개선 여지). |
 | [Utils](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/Utils.java) | sha1, JSON helper, … 잡유틸. |
 | [WidgetItem](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/WidgetItem.java) | (앱 내) ImageView 비트맵 교체 helper. |
-| [AndroidServiceIteratorProvider](../wimple/app/src/main/java/kr/blogspot/charlie0301/wimple/impl/util/AndroidServiceIteratorProvider.java) | Jersey OSGi 서비스 iterator를 Android용으로 우회. R8 비활성 이유의 핵심. |
 
 ---
 

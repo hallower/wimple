@@ -1,21 +1,20 @@
 package kr.blogspot.charlie0301.wimple.impl
 
 import android.util.Log
-import com.sun.jersey.api.client.Client
-import com.sun.jersey.api.client.ClientResponse
-import com.sun.jersey.api.client.WebResource
-import com.sun.jersey.spi.service.ServiceFinder
-import kr.blogspot.charlie0301.wimple.impl.util.AndroidServiceIteratorProvider
-import kr.blogspot.charlie0301.wimple.impl.util.SSLClientHelper
 import kr.blogspot.charlie0301.wimple.impl.util.Utils
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
+import java.util.Calendar
+import java.util.HashMap
+import java.util.concurrent.TimeUnit
 
 internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
 
-    private
-    val xapiKey: String
+    private val xapiKey: String
         get() {
             val sb = StringBuilder()
 
@@ -32,7 +31,6 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
             sb.append(",signiture=")
             val signature = Utils.sha1(wimple.vo42iw5me4vxz + '|'.toString() + wimple.tokenSecret)
             sb.append(signature)
-            //Log.d(LOG_TAG, "XAPIKey = " + sb.toString());
             return sb.toString()
         }
 
@@ -41,62 +39,55 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
     }
 
     fun invokeRESTAPI(method: HTTPMethod, path: String, params: String): JSONObject? {
-
-        var client: Client? = null
-        val webResource: WebResource
-        lateinit var jsonObject: JSONObject
-
-        try {
-            ServiceFinder.setIteratorProvider(AndroidServiceIteratorProvider<Any>())
-        } catch (e: Exception) {
-            Log.i(LOG_TAG, "ServiceFinder.setIteratorProvider is already set")
-        }
-
         try {
             Log.d(LOG_TAG, "Invoke REST API, $method , Path=$path")
-            client = SSLClientHelper.createClient()
-            webResource = client!!.resource(wimple.servicehost + path)
-            val response: ClientResponse
-
-            var wb: WebResource.Builder = webResource.type("application/x-www-form-urlencoded")
-            wb = wb.header("X-API-KEY", xapiKey)
-
-            response = when (method) {
-                RestAPIInvoker.HTTPMethod.GET -> wb.get(ClientResponse::class.java)
-                RestAPIInvoker.HTTPMethod.POST -> wb.post(ClientResponse::class.java, params)
-                RestAPIInvoker.HTTPMethod.PUT -> wb.put(ClientResponse::class.java, params)
-                RestAPIInvoker.HTTPMethod.DELETE -> wb.delete(ClientResponse::class.java)
+            val host = wimple.servicehost ?: ""
+            val url = if (host.endsWith("/") && path.startsWith("/")) {
+                host + path.substring(1)
+            } else if (!host.endsWith("/") && !path.startsWith("/")) {
+                "$host/$path"
+            } else {
+                host + path
             }
 
-            val output = response.getEntity(String::class.java)
+            val mediaType = "application/x-www-form-urlencoded; charset=utf-8".toMediaType()
+            val requestBuilder = Request.Builder()
+                .url(url)
+                .header("X-API-KEY", xapiKey)
 
-            @Suppress("ConstantConditionIf")
-            if (RestAPIInvoker.isNeedToPrintResult) {
-                Log.d(LOG_TAG, "result -------------------------------------------------")
-                Log.d(LOG_TAG, output)
-                Log.d(LOG_TAG, "result -------------------------------------------------")
+            when (method) {
+                HTTPMethod.GET -> requestBuilder.get()
+                HTTPMethod.POST -> requestBuilder.post(params.toRequestBody(mediaType))
+                HTTPMethod.PUT -> requestBuilder.put(params.toRequestBody(mediaType))
+                HTTPMethod.DELETE -> requestBuilder.delete()
             }
 
-            if (response.status != 200 && response.status != 201) {
+            val request = requestBuilder.build()
+            client.newCall(request).execute().use { response ->
+                val output = response.body?.string() ?: ""
 
-                throw RuntimeException("Failed : HTTP error code : " + response.status)
+                @Suppress("ConstantConditionIf")
+                if (isNeedToPrintResult) {
+                    Log.d(LOG_TAG, "result -------------------------------------------------")
+                    Log.d(LOG_TAG, output)
+                    Log.d(LOG_TAG, "result -------------------------------------------------")
+                }
+
+                if (response.code != 200 && response.code != 201) {
+                    Log.w(LOG_TAG, "Failed : HTTP error code : ${response.code}")
+                    return null
+                }
+
+                return JSONObject(output)
             }
-
-           jsonObject = JSONObject(output)
-            client.destroy()
-            client = null
         } catch (e: Exception) {
             Log.d(LOG_TAG, "REST Invocation is failed!!!")
             e.printStackTrace()
             return null
-        } finally {
-            client?.destroy()
         }
-        return jsonObject
     }
 
     fun invokeRESTAPIForMap(path: String, params: String): Map<String, String> {
-
         val list = HashMap<String, String>()
         val `object` = invokeRESTAPI(HTTPMethod.POST, path, params) ?: return list
 
@@ -108,7 +99,7 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
 
                 list[key] = value
                 @Suppress("ConstantConditionIf")
-                if (RestAPIInvoker.isNeedToPrintResult) {
+                if (isNeedToPrintResult) {
                     Log.e(LOG_TAG, "key=$key, value=$value")
                 }
             }
@@ -120,9 +111,16 @@ internal class RestAPIInvoker(private val wimple: IWimpleImpl) {
     }
 
     companion object {
-
         private const val LOG_TAG = "RestAPIInvoker"
-
         private const val isNeedToPrintResult = false
+
+        private val client: OkHttpClient by lazy {
+            OkHttpClient.Builder()
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .build()
+        }
     }
 }
+

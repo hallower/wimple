@@ -21,8 +21,8 @@ android {
         applicationId "com.blogspot.charlie0301"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 61
-        versionName "1.0.61"
+        versionCode 62
+        versionName "1.0.62"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "WIMPLE_APP_SECRET", "\"${wimpleAppSecret}\""
@@ -38,8 +38,9 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
-            minifyEnabled false
+            signingConfig(project.findProperty('storePassword') ? signingConfigs.release : signingConfigs.debug)
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -52,7 +53,7 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['META-INF/notice.txt', 'META-INF/license.txt', 'META-INF/jersey-module-version', 'META-INF/ASL2.0', 'META-INF/LICENSE', 'META-INF/NOTICE', 'META-INF/services/javax.ws.rs.ext.MessageBodyReader', 'META-INF/services/javax.ws.rs.ext.MessageBodyWriter']
+            excludes += ['META-INF/notice.txt', 'META-INF/license.txt', 'META-INF/ASL2.0', 'META-INF/LICENSE', 'META-INF/NOTICE']
         }
     }
     productFlavors {
@@ -84,7 +85,7 @@ dependencies {
     // semantic colors in values/colors.xml + values-night/colors.xml resolve to.
     implementation 'com.google.android.material:material:1.12.0'
     testImplementation 'junit:junit:4.13.2'
-    implementation 'com.sun.jersey:jersey-client:1.19.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
 
     // The kotlin_version variable is defined in the root build.gradle
@@ -102,6 +103,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 
     testImplementation 'org.robolectric:robolectric:4.15.1'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 }
 
 // The 'repositories' block is not needed here as it's already defined
