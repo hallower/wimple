@@ -74,9 +74,9 @@
         android:textColor="@color/md_theme_primary"
         android:visibility="gone" />
 
-    <!-- Task 3a: 동일 금액·비슷한 시각 이중 알림 → 이체 가능성 힌트 -->
-    <TextView
-        android:id="@+id/tv_paired_transfer_hint"
+    <!-- Task 3a & 4: 동일 금액·비슷한 시각 알림 쌍 → 이체 합치기 영역 -->
+    <LinearLayout
+        android:id="@+id/layout_paired_transfer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -84,10 +84,30 @@
         android:paddingEnd="8dp"
         android:paddingTop="3dp"
         android:paddingBottom="3dp"
-        android:textSize="12sp"
-        android:textColor="@color/md_theme_primary"
-        android:text="@string/bank_noti_review_paired_transfer_hint"
-        android:visibility="gone" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_paired_transfer_hint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="@color/md_theme_primary"
+            android:text="@string/bank_noti_review_paired_transfer_hint" />
+
+        <Button
+            android:id="@+id/btn_merge_transfer"
+            style="?attr/buttonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="12sp"
+            android:text="@string/bank_noti_review_merge_transfer" />
+    </LinearLayout>
 
     <!-- Thin separator before raw notification text -->
     <View

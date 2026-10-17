@@ -63,6 +63,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
     private var pendingLeftAccountId: String? = null
     private var pendingRightAccountId: String? = null
     private var activeReviewItemId: String? = null
+    private var activeReviewPartnerItemId: String? = null
     private var activeReviewMerchant: String? = null
     private var activeReviewKind: String? = null
     // Original bank-notification body kept around for the success path so we can persist a
@@ -192,6 +193,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         val leftId = args.getString(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID)
         val rightId = args.getString(WimpleActivity.EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
         val reviewItemId = args.getString(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
+        val reviewPartnerItemId = args.getString(WimpleActivity.EXTRA_REVIEW_PARTNER_ITEM_ID)
         val reviewMerchant = args.getString(WimpleActivity.EXTRA_REVIEW_MERCHANT)
         val reviewKind = args.getString(WimpleActivity.EXTRA_REVIEW_KIND)
         val notificationText = args.getString(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
@@ -200,7 +202,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         applyPrefill(
             title, amount, leftId, rightId,
             reviewItemId, reviewMerchant, reviewKind,
-            notificationText, notificationSource, notificationTitle
+            notificationText, notificationSource, notificationTitle,
+            reviewPartnerItemId
         )
         // Single-shot — clear so a config-change rebuild doesn't re-prefill over edits.
         args.remove(WimpleActivity.EXTRA_PREFILL_TITLE)
@@ -208,6 +211,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         args.remove(WimpleActivity.EXTRA_PREFILL_LEFT_ACCOUNT_ID)
         args.remove(WimpleActivity.EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
         args.remove(WimpleActivity.EXTRA_REVIEW_ITEM_ID)
+        args.remove(WimpleActivity.EXTRA_REVIEW_PARTNER_ITEM_ID)
         args.remove(WimpleActivity.EXTRA_REVIEW_MERCHANT)
         args.remove(WimpleActivity.EXTRA_REVIEW_KIND)
         args.remove(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT)
@@ -240,7 +244,8 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         reviewKind: String? = null,
         notificationText: String? = null,
         notificationSource: String? = null,
-        notificationTitle: String? = null
+        notificationTitle: String? = null,
+        reviewPartnerItemId: String? = null
     ) {
         if (_binding == null) return
         if (!title.isNullOrBlank()) {
@@ -253,6 +258,7 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
         pendingLeftAccountId = leftAccountId?.takeIf { it.isNotBlank() }
         pendingRightAccountId = rightAccountId?.takeIf { it.isNotBlank() }
         activeReviewItemId = reviewItemId?.takeIf { it.isNotBlank() }
+        activeReviewPartnerItemId = reviewPartnerItemId?.takeIf { it.isNotBlank() }
         activeReviewMerchant = reviewMerchant?.takeIf { it.isNotBlank() }
         activeReviewKind = reviewKind?.takeIf { it.isNotBlank() }
         activeReviewNotificationText = notificationText?.takeIf { it.isNotBlank() }
@@ -365,8 +371,12 @@ class TransactionInsertFragment : androidx.fragment.app.Fragment(), IWimpleFragm
                 )
             }
             LocalReviewQueue.removeById(ctx, itemId)
+            activeReviewPartnerItemId?.let {
+                LocalReviewQueue.removeById(ctx, it)
+            }
         }
         activeReviewItemId = null
+        activeReviewPartnerItemId = null
         activeReviewMerchant = null
         activeReviewKind = null
         activeReviewNotificationText = null

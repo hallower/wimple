@@ -361,6 +361,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         val leftAccountId = intent.getStringExtra(EXTRA_PREFILL_LEFT_ACCOUNT_ID)
         val rightAccountId = intent.getStringExtra(EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
         val reviewItemId = intent.getStringExtra(EXTRA_REVIEW_ITEM_ID)
+        val reviewPartnerItemId = intent.getStringExtra(EXTRA_REVIEW_PARTNER_ITEM_ID)
         val reviewMerchant = intent.getStringExtra(EXTRA_REVIEW_MERCHANT)
         val reviewKind = intent.getStringExtra(EXTRA_REVIEW_KIND)
         val notificationText = intent.getStringExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
@@ -371,7 +372,8 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         fragment.applyPrefill(
             title, amount, leftAccountId, rightAccountId,
             reviewItemId, reviewMerchant, reviewKind,
-            notificationText, notificationSource, notificationTitle
+            notificationText, notificationSource, notificationTitle,
+            reviewPartnerItemId
         )
         // Single-shot — remove from the active intent so the next config change doesn't
         // re-prefill on top of user edits.
@@ -380,6 +382,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
         intent.removeExtra(EXTRA_PREFILL_LEFT_ACCOUNT_ID)
         intent.removeExtra(EXTRA_PREFILL_RIGHT_ACCOUNT_ID)
         intent.removeExtra(EXTRA_REVIEW_ITEM_ID)
+        intent.removeExtra(EXTRA_REVIEW_PARTNER_ITEM_ID)
         intent.removeExtra(EXTRA_REVIEW_MERCHANT)
         intent.removeExtra(EXTRA_REVIEW_KIND)
         intent.removeExtra(EXTRA_REVIEW_NOTIFICATION_TEXT)
@@ -803,6 +806,7 @@ class WimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelec
          * pair into [MerchantMappingDBHandler] so subsequent matching merchants auto-resolve.
          */
         const val EXTRA_REVIEW_ITEM_ID = "wimple.extra.review_item_id"
+        const val EXTRA_REVIEW_PARTNER_ITEM_ID = "wimple.extra.review_partner_item_id"
         const val EXTRA_REVIEW_MERCHANT = "wimple.extra.review_merchant"
         const val EXTRA_REVIEW_KIND = "wimple.extra.review_kind"
 

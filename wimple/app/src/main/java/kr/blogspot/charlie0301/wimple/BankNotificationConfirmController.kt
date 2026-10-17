@@ -43,7 +43,8 @@ class BankNotificationConfirmController(
         val item: LocalReviewQueue.ReviewItem,
         val result: BankNotificationClassifier.Result,
         val lAcc: Account,
-        val rAcc: Account
+        val rAcc: Account,
+        val partnerItem: LocalReviewQueue.ReviewItem? = null
     )
 
     /** Confirm a single READY row; subsequent rows added via [confirmBatch] will be ignored if a confirm is already running. */
@@ -55,6 +56,50 @@ class BankNotificationConfirmController(
         pending.addLast(item to result)
         ensureProxyInstalled()
         startNext()
+    }
+
+    /**
+     * 두 알림(입금 알림, 출금 알림)을 하나의 이체 거래로 합쳐 확정한다.
+     * Whooing 규칙: 입금 받는 계좌(inflowAcc)가 왼쪽(차변), 입금 한 계좌(outflowAcc)가 오른쪽(대변).
+     */
+    fun confirmMerged(
+        inflowItem: LocalReviewQueue.ReviewItem,
+        outflowItem: LocalReviewQueue.ReviewItem,
+        inflowAcc: Account,
+        outflowAcc: Account,
+        amount: Double
+    ) {
+        if (current != null || pending.isNotEmpty()) {
+            toast(activity.getString(R.string.bank_noti_review_confirm_busy))
+            return
+        }
+        val wimple = WimpleImpl.getInstance() ?: run {
+            toast(activity.getString(R.string.bank_noti_review_confirm_failed))
+            return
+        }
+        ensureProxyInstalled()
+        val result = BankNotificationClassifier.Result(
+            state = BankNotificationClassifier.State.READY,
+            kind = "transfer",
+            merchant = "계좌이체",
+            amount = amount,
+            leftAccountId = inflowAcc.id,
+            leftAccountTitle = inflowAcc.title,
+            rightAccountId = outflowAcc.id,
+            rightAccountTitle = outflowAcc.title,
+            source = BankNotificationClassifier.Source.TRANSFER,
+            confidence = 1.0
+        )
+        current = PendingConfirm(inflowItem, result, inflowAcc, outflowAcc, partnerItem = outflowItem)
+        val today = Calendar.getInstance().timeInMillis
+        val ok = wimple.makeEntry(today, inflowAcc, outflowAcc, "계좌이체", amount, "")
+        if (!ok) {
+            current = null
+            restoreListener()
+            toast(activity.getString(R.string.bank_noti_review_confirm_failed))
+            return
+        }
+        mainHandler.postDelayed(timeoutRunnable, RESPONSE_TIMEOUT_MS)
     }
 
     /** Process a list of (item, result) sequentially; prior queue is replaced. */
@@ -180,7 +225,14 @@ class BankNotificationConfirmController(
                 }
             }
             LocalReviewQueue.removeById(activity, ctx.item.id)
-            toast(activity.getString(R.string.bank_noti_review_confirm_success_format, merchant))
+            ctx.partnerItem?.let {
+                LocalReviewQueue.removeById(activity, it.id)
+            }
+            if (ctx.partnerItem != null) {
+                toast(activity.getString(R.string.bank_noti_review_merge_transfer_success, ctx.rAcc.title, ctx.lAcc.title))
+            } else {
+                toast(activity.getString(R.string.bank_noti_review_confirm_success_format, merchant))
+            }
         } else {
             toast(activity.getString(R.string.bank_noti_review_confirm_failed))
         }

@@ -11,12 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ListView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import kr.blogspot.charlie0301.wimple.model.Account
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
@@ -533,11 +536,16 @@ class BankNotificationReviewActivity : AppCompatActivity() {
 
     private fun openManualEntry(
         item: LocalReviewQueue.ReviewItem,
-        overrideResult: BankNotificationClassifier.Result? = null
+        overrideResult: BankNotificationClassifier.Result? = null,
+        partnerItemId: String? = null
     ) {
         val intent = Intent(this, WimpleActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(WimpleActivity.EXTRA_OPEN_MENU, R.id.menu_transaction_insert)
+
+        if (partnerItemId != null) {
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_PARTNER_ITEM_ID, partnerItemId)
+        }
 
         val result = overrideResult ?: BankNotificationClassifier.Result.fromJson(item.classificationJson)
         if (result != null) {
@@ -578,22 +586,207 @@ class BankNotificationReviewActivity : AppCompatActivity() {
             intent.putExtra(WimpleActivity.EXTRA_PREFILL_AMOUNT, prefillAmount)
         }
 
-        // Always include the source notification body for the form's review panel — even
-        // UNPARSED rows benefit, since the user is filling the form by hand against it.
+        // Original body attached so the form can host a non-interactive reference panel
+        // above the inputs. Lets the user check what the bank notification actually said
+        // while fixing a misclassified title / picking accounts, rather than having to
+        // remember from the review screen.
         if (item.text.isNotBlank()) {
             intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TEXT, item.text)
         }
-        // Title is propagated separately from the panel-source label so the form's success
-        // branch can persist (Title + Body → extracted JSON) as a few-shot training row.
         if (item.title.isNotBlank()) {
             intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_TITLE, item.title)
         }
-        val source = item.appLabel.ifBlank { item.packageName }
-        if (source.isNotBlank()) {
-            intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE, source)
+        val sourceLabel = item.appLabel ?: item.packageName
+        if (sourceLabel.isNotBlank()) {
+            intent.putExtra(WimpleActivity.EXTRA_REVIEW_NOTIFICATION_SOURCE, sourceLabel)
         }
+
         startActivity(intent)
     }
+
+    private fun handleMergeTransfer(item: LocalReviewQueue.ReviewItem, partner: LocalReviewQueue.ReviewItem) {
+        val itemText = "${item.title} ${item.text}"
+        val partnerText = "${partner.title} ${partner.text}"
+        val itemInflow = BankNotificationClassifier.INFLOW_MARKER_REGEX.containsMatchIn(itemText)
+        val partnerInflow = BankNotificationClassifier.INFLOW_MARKER_REGEX.containsMatchIn(partnerText)
+        val (inflowItem, outflowItem) = if (itemInflow && !partnerInflow) {
+            item to partner
+        } else if (partnerInflow && !itemInflow) {
+            partner to item
+        } else {
+            val itemOutflow = BankNotificationClassifier.OUTFLOW_MARKER_REGEX.containsMatchIn(itemText)
+            if (itemOutflow) partner to item else item to partner
+        }
+
+        val accounts = WimpleImpl.getInstance()?.cachedAccounts.orEmpty()
+        val assetAccounts = accounts.filter { it.what == "assets" || it.what == "liabilities" }
+        val inflowAcc = BankNotificationClassifier.resolveAccount(inflowItem, accounts)
+        val outflowAcc = BankNotificationClassifier.resolveAccount(outflowItem, accounts)
+
+        val amount = BankNotificationClassifier.extractAmountFromText("${inflowItem.title}\n${inflowItem.text}")
+            ?: BankNotificationClassifier.extractAmountFromText("${outflowItem.title}\n${outflowItem.text}")
+            ?: 0.0
+
+        if (inflowAcc != null && outflowAcc != null) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.bank_noti_review_merge_transfer_dialog_title)
+                .setMessage(
+                    getString(
+                        R.string.bank_noti_review_merge_transfer_confirm_msg,
+                        inflowAcc.title,
+                        outflowAcc.title,
+                        String.format("%,d원", amount.toLong())
+                    )
+                )
+                .setPositiveButton(R.string.bank_noti_review_merge_transfer_action_confirm) { _, _ ->
+                    confirmController.confirmMerged(inflowItem, outflowItem, inflowAcc, outflowAcc, amount)
+                }
+                .setNeutralButton(R.string.bank_noti_review_merge_transfer_action_manual) { _, _ ->
+                    openManualEntryForMerge(inflowItem, outflowItem, inflowAcc, outflowAcc, amount)
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        } else {
+            showAccountSelectionForMerge(inflowItem, outflowItem, assetAccounts, inflowAcc, outflowAcc, amount)
+        }
+    }
+
+    private fun showAccountSelectionForMerge(
+        inflowItem: LocalReviewQueue.ReviewItem,
+        outflowItem: LocalReviewQueue.ReviewItem,
+        assetAccounts: List<Account>,
+        preselectedInflow: Account?,
+        preselectedOutflow: Account?,
+        amount: Double
+    ) {
+        if (assetAccounts.isEmpty()) {
+            openManualEntryForMerge(inflowItem, outflowItem, preselectedInflow, preselectedOutflow, amount)
+            return
+        }
+
+        val accountTitles = assetAccounts.map { it.title }.toTypedArray()
+        val pad = (16 * resources.displayMetrics.density).toInt()
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad / 2, pad, pad / 2)
+        }
+
+        val tvInflow = TextView(this).apply {
+            text = getString(R.string.bank_noti_review_merge_transfer_inflow_label)
+            setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, (4 * resources.displayMetrics.density).toInt())
+        }
+        val spinnerInflow = Spinner(this).apply {
+            adapter = ArrayAdapter(this@BankNotificationReviewActivity, android.R.layout.simple_spinner_dropdown_item, accountTitles)
+            preselectedInflow?.let { acc ->
+                val idx = assetAccounts.indexOfFirst { it.id == acc.id }
+                if (idx >= 0) setSelection(idx)
+            }
+        }
+
+        val tvOutflow = TextView(this).apply {
+            text = getString(R.string.bank_noti_review_merge_transfer_outflow_label)
+            setPadding(0, (12 * resources.displayMetrics.density).toInt(), 0, (4 * resources.displayMetrics.density).toInt())
+        }
+        val spinnerOutflow = Spinner(this).apply {
+            adapter = ArrayAdapter(this@BankNotificationReviewActivity, android.R.layout.simple_spinner_dropdown_item, accountTitles)
+            preselectedOutflow?.let { acc ->
+                val idx = assetAccounts.indexOfFirst { it.id == acc.id }
+                if (idx >= 0) setSelection(idx)
+            }
+        }
+
+        layout.addView(tvInflow)
+        layout.addView(spinnerInflow)
+        layout.addView(tvOutflow)
+        layout.addView(spinnerOutflow)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.bank_noti_review_merge_transfer_dialog_title)
+            .setView(layout)
+            .setPositiveButton(R.string.bank_noti_review_merge_transfer_action_confirm) { _, _ ->
+                val selectedInflow = assetAccounts.getOrNull(spinnerInflow.selectedItemPosition)
+                val selectedOutflow = assetAccounts.getOrNull(spinnerOutflow.selectedItemPosition)
+                if (selectedInflow != null && selectedOutflow != null) {
+                    confirmController.confirmMerged(inflowItem, outflowItem, selectedInflow, selectedOutflow, amount)
+                }
+            }
+            .setNeutralButton(R.string.bank_noti_review_merge_transfer_action_manual) { _, _ ->
+                val selectedInflow = assetAccounts.getOrNull(spinnerInflow.selectedItemPosition) ?: preselectedInflow
+                val selectedOutflow = assetAccounts.getOrNull(spinnerOutflow.selectedItemPosition) ?: preselectedOutflow
+                openManualEntryForMerge(inflowItem, outflowItem, selectedInflow, selectedOutflow, amount)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun openManualEntryForMerge(
+        inflowItem: LocalReviewQueue.ReviewItem,
+        outflowItem: LocalReviewQueue.ReviewItem,
+        inflowAcc: Account?,
+        outflowAcc: Account?,
+        amount: Double
+    ) {
+        val result = BankNotificationClassifier.Result(
+            state = BankNotificationClassifier.State.AMBIGUOUS,
+            kind = "transfer",
+            merchant = "계좌이체",
+            amount = amount,
+            leftAccountId = inflowAcc?.id,
+            leftAccountTitle = inflowAcc?.title,
+            rightAccountId = outflowAcc?.id,
+            rightAccountTitle = outflowAcc?.title,
+            source = BankNotificationClassifier.Source.TRANSFER,
+            confidence = BankNotificationClassifier.THRESHOLD_AMBIGUOUS
+        )
+        openManualEntry(inflowItem, overrideResult = result, partnerItemId = outflowItem.id)
+    }
+
+    private fun findTransferPartner(item: LocalReviewQueue.ReviewItem): LocalReviewQueue.ReviewItem? {
+        val itemAmt = BankNotificationClassifier.extractAmountFromText(
+            "${item.title}\n${item.text}"
+        ) ?: return null
+
+        val itemText = "${item.title} ${item.text}"
+        val itemIsCard = !itemText.contains("취소") && (
+            item.title.contains("결제") || item.title.contains("승인") ||
+            item.text.contains("신용") || item.text.contains("체크") || item.text.contains("일시불")
+        ) && !itemText.contains("이체")
+        if (itemIsCard) return null
+
+        val itemOutflow = BankNotificationClassifier.OUTFLOW_MARKER_REGEX.containsMatchIn(itemText)
+        val itemInflow = BankNotificationClassifier.INFLOW_MARKER_REGEX.containsMatchIn(itemText)
+
+        val queue = LocalReviewQueue.getAll(this)
+        return queue.firstOrNull { other ->
+            if (other.id == item.id) return@firstOrNull false
+            val otherText = "${other.title} ${other.text}"
+            val otherIsCard = !otherText.contains("취소") && (
+                other.title.contains("결제") || other.title.contains("승인") ||
+                other.text.contains("신용") || other.text.contains("체크") || other.text.contains("일시불")
+            ) && !otherText.contains("이체")
+            if (otherIsCard) return@firstOrNull false
+
+            val diff = kotlin.math.abs(other.time - item.time)
+            if (diff > 10 * 60 * 1000L) return@firstOrNull false
+
+            val otherOutflow = BankNotificationClassifier.OUTFLOW_MARKER_REGEX.containsMatchIn(otherText)
+            val otherInflow = BankNotificationClassifier.INFLOW_MARKER_REGEX.containsMatchIn(otherText)
+
+            val directionMatch = (itemOutflow && !itemInflow && otherInflow && !otherOutflow) ||
+                (itemInflow && !itemOutflow && otherOutflow && !otherInflow) ||
+                (!itemOutflow && !itemInflow && !otherOutflow && !otherInflow)
+            if (!directionMatch) return@firstOrNull false
+
+            val otherAmt = BankNotificationClassifier.extractAmountFromText(
+                "${other.title}\n${other.text}"
+            ) ?: return@firstOrNull false
+            val max = maxOf(itemAmt, otherAmt)
+            max > 0.0 && kotlin.math.abs(itemAmt - otherAmt) / max <= 0.01
+        }
+    }
+
+
 
     private fun refresh() {
         adapter.reload()
@@ -716,23 +909,20 @@ class BankNotificationReviewActivity : AppCompatActivity() {
          * 있으면 이체 가능성 힌트 TextView를 표시한다.
          */
         private fun applyPairedTransferHint(view: View, item: LocalReviewQueue.ReviewItem) {
-            val hintView = view.findViewById<TextView>(R.id.tv_paired_transfer_hint)
-            val itemAmt = BankNotificationClassifier.extractAmountFromText(
-                "${item.title}\n${item.text}"
-            ) ?: run { hintView.visibility = View.GONE; return }
+            val layout = view.findViewById<View>(R.id.layout_paired_transfer) ?: return
+            val mergeBtn = view.findViewById<Button>(R.id.btn_merge_transfer)
 
-            val queue = LocalReviewQueue.getAll(this@BankNotificationReviewActivity)
-            val hasPair = queue.any { other ->
-                if (other.id == item.id) return@any false
-                val diff = kotlin.math.abs(other.time - item.time)
-                if (diff > 10 * 60 * 1000L) return@any false
-                val otherAmt = BankNotificationClassifier.extractAmountFromText(
-                    "${other.title}\n${other.text}"
-                ) ?: return@any false
-                val max = maxOf(itemAmt, otherAmt)
-                max > 0.0 && kotlin.math.abs(itemAmt - otherAmt) / max <= 0.01
+            val partner = findTransferPartner(item)
+            if (partner == null) {
+                layout.visibility = View.GONE
+                mergeBtn?.setOnClickListener(null)
+                return
             }
-            hintView.visibility = if (hasPair) View.VISIBLE else View.GONE
+
+            layout.visibility = View.VISIBLE
+            mergeBtn?.setOnClickListener {
+                handleMergeTransfer(item, partner)
+            }
         }
 
         /**

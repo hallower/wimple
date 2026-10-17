@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Wimple</string>
 
@@ -390,7 +390,16 @@
     <string name="bank_noti_review_monthly_link_applied">월별 거래로 연결되었습니다. 확정 버튼으로 확정하세요.</string>
 
     <!-- Task 3: 이체 인식 개선 -->
-    <string name="bank_noti_review_paired_transfer_hint">⇄ 비슷한 시각 동일 금액 알림 존재 — 이체 가능성 (수동 입력 권장)</string>
+    <string name="bank_noti_review_paired_transfer_hint">⇄ 비슷한 시각 알림 쌍 감지</string>
+    <string name="bank_noti_review_merge_transfer">이체 합치기</string>
+    <string name="bank_noti_review_merge_transfer_dialog_title">이체 합치기</string>
+    <string name="bank_noti_review_merge_transfer_confirm_msg">두 건의 알림을 하나의 이체 거래로 합쳐 등록합니다.\n\n• 입금 받는 계좌 (왼쪽/차변): %1$s\n• 입금 한 계좌 (오른쪽/대변): %2$s\n• 이체 금액: %3$s\n\n두 알림을 Whooing에 이체로 등록하고 검토 목록에서 삭제하시겠습니까?</string>
+    <string name="bank_noti_review_merge_transfer_select_accounts_msg">두 건의 알림을 합칠 계좌를 선택하세요.\n(입금 받는 계좌 ← 입금 한 계좌)</string>
+    <string name="bank_noti_review_merge_transfer_inflow_label">입금 받는 계좌 (왼쪽/차변):</string>
+    <string name="bank_noti_review_merge_transfer_outflow_label">입금 한 계좌 (오른쪽/대변):</string>
+    <string name="bank_noti_review_merge_transfer_action_confirm">이체 등록</string>
+    <string name="bank_noti_review_merge_transfer_action_manual">수동 입력</string>
+    <string name="bank_noti_review_merge_transfer_success">이체 등록 완료: %1$s → %2$s</string>
     <string name="bank_noti_review_show_transfers">이체 내역 보기</string>
     <string name="bank_noti_review_transfer_history_title">캐시된 계좌이체 내역</string>
     <string name="bank_noti_review_transfer_history_empty">캐시된 계좌이체 내역이 없습니다.\n거래 내역을 새로고침하면 확인할 수 있습니다.</string>
