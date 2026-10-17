@@ -264,4 +264,54 @@ class BankNotificationClassifierTest {
         )
         assertNull(result)
     }
+
+    // -------------------- Regression Tests for Issue 2 & 3 --------------------
+
+    @Test
+    fun accountBankTokens_genericAccountWords_areExcluded() {
+        // "적금", "예금", "청약" 등 일반 명사는 뱅크 토큰으로 생성되지 않아야 함
+        val tokensJeokgeum = BankNotificationClassifier.accountBankTokens("적금")
+        assertEquals(emptyList<String>(), tokensJeokgeum)
+
+        val tokensYekeum = BankNotificationClassifier.accountBankTokens("예금")
+        assertEquals(emptyList<String>(), tokensYekeum)
+
+        val tokensBank = BankNotificationClassifier.accountBankTokens("우리은행주060")
+        assertEquals(listOf("우리은행주", "우리은행"), tokensBank)
+    }
+
+    @Test
+    fun detectTransfer_cardPaymentWithCumulativeAmount_doesNotMatchJeokgeumAccount() {
+        // 카드 승인 알림 본문의 "누적이용금액" 속 "적금"이 계좌 "적금"과 오매칭되어 이체로 분류되는 버그 방지
+        val item = LocalReviewQueue.ReviewItem(
+            id = "1", time = 0L, packageName = "com.hanaskcard.paycla", appLabel = "하나카드",
+            title = "(결제) 19,900원",
+            text = "배달의민족 / 신용(일시불,7*6*) / 10.15 19:20 / 누적이용금액 3,774,850원"
+        )
+        val extracted = extractedFields("expense", "배달의민족", 19900.0)
+        val accounts = listOf(
+            account("liabilities", "c1", "하나카드_하나7*6*"),
+            account("assets", "a1", "적금")
+        )
+
+        val result = BankNotificationClassifier.detectTransfer(item, extracted, accounts, mutableListOf())
+        assertNull(result)
+    }
+
+    @Test
+    fun detectTransfer_explicitCardPayment_isExcludedFromTransfer() {
+        val item = LocalReviewQueue.ReviewItem(
+            id = "1", time = 0L, packageName = "com.suhyup.card", appLabel = "수협카드",
+            title = "[수협카드]",
+            text = "승인카드번호: 홍길동님(1234)승인금액: 12,500원일시: 09/25 19:40가맹점명: (주)우리에프앤비누적금액: 345,000원"
+        )
+        val extracted = extractedFields("expense", "(주)우리에프앤비", 12500.0)
+        val accounts = listOf(
+            account("liabilities", "c1", "수협카드1234"),
+            account("assets", "a1", "우리은행060")
+        )
+
+        val result = BankNotificationClassifier.detectTransfer(item, extracted, accounts, mutableListOf())
+        assertNull(result)
+    }
 }

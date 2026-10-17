@@ -68,7 +68,7 @@ object BankNotificationClassifier {
     // AMBIGUOUS remains in the enum and is reachable only if the model regresses to
     // a numeric confidence in [0.7, 0.8).
     private const val THRESHOLD_READY = 0.8
-    private const val THRESHOLD_AMBIGUOUS = 0.7
+    internal const val THRESHOLD_AMBIGUOUS = 0.7
 
     // Discrete confidence mapping. We ask the model for "high"/"medium"/"low" instead of a
     // continuous 0.0–1.0 score because small on-device models calibrate ordinal labels much
@@ -260,8 +260,8 @@ object BankNotificationClassifier {
     // Explicit direction markers. Outflow is compatible with expense OR transfer; inflow with
     // income OR transfer — so [directionConflicts] only flags a hard contradiction
     // (outflow⇒income, inflow⇒expense), never the expense-vs-transfer ambiguity.
-    private val OUTFLOW_MARKER_REGEX = Regex("출금|결제|승인|인출")
-    private val INFLOW_MARKER_REGEX = Regex("입금|환급|적립|캐시백")
+    internal val OUTFLOW_MARKER_REGEX = Regex("출금|결제|승인|인출")
+    internal val INFLOW_MARKER_REGEX = Regex("입금|환급|적립|캐시백")
 
     /**
      * True when the extracted [kind] hard-contradicts an explicit direction marker in the
@@ -360,17 +360,24 @@ object BankNotificationClassifier {
         return false
     }
 
+    // 계좌명 토큰 생성 시 제외할 일반 금융/계좌 분류 단어 목록 ("적금", "예금" 등이 뱅크 토큰으로 추출되어 "누적금액" 등과 오매칭 방지)
+    private val GENERIC_ACCOUNT_WORDS = setOf(
+        "적금", "예금", "청약", "대출", "보험", "통장", "자산", "부채", "계좌",
+        "신용", "체크", "카드", "저축", "머니", "페이", "포인트", "누적", "잔액", "비상금"
+    )
+    private val BALANCE_MASK_REGEX = Regex("""(?:누적이용금액|누적금액|누적이용|누적|잔액|잔여한도|이용한도|사용가능액|가용한도)\s*[\d,]*\s*원?""")
+
     // Leading-Hangul bank tokens of a title, used to spot the account named as a transfer
     // counterparty. "하나카드_하나7*6*" → ["하나카드"]. This user suffixes bank accounts with
     // "주" before the number ("우리은행주060", "하나은행주228"), which the notification body
     // doesn't carry, so we also emit the 주-stripped form ("우리은행", "하나은행").
-    private fun accountBankTokens(title: String): List<String> {
+    internal fun accountBankTokens(title: String): List<String> {
         val lead = LEADING_HANGUL_REGEX.find(title)?.value ?: return emptyList()
         val out = ArrayList<String>()
-        // 2자 이상 허용: "수협", "농협", "축협", "신협", "토스" 등 2글자 금융사 이름 지원
-        if (lead.length >= 2) out.add(lead)
+        // 2자 이상 허용: "수협", "농협", "축협", "신협", "토스" 등 2글자 금융사 이름 지원 (일반 단어 제외)
+        if (lead.length >= 2 && lead !in GENERIC_ACCOUNT_WORDS) out.add(lead)
         val stripped = lead.removeSuffix("주")
-        if (stripped.length >= 2 && stripped != lead) out.add(stripped)
+        if (stripped.length >= 2 && stripped != lead && stripped !in GENERIC_ACCOUNT_WORDS) out.add(stripped)
         return out
     }
 
@@ -385,13 +392,28 @@ object BankNotificationClassifier {
      */
     private fun resolveAccountByHangulToken(text: String, pool: List<Account>): Account? {
         val textWords = HANGUL_WORD_REGEX.findAll(text).map { it.value }
-            .filterNot { it in COMMON_NON_BANK_WORDS }
+            .filterNot { it in COMMON_NON_BANK_WORDS || it in GENERIC_ACCOUNT_WORDS }
             .toList()
         if (textWords.isEmpty()) return null
         return pool.firstOrNull { acc ->
             val tokens = accountBankTokens(acc.title)
             tokens.isNotEmpty() && textWords.any { word -> tokens.any { tok -> word.contains(tok) } }
         }
+    }
+
+    /**
+     * 알림(제목 및 본문)에서 번호 또는 한글 토큰을 통해 등록된 자산/부채 계좌를 조회한다.
+     */
+    fun resolveAccount(
+        item: LocalReviewQueue.ReviewItem,
+        accounts: Collection<Account>
+    ): Account? {
+        val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
+        if (pool.isEmpty()) return null
+        val textWithoutBalance = "${item.title} ${item.text}".replace(BALANCE_MASK_REGEX, " ")
+        return resolveAccountByNumber(item.text, pool)
+            ?: resolveAccountByNumber(item.title, pool)
+            ?: resolveAccountByHangulToken(textWithoutBalance, pool)
     }
 
     /**
@@ -410,14 +432,25 @@ object BankNotificationClassifier {
     ): Result? {
         val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
         if (pool.size < 2) return null
+
+        val combinedText = "${item.title} ${item.text}"
+        val isCancel = combinedText.contains("취소")
+        val isExplicitCardPayment = !isCancel && (
+            item.title.contains("결제") || item.title.contains("승인") ||
+            item.text.contains("신용") || item.text.contains("체크") || item.text.contains("일시불")
+        )
+        // 명시적 카드 가맹점 결제는 가맹점 지출 거래이므로 계좌 간 이체 탐지 대상에서 제외한다.
+        if (isExplicitCardPayment && !combinedText.contains("이체")) {
+            return null
+        }
+
         // Task 2: 계좌 매칭 개선 — 본문 → 제목 → 한글 토큰 순으로 폴백
-        val source = resolveAccountByNumber(item.text, pool)
-            ?: resolveAccountByNumber(item.title, pool)
-            ?: resolveAccountByHangulToken("${item.title} ${item.text}", pool)
-            ?: return null
-        // The extract prompt strips bank/card names from `merchant`, so look for the
-        // counterparty's bank token across title + body + merchant, not merchant alone.
-        val combined = "${item.title} ${item.text} ${extracted.merchant.orEmpty()}"
+        val source = resolveAccount(item, pool) ?: return null
+
+        // 누적금액, 잔액 등의 문구를 마스킹하여 "누적금액" 속 "적금" 등이 뱅크 토큰과 오매칭되는 것을 방지
+        val rawCombined = "$combinedText ${extracted.merchant.orEmpty()}"
+        val combined = rawCombined.replace(BALANCE_MASK_REGEX, " ")
+
         val counterparty = pool.firstOrNull { acc ->
             acc.id != source.id && accountBankTokens(acc.title).any { combined.contains(it) }
         } ?: pool.firstOrNull { acc ->
@@ -438,20 +471,20 @@ object BankNotificationClassifier {
             AiClassificationLog.Stage(
                 "transfer_detect",
                 "source=${source.title} counterparty=${counterparty.title} merchant=\"${extracted.merchant}\"",
-                "TRANSFER between own accounts resolved -> READY"
+                "TRANSFER between own accounts resolved -> AMBIGUOUS"
             )
         )
         return Result(
-            state = State.READY,
+            state = State.AMBIGUOUS,
             kind = "transfer",
-            merchant = extracted.merchant,
+            merchant = extracted.merchant ?: "계좌이체",
             amount = extracted.amount,
             leftAccountId = left.id,
             leftAccountTitle = left.title,
             rightAccountId = right.id,
             rightAccountTitle = right.title,
             source = Source.TRANSFER,
-            confidence = 1.0
+            confidence = THRESHOLD_AMBIGUOUS
         )
     }
 
@@ -470,28 +503,44 @@ object BankNotificationClassifier {
         accounts: Collection<Account>,
         stages: MutableList<AiClassificationLog.Stage>
     ): Result? {
+        val itemText = "${item.title} ${item.text}"
+        val itemIsCard = !itemText.contains("취소") && (
+            item.title.contains("결제") || item.title.contains("승인") ||
+            item.text.contains("신용") || item.text.contains("체크") || item.text.contains("일시불")
+        ) && !itemText.contains("이체")
+        if (itemIsCard) return null
+
+        val itemOutflow = OUTFLOW_MARKER_REGEX.containsMatchIn(itemText)
+        val itemInflow = INFLOW_MARKER_REGEX.containsMatchIn(itemText)
+
         val queue = LocalReviewQueue.getAll(ctx)
         val partner = queue.firstOrNull { other ->
-            other.id != item.id &&
-                kotlin.math.abs(other.time - item.time) <= PAIRED_TRANSFER_WINDOW_MS &&
-                run {
-                    val otherAmt = extractAmountFromText("${other.title}\n${other.text}") ?: return@run false
-                    kotlin.math.abs(otherAmt - extracted.amount) <=
-                        max(otherAmt, extracted.amount) * PAIRED_TRANSFER_AMT_TOLERANCE
-                }
+            if (other.id == item.id) return@firstOrNull false
+            val otherText = "${other.title} ${other.text}"
+            val otherIsCard = !otherText.contains("취소") && (
+                other.title.contains("결제") || other.title.contains("승인") ||
+                other.text.contains("신용") || other.text.contains("체크") || other.text.contains("일시불")
+            ) && !otherText.contains("이체")
+            if (otherIsCard) return@firstOrNull false
+
+            if (kotlin.math.abs(other.time - item.time) > PAIRED_TRANSFER_WINDOW_MS) return@firstOrNull false
+
+            val otherOutflow = OUTFLOW_MARKER_REGEX.containsMatchIn(otherText)
+            val otherInflow = INFLOW_MARKER_REGEX.containsMatchIn(otherText)
+            // 계좌 간 이체 쌍이 성립하려면 한쪽은 출금, 다른 한쪽은 입금이어야 한다.
+            val directionMatches = (itemOutflow && !itemInflow && otherInflow && !otherOutflow) ||
+                (itemInflow && !itemOutflow && otherOutflow && !otherInflow)
+            if (!directionMatches) return@firstOrNull false
+
+            val otherAmt = extractAmountFromText("${other.title}\n${other.text}") ?: return@firstOrNull false
+            kotlin.math.abs(otherAmt - extracted.amount) <=
+                max(otherAmt, extracted.amount) * PAIRED_TRANSFER_AMT_TOLERANCE
         } ?: return null
 
         val pool = accounts.filter { it.what == "assets" || it.what == "liabilities" }
         // 계좌 특정 시도: 양쪽 모두 resolve 되면 계좌 쌍까지 제안
-        val srcAcc = if (pool.size >= 2) resolveAccountByNumber(item.text, pool)
-            ?: resolveAccountByNumber(item.title, pool)
-            ?: resolveAccountByHangulToken("${item.title} ${item.text}", pool) else null
-        val dstAcc = if (pool.size >= 2 && srcAcc != null) resolveAccountByNumber(partner.text, pool.filter { it.id != srcAcc.id })
-            ?: resolveAccountByNumber(partner.title, pool.filter { it.id != srcAcc.id })
-            ?: resolveAccountByHangulToken("${partner.title} ${partner.text}", pool.filter { it.id != srcAcc.id }) else null
-
-        val outflow = OUTFLOW_MARKER_REGEX.containsMatchIn("${item.title} ${item.text}")
-        val inflow  = INFLOW_MARKER_REGEX.containsMatchIn("${item.title} ${item.text}")
+        val srcAcc = if (pool.size >= 2) resolveAccount(item, pool) else null
+        val dstAcc = if (pool.size >= 2 && srcAcc != null) resolveAccount(partner, pool.filter { it.id != srcAcc.id }) else null
 
         stages.add(
             AiClassificationLog.Stage(
@@ -502,11 +551,12 @@ object BankNotificationClassifier {
         )
 
         return if (srcAcc != null && dstAcc != null) {
-            val (left, right) = if (inflow && !outflow) srcAcc to dstAcc else dstAcc to srcAcc
+            // Whooing 규칙: 입금 받는 계좌 = left (차변 자산 증가), 입금 한 계좌 = right (대변 자산 감소)
+            val (left, right) = if (itemInflow && !itemOutflow) srcAcc to dstAcc else dstAcc to srcAcc
             Result(
                 state = State.READY,
                 kind = "transfer",
-                merchant = extracted.merchant,
+                merchant = extracted.merchant ?: "계좌이체",
                 amount = extracted.amount,
                 leftAccountId = left.id,
                 leftAccountTitle = left.title,
@@ -520,7 +570,7 @@ object BankNotificationClassifier {
             Result(
                 state = State.AMBIGUOUS,
                 kind = "transfer",
-                merchant = extracted.merchant,
+                merchant = extracted.merchant ?: "계좌이체",
                 amount = extracted.amount,
                 source = Source.TRANSFER,
                 confidence = THRESHOLD_AMBIGUOUS
@@ -1128,6 +1178,12 @@ object BankNotificationClassifier {
             // (similarity hits) pays no extra cost.
             val similar = findSimilarityMatch(item, extracted, accounts, stages)
             var categoryAcc = similar?.let { if (needsLeft) it.leftAccount else it.rightAccount }
+            // 입금(income)의 경우 카테고리는 반드시 income 계정이어야 한다
+            if (extracted.kind == "income" && categoryAcc?.what != "income") {
+                categoryAcc = null
+            } else if (extracted.kind == "expense" && categoryAcc?.what != "expenses") {
+                categoryAcc = null
+            }
             var fillMethod = if (categoryAcc != null) "similarity=${similar?.confidence}" else null
             // Task 7: only a same-merchant similarity match at READY-grade confidence is
             // trustworthy enough to skip human review entirely — the keyword dictionary and
@@ -1192,15 +1248,30 @@ object BankNotificationClassifier {
         // it manually even if the similarity model was confident. Leaves AMBIGUOUS/UNPARSED.
         if (dirConflict && state == State.READY) state = State.AMBIGUOUS
 
+        val finalLeft: Account
+        val finalRight: Account
+        if (extracted.kind == "income") {
+            if (similar.leftAccount.what == "income" && (similar.rightAccount.what == "assets" || similar.rightAccount.what == "liabilities")) {
+                finalLeft = similar.rightAccount
+                finalRight = similar.leftAccount
+            } else {
+                finalLeft = similar.leftAccount
+                finalRight = similar.rightAccount
+            }
+        } else {
+            finalLeft = similar.leftAccount
+            finalRight = similar.rightAccount
+        }
+
         Result(
             state = state,
             kind = extracted.kind,
             merchant = extracted.merchant,
             amount = extracted.amount,
-            leftAccountId = similar.leftAccount.id,
-            leftAccountTitle = similar.leftAccount.title,
-            rightAccountId = similar.rightAccount.id,
-            rightAccountTitle = similar.rightAccount.title,
+            leftAccountId = finalLeft.id,
+            leftAccountTitle = finalLeft.title,
+            rightAccountId = finalRight.id,
+            rightAccountTitle = finalRight.title,
             source = Source.AI_SIMILARITY,
             confidence = similar.confidence,
             bestMatchEntryId = similar.entry.id
@@ -1240,8 +1311,31 @@ object BankNotificationClassifier {
 
         val match = aiSimilarity(item, extracted, candidates, stages) ?: return null
         val candidateEntry = candidates.firstOrNull { it.id == match.bestMatchEntryId } ?: return null
-        val lAcc = accounts.firstOrNull { it.id == candidateEntry.leftAccountID } ?: return null
-        val rAcc = accounts.firstOrNull { it.id == candidateEntry.rightAccountID } ?: return null
+        var lAcc = accounts.firstOrNull { it.id == candidateEntry.leftAccountID } ?: return null
+        var rAcc = accounts.firstOrNull { it.id == candidateEntry.rightAccountID } ?: return null
+
+        if (extracted.kind == "income") {
+            // Whooing 회계 원칙: 입금(수익)은 왼쪽=계좌(assets), 오른쪽=수익 항목(income)
+            if (lAcc.what == "income" && (rAcc.what == "assets" || rAcc.what == "liabilities")) {
+                val tmp = lAcc
+                lAcc = rAcc
+                rAcc = tmp
+            } else if (rAcc.what != "income") {
+                val incomeAcc = accounts.firstOrNull { it.what == "income" && candidateEntry.item?.contains(it.title) == true }
+                    ?: accounts.firstOrNull { it.what == "income" }
+                if (incomeAcc != null) {
+                    rAcc = incomeAcc
+                }
+            }
+        } else if (extracted.kind == "expense") {
+            // Whooing 회계 원칙: 지출(비용)은 왼쪽=비용(expenses), 오른쪽=출금계좌/카드(assets/liabilities)
+            if ((lAcc.what == "assets" || lAcc.what == "liabilities") && rAcc.what == "expenses") {
+                val tmp = lAcc
+                lAcc = rAcc
+                rAcc = tmp
+            }
+        }
+
         return SimilarityMatch(candidateEntry, lAcc, rAcc, match.confidence)
     }
 
@@ -1249,18 +1343,33 @@ object BankNotificationClassifier {
         extracted: ExtractedFields,
         lAcc: Account,
         rAcc: Account
-    ) = Result(
-        state = State.READY,
-        kind = extracted.kind,
-        merchant = extracted.merchant,
-        amount = extracted.amount,
-        leftAccountId = lAcc.id,
-        leftAccountTitle = lAcc.title,
-        rightAccountId = rAcc.id,
-        rightAccountTitle = rAcc.title,
-        source = Source.MAPPING,
-        confidence = 1.0
-    )
+    ): Result {
+        var left = lAcc
+        var right = rAcc
+        if (extracted.kind == "income") {
+            if (left.what == "income" && (right.what == "assets" || right.what == "liabilities")) {
+                left = rAcc
+                right = lAcc
+            }
+        } else if (extracted.kind == "expense") {
+            if ((left.what == "assets" || left.what == "liabilities") && right.what == "expenses") {
+                left = rAcc
+                right = lAcc
+            }
+        }
+        return Result(
+            state = State.READY,
+            kind = extracted.kind,
+            merchant = extracted.merchant,
+            amount = extracted.amount,
+            leftAccountId = left.id,
+            leftAccountTitle = left.title,
+            rightAccountId = right.id,
+            rightAccountTitle = right.title,
+            source = Source.MAPPING,
+            confidence = 1.0
+        )
+    }
 
     private fun extractedOnly(extracted: ExtractedFields, state: State) = Result(
         state = state,
@@ -1538,6 +1647,8 @@ object BankNotificationClassifier {
         if (entries.isEmpty()) return emptyList()
         val merchantTokens = extracted.merchant?.let { tokenize(it) }.orEmpty()
         val target = extracted.amount
+        val isIncome = extracted.kind == "income"
+        val isExpense = extracted.kind == "expense"
 
         return entries.asSequence()
             .map { e ->
@@ -1548,8 +1659,18 @@ object BankNotificationClassifier {
                 val amountScore = if (amount > 0.0 && target > 0.0)
                     1.0 - (abs(amount - target) / max(amount, target)).coerceIn(0.0, 1.0)
                 else 0.0
-                e to (overlap * 0.7 + amountScore * 0.3)
+
+                // 수입 거래는 Whooing에서 대변이 "income"이므로 수입 항목 후보 가중치
+                // 지출 거래는 차변이 "expenses"이므로 지출 항목 후보 가중치
+                val kindBonus = if (isIncome) {
+                    if (e.rightAccount == "income" || e.leftAccount == "income") 0.5 else -0.5
+                } else if (isExpense) {
+                    if (e.leftAccount == "expenses" || e.rightAccount == "expenses") 0.2 else -0.2
+                } else 0.0
+
+                e to (overlap * 0.7 + amountScore * 0.3 + kindBonus)
             }
+            .filter { if (isIncome) it.second > 0.0 else true }
             .sortedByDescending { it.second }
             .take(max)
             .map { it.first }
